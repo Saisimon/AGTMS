@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: AGTMS-ZUUL
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: AGTMS-CONFIG
+      name: agtms-zuul
+      username: agtms
+      password: agtms8300
+      profile: master
+      label: master
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: ${spring.application.name}
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+  client:
+    serviceUrl:
+      defaultZone: http://agtms:agtms8000@eurekaserver:8000/eureka/
+
+server:
+  port: 8100
+  
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'refresh'

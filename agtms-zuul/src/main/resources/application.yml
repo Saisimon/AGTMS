@@ -1,0 +1,48 @@
+spring:
+  main:
+    banner-mode: 'off'
+
+zuul:
+  host:
+    SocketTimeoutMillis: 10000
+    ConnectTimeoutMillis: 10000
+  routes:
+    agtms:
+      path: /agtms/**
+      serviceId: AGTMS-WEB
+      sensitiveHeaders: '*'
+    web:
+      path: /agtms-web/**
+      serviceId: AGTMS-WEB
+
+ribbon:
+  ReadTimeout: 10000
+  ConnectTimeout: 10000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 1
+
+hystrix: 
+  command: 
+    default: 
+      execution: 
+        isolation: 
+          thread: 
+            timeoutInMilliseconds: 60000
+            
+feign:
+  hystrix:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 2000
+        readTimeout: 5000
+        loggerLevel: basic
+        
+logging:
+  level:
+    net.saisimon: DEBUG
+    
+white:
+  list:
+    urls: /agtms/user/auth,/agtms/user/register

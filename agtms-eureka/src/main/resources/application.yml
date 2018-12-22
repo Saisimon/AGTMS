@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: AGTMS-EUREKA
+  main:
+    banner-mode: 'off'
+  security:
+    user:
+      name: agtms
+      password: agtms8000
+  cloud:
+    inetutils:
+      ignored-interfaces[0]: eth0
+
+server:
+  port: 8000
+
+eureka:
+  server:
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 10000
+  instance:
+    hostname: eurekaserver
+    prefer-ip-address: true
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://eurekaserver:8000/eureka/
