@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.mail.internet.MimeUtility;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.util.ClassUtils;
@@ -185,6 +186,9 @@ public final class SystemUtils {
 	}
 	
 	public static <P> void submitTask(final Task task) {
+		if (task == null) {
+			return;
+		}
 		CompletableFuture.runAsync(() -> {
 			TaskService taskService = TaskServiceFactory.get();
 			task.setHandleStatus(HandleStatuses.PROCESSING.getStatus());
@@ -216,6 +220,18 @@ public final class SystemUtils {
 				log.error("任务执行异常", e);
 			}
 		}, executor);
+	}
+	
+	public static <P> void downloadTask(final Task task, HttpServletRequest request, HttpServletResponse response) {
+		if (task == null) {
+			return;
+		}
+		@SuppressWarnings("unchecked")
+		Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
+		if (actuator == null) {
+			return;
+		}
+		actuator.download(task, request, response);
 	}
 	
 	public static void sendObject(HttpServletResponse response, Object obj) throws IOException {

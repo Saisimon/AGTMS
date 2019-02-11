@@ -1,5 +1,9 @@
 package net.saisimon.agtms.core.task;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.saisimon.agtms.core.domain.Task;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -7,6 +11,10 @@ import net.saisimon.agtms.core.util.SystemUtils;
 public interface Actuator<P> {
 	
 	Result execute(P param) throws Exception;
+	
+	default void download(Task task, HttpServletRequest request, HttpServletResponse response) {
+		
+	}
 	
 	Sign sign();
 	

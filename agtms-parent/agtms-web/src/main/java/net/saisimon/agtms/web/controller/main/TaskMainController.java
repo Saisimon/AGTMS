@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +34,7 @@ import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.dto.UserInfo;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
@@ -98,18 +100,18 @@ public class TaskMainController extends MainController {
 		return ResultUtils.pageSuccess(results, page.getTotalElements());
 	}
 	
-	@PostMapping("/download")
-	public void download(@RequestParam(name = "id") Long id) {
+	@GetMapping("/download")
+	public <P> void download(@RequestParam(name = "id") Long id) {
 		try {
 			TaskService taskService = TaskServiceFactory.get();
 			Optional<Task> optional = taskService.findById(id);
 			if (!optional.isPresent()) {
 				SystemUtils.sendObject(response, ErrorMessage.Task.TASK_NOT_EXIST);
+				return;
 			}
-			Task task = optional.get();
-			
+			SystemUtils.downloadTask(optional.get(), request, response);
 		} catch (IOException e) {
-			log.error("download failed", e);
+			log.error("响应流异常", e);
 		}
 	}
 	
@@ -169,8 +171,9 @@ public class TaskMainController extends MainController {
 	
 	@Override
 	protected List<Action> actions(Object key) {
+		UserInfo userInfo = AuthUtils.getUserInfo();
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().icon("download").text(getMessage("download")).type("download").build());
+		actions.add(Action.builder().icon("download").to("/task/main/download?" + AuthUtils.AUTHORIZE_UID + "=" + userInfo.getUserId() + "&" + AuthUtils.AUTHORIZE_TOKEN + "=" + userInfo.getToken() + "&id=").text(getMessage("download")).type("download").build());
 		actions.add(Action.builder().icon("trash").text(getMessage("remove")).variant("outline-danger").type("remove").build());
 		return actions;
 	}

@@ -33,16 +33,16 @@ export default {
         }
     },
     created: function() {
-        document.addEventListener('fullscreenchange', function(e) {
+        document.addEventListener('fullscreenchange', function() {
             toggleFullscreenStatus();
         });
-        document.addEventListener('mozfullscreenchange', function(e) {
+        document.addEventListener('mozfullscreenchange', function() {
             toggleFullscreenStatus();
         });
-        document.addEventListener('webkitfullscreenchange', function(e) {
+        document.addEventListener('webkitfullscreenchange', function() {
             toggleFullscreenStatus();
         });
-        document.addEventListener('msfullscreenchange', function(e) {
+        document.addEventListener('msfullscreenchange', function() {
             toggleFullscreenStatus();
         });
         function toggleFullscreenStatus() {

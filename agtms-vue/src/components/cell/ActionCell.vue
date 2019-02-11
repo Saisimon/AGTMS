@@ -18,8 +18,8 @@
                     :variant="action.variant"
                     v-b-tooltip.hover 
                     :title="action.text"
-                    @click="download(action.to)"
-                    href="javascript:void(0);" 
+                    :href="$store.state.base.urlPrefix + action.to + rowData.id" 
+                    target="_blank"
                     class="ml-1" >
                     <i class="fa fa-fw" :class="'fa-' + action.icon"></i>
                 </b-button>
@@ -79,12 +79,6 @@ export default {
                 if (this.$route.params.module === 'navigation') {
                     this.$store.dispatch('getTrees');
                 }
-            });
-        },
-        download: function() {
-            this.$store.dispatch('downloadData', {
-                url: this.$route.path,
-                id: this.rowData.id
             });
         }
     }

@@ -1,12 +1,11 @@
 import axios from 'axios'
-import * as url from './url'
 import router from '@/router'
 import store from '@/store/store'
 
 export default function request(user, reqUrl, payload) {
     var req = {
         method: 'post',
-        url: url.URL_PREFIX + "/agtms" + reqUrl
+        url: store.state.base.urlPrefix + reqUrl
     };
     if (user != undefined && user != null && user.token && user.userId) {
         req.headers = {

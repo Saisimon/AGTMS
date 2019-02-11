@@ -1,6 +1,7 @@
 import { signIn, register, signOut } from '@/api/user'
 
 const state = {
+    urlPrefix: 'http://localhost:8100/agtms',
     progress: 100,
     intervalId: -1,
     user: JSON.parse(getCookie('user', null)),

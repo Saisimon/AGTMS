@@ -108,9 +108,9 @@ export default {
     },
     methods: {
         cellClick: function(params) {
-            var column = params.column;
-            var row = params.row;
-            if (column.field == 'add') {
+            var pcolumn = params.column;
+            var prow = params.row;
+            if (pcolumn.field == 'add') {
                 var idx = this.table.idx;
                 var fieldKey = "field" + idx;
                 var ordered = this.columns.length - 1;
@@ -139,12 +139,12 @@ export default {
                 this.table.columns = this.columns;
                 this.table.rows = this.rows;
                 this.$emit('updateTableEditor', this.table, this.rowKey, this.field);
-            } else if (row.key == 'remove') {
+            } else if (prow.key == 'remove') {
                 if (this.columns.length <= 2) {
                     return;
                 }
                 var idx = 0;
-                var key = column['field'];
+                var key = pcolumn['field'];
                 for (;idx < this.columns.length; idx++) {
                     if (this.columns[idx]['field'] == key) {
                         break;

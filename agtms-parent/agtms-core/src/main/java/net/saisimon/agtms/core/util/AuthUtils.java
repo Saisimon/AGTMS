@@ -15,6 +15,7 @@ import net.saisimon.agtms.core.factory.CacheFactory;
 public class AuthUtils {
 	
 	private static final long MAX_TOKEN_TIMEOUT = 30 * 60 * 1000;
+	public static final String AUTHORIZE_TOKEN = "X-TOKEN";
 	public static final String AUTHORIZE_UID = "X-UID";
 	
 	private AuthUtils() {

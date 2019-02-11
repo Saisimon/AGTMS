@@ -108,8 +108,6 @@ export default {
                     element.webkitRequestFullscreen();
                 } else if (element.msRequestFullscreen) {
                     element.msRequestFullscreen();
-                } else {
-                    console.log('not support fullscreen api');
                 }
             } else {
                 if (document.exitFullscreen) {
@@ -120,8 +118,6 @@ export default {
                     document.webkitExitFullscreen();
                 } else if (document.msExitFullscreen) {
                     document.msExitFullscreen();
-                } else {
-                    console.log('not support fullscreen api');
                 }
             }
         },
