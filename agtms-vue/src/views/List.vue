@@ -8,7 +8,8 @@
                 <b-col>
                     <!-- 标题 -->
                     <div class="card-header-title-container text-truncate">
-                        {{ header.title }}
+                        <b-link v-if="header.editUrl != null" :to="header.editUrl" >{{ header.title }}</b-link>
+                        <div v-else>{{ header.title }}</div>
                     </div>
                 </b-col>
                 <b-col v-if="functions.indexOf('create') !== -1">
@@ -31,8 +32,8 @@
                     {{ $t('filter') }}
                     <i class="fa fa-caret-down ml-1"></i>
                 </b-btn>
-                <b-collapse id="filterToggle" class="filter-toggle">
-                    <div class="mb-2" v-for="(filter, key) in filters" :key="key">
+                <b-collapse id="filterToggle" class="filter-toggle" :visible="showFilters">
+                    <div class="mb-2 filter-div" v-for="(filter, key) in filters" :key="key">
                         <b-input-group>
                             <b-input-group-text slot="prepend" class="filter-select-container">
                                 <multiselect class="filter-select" 
@@ -41,7 +42,7 @@
                                     track-by="value"
                                     select-label=""
                                     deselect-label=""
-                                    selectedLabel=""
+                                    selected-label=""
                                     :allow-empty="false"
                                     :searchable="false"
                                     :options="filter.key.options"
@@ -78,29 +79,80 @@
             </div>
             <!-- 列表 -->
             <div class="table-container">
-                <v-table ref="easyTable"
-                    is-horizontal-resize
-                    multiple-sort
-                    style="width:100%;margin-bottom:20px;"
-                    even-bg-color="rgba(0,0,0,0.05)"
-                    row-hover-color="rgba(0,0,0,0.1)"
-                    @sort-change="sortChange"
+                <vue-good-table
+                    mode="remote"
+                    styleClass="vgt-table striped bordered"
                     :is-loading="isLoading"
-                    :loading-content="'<i class=\'fa fa-circle-o-notch fa-spin fa-2x fa-fw\'></i>'"
-                    :error-content="$t('no_data')"
-                    :title-rows="titles"
                     :columns="columns"
-                    :table-data="datas"
-                    :column-cell-class-name="columnCellClass"
-                    :select-all="selectAll"
-                    :select-change="selectChange"
-                    @on-custom-comp="searchByFilters" />
-                <v-pagination :total="total"
-                    :page-size="pageable.pageSize"
-                    :page-index="pageable.pageIndex"
-                    :page-size-option="[10, 20, 50]"
-                    @page-change="pageChange" 
-                    @page-size-change="pageSizeChange" />
+                    :rows="datas"
+                    :totalRecords="total"
+                    :sort-options="sortOptions"
+                    :select-options="selectOptions"
+                    @on-select-all="selectAll"
+                    @on-selected-rows-change="selectChange"
+                    @on-sort-change="sortChange" >
+                    <div slot="loadingContent" class="text-center">
+                        <i class="fa fa-circle-o-notch fa-spin fa-2x fa-fw"></i>
+                    </div>
+                    <div slot="emptystate" class="text-center">
+                        {{ $t('no_data') }}
+                    </div>
+                    <b-row slot="table-actions-bottom" class="mt-2">
+                        <b-col>
+                            <div class="rows-div">{{ $t("total") }} {{ total }} {{ $t("rows") }}</div>
+                        </b-col>
+                        <b-col cols="8">
+                            <b-pagination :total-rows="total" :per-page="10" align="right" @change="pageChange"></b-pagination>
+                        </b-col>
+                    </b-row>
+                    <div slot="selected-row-actions">
+                        <template v-for="(batch, index) in batches" >
+                            <b-button :key="index" 
+                                :size="'sm'" 
+                                :variant="batch.variant" 
+                                @click="batch.click"
+                                v-b-tooltip.hover 
+                                :title="batch.text"
+                                class="ml-1">
+                                <i class="fa fa-fw" :class="batch.icon"></i>
+                            </b-button>
+                        </template>
+                    </div>
+                    <template slot="table-row" slot-scope="props">
+                        <span v-if="props.column.field == 'action'">
+                            <action-cell 
+                                :rowData="props.row" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex" 
+                                :actions="actions" 
+                                @succeed="searchByFilters" />
+                        </span>
+                        <span v-else-if="props.column.view == 'icon'">
+                            <icon-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex"  />
+                        </span>
+                        <span v-else-if="props.column.view == 'link'">
+                            <link-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex"  />
+                        </span>
+                        <span v-else-if="props.column.view == 'image'">
+                            <image-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex"  />
+                        </span>
+                        <span v-else>
+                            <text-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex" />
+                        </span>
+                    </template>
+                </vue-good-table>
             </div>
             <!-- 警告框 -->
             <div class="modal d-block" v-if="alert.dismissCountDown">
@@ -115,45 +167,34 @@
                     </b-alert>
                 </div>
             </div>
-            <!-- 尾部 -->
-            <b-row slot="footer" v-if="batches.length > 0">
-                <b-col>
-                    <!-- 批量操作 -->
-                    <b-dropdown variant="primary" right size="sm" 
-                        :text="$t('batch_action')"
-                        class="float-right">
-                        <b-dropdown-item href="javascript:void(0);" 
-                            v-for="(batch, index) in batches" 
-                            :key="index" 
-                            :class="batch.class"
-                            @click="batch.click"
-                            class="batch-action-btn"  >
-                            <i class="fa fa-fw" :class="batch.icon"></i>
-                            {{ batch.text }}
-                        </b-dropdown-item>
-                    </b-dropdown>
-                    <action-batch-remove 
-                        v-if="functions.indexOf('batchRemove') !== -1" 
-                        :model="showBatchRemoveModel"
-                        @on-custom-comp="searchByFilters" />
-                    <action-batch-edit 
-                        v-if="functions.indexOf('batchEdit') !== -1"
-                        :model="showBatchEditModel"
-                        @on-custom-comp="searchByFilters" />
-                    <action-export 
-                        v-if="functions.indexOf('export') !== -1" 
-                        :model="showExportModel" />
-                    <action-import 
-                        v-if="functions.indexOf('import') !== -1" 
-                        :model="showImportModel" />
-                </b-col>
-            </b-row>
+            <action-batch-remove 
+                v-if="functions.indexOf('batchRemove') !== -1" 
+                :model="showBatchRemoveModel"
+                @succeed="searchByFilters" />
+            <action-batch-edit 
+                v-if="functions.indexOf('batchEdit') !== -1"
+                :model="showBatchEditModel"
+                :batchEdit="batchEdit"
+                :selects="selects"
+                @succeed="searchByFilters" />
+            <action-export 
+                v-if="functions.indexOf('export') !== -1" 
+                :model="showExportModel"
+                :batchExport="batchExport"
+                :selects="selects"
+                :filter="searchFilters()"
+                @succeed="searchByFilters" />
+            <action-import 
+                v-if="functions.indexOf('import') !== -1" 
+                :model="showImportModel"
+                :batchImport="batchImport"
+                :selects="selects"
+                @succeed="searchByFilters" />
         </b-card>
     </div>
 </template>
 
-<script> 
-import Vue from 'vue'
+<script>
 import SearchFilterText from '@/components/filter/SearchFilterText.vue'
 import SearchFilterSelect from '@/components/filter/SearchFilterSelect.vue'
 import SearchFilterRange from '@/components/filter/SearchFilterRange.vue'
@@ -171,10 +212,9 @@ export default {
     name: 'list',
     beforeRouteUpdate: function(to, from, next) {
         this.$store.commit('initState');
-        if (this.$store.state.base.token !== '') {
+        if (this.$store.state.base.user != null) {
             var vm = this;
             this.$store.dispatch('getMainGrid', to.path).then(() => {
-                vm.$refs.easyTable.resize();
                 vm.$store.dispatch('getDatas', {
                     url: to.path,
                     filters: vm.searchFilters(),
@@ -191,7 +231,12 @@ export default {
         'action-batch-remove': ActionBatchRemove,
         'action-batch-edit': ActionBatchEdit,
         'action-export': ActionExport,
-        'action-import': ActionImport
+        'action-import': ActionImport,
+        'action-cell': ActionCell,
+        'icon-cell': IconCell,
+        'link-cell': LinkCell,
+        'image-cell': ImageCell,
+        'text-cell': TextCell
     },
     computed: {
         header: function() {
@@ -214,7 +259,7 @@ export default {
                 switch (func) {
                     case 'batchEdit':
                         batches.push({
-                            class: '',
+                            variant:'outline-primary',
                             text: this.$t('batch_edit'),
                             icon: 'fa-edit',
                             click: this.batchEditClick
@@ -222,7 +267,7 @@ export default {
                         break;
                     case 'batchRemove':
                         batches.push({
-                            class: 'text-danger',
+                            variant:'outline-danger',
                             text: this.$t('batch_remove'),
                             icon: 'fa-trash',
                             click: this.batchRemoveClick
@@ -230,7 +275,7 @@ export default {
                         break;
                     case 'export':
                         batches.push({
-                            class: '',
+                            variant:'outline-secondary',
                             text: this.$t('export'),
                             icon: 'fa-download',
                             click: this.exportClick
@@ -238,7 +283,7 @@ export default {
                         break;
                     case 'import':
                         batches.push({
-                            class: '',
+                            variant:'outline-secondary',
                             text: this.$t('import'),
                             icon: 'fa-upload',
                             click: this.importClick
@@ -251,72 +296,45 @@ export default {
             return batches;
         },
         filters: function() {
+            this.showFilters = this.$store.state.list.showFilters;
             return this.$store.state.list.filters;
-        },
-        titles: function() {
-            var titles = this.$store.state.list.titles;
-            if (titles != null && titles.length > 0) {
-                var firstTitle = titles[0];
-                if (this.batches.length > 0) {
-                    var selectionTitle = {
-                        fields: ["id"], 
-                        title: '', 
-                        titleAlign: 'center', 
-                        rowspan: 2
-                    };
-                    firstTitle.splice(0, 0, selectionTitle);
-                }
-                var actionTitle = {
-                    fields: ["actions"], 
-                    title: this.$t('action'), 
-                    titleAlign: 'right',
-                    rowspan: 2
-                }
-                firstTitle.push(actionTitle);
-            }
-            return titles;
         },
         columns: function() {
             var columns = this.$store.state.list.columns;
+            var sortable = false;
+            var initialSortBy = [];
             for (var i in columns) {
                 var column = columns[i];
-                column['isResize'] = true;
-                switch (column['view']) {
-                    case 'icon':
-                        column['componentName'] = 'icon-cell';
-                        break;
-                    case 'image':
-                        column['componentName'] = 'image-cell';
-                        break;
-                    case 'link':
-                        column['componentName'] = 'link-cell';
-                        break;
-                    default:
-                        column['componentName'] = 'text-cell';
-                        break;
+                if (column.sortable) {
+                    sortable = true;
+                    if (column.orderBy && column.orderBy !== '') {
+                        initialSortBy.push({
+                            field: column.field,
+                            type: column.orderBy
+                        });
+                    }
                 }
             }
-            if (this.batches.length > 0) {
-                var selection = {
-                    field: 'id',
-                    width: 50, 
-                    titleAlign: 'center', 
-                    columnAlign: 'center', 
-                    type: 'selection',
-                    isFrozen: true
-                };
-                columns.splice(0, 0, selection);
+            if (sortable) {
+                this.sortOptions.enabled = true;
+                this.sortOptions['initialSortBy'] = initialSortBy;
             }
-            var actions = {
-                field: 'actions',
-                title: this.$t('action'),
-                width: 100,
-                titleAlign: 'right',
-                columnAlign: 'right',
-                componentName: 'action-cell'
-            };
-            columns.push(actions);
+            if (this.batches.length > 0) {
+                this.selectOptions.enabled = true;
+            }
             return columns;
+        },
+        actions: function() {
+            return this.$store.state.list.actions;
+        },
+        batchEdit: function() {
+            return this.$store.state.list.batchEdit;
+        },
+        batchExport: function() {
+            return this.$store.state.list.batchExport;
+        },
+        batchImport: function() {
+            return this.$store.state.list.batchImport;
         },
         datas: function() {
             return this.$store.state.list.datas;
@@ -330,28 +348,11 @@ export default {
     },
     created: function() {
         var vm = this;
-        vm.$store.watch(function(state) {
-            return state.navigate.openTree;
-        }, function() {
-            setTimeout(function() {
-                if (vm.$refs.easyTable) {
-                    vm.$refs.easyTable.resize();
-                }
-            }, 300);
-        });
-        window.onresize = function() {
-            setTimeout(function() {
-                if (vm.$refs.easyTable) {
-                    vm.$refs.easyTable.resize();
-                }
-            }, 300);
-        };
         this.$store.commit('initState');
-        if (this.$store.state.base.token !== '') {
+        if (this.$store.state.base.user != null) {
             this.$store.dispatch('getMainGrid', this.$route.path).then(() => {
-                vm.$refs.easyTable.resize();
                 vm.searchByFilters();
-            });;
+            });
         }
     },
     data: function() {
@@ -373,7 +374,17 @@ export default {
                 dismissCountDown: 0,
                 variant: 'danger',
                 text: ''
-            }
+            },
+            sortOptions: {
+                enabled: false
+            },
+            selectOptions: {
+                enabled: false,
+                selectionText: this.$t('rows_selected'),
+                clearSelectionText: '',
+            },
+            selects: [],
+            showFilters: false
         }
     },
     methods: {
@@ -384,21 +395,24 @@ export default {
         },
         batchEditClick: function() {
             if (this.checkSelect()) {
+                this.$store.dispatch('getBatchGrid', this.$route.path);
                 this.showBatchEditModel.show = true;
             }
         },
         exportClick: function() {
             if (this.checkSelect()) {
+                this.$store.dispatch('getBatchGrid', this.$route.path);
                 this.showExportModel.show = true;
             }
         },
         importClick: function() {
             if (this.checkSelect()) {
+                this.$store.dispatch('getBatchGrid', this.$route.path);
                 this.showImportModel.show = true;
             }
         },
         checkSelect: function() {
-            if (this.$store.state.list.selects.length == 0) {
+            if (this.selects.length == 0) {
                 this.alert.text = this.$t("notselected");
                 this.alert.dismissCountDown = this.alert.dismissSecs;
                 return false;
@@ -406,11 +420,11 @@ export default {
                 return true;
             }
         },
-        selectAll: function(selection) {
-            this.select(selection);
+        selectAll: function(params) {
+            this.select(params.selectedRows);
         },
-        selectChange: function(selection, rowData) {
-            this.select(selection);
+        selectChange: function(params) {
+            this.select(params.selectedRows);
         },
         select: function(selection) {
             var selects = [];
@@ -420,10 +434,10 @@ export default {
                     selects.push(sel.id);
                 }
             }
-            this.$store.commit('setSelects', selects);
+            this.selects = selects;
         },
         columnCellClass: function(rowIndex, columnName, rowData) {
-            if (columnName === 'actions') {
+            if (columnName === 'action') {
                 return 'table-actions-cell';
             }
         },
@@ -432,7 +446,7 @@ export default {
             this.searchByFilters();
         },
         pageSizeChange: function(pageSize) {
-            this.$store.commit('setPageSize', pageSize);
+            this.$store.commit('setPageSize', params.pageSize);
             this.searchByFilters();
         },
         sortChange: function(params) {
@@ -505,7 +519,7 @@ export default {
             var filters = [];
             var filter = {};
             filter['key'] = fieldName;
-            filter['type'] = fieldFilter.input.javaType;
+            filter['type'] = fieldFilter.input.type;
             filter['operator'] = '$eq';
             filter['value'] = text;
             var operator = fieldFilter.operator.selected.value;
@@ -529,7 +543,7 @@ export default {
             var filters = [];
             var filter = {};
             filter['key'] = fieldName;
-            filter['type'] = fieldFilter.select.javaType;
+            filter['type'] = fieldFilter.select.type;
             if (fieldFilter.multiple) {
                 filter['operator'] = '$in';
                 var selectedValues = [];
@@ -554,7 +568,7 @@ export default {
                     fromText = new Number(fromText);
                 }
                 filter['key'] = fieldName;
-                filter['type'] = fieldFilter.from.javaType;
+                filter['type'] = fieldFilter.from.type;
                 filter['operator'] = '$gte';
                 filter['value'] = fromText;
                 filters.push(filter);
@@ -565,7 +579,7 @@ export default {
                     toText = new Number(toText);
                 }
                 filter['key'] = fieldName;
-                filter['type'] = fieldFilter.to.javaType;
+                filter['type'] = fieldFilter.to.type;
                 filter['operator'] = '$lte';
                 filter['value'] = toText;
                 filters.push(filter);
@@ -574,15 +588,12 @@ export default {
         }
     }
 }
-
-Vue.component('action-cell', ActionCell);
-Vue.component('icon-cell', IconCell);
-Vue.component('link-cell', LinkCell);
-Vue.component('image-cell', ImageCell);
-Vue.component('text-cell', TextCell);
 </script>
 
 <style>
+.breadcrumb {
+    padding: 0.75rem 1.25rem!important;
+}
 .card-header-title-container {
     height: 31px;
     line-height: 31px;
@@ -627,56 +638,51 @@ Vue.component('text-cell', TextCell);
     height: 40px!important;
     border: 1px solid #e8e8e8!important;
 }
-.v-table-class{
-    overflow: visible !important;
+.table-container {
+    padding-bottom: 44px;
+}
+.rows-div {
     font-size: 14px;
+    line-height: 38px;
+    height: 38px;
 }
-.v-table-title-class {
-    font-weight: 800;
-    background-color: rgba(0, 0, 0, 0.05)!important;
+.vgt-selection-info-row {
+    background-color: #fff!important;
+    color: #606266!important;
+    line-height: 30px!important;
+    height: 44px;
+    padding: 5px .5em!important;
+    position: absolute;
+    width: 100%;
 }
-.v-table-title-cell, .v-table-body-cell {
-    overflow: visible !important;
-    padding: 0 10px !important;
+.vgt-responsive {
+    top: 44px;
 }
-.v-table-empty-content {
-    overflow: visible !important;
-    border-bottom: 1px solid rgba(221, 221, 221, 1) !important;
-    top: 78px!important;
+.vgt-wrap__actions-footer {
+    border: 0px!important;
+    top: 44px;
+    position: relative;
 }
-.v-table-empty-scroll {
-    top: 90px!important;
+table.vgt-table {
+    font-size: 14px!important;
 }
-.v-checkbox-wrapper {
-    margin: 0px !important;
+table.vgt-table .vgt-left-align {
+    vertical-align: inherit!important;
+    padding: 0.5em!important;
+    min-width: 50px;
 }
-.v-table-body-class {
-    min-height: 200px;
+table.vgt-table .sorting {
+    padding-right: 1.5em!important;
 }
-.v-table-views {
-    overflow: visible !important;
-    border: 0px !important;
-    border-top: 1px solid rgba(221, 221, 221, 1) !important;
-    min-height: 280px;
+table.vgt-table .vgt-right-align {
+    vertical-align: inherit!important;
+    padding: 0.5em;
+    min-width: 100px;
 }
-.table-actions-cell .v-table-body-cell {
-    overflow: visible !important;
+table.vgt-table th {
+    height: 40px;
 }
-.v-page-li-active a {
-    color: #fff!important;
-}
-.v-page--middle .v-page-li i {
-    font-size: 100%!important;
-}
-.v-select-selected-span {
-    font-weight: 400;
-}
-.v-table-sort-icon {
-    font-size: 16px!important;
-    margin-left: 0px!important;
-}
-.v-page-li-active {
-    background-color: #3c8dbc!important;
-    border-color: #3c8dbc!important;
+.batch-action-btn {
+    margin: 0px!important;
 }
 </style>

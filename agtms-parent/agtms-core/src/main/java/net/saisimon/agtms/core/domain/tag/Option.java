@@ -13,9 +13,16 @@ public class Option<T> implements Cloneable {
 	
 	private String text;
 	
+	private boolean disable;
+	
 	public Option(T value, String text) {
+		this(value, text, false);
+	}
+	
+	public Option(T value, String text, boolean disable) {
 		this.value = value;
 		this.text = text;
+		this.disable = disable;
 	}
 	
 	@Override

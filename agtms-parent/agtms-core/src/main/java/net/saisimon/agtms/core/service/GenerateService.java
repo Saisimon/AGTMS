@@ -9,25 +9,27 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
-import net.saisimon.agtms.core.dto.UserInfo;
-import net.saisimon.agtms.core.enums.DataSources;
+import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
+import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
-import net.saisimon.agtms.core.util.TokenUtils;
 
 public interface GenerateService {
 	
 	AbstractGenerateRepository getRepository();
 	
-	DataSources key();
+	Sign sign();
 	
 	Boolean saveOrUpdate(Domain domain);
+	
+	void updateDomain(Long id, Map<String, Object> updateMap);
 	
 	default Domain findById(Long id, Long userId) {
 		if (id == null) {
@@ -38,7 +40,7 @@ public interface GenerateService {
 		Optional<Domain> optional = repository.findById(id);
 		if (optional.isPresent()) {
 			Domain domain = optional.get();
-			Object obj = domain.getField(AbstractGenerateRepository.CREATOR);
+			Object obj = domain.getField(Constant.OPERATORID);
 			String creator = obj == null ? "" : obj.toString();
 			if (userId.toString().equals(creator)) {
 				return domain;
@@ -55,9 +57,8 @@ public interface GenerateService {
 		Set<String> uniques = TemplateUtils.getUniques(template);
 		if (CollectionUtils.isNotEmpty(uniques)) {
 			for (String fieldName : uniques) {
-				FilterRequest filter = FilterRequest.build().and(AbstractGenerateRepository.CREATOR, template.getUserId()).and(fieldName, domain.getField(fieldName));
-				boolean exist = repository.exists(filter);
-				if (exist) {
+				FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, template.getOperatorId()).and(fieldName, domain.getField(fieldName));
+				if (repository.exists(filter)) {
 					return true;
 				}
 			}
@@ -69,7 +70,7 @@ public interface GenerateService {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		fillCommonFields(domain, null);
+		DomainUtils.fillCommonFields(domain, null);
 		return saveOrUpdate(domain);
 	}
 	
@@ -77,15 +78,8 @@ public interface GenerateService {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		fillCommonFields(domain, oldDomain);
+		DomainUtils.fillCommonFields(domain, oldDomain);
 		return saveOrUpdate(domain);
-	}
-	
-	default void updateDomain(Long id, Map<String, Object> updateMap) {
-		AbstractGenerateRepository repository = getRepository();
-		Assert.notNull(repository, "repository can not be null");
-		FilterRequest filter = FilterRequest.build().and("id", id);
-		repository.batchUpdate(filter, updateMap);
 	}
 	
 	default Domain newGenerate() throws GenerateException {
@@ -131,22 +125,6 @@ public interface GenerateService {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		repository.init(template);
-	}
-	
-	default void fillCommonFields(Domain newDomain, Domain oldDomain) {
-		Long time = System.currentTimeMillis();
-		if (oldDomain == null) {
-			newDomain.setField(AbstractGenerateRepository.CTIME, time, Long.class);
-			UserInfo userInfo = TokenUtils.getUserInfo();
-			if (userInfo != null) {
-				newDomain.setField(AbstractGenerateRepository.CREATOR, userInfo.getUserId(), Long.class);
-			}
-		} else {
-			newDomain.setField("id", oldDomain.getField("id"), Long.class);
-			newDomain.setField(AbstractGenerateRepository.CTIME, oldDomain.getField(AbstractGenerateRepository.CTIME), Long.class);
-			newDomain.setField(AbstractGenerateRepository.CREATOR, oldDomain.getField(AbstractGenerateRepository.CREATOR), Long.class);
-		}
-		newDomain.setField(AbstractGenerateRepository.UTIME, time, Long.class);
 	}
 	
 }

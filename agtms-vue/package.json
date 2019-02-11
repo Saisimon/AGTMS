@@ -13,12 +13,15 @@
     "es6-promise": "^4.2.5",
     "font-awesome": "^4.7.0",
     "vue": "^2.5.17",
-    "vue-easytable": "^1.7.1",
+    "vue-good-table": "^2.16.0",
     "vue-i18n": "^8.1.0",
     "vue-lazyload": "^1.2.6",
     "vue-multiselect": "^2.1.3",
     "vue-router": "^3.0.1",
+    "vuedraggable": "^2.17.0",
     "vuejs-datepicker": "^1.5.3",
+    "vuejs-paginate": "^2.1.0",
+    "vuetable-2": "^1.7.5",
     "vuex": "^3.0.1"
   },
   "devDependencies": {

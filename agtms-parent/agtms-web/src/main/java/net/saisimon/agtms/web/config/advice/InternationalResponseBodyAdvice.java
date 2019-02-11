@@ -22,7 +22,7 @@ import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJack
 
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.International;
-import net.saisimon.agtms.web.dto.resp.common.Result;
+import net.saisimon.agtms.core.dto.Result;
 
 @ControllerAdvice
 @Slf4j

@@ -10,16 +10,16 @@ import net.saisimon.agtms.jpa.repository.base.BaseJpaRepository;
 @Repository
 public interface NavigationJpaRepository extends BaseJpaRepository<Navigation, Long> {
 	
-	List<Navigation> findByBelong(Long userId);
+	List<Navigation> findByOperatorId(Long operatorId);
 	
-	List<Navigation> findByIdInAndBelong(List<Long> ids, Long userId);
+	List<Navigation> findByIdInAndOperatorId(List<Long> ids, Long operatorId);
 	
-	Navigation findByIdAndBelong(Long id, Long userId);
+	Navigation findByIdAndOperatorId(Long id, Long operatorId);
 	
-	Navigation findByTitleAndBelong(String title, Long userId);
+	Navigation findByTitleAndOperatorId(String title, Long operatorId);
 	
-	boolean existsByTitleAndBelong(String title, Long userId);
+	boolean existsByTitleAndOperatorId(String title, Long operatorId);
 	
-	List<Navigation> findByParentIdAndBelong(Long parentId, Long userId);
+	List<Navigation> findByParentIdAndOperatorId(Long parentId, Long operatorId);
 	
 }

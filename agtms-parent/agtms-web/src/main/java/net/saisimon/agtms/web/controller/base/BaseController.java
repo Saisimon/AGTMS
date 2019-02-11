@@ -1,6 +1,7 @@
 package net.saisimon.agtms.web.controller.base;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -12,6 +13,8 @@ public abstract class BaseController {
 	private MessageSource messageSource;
 	@Autowired
 	protected HttpServletRequest request;
+	@Autowired
+	protected HttpServletResponse response;
 	
 	protected String getMessage(String code, Object... args) {
 		return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());

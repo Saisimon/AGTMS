@@ -7,7 +7,7 @@
             </label>
         </b-col>
         <b-col sm="10">
-            <b-form-input :id="field.name + '-input'" v-model.trim="field.value" :state="field.state" :type="field.type" />
+            <b-form-input :id="field.name + '-input'" v-model.trim="field.value" :state="field.state" :type="type" />
             <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required">
                 {{ $t('please_input_valid') }}{{ field.text }}
             </b-form-invalid-feedback>
@@ -18,6 +18,21 @@
 <script>
 export default {
     name: 'text-form',
-    props: [ 'field' ]
+    props: [ 'field' ],
+    data: function() {
+        var type = 'text';
+        if (this.field) {
+            if (this.field.type == 'int' || this.field.type == 'double') {
+                type = 'number';
+            } else if (this.field.view == 'link' || this.field.view == 'image') {
+                type = 'url';
+            } else if (this.field.view == 'email') {
+                type = 'email';
+            }
+        }
+        return {
+            type: type
+        }
+    }
 }
 </script>

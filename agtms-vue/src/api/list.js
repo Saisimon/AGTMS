@@ -1,21 +1,33 @@
 import request from './request'
 
-export function list(token, payload) {
-    return request(token, payload.url + '/list?index=' + payload.pageable.index + '&size=' + payload.pageable.size + '&sort=' + payload.pageable.sort, payload.filters);
+export function list(user, payload) {
+    return request(user, payload.url + '/list?index=' + payload.pageable.index + '&size=' + payload.pageable.size + '&sort=' + payload.pageable.sort, payload.filters);
 }
 
-export function mainGrid(token, url) {
-    return request(token, url + '/grid');
+export function mainGrid(user, url) {
+    return request(user, url + '/grid');
 }
 
-export function remove(token, url, id) {
-    return request(token, url + '/remove?id=' + id);
+export function remove(user, url, id) {
+    return request(user, url + '/remove?id=' + id);
 }
 
-export function batchRemove(token, url, ids) {
-    return request(token, url + '/batch/remove', ids);
+export function batchGrid(user, url) {
+    return request(user, url + '/batch/grid');
 }
 
-export function batchSave(token, url, data) {
-    return request(token, url + '/batch/save', data);
+export function batchRemove(user, url, ids) {
+    return request(user, url + '/batch/remove', ids);
+}
+
+export function batchSave(user, url, data) {
+    return request(user, url + '/batch/save', data);
+}
+
+export function batchExport(user, url, data) {
+    return request(user, url + '/batch/export', data);
+}
+
+export function download(user, url, id) {
+    return request(user, url + '/download?id=' + id);
 }

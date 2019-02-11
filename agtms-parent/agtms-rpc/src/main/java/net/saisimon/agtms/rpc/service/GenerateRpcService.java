@@ -11,7 +11,7 @@ import org.springframework.util.Assert;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
-import net.saisimon.agtms.core.enums.DataSources;
+import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.util.TemplateUtils;
@@ -20,6 +20,8 @@ import net.saisimon.agtms.rpc.repository.GenerateRpcRepository;
 @Slf4j
 @Service
 public class GenerateRpcService implements GenerateService {
+	
+	private static final Sign RPC_SIGN = Sign.builder().name("rpc").text("rpc").build();
 	
 	@Autowired
 	private GenerateRpcRepository generateRpcRepository;
@@ -30,8 +32,8 @@ public class GenerateRpcService implements GenerateService {
 	}
 	
 	@Override
-	public DataSources key() {
-		return DataSources.RPC;
+	public Sign sign() {
+		return RPC_SIGN;
 	}
 	
 	@Override

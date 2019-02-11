@@ -22,6 +22,7 @@ import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
+import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 
 public class MongodbFilterUtils {
@@ -73,7 +74,7 @@ public class MongodbFilterUtils {
 		String type = param.getType();
 		if (StringUtils.isNotBlank(key) && value != null) {
 			criteria = Criteria.where(key);
-			value = parseValue(value, type);
+			value = DomainUtils.parseFieldValue(value, type);
 			switch (operator) {
 			case LT:
 				criteria.lt(value);
@@ -129,29 +130,6 @@ public class MongodbFilterUtils {
 			}
 		}
 		return criteria;
-	}
-	
-	private static Object parseValue(Object value, String type) {
-		switch (type) {
-		case "java.lang.Integer":
-		case "Integer":
-		case "int":
-			return Integer.parseInt(value.toString());
-		case "java.lang.Long":
-		case "Long":
-		case "long":
-			return Long.parseLong(value.toString());
-		case "java.lang.Double":
-		case "Double":
-		case "double":
-			return Double.parseDouble(value.toString());
-		case "java.lang.Boolean":
-		case "Boolean":
-		case "boolean":
-			return Boolean.parseBoolean(value.toString());
-		default:
-			return value;
-		}
 	}
 	
 }

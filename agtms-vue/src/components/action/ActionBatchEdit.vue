@@ -1,5 +1,5 @@
 <template>
-    <div class="batch-edit-container">
+    <div class="batch-edit-container" v-if="batchEdit">
         <b-modal v-model="model.show"
             :title="$t('batch_edit')"
             size="lg"
@@ -7,14 +7,8 @@
             button-size="sm">
             <div class="form-container">
                 <b-row class="mb-3">
-                    <b-col sm="2">
-                        <label for="select-input" class="form-label">
-                            {{$t('select_edit_fields')}}
-                        </label>
-                    </b-col>
-                    <b-col sm="10">
-                        <multiselect class="filter-select"
-                            v-model="editFieldSelects"
+                    <b-col>
+                        <multiselect v-model="editFieldSelects"
                             label="text"
                             track-by="value"
                             select-label=""
@@ -22,32 +16,21 @@
                             selectedLabel=""
                             :searchable="false"
                             :multiple="true"
-                            :options="editFieldOptions"
-                            :placeholder="''" />
+                            :options="batchEdit.editFieldOptions"
+                            :placeholder="$t('select_edit_fields')" />
                     </b-col>
                 </b-row>
-                <b-row class="mb-3" v-for="(editFieldSelect, index) in editFieldSelects" :key="index">
-                    <b-col sm="2">
-                        <label class="form-label">
-                            {{editFieldSelect.text}}
-                            <span class="text-danger" v-if="editFields[editFieldSelect.value].required">*</span>
-                        </label>
-                    </b-col>
-                    <b-col sm="10">
-                        <b-form-input 
-                            v-model.trim="editFields[editFieldSelect.value].value" 
-                            :state="editFields[editFieldSelect.value].state"
-                            :type="editFields[editFieldSelect.value].type" />
-                        <b-form-invalid-feedback v-if="editFields[editFieldSelect.value].required">
-                            {{$t('please_input_valid')}}{{editFieldSelect.text}}
-                        </b-form-invalid-feedback>
-                    </b-col>
-                </b-row>
+                <template v-for="(editFieldSelect, index) in editFieldSelects" >
+                    <select-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-if="batchEdit.editFields[editFieldSelect.value].type == 'select'" />
+                    <date-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].type == 'date'" />
+                    <textarea-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].view == 'textarea'" />
+                    <icon-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].view == 'icon'" />
+                    <text-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else />
+                </template>
                 <b-row class="mb-3" v-if="editFieldSelects.length > 0">
-                    <b-col class="text-right" sm="12">
+                    <b-col class="text-right">
                         <b-button variant="primary" 
-                            @click="batchEdit"
-                            size="sm">
+                            @click="save">
                             <i class="fa fa-fw fa-save"></i>
                             {{ $t("confirm_save") }}
                         </b-button>
@@ -59,24 +42,46 @@
 </template>
 
 <script>
+import TextForm from '@/components/form/TextForm.vue'
+import TextareaForm from '@/components/form/TextareaForm.vue'
+import IconForm from '@/components/form/IconForm.vue'
+import SelectForm from '@/components/form/SelectForm.vue'
+import DateForm from '@/components/form/DateForm.vue'
+
 export default {
     name: 'action-batch-edit',
+    components: {
+        'text-form': TextForm,
+        'textarea-form': TextareaForm,
+        'icon-form': IconForm,
+        'select-form': SelectForm,
+        'date-form': DateForm
+    },
+    props: [
+        "batchEdit", 
+        "selects",
+        "model"
+    ],
+    data: function() {
+        return {
+            editFieldSelects: []
+        }
+    },
     methods: {
-        batchEdit: function() {
-            var selects = this.$store.state.list.selects;
+        save: function() {
             var data = {
-                ids: selects
+                ids: this.selects
             }
             var pass = true;
             for (var i in this.editFieldSelects) {
                 var editFieldSelect = this.editFieldSelects[i];
                 var key = editFieldSelect.value;
-                var value = this.editFields[key].value;
-                if (this.editFields[key].required && (value == undefined || value == "")) {
+                var value = this.batchEdit.editFields[key].value;
+                if (this.batchEdit.editFields[key].required && (value == undefined || value == "")) {
                     pass = false;
-                    this.editFields[key].state = false;
+                    this.batchEdit.editFields[key].state = false;
                 } else {
-                    this.editFields[key].state = null;
+                    this.batchEdit.editFields[key].state = null;
                     data[key] = value;
                 }
             }
@@ -88,37 +93,11 @@ export default {
                     var data = resp.data;
                     if (data.code === 0) {
                         this.model.show = false;
-                        this.$emit('on-custom-comp');
+                        this.$emit('succeed');
                     }
                 });
             }
         }
-    },
-    data: function() {
-        return {
-            editFieldSelects: [],
-            editFieldOptions: [
-                { value: 'parentId', text: this.$t('parent_navigate'), $isDisabled: true },
-                { value: 'icon', text: this.$t('icon') },
-                { value: 'title', text: this.$t('title'), $isDisabled: true },
-                { value: 'priority', text: this.$t('priority') }
-            ],
-            editFields: {
-                icon: {
-                    required: true,
-                    state: null,
-                    type: 'text',
-                    value: ''
-                },
-                priority: {
-                    required: false,
-                    state: null,
-                    type: 'number',
-                    value: 0
-                }
-            }
-        }
-    },
-    props: ['model']
+    }
 }
 </script>

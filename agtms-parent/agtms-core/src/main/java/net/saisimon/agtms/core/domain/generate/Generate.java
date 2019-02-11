@@ -2,34 +2,34 @@ package net.saisimon.agtms.core.domain.generate;
 
 public class Generate {
 	
-	private Long creator;
+	private Long operatorId;
 	
-	private Long ctime;
+	private Long createTime;
 	
-	private Long utime;
+	private Long updateTime;
 	
-	public Long getCreator() {
-		return creator;
+	public Long getOperatorId() {
+		return operatorId;
 	}
 	
-	public void setCreator(Long creator) {
-		this.creator = creator;
+	public void setOperatorId(Long operatorId) {
+		this.operatorId = operatorId;
 	}
 
-	public Long getCtime() {
-		return ctime;
+	public Long getCreateTime() {
+		return createTime;
 	}
 
-	public void setCtime(Long ctime) {
-		this.ctime = ctime;
+	public void setCreateTime(Long createTime) {
+		this.createTime = createTime;
 	}
 
-	public Long getUtime() {
-		return utime;
+	public Long getUpdateTime() {
+		return updateTime;
 	}
 
-	public void setUtime(Long utime) {
-		this.utime = utime;
+	public void setUpdateTime(Long updateTime) {
+		this.updateTime = updateTime;
 	}
 
 }

@@ -10,9 +10,9 @@ import lombok.Data;
 @Data
 public class Select<T> implements Cloneable {
 	
-	private Class<?> javaType;
-	
 	private List<Option<T>> options;
+	
+	private String type;
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -36,6 +36,31 @@ public class Select<T> implements Cloneable {
 			options.add(option);
 		}
 		return options;
+	}
+	
+	public static <T> Option<T> getOption(List<Option<T>> options, T key) {
+		if (key == null) {
+			return null;
+		}
+		for (Option<T> option : options) {
+			if (key.equals(option.getValue())) {
+				return option;
+			}
+		}
+		return null;
+	}
+	
+	public static <T> List<Option<T>> getOption(List<Option<T>> options, List<T> keys) {
+		if (keys == null) {
+			return null;
+		}
+		List<Option<T>> selected = new ArrayList<>();
+		for (Option<T> option : options) {
+			if (keys.contains(option.getValue())) {
+				selected.add(option);
+			}
+		}
+		return selected;
 	}
 	
 }

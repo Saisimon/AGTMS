@@ -10,6 +10,6 @@ import net.saisimon.agtms.api.hystrix.UserHystrixFallback;
 public interface UserInterface {
 	
 	@PostMapping("/api/check/token")
-	boolean checkToken(@RequestParam("token") String token);
+	boolean checkToken(@RequestParam("uid") String uid, @RequestParam("token") String token);
 	
 }

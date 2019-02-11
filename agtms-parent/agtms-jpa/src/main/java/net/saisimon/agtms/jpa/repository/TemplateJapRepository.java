@@ -10,8 +10,8 @@ import net.saisimon.agtms.jpa.repository.base.BaseJpaRepository;
 @Repository
 public interface TemplateJapRepository extends BaseJpaRepository<Template, Long> {
 	
-	List<Template> findByNavigationIdAndUserId(Long navigationId, Long userId);
+	List<Template> findByNavigationIdAndOperatorId(Long navigationId, Long operatorId);
 	
-	boolean existsByTitleAndUserId(String title, Long userId);
+	boolean existsByTitleAndOperatorId(String title, Long operatorId);
 	
 }

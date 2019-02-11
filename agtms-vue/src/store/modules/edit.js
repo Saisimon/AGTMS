@@ -7,11 +7,6 @@ const state = {
 };
 
 const mutations = {
-    initReset(state, reset) {
-        if (reset) {
-            state.reset = reset;
-        }
-    },
     setBreadcrumbs(state, breadcrumbs) {
         if (breadcrumbs) {
             state.breadcrumbs = breadcrumbs;
@@ -26,10 +21,10 @@ const mutations = {
 
 const actions = {
     getEditGrid(context, payload) {
-        return editGrid(context.rootState.base.token, payload.url, payload.id);
+        return editGrid(context.rootState.base.user, payload.url, payload.id);
     },
     saveData(context, payload) {
-        return save(context.rootState.base.token, payload.url, payload.data);
+        return save(context.rootState.base.user, payload.url, payload.data);
     }
 };
 

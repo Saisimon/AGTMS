@@ -19,10 +19,6 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 
 public abstract class AbstractGenerateRepository implements BaseRepository<Domain, Long> {
 	
-	public static final String CREATOR = "creator";
-	public static final String CTIME = "ctime";
-	public static final String UTIME = "utime";
-	
 	private ThreadLocal<Template> local = new ThreadLocal<>();
 	
 	public void init(Template template) {

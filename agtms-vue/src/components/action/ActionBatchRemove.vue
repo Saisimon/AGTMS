@@ -26,8 +26,8 @@ export default {
             }).then(resp => {
                 var data = resp.data;
                 if (data.code === 0) {
-                    this.$emit('on-custom-comp');
-                    if (this.$route.params.module === 'navigate') {
+                    this.$emit('succeed');
+                    if (this.$route.params.module === 'navigation') {
                         this.$store.dispatch('getTrees');
                     }
                 }

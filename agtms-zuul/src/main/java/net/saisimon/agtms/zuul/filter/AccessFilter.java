@@ -18,6 +18,9 @@ import net.saisimon.agtms.zuul.config.WhiteList;
 @Component
 public class AccessFilter extends ZuulFilter {
 	
+	private static final String AUTHORIZE_TOKEN = "X-TOKEN";
+	private static final String AUTHORIZE_UID = "X-UID";
+	
 	@Autowired
 	private WhiteList whiteList;
 	@Autowired
@@ -39,15 +42,19 @@ public class AccessFilter extends ZuulFilter {
 	public Object run() throws ZuulException {
 		RequestContext ctx = RequestContext.getCurrentContext();
 		HttpServletRequest request = ctx.getRequest();
-		String token = request.getHeader("X-TOKEN");
+		String token = request.getHeader(AUTHORIZE_TOKEN);
 		if (StringUtils.isEmpty(token)) {
-			token = request.getParameter("X-TOKEN");
+			token = request.getParameter(AUTHORIZE_TOKEN);
 		}
-		if (StringUtils.isEmpty(token)) {
+		String uid = request.getHeader(AUTHORIZE_UID);
+		if (StringUtils.isEmpty(uid)) {
+			uid = request.getParameter(AUTHORIZE_UID);
+		}
+		if (StringUtils.isEmpty(token) || StringUtils.isEmpty(uid)) {
 			accessDenied(ctx);
 			return null;
 		}
-		if (!userInterface.checkToken(token)) {
+		if (!userInterface.checkToken(uid, token)) {
 			accessDenied(ctx);
 			return null;
 		}

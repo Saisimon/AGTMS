@@ -1,4 +1,4 @@
-import { list, mainGrid, remove, batchRemove, batchSave } from '@/api/list'
+import { list, mainGrid, remove, batchGrid, batchRemove, batchSave, batchExport, download } from '@/api/list'
 
 const state = {
     isLoading: true,
@@ -6,11 +6,14 @@ const state = {
         title: ''
     },
     breadcrumbs:[],
-    selects:[],
     functions: [],
+    showFilters: false,
     filters: [],
-    titles: [],
     columns: [],
+    actions: null,
+    batchEdit: null,
+    batchExport: null,
+    batchImport: null,
     datas: [],
     total: 0,
     pageable: {
@@ -26,11 +29,14 @@ const mutations = {
             title: ''
         };
         state.breadcrumbs = [];
-        state.selects = [];
         state.functions = [];
+        state.showFilters = false;
         state.filters = [];
-        state.titles = [];
         state.columns = [];
+        state.actions = null;
+        state.batchEdit = null;
+        state.batchExport = null;
+        state.batchImport = null;
         state.datas = [];
         state.total = 0;
         state.pageable = {
@@ -46,11 +52,6 @@ const mutations = {
     setBreadcrumbs(state, breadcrumbs) {
         if (breadcrumbs) {
             state.breadcrumbs = breadcrumbs;
-        }
-    },
-    setSelects(state, selects) {
-        if (selects) {
-            state.selects = selects;
         }
     },
     setFunctions(state, functions) {
@@ -75,12 +76,20 @@ const mutations = {
     },
     setSort(state, params) {
         if (params) {
-            for (var i in state.columns) {
-                var column = state.columns[i];
-                if (column.field) {
-                    column.orderBy = params[column.field];
+            for (var i in params) {
+                var param = params[i];
+                for (var j in state.columns) {
+                    var column = state.columns[j];
+                    if (column.field && column.field == param.field) {
+                        column.orderBy = param.type;
+                    }
                 }
             }
+        }
+    },
+    setShowFilters(state, showFilters) {
+        if (showFilters) {
+            state.showFilters = showFilters;
         }
     },
     setFilters(state, filters) {
@@ -113,14 +122,35 @@ const mutations = {
             }
         }
     },
-    setTitles(state, titles) {
-        if (titles) {
-            state.titles = titles;
-        }
-    },
     setColumns(state, columns) {
         if (columns) {
             state.columns = columns;
+        }
+    },
+    setActions(state, actions) {
+        if (actions) {
+            state.actions = actions;
+        }
+    },
+    setBatchEdit(state, batchEdit) {
+        if (batchEdit && batchEdit.editFieldOptions) {
+            for (var i = 0; i < batchEdit.editFieldOptions.length; i++) {
+                var editFieldOption = batchEdit.editFieldOptions[i];
+                if (editFieldOption.disable) {
+                    editFieldOption["$isDisabled"] = true;
+                }
+            }
+            state.batchEdit = batchEdit;
+        }
+    },
+    setBatchExport(state, batchExport) {
+        if (batchExport && batchExport.exportFieldOptions) {
+            state.batchExport = batchExport;
+        }
+    },
+    setBatchImport(state, batchImport) {
+        if (batchImport && batchImport.importFieldOptions) {
+            state.batchImport = batchImport;
         }
     },
     setDatas(state, datas) {
@@ -145,33 +175,47 @@ const mutations = {
 
 const actions = {
     getMainGrid(context, url) {
-        return mainGrid(context.rootState.base.token, url).then(resp => {
+        return mainGrid(context.rootState.base.user, url).then(resp => {
             context.commit('setFunctions', resp.data.data.functions);
             context.commit('setPageable', resp.data.data.pageable);
+            context.commit('setShowFilters', resp.data.data.showFilters);
             context.commit('setFilters', resp.data.data.filters);
             context.commit('setHeader', resp.data.data.header);
             context.commit('setBreadcrumbs', resp.data.data.breadcrumbs);
-            context.commit('setTitles', resp.data.data.titles);
             context.commit('setColumns', resp.data.data.columns);
+            context.commit('setActions', resp.data.data.actions);
         });
     },
     getDatas(context, payload) {
         context.commit('setIsLoading', true);
-        return list(context.rootState.base.token, payload).then(resp => {
+        return list(context.rootState.base.user, payload).then(resp => {
             context.commit('setIsLoading', false);
             context.commit('setDatas', resp.data);
             context.commit('clearProgress');
         });
     },
     removeData(context, payload) {
-        return remove(context.rootState.base.token, payload.url, payload.id);
+        return remove(context.rootState.base.user, payload.url, payload.id);
+    },
+    getBatchGrid(context, url) {
+        return batchGrid(context.rootState.base.user, url).then(resp => {
+            context.commit('setBatchEdit', resp.data.data.batchEdit);
+            context.commit('setBatchExport', resp.data.data.batchExport);
+            context.commit('setBatchImport', resp.data.data.batchImport);
+        });
     },
     batchRemoveData(context, payload) {
-        return batchRemove(context.rootState.base.token, payload.url, payload.ids);
+        return batchRemove(context.rootState.base.user, payload.url, payload.ids);
     },
     batchEditData(context, payload) {
-        return batchSave(context.rootState.base.token, payload.url, payload.data);
-    }
+        return batchSave(context.rootState.base.user, payload.url, payload.data);
+    },
+    batchExportData(context, payload) {
+        return batchExport(context.rootState.base.user, payload.url, payload.data);
+    },
+    downloadData(context, payload) {
+        return download(context.rootState.base.user, payload.url, payload.id);
+    },
 };
 
 export default {

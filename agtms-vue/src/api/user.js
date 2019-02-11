@@ -16,6 +16,6 @@ export function register(username, email, password) {
     });
 }
 
-export function signOut(token) {
-    return request(token, url.SIGN_OUT);
+export function signOut(user) {
+    return request(user, url.SIGN_OUT);
 }

@@ -9,12 +9,9 @@ public class Input<T> implements Cloneable {
 	
 	private String type;
 	
-	private Class<?> javaType;
-	
 	public Input(T value, String type) {
 		this.value = value;
 		this.type = type;
-		this.javaType = value.getClass();
 	}
 	
 	public static Input<String> text(String value) {

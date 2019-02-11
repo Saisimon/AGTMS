@@ -10,16 +10,16 @@ import net.saisimon.agtms.mongodb.repository.base.BaseMongoRepository;
 @Repository
 public interface NavigationMongodbRepository extends BaseMongoRepository<Navigation, Long> {
 	
-	List<Navigation> findByBelong(long userId);
+	List<Navigation> findByOperatorId(long userId);
 	
-	List<Navigation> findByIdInAndBelong(List<Long> ids, long userId);
+	List<Navigation> findByIdInAndOperatorId(List<Long> ids, long operatorId);
 	
-	Navigation findByIdAndBelong(Long id, long userId);
+	Navigation findByIdAndOperatorId(Long id, long operatorId);
 	
-	Navigation findByTitleAndBelong(String title, long userId);
+	Navigation findByTitleAndOperatorId(String title, long operatorId);
 	
-	boolean existsByTitleAndBelong(String title, long userId);
+	boolean existsByTitleAndOperatorId(String title, long operatorId);
 	
-	List<Navigation> findByParentIdAndBelong(Long parentId, long userId);
+	List<Navigation> findByParentIdAndOperatorId(Long parentId, long operatorId);
 	
 }

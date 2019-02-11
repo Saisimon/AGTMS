@@ -5,23 +5,23 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import cn.hutool.core.date.DateUtil;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Navigation;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
@@ -30,36 +30,41 @@ import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
+import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchEdit;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.Field;
+import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
-import net.saisimon.agtms.core.domain.grid.MainGrid.Title;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
+import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.UserInfo;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.TemplateService;
+import net.saisimon.agtms.core.util.AuthUtils;
+import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.StringUtils;
-import net.saisimon.agtms.core.util.TokenUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.MainController;
-import net.saisimon.agtms.web.dto.req.NavigationBatchParam;
 import net.saisimon.agtms.web.dto.resp.NavigationInfo;
 import net.saisimon.agtms.web.dto.resp.NavigationTree;
-import net.saisimon.agtms.web.dto.resp.common.Result;
+import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
 import net.saisimon.agtms.web.selection.NavigationSelection;
-import net.saisimon.agtms.web.util.ResultUtils;
 
 @RestController
-@RequestMapping("/navigate/main")
+@RequestMapping("/navigation/main")
 public class NavigationMainController extends MainController {
 	
-	private static final String NAVIGATE_FILTERS = "navigate_filters";
-	private static final String NAVIGATE_PAGEABLE = "navigate_pageable";
+	public static final String NAVIGATION = "navigation";
+	private static final String NAVIGATION_FILTERS = NAVIGATION + "_filters";
+	private static final String NAVIGATION_PAGEABLE = NAVIGATION + "_pageable";
 	private static final List<String> FUNCTIONS = Arrays.asList(
 			Functions.CREATE.getFunction(),
 			Functions.EDIT.getFunction(),
@@ -67,39 +72,22 @@ public class NavigationMainController extends MainController {
 			Functions.BATCH_EDIT.getFunction(), 
 			Functions.BATCH_REMOVE.getFunction()
 	);
+	private static final Set<String> NAVIGATION_FILTER_FIELDS = new HashSet<>();
+	static {
+		NAVIGATION_FILTER_FIELDS.add("title");
+		NAVIGATION_FILTER_FIELDS.add("priority");
+		NAVIGATION_FILTER_FIELDS.add("createTime");
+		NAVIGATION_FILTER_FIELDS.add("updateTime");
+	}
 	
 	@Autowired
 	private NavigationSelection navigationSelection;
 	
-	@PostMapping("/grid")
-	public Result grid() {
-		return ResultUtils.success(getMainGrid("navigate"));
-	}
-	
-	@PostMapping("/list")
-	public Result list(@RequestParam Map<String, Object> params, @RequestBody Map<String, Object> map) {
-		FilterRequest filter = FilterRequest.build(map);
-		filter.and("belong", TokenUtils.getUserInfo().getUserId());
-		FilterPageable pageable = FilterPageable.build(params);
-		NavigationService navigationService = NavigationServiceFactory.get();
-		Page<Navigation> page = navigationService.findPage(filter, pageable);
-		List<NavigationInfo> results = new ArrayList<>(page.getContent().size());
-		for (Navigation navigation : page.getContent()) {
-			NavigationInfo result = buildNavigationResult(navigation);
-			result.setIcon("<i class='fa fa-"+ navigation.getIcon() +"'></i>");
-			result.setAction("navigate");
-			results.add(result);
-		}
-		request.getSession().setAttribute(NAVIGATE_FILTERS, map);
-		request.getSession().setAttribute(NAVIGATE_PAGEABLE, params);
-		return ResultUtils.pageSuccess(results, page.getTotalElements());
-	}
-	
 	@PostMapping("/side")
 	public Result side() {
-		UserInfo userInfo = TokenUtils.getUserInfo();
+		UserInfo userInfo = AuthUtils.getUserInfo();
 		if (userInfo == null) {
-			return ResultUtils.success();
+			return ResultUtils.simpleSuccess();
 		}
 		NavigationService navigationService = NavigationServiceFactory.get();
 		List<NavigationTree> trees = getChildNavs(navigationService.getNavigations(userInfo.getUserId()), -1L);
@@ -107,7 +95,7 @@ public class NavigationMainController extends MainController {
 			trees = new ArrayList<>(1);
 		}
 		trees.add(0, NavigationTree.SYSTEM_MODEL_TREE);
-		return ResultUtils.success(internationNavigationTrees(trees));
+		return ResultUtils.simpleSuccess(internationNavigationTrees(trees));
 	}
 	
 	@PostMapping("/selection")
@@ -118,33 +106,31 @@ public class NavigationMainController extends MainController {
 			Option<Long> option = new Option<>(entry.getKey(), entry.getValue());
 			options.add(option);
 		}
-		return ResultUtils.success(options);
+		return ResultUtils.simpleSuccess(options);
 	}
 	
-	@PostMapping("/batch/save")
-	public Result batchSave(@Validated @RequestBody NavigationBatchParam param, BindingResult result) {
-		if (result.hasErrors()) {
-			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
-		}
-		long userId = TokenUtils.getUserInfo().getUserId();
+	@PostMapping("/grid")
+	public Result grid() {
+		return ResultUtils.simpleSuccess(getMainGrid(NAVIGATION));
+	}
+	
+	@PostMapping("/list")
+	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
+		FilterRequest filter = FilterRequest.build(body, NAVIGATION_FILTER_FIELDS);
+		filter.and(Constant.OPERATORID, AuthUtils.getUserInfo().getUserId());
+		FilterPageable pageable = FilterPageable.build(param);
 		NavigationService navigationService = NavigationServiceFactory.get();
-		List<Navigation> navigations = navigationService.getNavigations(param.getIds(), userId);
-		for (Navigation navigation : navigations) {
-			boolean update = false;
-			if (StringUtils.isNotBlank(param.getIcon()) && param.getIcon().equals(navigation.getIcon())) {
-				update = true;
-				navigation.setIcon(param.getIcon());
-			}
-			if (param.getPriority() != null && param.getPriority() != navigation.getPriority()) {
-				update = true;
-				navigation.setPriority(param.getPriority());
-			}
-			if (update) {
-				navigation.setUpdateTime(DateUtil.formatDateTime(new Date()));
-				navigationService.saveOrUpdate(navigation);
-			}
+		Page<Navigation> page = navigationService.findPage(filter, pageable);
+		List<NavigationInfo> results = new ArrayList<>(page.getContent().size());
+		for (Navigation navigation : page.getContent()) {
+			NavigationInfo result = buildNavigationResult(navigation);
+			result.setIcon("<i class='fa fa-"+ navigation.getIcon() +"'></i>");
+			result.setAction(NAVIGATION);
+			results.add(result);
 		}
-		return ResultUtils.success();
+		request.getSession().setAttribute(NAVIGATION_FILTERS, body);
+		request.getSession().setAttribute(NAVIGATION_PAGEABLE, param);
+		return ResultUtils.pageSuccess(results, page.getTotalElements());
 	}
 	
 	@PostMapping("/remove")
@@ -152,14 +138,48 @@ public class NavigationMainController extends MainController {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		long userId = TokenUtils.getUserInfo().getUserId();
+		long userId = AuthUtils.getUserInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
 		Navigation navigation = navigationService.getNavigation(id, userId);
 		if (navigation == null) {
 			return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 		}
 		recursiveRemove(navigation, userId);
-		return ResultUtils.success();
+		return ResultUtils.simpleSuccess();
+	}
+	
+	@PostMapping("/batch/grid")
+	public Result batchGrid() {
+		return ResultUtils.simpleSuccess(getBatchGrid(NAVIGATION));
+	}
+	
+	@PostMapping("/batch/save")
+	public Result batchSave(@RequestBody Map<String, Object> body) {
+		List<Long> ids = SystemUtils.transformList(body.get("ids"), Long.class);
+		if (CollectionUtils.isEmpty(ids)) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		String icon = (String) body.get("icon");
+		Integer priority = (Integer) body.get("priority");
+		long userId = AuthUtils.getUserInfo().getUserId();
+		NavigationService navigationService = NavigationServiceFactory.get();
+		List<Navigation> navigations = navigationService.getNavigations(ids, userId);
+		for (Navigation navigation : navigations) {
+			boolean update = false;
+			if (StringUtils.isNotBlank(icon) && !icon.equals(navigation.getIcon())) {
+				update = true;
+				navigation.setIcon(icon);
+			}
+			if (priority != null && !priority.equals(navigation.getPriority())) {
+				update = true;
+				navigation.setPriority(priority);
+			}
+			if (update) {
+				navigation.setUpdateTime(new Date());
+				navigationService.saveOrUpdate(navigation);
+			}
+		}
+		return ResultUtils.simpleSuccess();
 	}
 	
 	@PostMapping("/batch/remove")
@@ -167,52 +187,64 @@ public class NavigationMainController extends MainController {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		long userId = TokenUtils.getUserInfo().getUserId();
+		long userId = AuthUtils.getUserInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
 		List<Navigation> navigations = navigationService.getNavigations(ids, userId);
 		for (Navigation navigation : navigations) {
 			recursiveRemove(navigation, userId);
 		}
-		return ResultUtils.success();
+		return ResultUtils.simpleSuccess();
 	}
 	
 	@Override
 	protected Header header(Object key) {
-		return Header.builder().title(getMessage("navigate.management")).createUrl("/navigate/edit").build();
+		return Header.builder().title(getMessage("navigation.management")).createUrl("/navigation/edit").build();
 	}
 
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(getMessage("navigate.management")).active(true).build());
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("navigation.management")).active(true).build());
 		return breadcrumbs;
 	}
 	
 	@Override
-	protected List<List<Title>> titles(Object key) {
-		List<List<Title>> titles = new ArrayList<>();
-		List<Title> firstTitle = new ArrayList<>();
-		firstTitle.add(Title.builder().fields(Arrays.asList("icon")).title(getMessage("icon")).rowspan(2).build());
-		firstTitle.add(Title.builder().fields(Arrays.asList("title")).title(getMessage("title")).rowspan(2).build());
-		firstTitle.add(Title.builder().fields(Arrays.asList("priority")).title(getMessage("priority")).rowspan(2).orderBy("").build());
-		firstTitle.add(Title.builder().fields(Arrays.asList("createTime")).title(getMessage("create.time")).rowspan(2).orderBy("").build());
-		firstTitle.add(Title.builder().fields(Arrays.asList("updateTime")).title(getMessage("update.time")).rowspan(2).orderBy("").build());
-		titles.add(firstTitle);
-		return titles;
-	}
-
-	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("icon").title(getMessage("icon")).width(100).view(Views.ICON.getView()).build());
-		columns.add(Column.builder().field("title").title(getMessage("title")).width(200).view(Views.TEXT.getView()).build());
-		columns.add(Column.builder().field("priority").title(getMessage("priority")).width(100).view(Views.TEXT.getView()).orderBy("").build());
-		columns.add(Column.builder().field("createTime").title(getMessage("create.time")).width(400).view(Views.TEXT.getView()).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").title(getMessage("update.time")).width(400).view(Views.TEXT.getView()).orderBy("").build());
+		columns.add(Column.builder().field("icon").label(getMessage("icon")).width(100).view(Views.ICON.getView()).build());
+		columns.add(Column.builder().field("title").label(getMessage("title")).width(200).view(Views.TEXT.getView()).build());
+		columns.add(Column.builder().field("priority").label(getMessage("priority")).type("number").width(100).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
 	
+	@Override
+	protected List<Action> actions(Object key) {
+		List<Action> actions = new ArrayList<>();
+		actions.add(Action.builder().to("/navigation/edit?id=").icon("edit").text(getMessage("edit")).type("link").build());
+		actions.add(Action.builder().icon("trash").text(getMessage("remove")).variant("outline-danger").type("remove").build());
+		return actions;
+	}
+
+	@Override
+	protected BatchEdit batchEdit(Object key) {
+		BatchEdit batchEdit = new BatchEdit();
+		Option<String> parentIdOption = new Option<>("parentId", getMessage("parent.navigation"), true);
+		Option<String> titleOption = new Option<>("title", getMessage("title"), true);
+		Option<String> iconOption = new Option<>("icon", getMessage("icon"), false);
+		Option<String> priorityOption = new Option<>("priority", getMessage("priority"), false);
+		List<Option<String>> editFieldOptions = Arrays.asList(parentIdOption, titleOption, iconOption, priorityOption);
+		batchEdit.setEditFieldOptions(editFieldOptions);
+		Map<String, Field<?>> editFields = new HashMap<>();
+		editFields.put("icon", Field.<String>builder().value(Navigation.DEFAULT_ICON).name("icon").required(true).text(getMessage("icon")).type(Classes.STRING.getName()).view("icon").build());
+		editFields.put("priority", Field.<Integer>builder().value(Navigation.DEFAULT_PRIORITY).name("priority").text(getMessage("priority")).type(Classes.INTEGER.getName()).build());
+		batchEdit.setEditFields(editFields);
+		return batchEdit;
+	}
+
 	@Override
 	protected List<Filter> filters(Object key) {
 		List<Filter> filters = new ArrayList<>();
@@ -220,8 +252,8 @@ public class NavigationMainController extends MainController {
 		List<String> keyValues = Arrays.asList("title", "priority");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
 		Map<String, FieldFilter> value = new HashMap<>();
-		value.put("title", TextFilter.textFilter("", "text", "strict"));
-		value.put("priority", RangeFilter.rangeFilter("", "number", "", "number"));
+		value.put("title", TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
+		value.put("priority", RangeFilter.rangeFilter("", Classes.INTEGER.getName(), "", Classes.INTEGER.getName()));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -229,8 +261,8 @@ public class NavigationMainController extends MainController {
 		keyValues = Arrays.asList("createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
 		value = new HashMap<>();
-		value.put("createTime", RangeFilter.rangeFilter("", "date", "", "date"));
-		value.put("updateTime", RangeFilter.rangeFilter("", "date", "", "date"));
+		value.put("createTime", RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put("updateTime", RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;
@@ -283,13 +315,13 @@ public class NavigationMainController extends MainController {
 			tree.setTitle(current.getTitle());
 			tree.setIcon(current.getIcon());
 			tree.setPriority(current.getPriority());
-			List<Template> templates = templateService.getTemplates(current.getId(), current.getBelong());
+			List<Template> templates = templateService.getTemplates(current.getId(), current.getOperatorId());
 			if (!CollectionUtils.isEmpty(templates)) {
-				Map<String, String> map = new HashMap<>();
+				List<NavigationLink> links = new ArrayList<>(templates.size());
 				for (Template template : templates) {
-					map.put("/manage/main/" + template.getId(), template.getTitle());
+					links.add(new NavigationLink("/management/main/" + template.getId(), template.getTitle()));
 				}
-				tree.setLinkMap(map);
+				tree.setLinks(links);
 			}
 			tree.setChildrens(getChildNavs(rests, current.getId()));
 			trees.add(tree);

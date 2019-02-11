@@ -1,5 +1,6 @@
 package net.saisimon.agtms.core.domain;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -32,21 +33,24 @@ public class Template implements Cloneable {
 	@Column(length=50, nullable=false)
 	private String title;
 	
-	@Column(length=200)
-	private String functions;
+	@Column(columnDefinition="bigint(11)")
+	private Integer function;
 	
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinColumn(name="template_id")
 	private List<TemplateColumn> columns;
 	
-	@Column(length=50)
-	private String createTime;
+	@Column(columnDefinition="bigint(11)")
+	private Integer columnIndex;
 	
-	@Column(length=50)
-	private String updateTime;
+	@Column(columnDefinition="timestamp default current_timestamp")
+	private Date createTime;
+	
+	@Column(columnDefinition="timestamp default current_timestamp")
+	private Date updateTime;
 	
 	@Column(columnDefinition="bigint(15) not null")
-	private Long userId;
+	private Long operatorId;
 	
 	@Column(length=50, nullable=false)
 	private String source;
@@ -64,9 +68,6 @@ public class Template implements Cloneable {
 		@GeneratedValue(strategy=GenerationType.IDENTITY)
 		private Long id;
 		
-		@Column(columnDefinition="tinyint(3) not null")
-		private Byte columnId;
-		
 		@Column(length=20, nullable=false)
 		private String columnName;
 		
@@ -76,6 +77,12 @@ public class Template implements Cloneable {
 		@OneToMany(cascade=CascadeType.ALL)
 		@JoinColumn(name="template_column_id")
 		private List<TemplateField> fields;
+		
+		@Column(columnDefinition="bigint(11)")
+		private Integer ordered;
+		
+		@Column(columnDefinition="bigint(11)")
+		private Integer fieldIndex;
 
 	}
 	
@@ -89,9 +96,6 @@ public class Template implements Cloneable {
 		@GeneratedValue(strategy=GenerationType.IDENTITY)
 		private Long id;
 		
-		@Column(columnDefinition="tinyint(3) not null")
-		private Byte fieldId;
-		
 		@Column(length=20, nullable=false)
 		private String fieldName;
 		
@@ -101,26 +105,32 @@ public class Template implements Cloneable {
 		@Column(length=50, nullable=false)
 		private String fieldTitle;
 		
-		@Column(columnDefinition="tinyint(1) not null")
+		@Column(length=20)
+		private String view;
+		
+		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
+		private Boolean filter;
+		
+		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
+		private Boolean sorted;
+		
+		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
 		private Boolean required;
 		
-		@Column(columnDefinition="tinyint(1) not null")
+		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
 		private Boolean uniqued;
+		
+		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
+		private Boolean hidden;
 		
 		@Column(length=20)
 		private String defaultValue;
 		
-		@Column(columnDefinition="tinyint(1) not null")
-		private Boolean sorted;
-		
-		@Column(length=20)
-		private String filterType;
-		
-		@Column(length=20)
-		private String view;
-		
 		@Column(columnDefinition="int(5)")
 		private Integer width;
+		
+		@Column(columnDefinition="bigint(11)")
+		private Integer ordered;
 
 	}
 	

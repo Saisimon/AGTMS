@@ -3,8 +3,10 @@ package net.saisimon.agtms.web.controller.main;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
@@ -26,29 +29,32 @@ import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
-import net.saisimon.agtms.core.domain.grid.MainGrid.Title;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
+import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.SystemUtils;
-import net.saisimon.agtms.core.util.TokenUtils;
+import net.saisimon.agtms.core.util.TemplateUtils;
+import net.saisimon.agtms.core.util.AuthUtils;
+import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.MainController;
 import net.saisimon.agtms.web.dto.resp.TemplateInfo;
-import net.saisimon.agtms.web.dto.resp.common.Result;
 import net.saisimon.agtms.web.selection.NavigationSelection;
-import net.saisimon.agtms.web.util.ResultUtils;
 
 @RestController
 @RequestMapping("/template/main")
 public class TemplateMainController extends MainController {
 	
-	private static final String TEMPLATE_FILTERS = "template_filters";
-	private static final String TEMPLATE_PAGEABLE = "template_pageable";
+	public static final String TEMPLATE = "template";
+	private static final String TEMPLATE_FILTERS = TEMPLATE + "_filters";
+	private static final String TEMPLATE_PAGEABLE = TEMPLATE + "_pageable";
 	private static final List<String> FUNCTIONS = Arrays.asList(
 			Functions.CREATE.getFunction(),
 			"view",
@@ -56,20 +62,27 @@ public class TemplateMainController extends MainController {
 			Functions.REMOVE.getFunction(),
 			Functions.BATCH_REMOVE.getFunction()
 	);
+	private static final Set<String> TEMPLATE_FILTER_FIELDS = new HashSet<>();
+	static {
+		TEMPLATE_FILTER_FIELDS.add("navigationId");
+		TEMPLATE_FILTER_FIELDS.add("title");
+		TEMPLATE_FILTER_FIELDS.add("createTime");
+		TEMPLATE_FILTER_FIELDS.add("updateTime");
+	}
 	
 	@Autowired
 	private NavigationSelection navigationSelection;
 	
 	@PostMapping("/grid")
 	public Result grid() {
-		return ResultUtils.success(getMainGrid("template"));
+		return ResultUtils.simpleSuccess(getMainGrid(TEMPLATE));
 	}
 	
 	@PostMapping("/list")
-	public Result list(@RequestParam Map<String, Object> params, @RequestBody Map<String, Object> map) {
-		FilterRequest filter = FilterRequest.build(map);
-		filter.and("userId", TokenUtils.getUserInfo().getUserId());
-		FilterPageable pageable = FilterPageable.build(params);
+	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
+		FilterRequest filter = FilterRequest.build(body, TEMPLATE_FILTER_FIELDS);
+		filter.and(Constant.OPERATORID, AuthUtils.getUserInfo().getUserId());
+		FilterPageable pageable = FilterPageable.build(param);
 		TemplateService templateService = TemplateServiceFactory.get();
 		Page<Template> page = templateService.findPage(filter, pageable);
 		List<TemplateInfo> results = new ArrayList<>(page.getContent().size());
@@ -77,27 +90,27 @@ public class TemplateMainController extends MainController {
 		for (Template template : page.getContent()) {
 			TemplateInfo result = buildTemplateInfo(template);
 			result.setNavigationName(navigationMap.get(template.getNavigationId().toString()));
-			result.setAction("template");
+			result.setAction(TEMPLATE);
 			results.add(result);
 		}
-		request.getSession().setAttribute(TEMPLATE_FILTERS, map);
-		request.getSession().setAttribute(TEMPLATE_PAGEABLE, params);
+		request.getSession().setAttribute(TEMPLATE_FILTERS, body);
+		request.getSession().setAttribute(TEMPLATE_PAGEABLE, param);
 		return ResultUtils.pageSuccess(results, page.getTotalElements());
 	}
 	
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
-		Long userId = TokenUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
 		Template template = templateService.getTemplate(id, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		if (!templateService.removeTemplateById(id)) {
+		if (!templateService.removeTemplate(template)) {
 			return ErrorMessage.Common.SERVER_ERROR;
 		}
 		templateService.dropTable(template);
-		return ResultUtils.success();
+		return ResultUtils.simpleSuccess();
 	}
 	
 	@PostMapping("/batch/remove")
@@ -105,7 +118,7 @@ public class TemplateMainController extends MainController {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = TokenUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
 		List<Template> templates = new ArrayList<>();
 		for (Long id : ids) {
@@ -115,11 +128,11 @@ public class TemplateMainController extends MainController {
 			}
 		}
 		for (Template template : templates) {
-			if (templateService.removeTemplateById(template.getId())) {
+			if (templateService.removeTemplate(template)) {
 				templateService.dropTable(template);
 			}
 		}
-		return ResultUtils.success();
+		return ResultUtils.simpleSuccess();
 	}
 	
 	@Override
@@ -136,29 +149,25 @@ public class TemplateMainController extends MainController {
 	}
 	
 	@Override
-	protected List<List<Title>> titles(Object key) {
-		List<List<Title>> titles = new ArrayList<>();
-		List<Title> firstTitle = new ArrayList<>();
-		firstTitle.add(Title.builder().fields(Arrays.asList("navigationName")).title(getMessage("navigate")).rowspan(2).build());
-		firstTitle.add(Title.builder().fields(Arrays.asList("title")).title(getMessage("title")).rowspan(2).build());
-		firstTitle.add(Title.builder().fields(Arrays.asList("columns")).title(getMessage("column.name")).rowspan(2).build());
-		firstTitle.add(Title.builder().fields(Arrays.asList("functions")).title(getMessage("functions")).rowspan(2).build());
-		firstTitle.add(Title.builder().fields(Arrays.asList("createTime")).title(getMessage("create.time")).rowspan(2).orderBy("").build());
-		firstTitle.add(Title.builder().fields(Arrays.asList("updateTime")).title(getMessage("update.time")).rowspan(2).orderBy("").build());
-		titles.add(firstTitle);
-		return titles;
+	protected List<Column> columns(Object key) {
+		List<Column> columns = new ArrayList<>();
+		columns.add(Column.builder().field("navigationName").label(getMessage("navigation")).view(Views.TEXT.getView()).width(100).build());
+		columns.add(Column.builder().field("title").label(getMessage("title")).view(Views.TEXT.getView()).width(200).build());
+		columns.add(Column.builder().field("columns").label(getMessage("column.name")).view(Views.TEXT.getView()).width(200).build());
+		columns.add(Column.builder().field("functions").label(getMessage("functions")).view(Views.TEXT.getView()).width(300).build());
+		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").view(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").view(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
+		return columns;
 	}
 	
 	@Override
-	protected List<Column> columns(Object key) {
-		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("navigationName").title(getMessage("navigate")).view(Views.TEXT.getView()).width(100).build());
-		columns.add(Column.builder().field("title").title(getMessage("title")).view(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("columns").title(getMessage("column.name")).view(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("functions").title(getMessage("functions")).view(Views.TEXT.getView()).width(300).build());
-		columns.add(Column.builder().field("createTime").title(getMessage("create.time")).view(Views.TEXT.getView()).width(150).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").title(getMessage("update.time")).view(Views.TEXT.getView()).width(150).orderBy("").build());
-		return columns;
+	protected List<Action> actions(Object key) {
+		List<Action> actions = new ArrayList<>();
+		actions.add(Action.builder().to("/management/main/").icon("list").text(getMessage("view")).variant("outline-secondary").type("link").build());
+		actions.add(Action.builder().to("/template/edit?id=").icon("edit").text(getMessage("edit")).type("link").build());
+		actions.add(Action.builder().icon("trash").text(getMessage("remove")).variant("outline-danger").type("remove").build());
+		return actions;
 	}
 	
 	@Override
@@ -166,7 +175,7 @@ public class TemplateMainController extends MainController {
 		List<Filter> filters = new ArrayList<>();
 		Filter filter = new Filter();
 		List<String> keyValues = Arrays.asList("navigationId");
-		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("navigate")));
+		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("navigation")));
 		Map<String, FieldFilter> value = new HashMap<>();
 		Map<Long, String> navigationMap = navigationSelection.selectWithParent(null);
 		List<Long> navigationValues = new ArrayList<>(navigationMap.size());
@@ -175,7 +184,7 @@ public class TemplateMainController extends MainController {
 			navigationValues.add(entry.getKey());
 			navigationTexts.add(entry.getValue());
 		}
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, navigationValues, navigationTexts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.INTEGER.getName(), navigationValues, navigationTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -183,7 +192,7 @@ public class TemplateMainController extends MainController {
 		keyValues = Arrays.asList("title");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
 		value = new HashMap<>();
-		value.put("title", TextFilter.textFilter("", "text", "strict"));
+		value.put("title", TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -191,8 +200,8 @@ public class TemplateMainController extends MainController {
 		keyValues = Arrays.asList("createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
 		value = new HashMap<>();
-		value.put("createTime", RangeFilter.rangeFilter("", "date", "", "date"));
-		value.put("updateTime", RangeFilter.rangeFilter("", "date", "", "date"));
+		value.put("createTime", RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put("updateTime", RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;
@@ -208,11 +217,11 @@ public class TemplateMainController extends MainController {
 		templateInfo.setId(template.getId());
 		templateInfo.setTitle(template.getTitle());
 		templateInfo.setColumns(template.getColumns().stream().map(TemplateColumn::getTitle).collect(Collectors.joining(", ")));
-		if (template.getFunctions() != null) {
-			String[] funcs = template.getFunctions().split(",");
-			String functions = Arrays.stream(funcs).map(func -> {
+		if (template.getFunction() != null && template.getFunction() != 0) {
+			List<String> funcs = TemplateUtils.getFunctions(template);
+			String functions = funcs.stream().map(func -> {
 				return getMessage(SystemUtils.humpToCode(func, "."));
-			}).collect(Collectors.joining(","));
+			}).collect(Collectors.joining(", "));
 			templateInfo.setFunctions(functions);
 		}
 		templateInfo.setCreateTime(template.getCreateTime());

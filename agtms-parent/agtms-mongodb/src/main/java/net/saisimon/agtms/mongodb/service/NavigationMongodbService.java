@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 import net.saisimon.agtms.core.domain.Navigation;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.NavigationService;
-import net.saisimon.agtms.mongodb.order.AbstractMongodbOrder;
+import net.saisimon.agtms.mongodb.order.MongodbOrder;
 import net.saisimon.agtms.mongodb.repository.NavigationMongodbRepository;
 
 @Service
-public class NavigationMongodbService extends AbstractMongodbOrder implements NavigationService {
+public class NavigationMongodbService implements NavigationService, MongodbOrder {
 
 	@Autowired
 	private NavigationMongodbRepository navigationMongodbRepository;
@@ -25,28 +25,28 @@ public class NavigationMongodbService extends AbstractMongodbOrder implements Na
 	}
 	
 	@Override
-	public boolean existNavigation(String title, Long userId) {
-		return navigationMongodbRepository.existsByTitleAndBelong(title, userId);
+	public boolean existNavigation(String title, Long operatorId) {
+		return navigationMongodbRepository.existsByTitleAndOperatorId(title, operatorId);
 	}
 	
 	@Override
-	public Navigation getNavigation(Long id, Long userId) {
-		return navigationMongodbRepository.findByIdAndBelong(id, userId);
+	public Navigation getNavigation(Long id, Long operatorId) {
+		return navigationMongodbRepository.findByIdAndOperatorId(id, operatorId);
 	}
 	
 	@Override
-	public List<Navigation> getNavigations(List<Long> ids, Long userId) {
-		return navigationMongodbRepository.findByIdInAndBelong(ids, userId);
+	public List<Navigation> getNavigations(List<Long> ids, Long operatorId) {
+		return navigationMongodbRepository.findByIdInAndOperatorId(ids, operatorId);
 	}
 	
 	@Override
-	public List<Navigation> getChildrenNavigations(Long parentId, Long userId) {
-		return navigationMongodbRepository.findByParentIdAndBelong(parentId, userId);
+	public List<Navigation> getChildrenNavigations(Long parentId, Long operatorId) {
+		return navigationMongodbRepository.findByParentIdAndOperatorId(parentId, operatorId);
 	}
 	
 	@Override
-	public List<Navigation> getNavigations(Long userId) {
-		return navigationMongodbRepository.findByBelong(userId);
+	public List<Navigation> getNavigations(Long operatorId) {
+		return navigationMongodbRepository.findByOperatorId(operatorId);
 	}
 	
 	@Override

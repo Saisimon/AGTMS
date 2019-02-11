@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.springframework.util.CollectionUtils;
 
@@ -114,11 +115,11 @@ public class FilterRequest implements Serializable {
 		return filterParamMap;
 	}
 	
-	public static FilterRequest build(Map<String, Object> map) {
+	public static FilterRequest build(Map<String, Object> map, Set<String> filterFields) {
 		if (!CollectionUtils.isEmpty(map)) {
 			FilterRequest filterRequest = build();
-			filterRequest.setAndFilters(parseMap(map, "andFilters"));
-			filterRequest.setOrFilters(parseMap(map, "orFilters"));
+			filterRequest.setAndFilters(parseMap(map, "andFilters", filterFields));
+			filterRequest.setOrFilters(parseMap(map, "orFilters", filterFields));
 			return filterRequest;
 		} else {
 			return null;
@@ -149,18 +150,18 @@ public class FilterRequest implements Serializable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static List<FilterRequest> parseMap(Map<String, Object> map, String key) {
+	private static List<FilterRequest> parseMap(Map<String, Object> map, String key, Set<String> filterFields) {
 		List<Map<String, Object>> filterMaps = (List<Map<String, Object>>) map.get(key);
 		if (filterMaps != null) {
 			List<FilterRequest> filters = new ArrayList<>(filterMaps.size());
 			for (Map<String, Object> filterMap : filterMaps) {
 				if (filterMap.get("andFilters") != null || filterMap.get("orFilters") != null) {
-					FilterRequest request = FilterRequest.build(filterMap);
+					FilterRequest request = FilterRequest.build(filterMap, filterFields);
 					if (request != null) {
 						filters.add(request);
 					}
 				} else {
-					FilterParam param = FilterParam.build(filterMap);
+					FilterParam param = FilterParam.build(filterMap, filterFields);
 					if (param != null) {
 						filters.add(param);
 					}

@@ -4,7 +4,7 @@ import java.util.List;
 
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.EditGrid;
-import net.saisimon.agtms.core.domain.grid.EditGrid.Field;
+import net.saisimon.agtms.core.domain.grid.Field;
 
 public abstract class EditController extends BaseController {
 	

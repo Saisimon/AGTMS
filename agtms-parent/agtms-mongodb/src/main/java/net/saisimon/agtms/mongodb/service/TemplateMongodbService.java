@@ -10,11 +10,11 @@ import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.TemplateUtils;
-import net.saisimon.agtms.mongodb.order.AbstractMongodbOrder;
+import net.saisimon.agtms.mongodb.order.MongodbOrder;
 import net.saisimon.agtms.mongodb.repository.TemplateMongodbRepository;
 
 @Service
-public class TemplateMongodbService extends AbstractMongodbOrder implements TemplateService {
+public class TemplateMongodbService implements TemplateService, MongodbOrder {
 	
 	@Autowired
 	private TemplateMongodbRepository templateMongodbRepository;
@@ -29,13 +29,13 @@ public class TemplateMongodbService extends AbstractMongodbOrder implements Temp
 	}
 
 	@Override
-	public boolean exists(String title, Long userId) {
-		return templateMongodbRepository.existsByTitleAndUserId(title, userId);
+	public boolean exists(String title, Long operatorId) {
+		return templateMongodbRepository.existsByTitleAndOperatorId(title, operatorId);
 	}
 
 	@Override
-	public List<Template> getTemplates(Long navigationId, Long userId) {
-		return templateMongodbRepository.findByNavigationIdAndUserId(navigationId, userId);
+	public List<Template> getTemplates(Long navigationId, Long operatorId) {
+		return templateMongodbRepository.findByNavigationIdAndOperatorId(navigationId, operatorId);
 	}
 	
 	@Override

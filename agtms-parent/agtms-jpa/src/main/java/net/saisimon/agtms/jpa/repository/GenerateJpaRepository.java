@@ -3,6 +3,7 @@ package net.saisimon.agtms.jpa.repository;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
@@ -67,9 +69,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	public List<Domain> findList(FilterRequest filter, FilterSort sort) {
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(CREATOR);
-		columnNames.add(CTIME);
-		columnNames.add(UTIME);
+		columnNames.add(Constant.OPERATOR_ID);
+		columnNames.add(Constant.CREATE_TIME);
+		columnNames.add(Constant.UPDATE_TIME);
 		String sql = buildSql(template, columnNames);
 		if (filter != null) {
 			String where = JpaFilterUtils.where(filter);
@@ -104,9 +106,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		}
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(CREATOR);
-		columnNames.add(CTIME);
-		columnNames.add(UTIME);
+		columnNames.add(Constant.OPERATOR_ID);
+		columnNames.add(Constant.CREATE_TIME);
+		columnNames.add(Constant.UPDATE_TIME);
 		String sql = buildSql(template, columnNames);
 		if (filter != null) {
 			String where = JpaFilterUtils.where(filter);
@@ -139,9 +141,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort) {
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(CREATOR);
-		columnNames.add(CTIME);
-		columnNames.add(UTIME);
+		columnNames.add(Constant.OPERATOR_ID);
+		columnNames.add(Constant.CREATE_TIME);
+		columnNames.add(Constant.UPDATE_TIME);
 		String sql = buildSql(template, columnNames);
 		if (filter != null) {
 			String where = JpaFilterUtils.where(filter);
@@ -252,9 +254,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	private String buildInsertSql(Domain domain) {
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(CREATOR);
-		columnNames.add(CTIME);
-		columnNames.add(UTIME);
+		columnNames.add(Constant.OPERATOR_ID);
+		columnNames.add(Constant.CREATE_TIME);
+		columnNames.add(Constant.UPDATE_TIME);
 		String columns = "`id`";
 		String values = "NULL";
 		for (String field : columnNames) {
@@ -270,9 +272,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	private String buildUpdateSql(Object id, Domain domain) {
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(CREATOR);
-		columnNames.add(CTIME);
-		columnNames.add(UTIME);
+		columnNames.add(Constant.OPERATOR_ID);
+		columnNames.add(Constant.CREATE_TIME);
+		columnNames.add(Constant.UPDATE_TIME);
 		String sql = "UPDATE `" + TemplateUtils.getTableName(template) + "` SET ";
 		for (String field : columnNames) {
 			Object value = domain.getField(field);
@@ -305,9 +307,11 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			if (value != null) {
 				String columnName = columnNames.get(i);
 				if (value instanceof BigInteger) {
-					domain.setField(columnName, ((BigInteger) value).longValue(), Long.class);
+					domain.setField(columnName, ((BigInteger) value).longValue(), Integer.class);
 				} else if (value instanceof BigDecimal) {
 					domain.setField(columnName, ((BigDecimal) value).doubleValue(), Double.class);
+				} else if (value instanceof Date) {
+					domain.setField(columnName, ((Date) value), Date.class);
 				} else {
 					domain.setField(columnName, value, value.getClass());
 				}

@@ -5,7 +5,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import net.saisimon.agtms.core.enums.DataSources;
 import net.saisimon.agtms.core.enums.Functions;
 
 @Target(ElementType.TYPE)
@@ -24,7 +23,7 @@ public @interface Template {
 	
 	String[] jsPath() default {};
 	
-	DataSources source() default DataSources.JPA;
+	String source() default "jpa";
 	
 	String sourceUrl() default "";
 	

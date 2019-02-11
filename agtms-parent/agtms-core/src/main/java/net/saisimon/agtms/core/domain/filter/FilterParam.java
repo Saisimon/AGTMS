@@ -4,12 +4,14 @@ import static net.saisimon.agtms.core.constant.Constant.Operator.EQ;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.beanutils.BeanUtils;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.util.StringUtils;
 
 @Setter
@@ -20,7 +22,7 @@ public class FilterParam extends FilterRequest {
 	private static final long serialVersionUID = -4082925119637610947L;
 	
 	private String key;
-	private String type = "java.lang.String";
+	private String type = Classes.STRING.getName();
 	private String operator;
 	private Object value;
 	
@@ -57,8 +59,15 @@ public class FilterParam extends FilterRequest {
 		return new FilterParam(key, value, operator);
 	}
 	
-	public static FilterParam build(Map<String, Object> map) {
+	public static FilterParam build(Map<String, Object> map, Set<String> filterFields) {
 		try {
+			Object key = map.get("key");
+			if (key == null) {
+				return null;
+			}
+			if (filterFields != null && !filterFields.contains(key.toString())) {
+				return null;
+			}
 			FilterParam filterParam = new FilterParam();
 			BeanUtils.populate(filterParam, map);
 			return filterParam;

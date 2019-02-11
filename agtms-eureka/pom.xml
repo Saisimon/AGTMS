@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.saisimon</groupId>
@@ -17,13 +18,13 @@
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
 	</properties>
-	
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.0.1.RELEASE</version>
 	</parent>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -46,7 +47,7 @@
 			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>

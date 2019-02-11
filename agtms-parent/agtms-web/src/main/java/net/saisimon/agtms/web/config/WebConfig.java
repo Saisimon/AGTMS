@@ -28,5 +28,5 @@ public class WebConfig implements WebMvcConfigurer {
 		localeResolver.setDefaultLocale(Locale.SIMPLIFIED_CHINESE);
 		return localeResolver;
 	}
-	
+
 }

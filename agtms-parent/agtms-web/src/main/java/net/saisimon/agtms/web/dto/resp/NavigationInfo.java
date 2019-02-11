@@ -1,5 +1,7 @@
 package net.saisimon.agtms.web.dto.resp;
 
+import java.util.Date;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.saisimon.agtms.web.dto.resp.common.BaseInfo;
@@ -20,8 +22,8 @@ public class NavigationInfo extends BaseInfo {
 	
 	private Long parentId;
 	
-	private String createTime;
+	private Date createTime;
 	
-	private String updateTime;
+	private Date updateTime;
 	
 }

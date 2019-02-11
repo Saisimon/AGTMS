@@ -1,5 +1,7 @@
 package net.saisimon.agtms.core.domain;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,6 +21,9 @@ import lombok.Data;
 @Document(collection="agtms_navigation")
 public class Navigation {
 	
+	public static final String DEFAULT_ICON = "list";
+	public static final Integer DEFAULT_PRIORITY = 0;
+	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
@@ -32,17 +37,17 @@ public class Navigation {
 	@Column(nullable=false, columnDefinition="int(11) default 0")
 	private Integer priority;
 	
-	@Column(nullable=false, columnDefinition="timestamp default current_timestamp")
-	private String createTime;
+	@Column(columnDefinition="timestamp default current_timestamp")
+	private Date createTime;
 	
-	@Column(nullable=false, columnDefinition="timestamp default current_timestamp")
-	private String updateTime;
+	@Column(columnDefinition="timestamp default current_timestamp")
+	private Date updateTime;
 	
 	@JsonIgnore
-	@Column(nullable=false, columnDefinition="bigint(20)")
-	private Long belong;
+	@Column(nullable=false, columnDefinition="bigint(15)")
+	private Long operatorId;
 	
-	@Column(columnDefinition="bigint(20) default -1")
+	@Column(columnDefinition="bigint(15) default -1")
 	private Long parentId;
 	
 }

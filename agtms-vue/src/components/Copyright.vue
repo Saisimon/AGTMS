@@ -1,6 +1,8 @@
 <template>
     <div class="copyright-container">
-        <span class="copyright">Copyright © saisimon.net {{year}}</span>
+        <span class="copyright">
+            Copyright © 2018-{{year}} <b-link href="https://github.com/Saisimon" target="_blank">Saisimon</b-link>
+        </span>
     </div>
 </template>
 
@@ -22,6 +24,7 @@ export default {
     height: 30px;
     line-height: 30px;
     z-index: 1000px;
-    font-size: 14px;
+    font-size: 12px;
+    font-weight: 100;
 }
 </style>

@@ -1,49 +1,54 @@
 <template>
-    <div class="action-container">
-        <b-dropdown variant="primary" right size="sm" 
-            :text="$t('action')"
-            class="actions-btn">
-            <b-dropdown-item 
-                v-if="functions.indexOf('view') !== -1"
-                href="javascript:void(0);"
-                :to="'/manage/main/' + rowData.id"
-                class="action-btn" 
-                size="sm" >
-                <i class="fa fa-fw fa-eye"></i>
-                {{ $t('view' )}}
-            </b-dropdown-item>
-            <b-dropdown-item 
-                v-if="functions.indexOf('edit') !== -1"
-                href="javascript:void(0);" 
-                :to="editUrl" 
-                class="action-btn" 
-                size="sm" >
-                <i class="fa fa-fw fa-edit"></i>
-                {{ $t('edit' )}}
-            </b-dropdown-item>
-            <b-dropdown-item 
-                v-if="functions.indexOf('remove') !== -1"
-                href="javascript:void(0);" 
-                v-b-modal="'remove-model-' + index" 
-                class="action-btn text-danger" 
-                size="sm" >
-                <i class="fa fa-fw fa-trash"></i>
-                {{ $t('remove' )}}
-            </b-dropdown-item>
-        </b-dropdown>
-        <b-modal 
-            v-if="functions.indexOf('remove') !== -1"
-            :id="'remove-model-' + index" 
-            centered 
-            :cancel-title="$t('cancel')"
-            :ok-title="$t('confirm_remove')"
-            @ok="remove()"
-            ok-variant="danger"
-            button-size="sm">
-            <div class="text-center font-weight-bold">
-                {{ $t('confirm' )}}
-            </div>
-        </b-modal>
+    <div class="action-container text-right" v-if="actions">
+        <template v-for="(action, idx) in actions">
+            <template v-if="action.type == 'link'">
+                <b-button :key="idx"
+                    :size="'sm'" 
+                    :variant="action.variant" 
+                    :to="action.to + rowData.id"
+                    v-b-tooltip.hover 
+                    :title="action.text"
+                    class="ml-1" >
+                    <i class="fa fa-fw" :class="'fa-' + action.icon"></i>
+                </b-button>
+            </template>
+            <template v-else-if="action.type == 'download'">
+                <b-button :key="idx"
+                    :size="'sm'" 
+                    :variant="action.variant"
+                    v-b-tooltip.hover 
+                    :title="action.text"
+                    @click="download(action.to)"
+                    href="javascript:void(0);" 
+                    class="ml-1" >
+                    <i class="fa fa-fw" :class="'fa-' + action.icon"></i>
+                </b-button>
+            </template>
+            <template v-else-if="action.type == 'remove'">
+                <b-button :key="idx"
+                    :size="'sm'" 
+                    :variant="action.variant" 
+                    v-b-modal="'remove-model-' + index" 
+                    v-b-tooltip.hover 
+                    :title="action.text"
+                    href="javascript:void(0);" 
+                    class="ml-1" >
+                    <i class="fa fa-fw" :class="'fa-' + action.icon"></i>
+                </b-button>
+                <b-modal :key="'model-' + idx"
+                    :id="'remove-model-' + index" 
+                    centered 
+                    :cancel-title="$t('cancel')"
+                    :ok-title="$t('confirm_remove')"
+                    @ok="remove()"
+                    ok-variant="danger"
+                    button-size="sm">
+                    <div class="text-center font-weight-bold">
+                        {{ $t('confirm' )}}
+                    </div>
+                </b-modal>
+            </template>
+        </template>
     </div>
 </template>
 
@@ -59,19 +64,9 @@ export default {
         },
         index:{
             type: Number
-        }
-    },
-    computed: {
-        functions: function() {
-            return this.$store.state.list.functions;
         },
-        editUrl: function() {
-            var url = '/' + this.$route.params.module + '/edit';
-            if (this.$route.params.id) {
-                url += '/' + this.$route.params.id;
-            }
-            url += '?id=' + this.rowData.id;
-            return url;
+        actions: {
+            type: Array
         }
     },
     methods: {
@@ -80,10 +75,16 @@ export default {
                 url: this.$route.path,
                 id: this.rowData.id
             }).then(() => {
-                this.$emit('on-custom-comp');
-                if (this.$route.params.module === 'navigate') {
+                this.$emit('succeed');
+                if (this.$route.params.module === 'navigation') {
                     this.$store.dispatch('getTrees');
                 }
+            });
+        },
+        download: function() {
+            this.$store.dispatch('downloadData', {
+                url: this.$route.path,
+                id: this.rowData.id
             });
         }
     }
@@ -91,6 +92,9 @@ export default {
 </script>
 
 <style scoped>
+.action-container {
+    min-width: 150px;
+}
 .actions-btn {
     vertical-align: baseline!important;
 }

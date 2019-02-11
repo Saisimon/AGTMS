@@ -17,7 +17,7 @@ public class FunctionSelection extends AbstractSelection {
 		Functions[] fs = Functions.values();
 		LinkedHashMap<String, String> functionMap = new LinkedHashMap<>(fs.length);
 		for (Functions functions : fs) {
-			functionMap.put(functions.getFunction(), getMessage(SystemUtils.humpToCode(functions.getFunction(), ".")));
+			functionMap.put(functions.getCode().toString(), getMessage(SystemUtils.humpToCode(functions.getFunction(), ".")));
 		}
 		return functionMap;
 	}

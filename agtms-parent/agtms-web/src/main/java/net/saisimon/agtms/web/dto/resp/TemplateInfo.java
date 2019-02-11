@@ -1,5 +1,7 @@
 package net.saisimon.agtms.web.dto.resp;
 
+import java.util.Date;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.saisimon.agtms.web.dto.resp.common.BaseInfo;
@@ -10,7 +12,7 @@ public class TemplateInfo extends BaseInfo {
 	
 	private static final long serialVersionUID = 9049467055032392146L;
 
-	private Object id;
+	private Long id;
 	
 	private String navigationName;
 	
@@ -20,8 +22,8 @@ public class TemplateInfo extends BaseInfo {
 	
 	private String functions;
 	
-	private String createTime;
+	private Date createTime;
 	
-	private String updateTime;
+	private Date updateTime;
 	
 }

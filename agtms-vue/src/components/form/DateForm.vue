@@ -11,10 +11,10 @@
                 :clear-button="true"
                 :language="datepickerLanguage"
                 :state="field.state"
-                input-class="datepicker-input"
+                :input-class="inputClass"
                 format="yyyy-MM-dd" 
                 class="datepicker-container" />
-            <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required">
+            <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required" :class="feedbackClass">
                 {{ $t('please_input_valid') }}{{ field.text }}
             </b-form-invalid-feedback>
         </b-col>
@@ -27,6 +27,23 @@ import * as locale from 'vuejs-datepicker/dist/locale'
 export default {
     name: 'date-form',
     props: [ 'field' ],
+    data: function() {
+        return {
+            inputClass: 'datepicker-input',
+            feedbackClass: ''
+        }
+    },
+    updated: function() {
+        if (this.field) {
+            if (this.field.state == false) {
+                this.inputClass = 'datepicker-input border-danger'
+                this.feedbackClass = 'd-block'
+            } else {
+                this.inputClass = 'datepicker-input'
+                this.feedbackClass = ''
+            }
+        }
+    },
     computed: {
         datepickerLanguage: function() {
             var lang = this.$store.state.base.language;

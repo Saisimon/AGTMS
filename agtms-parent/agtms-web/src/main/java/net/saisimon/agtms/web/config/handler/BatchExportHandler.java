@@ -5,68 +5,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.FileConstant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.Template.TemplateField;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
-import net.saisimon.agtms.core.enums.DataSources;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.util.FileUtils;
-import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
+import net.saisimon.agtms.core.util.TemplateUtils;
 
 @Slf4j
-public class BatchExportHandler extends BasicWebSocketHandler {
-	
-	private int totalCount;
-	private AtomicInteger currentCount;
-	
-	@Override
-	protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-		String json = new String(message.asBytes(), "UTF-8");
-		@SuppressWarnings("unchecked")
-		Map<String, Object> request = SystemUtils.fromJson(json, Map.class, String.class, Object.class);
-		Template template = getTemplate(request, session);
-		if (template == null) {
-			session.close(CloseStatus.BAD_DATA);
-			log.warn("template not found");
-			return;
-		}
-		List<String> fields = getFields(request);
-		if (CollectionUtils.isEmpty(fields)) {
-			session.close(CloseStatus.BAD_DATA);
-			log.warn("missing fields");
-			return;
-		}
-		List<Domain> domains = getDatas(request, template);
-		if (domains == null) {
-			session.close(CloseStatus.SERVER_ERROR);
-			log.warn("get datas failed");
-			return;
-		}
-		currentCount = new AtomicInteger(domains.size());
-		totalCount = domains.size() * 2 + 2;
-		session.sendMessage(new TextMessage(String.valueOf((currentCount.get() * 100.0 / totalCount))));
-		String exportName = exportDatas(template, fields, domains, getType(request), session);
-		if (StringUtils.isBlank(exportName)) {
-			session.close(CloseStatus.SERVER_ERROR);
-			log.warn("export file failed");
-			return;
-		}
-		String url = "/manage/" + template.getId() + "/export/download?filename=" + exportName;
-		session.sendMessage(new TextMessage(url));
-	}
+public class BatchExportHandler {
 	
 	private String getType(Map<String, Object> request) {
 		Object typeObj = request.get("type");
@@ -78,7 +35,7 @@ public class BatchExportHandler extends BasicWebSocketHandler {
 		if (fieldsObj == null) {
 			return null;
 		}
-		return SystemUtils.transform(fieldsObj, String.class);
+		return SystemUtils.transformList(fieldsObj, String.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -88,20 +45,18 @@ public class BatchExportHandler extends BasicWebSocketHandler {
 			GenerateService generateService = GenerateServiceFactory.build(template);
 			Object selectObj = request.get("select");
 			if (selectObj != null) {
-				List<Long> select = SystemUtils.transform(selectObj, Long.class);
+				List<Long> select = SystemUtils.transformList(selectObj, Long.class);
 				if (!CollectionUtils.isEmpty(select)) {
 					for (Long id : select) {
-						Domain domain = generateService.findById(id, template.getUserId());
+						Domain domain = generateService.findById(id, template.getOperatorId());
 						if (domain != null) {
 							domains.add(domain);
 						}
 					}
 				}
 			} else {
-				FilterRequest filter = FilterRequest.build((Map<String, Object>)request.get("filter"));
-				if (!DataSources.RPC.getSource().equals(template.getSource())) {
-					filter.and("creator", template.getUserId());
-				}
+				FilterRequest filter = FilterRequest.build((Map<String, Object>)request.get("filter"), TemplateUtils.getFilters(template));
+				filter.and(Constant.OPERATORID, template.getOperatorId());
 				List<Domain> ds = generateService.findList(filter, null);
 				if (ds != null) {
 					domains.addAll(ds);
@@ -114,7 +69,7 @@ public class BatchExportHandler extends BasicWebSocketHandler {
 		}
 	}
 	
-	private String exportDatas(Template template, List<String> fields, List<Domain> domains, String type, WebSocketSession session) throws IOException {
+	private String exportDatas(Template template, List<String> fields, List<Domain> domains, String type) throws IOException {
 		List<String> heads = new ArrayList<>();
 		List<String> fieldNames = new ArrayList<>();
 		List<List<Object>> datas = new ArrayList<>();
@@ -131,7 +86,6 @@ public class BatchExportHandler extends BasicWebSocketHandler {
 				}
 			}
 		}
-		session.sendMessage(new TextMessage(String.valueOf((currentCount.incrementAndGet() * 100.0 / totalCount))));
 		for (Domain domain : domains) {
 			List<Object> data = new ArrayList<>();
 			for (String fieldName : fieldNames) {
@@ -139,7 +93,6 @@ public class BatchExportHandler extends BasicWebSocketHandler {
 				data.add(value == null ? "" : value);
 			}
 			datas.add(data);
-			session.sendMessage(new TextMessage(String.valueOf((currentCount.incrementAndGet() * 100.0 / totalCount))));
 		}
 		try {
 			File file;
@@ -157,7 +110,6 @@ public class BatchExportHandler extends BasicWebSocketHandler {
 				file = FileUtils.toXLSX(FileConstant.EXPORT_PATH, template.getId().toString(), heads, datas, null);
 				break;
 			}
-			session.sendMessage(new TextMessage(String.valueOf((currentCount.incrementAndGet() * 100.0 / totalCount))));
 			return file.getName();
 		} catch (IOException e) {
 			log.error("Export Excel Error", e);

@@ -1,19 +1,20 @@
 <?xml version="1.0"?>
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>net.saisimon</groupId>
 		<artifactId>agtms</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	
+
 	<artifactId>agtms-web</artifactId>
 	<packaging>jar</packaging>
 	<name>agtms-web</name>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>net.saisimon</groupId>
@@ -34,35 +35,33 @@
 			<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-websocket</artifactId>
-		</dependency>
-	    <dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-jpa</artifactId>
 			<version>${agtms-jpa.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>mysql</groupId>
-		    <artifactId>mysql-connector-java</artifactId>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
-		<!-- <dependency>
+		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-mongodb</artifactId>
 			<version>${agtms-mongodb.version}</version>
-		</dependency> -->
-		<!-- <dependency>
+		</dependency>
+		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-redis</artifactId>
 			<version>${agtms-redis.version}</version>
-		</dependency> -->
-		
-		<!-- <dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency> -->
+		</dependency>
+
+		<!-- 
+		<dependency> 
+			<groupId>org.springframework.cloud</groupId> 
+			<artifactId>spring-cloud-starter-config</artifactId> 
+		</dependency> 
+		-->
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>

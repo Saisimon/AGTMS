@@ -20,7 +20,7 @@
                 <template v-for="(field, key) in fields">
                     <select-form :field="field" :key="key" v-if="field.type == 'select'" />
                     <date-form :field="field" :key="key" v-else-if="field.type == 'date'" />
-                    <textarea-form :field="field" :key="key" v-else-if="field.type == 'textarea'" />
+                    <textarea-form :field="field" :key="key" v-else-if="field.view == 'textarea'" />
                     <icon-form :field="field" :key="key" v-else-if="field.view == 'icon'" />
                     <text-form :field="field" :key="key" v-else />
                 </template>
@@ -139,7 +139,7 @@ export default {
         'date-form': DateForm
     },
     created: function() {
-        if (this.$store.state.base.token !== '') {
+        if (this.$store.state.base.user !== '') {
             this.$store.dispatch('getEditGrid', {
                 url: this.$route.path,
                 id: this.$route.query.id
@@ -174,6 +174,9 @@ export default {
                 }
             }
             if (pass) {
+                if (this.$route.query.id) {
+                    data['id'] = this.$route.query.id;
+                }
                 this.$store.dispatch('saveData', {
                     url: this.$route.path,
                     data: data

@@ -84,13 +84,13 @@ export default {
             };
         },
         signIn: function() {
-            return this.$store.state.base.token !== '';
+            return this.$store.state.base.user != null;
         }
     },
     methods: {
         signOut: function() {
             this.$store.dispatch('logout');
-            this.$store.commit('setToken', '');
+            this.$store.commit('setUser', null);
             this.$store.commit('setTrees', []);
             this.$router.push({
                 path: '/signin?reply=' + encodeURIComponent(this.$route.path)
@@ -135,7 +135,7 @@ export default {
             window.location.reload();
         },
         toggleBars: function() {
-            var openTree = this.$store.state.navigate.openTree;
+            var openTree = this.$store.state.navigation.openTree;
             this.$store.commit('changeOpenTree', !openTree);
         }
     },

@@ -31,18 +31,15 @@ public class MultipleSelect<T> extends Select<T> implements Cloneable {
 		int size = selected == null ? 0 : selected.size();
 		List<Option<T>> selectedOptions = new ArrayList<Option<T>>(size);
 		List<Option<T>> options = new ArrayList<>();
-		Class<?> javaType = null;
 		for (T optionValue : optionValues) {
 			Option<T> option = new Option<>(optionValue, optionValue.toString());
 			options.add(option);
 			if (selected != null && selected.contains(optionValue)) {
 				selectedOptions.add(option);
 			}
-			javaType = optionValue.getClass();
 		}
 		select.setOptions(options);
 		select.setSelected(selectedOptions);
-		select.setJavaType(javaType);
 		return select;
 	}
 	

@@ -25,7 +25,7 @@ export default {
     },
     computed: {
         menuTrees: function() {
-            return this.filterTrees(this.search.toLowerCase(), this.$store.state.navigate.trees);
+            return this.filterTrees(this.search.toLowerCase(), this.$store.state.navigation.trees);
         }
     },
     methods: {

@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 import org.springframework.expression.spel.ast.Selection;
 
-import net.saisimon.agtms.core.enums.FilterTypes;
 import net.saisimon.agtms.core.enums.Views;
 
 @Target(ElementType.FIELD)
@@ -28,11 +27,13 @@ public @interface FieldInfo {
 	
 	String defaultValue() default "";
 	
-	boolean unique() default false;
+	boolean uniqued() default false;
 	
-	boolean sort() default false;
+	boolean sorted() default false;
 	
-	FilterTypes filterType() default FilterTypes.NONE;
+	boolean filter() default false;
+	
+	boolean hidden() default false;
 	
 	Class<? extends Selection> filterClass() default Selection.class;
 	

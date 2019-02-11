@@ -6,7 +6,7 @@
                 <span class="text-danger" v-if="field.required">*</span>
             </label>
         </b-col>
-        <b-col sm="10">
+        <b-col sm="10" :class="'invalid'">
             <multiselect class="filter-select"
                 v-model="field.value"
                 label="text"
@@ -14,9 +14,11 @@
                 select-label=""
                 deselect-label=""
                 selectedLabel=""
+                :allow-empty="!field.required"
                 :state="field.state"
                 :searchable="false"
                 :options="field.options"
+                :multiple="field.multiple"
                 :placeholder="''" />
             <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required">
                 {{ $t('please_input_valid') }}{{ field.text }}

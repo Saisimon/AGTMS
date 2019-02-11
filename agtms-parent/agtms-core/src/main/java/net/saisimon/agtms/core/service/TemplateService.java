@@ -7,13 +7,15 @@ import org.springframework.core.Ordered;
 
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.util.TokenUtils;
 
 public interface TemplateService extends BaseService<Template, Long>, Ordered {
 	
-	default boolean removeTemplateById(Long id) {
-		if (id != null && DomainGenerater.removeDomainClass(TokenUtils.getUserInfo().getLoginName(), DomainGenerater.buildGenerateName(id))) {
-			delete(id);
+	default boolean removeTemplate(Template template) {
+		if (template == null || template.getId() == null || template.getOperatorId() == null) {
+			return false;
+		}
+		if (DomainGenerater.removeDomainClass(template.getOperatorId().toString(), DomainGenerater.buildGenerateName(template.getId()))) {
+			delete(template.getId());
 			return true;
 		}
 		return false;
@@ -26,7 +28,7 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		Optional<Template> optional = findById(Long.valueOf(id.toString()));
 		if (optional.isPresent()) {
 			Template template = optional.get();
-			if (userId == template.getUserId()) {
+			if (userId == template.getOperatorId()) {
 				return template;
 			}
 		}

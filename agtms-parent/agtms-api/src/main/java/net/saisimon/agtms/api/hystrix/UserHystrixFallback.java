@@ -10,8 +10,8 @@ import net.saisimon.agtms.api.UserInterface;
 public class UserHystrixFallback implements UserInterface {
 
 	@Override
-	public boolean checkToken(String token) {
-		log.error("远程调用失败！方法 -> UserInfo checkToken(String token)");
+	public boolean checkToken(String uid, String token) {
+		log.error("远程调用失败！方法 -> UserInfo checkToken(String uid, String token)");
 		return false;
 	}
 

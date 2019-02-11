@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=false)
 public class SingleSelect<T> extends Select<T> implements Cloneable {
 	
-	private static final List<String> OPERATORS = Arrays.asList("strict", "fuzzy", "separator");
+	public static final List<String> OPERATORS = Arrays.asList("strict", "fuzzy", "separator");
 	
 	private Option<T> selected;
 	
@@ -32,7 +32,6 @@ public class SingleSelect<T> extends Select<T> implements Cloneable {
 	public static <T> SingleSelect<T> select(T selected, List<T> optionValues, List<String> optionTexts) {
 		SingleSelect<T> select = new SingleSelect<>();
 		List<Option<T>> options = new ArrayList<>();
-		Class<?> javaType = null;
 		for (int i = 0; i < optionValues.size(); i++) {
 			T optionValue = optionValues.get(i);
 			Option<T> option = new Option<>(optionValue, optionTexts.get(i));
@@ -40,10 +39,8 @@ public class SingleSelect<T> extends Select<T> implements Cloneable {
 			if (optionValue.equals(selected)) {
 				select.setSelected(option);
 			}
-			javaType = optionValue.getClass();
 		}
 		select.setOptions(options);
-		select.setJavaType(javaType);
 		return select;
 	}
 	

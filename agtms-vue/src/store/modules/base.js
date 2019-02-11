@@ -3,31 +3,21 @@ import { signIn, register, signOut } from '@/api/user'
 const state = {
     progress: 100,
     intervalId: -1,
-    token: getCookie('token', ''),
+    user: JSON.parse(getCookie('user', null)),
     language: getCookie('language', 'zh_CN')
 };
 
 const mutations = {
-    setToken(state, token) {
-        if (token && token !== '') {
-            state.token = token;
+    setUser(state, user) {
+        if (user) {
+            state.user = user;
         } else {
-            state.token = '';
+            state.user = null;
         }
-        var c = 'token=' + escape(token);
-        var exdate = new Date();
-        exdate.setMilliseconds(exdate.getMilliseconds() + 30 * 60 * 1000);
-        c += ';expires=' + exdate.toGMTString();
-        c += ';path=/';
-        document.cookie = c;
+        setCookie('user', JSON.stringify(state.user), 1800);
     },
-    refreshToken() {
-        var c = 'token=' + escape(state.token);
-        var exdate = new Date();
-        exdate.setMilliseconds(exdate.getMilliseconds() + 30 * 60 * 1000);
-        c += ';expires=' + exdate.toGMTString();
-        c += ';path=/';
-        document.cookie = c;
+    refreshUser() {
+        setCookie('user', JSON.stringify(state.user), 1800);
     },
     setLanguage(state, language) {
         if (language) {
@@ -53,7 +43,7 @@ const mutations = {
 const actions = {
     login(context, payload) {
         return new Promise((resolve, reject) => {
-            if (context.state.token === "") {
+            if (context.state.user == null) {
                 signIn(payload.username, payload.password).then(resp => {
                     resolve(resp);
                 }, error => {
@@ -64,7 +54,7 @@ const actions = {
     },
     reg(context, payload) {
         return new Promise((resolve, reject) => {
-            if (context.state.token === "") {
+            if (context.state.user == null) {
                 register(payload.username, payload.email, payload.password).then(resp => {
                     resolve(resp);
                 }, error => {
@@ -75,8 +65,8 @@ const actions = {
     },
     logout(context) {
         return new Promise((resolve, reject) => {
-            if (context.state.token !== "") {
-                signOut(context.state.token).then(resp => {
+            if (context.state.user !== null) {
+                signOut(context.state.user).then(resp => {
                     resolve(resp);
                 }, error => {
                     reject(error);
@@ -94,6 +84,12 @@ function getCookie(name, defaultValue) {
     } else {
         return defaultValue; 
     }
+}
+
+function setCookie(name, value, timeout) { 
+    var exdate = new Date();
+    exdate.setMilliseconds(exdate.getMilliseconds() + timeout * 1000);
+    document.cookie = name + "="+ escape(value) + ";expires=" + exdate.toGMTString() + ';path=/'; 
 } 
 
 export default {

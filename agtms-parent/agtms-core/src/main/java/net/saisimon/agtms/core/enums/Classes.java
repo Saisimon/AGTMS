@@ -2,16 +2,16 @@ package net.saisimon.agtms.core.enums;
 
 public enum Classes {
 	
-	INTEGER("java.lang.Integer"), DATE("date"), STRING("java.lang.String"), DOUBLE("java.lang.Double");
+	INTEGER("int"), DATE("date"), STRING("string"), DOUBLE("double");
 	
-	private String clazz;
+	private String name;
 	
-	Classes(String clazz) {
-		this.clazz = clazz;
+	Classes(String name) {
+		this.name = name;
 	}
 	
-	public String getClazz() {
-		return this.clazz;
+	public String getName() {
+		return this.name;
 	}
 	
 }

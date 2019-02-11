@@ -13,20 +13,6 @@ public class UserInfo implements Serializable {
 	
 	private String loginName;
 	
-	private String nickName;
-	
-	private String cellphone;
-	
-	private String email;
-	
-	private String remoteAddr;
-	
-	private String createTime;
-	
-	private String updateTime;
-	
-	private String lastOperation;
-	
-	private String lastLoginTime;
+	private String token;
 	
 }

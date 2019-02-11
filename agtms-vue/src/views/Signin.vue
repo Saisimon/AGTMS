@@ -76,7 +76,7 @@ export default {
                 var data = resp.data;
                 if (data) {
                     if (data.code === 0) {
-                        this.$store.commit('setToken', data.data);
+                        this.$store.commit('setUser', data.data);
                         this.$store.dispatch('getTrees');
                         var reply = this.$route.query.reply;
                         if (reply && reply != '/') {

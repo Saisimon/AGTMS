@@ -11,11 +11,11 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.StringUtils;
-import net.saisimon.agtms.mongodb.order.AbstractMongodbOrder;
+import net.saisimon.agtms.mongodb.order.MongodbOrder;
 import net.saisimon.agtms.mongodb.repository.UserMongodbRepository;
 
 @Service
-public class UserMongodbService extends AbstractMongodbOrder implements UserService {
+public class UserMongodbService implements UserService, MongodbOrder {
 
 	@Autowired
 	private UserMongodbRepository userMongodbRepository;

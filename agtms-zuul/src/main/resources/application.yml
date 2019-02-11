@@ -16,7 +16,7 @@ zuul:
       serviceId: AGTMS-WEB
 
 ribbon:
-  ReadTimeout: 10000
+  ReadTimeout: 30000
   ConnectTimeout: 10000
   MaxAutoRetries: 0
   MaxAutoRetriesNextServer: 1

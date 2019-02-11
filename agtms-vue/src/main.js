@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import BootstrapVue from 'bootstrap-vue'
-import {VTable, VPagination} from 'vue-easytable'
+import VueGoodTablePlugin from 'vue-good-table';
 import Multiselect from 'vue-multiselect'
 import Datepicker from 'vuejs-datepicker';
 import App from './App.vue'
@@ -12,14 +12,13 @@ import axios from 'axios'
 import 'font-awesome/css/font-awesome.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
-import 'vue-easytable/libs/themes-base/index.css'
+import 'vue-good-table/dist/vue-good-table.css'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = true;
 Vue.use(BootstrapVue);
-Vue.component(VTable.name, VTable);
-Vue.component(VPagination.name, VPagination);
+Vue.use(VueGoodTablePlugin);
 Vue.component('multiselect', Multiselect);
 Vue.component('datepicker', Datepicker);
 Vue.prototype.cloneObject = function (obj) {
@@ -43,9 +42,11 @@ Vue.prototype.isNullEmpty = function (a) {
 		}
 	} else if ((typeof a) == 'number' && !isNaN(a)) {
 		return false;
+	} else if ((typeof a) == 'object' && a != null) {
+		return false;
 	} else {
 		return true;
-	} 
+	}
 }
 
 new Vue({

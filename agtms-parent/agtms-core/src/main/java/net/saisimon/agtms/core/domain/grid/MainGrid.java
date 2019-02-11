@@ -14,13 +14,15 @@ public class MainGrid {
 	
 	private List<Breadcrumb> breadcrumbs;
 	
-	private List<List<Title>> titles;
-	
 	private List<Column> columns;
+	
+	private boolean showFilters;
 	
 	private List<Filter> filters;
 	
 	private List<String> functions;
+	
+	private List<Action> actions;
 	
 	private Pageable pageable;
 	
@@ -32,26 +34,7 @@ public class MainGrid {
 		
 		private String createUrl;
 		
-	}
-	
-	@Data
-	@Builder
-	public static class Title {
-		
-		private List<String> fields;
-		
-		private String title;
-		
-		@Builder.Default
-		private String titleAlign = "center";
-		
-		/** 列合并数 */
-		private Integer colspan;
-		
-		/** 行合并数 */
-		private Integer rowspan;
-		
-		private String orderBy;
+		private String editUrl;
 		
 	}
 	
@@ -61,19 +44,40 @@ public class MainGrid {
 		
 		private String field;
 		
-		private String title;
+		private String label;
 		
-		private Integer width;
+		private String type;
 		
-		@Builder.Default
-		private String titleAlign = "center";
+		private String dateInputFormat;
 		
-		@Builder.Default
-		private String columnAlign = "left";
+		private String dateOutputFormat;
+		
+		private boolean sortable;
 		
 		private String orderBy;
 		
+		private Integer width;
+		
 		private String view;
+		
+		private Integer ordered;
+		
+	}
+	
+	@Data
+	@Builder
+	public static class Action {
+		
+		private String to;
+		
+		@Builder.Default
+		private String variant = "outline-primary";
+		
+		private String text;
+		
+		private String icon;
+		
+		private String type;
 		
 	}
 	

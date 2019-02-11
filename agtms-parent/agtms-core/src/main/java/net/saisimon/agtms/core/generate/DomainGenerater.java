@@ -84,7 +84,7 @@ public class DomainGenerater {
 				buildConstructer(cw, superFullPathName);
 				for (Entry<String, String> entry : map.entrySet()) {
 					String fieldName = entry.getKey();
-					String fieldDesc = Type.getDescriptor(parseClass(entry.getValue()));
+					String fieldDesc = Type.getDescriptor(Class.forName(entry.getValue()));
 					buildField(cw, fieldName, fieldDesc);
 					buildSetterMethod(cw, domainFullPathName, fieldName, fieldDesc);
 					buildGetterMethod(cw, domainFullPathName, fieldName, fieldDesc);
@@ -204,43 +204,6 @@ public class DomainGenerater {
 			}
 		}
 		return false;
-	}
-	
-	private static Class<?> parseClass(String className) throws ClassNotFoundException {
-		Class<?> clazz;
-		switch (className) {
-		case "int":
-			clazz = Integer.TYPE;
-			break;
-		case "void":
-			clazz = Void.TYPE;
-			break;
-		case "boolean":
-			clazz = Boolean.TYPE;
-			break;
-		case "byte":
-			clazz = Byte.TYPE;
-			break;
-		case "char":
-			clazz = Character.TYPE;
-			break;
-		case "short":
-			clazz = Short.TYPE;
-			break;
-		case "double":
-			clazz = Double.TYPE;
-			break;
-		case "float":
-			clazz = Float.TYPE;
-			break;
-		case "long":
-			clazz = Long.TYPE;
-			break;
-		default:
-			clazz = Class.forName(className);
-			break;
-		}
-		return clazz;
 	}
 	
 	private static int parseReturnOpcode(String fieldDesc) {

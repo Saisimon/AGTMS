@@ -8,14 +8,14 @@ import org.springframework.stereotype.Service;
 
 import net.saisimon.agtms.core.domain.User;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
-import net.saisimon.agtms.core.order.AbstractOrder;
+import net.saisimon.agtms.core.order.BaseOrder;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.jpa.repository.UserJpaRepository;
 
 @Service
-public class UserJpaService extends AbstractOrder implements UserService {
+public class UserJpaService implements UserService, BaseOrder {
 	
 	@Autowired
 	private UserJpaRepository userJpaRepository;

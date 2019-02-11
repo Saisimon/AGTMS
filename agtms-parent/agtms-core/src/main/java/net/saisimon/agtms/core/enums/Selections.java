@@ -6,7 +6,11 @@ public enum Selections {
 	DATA_SOURCE("data_source"),
 	FILTER_TYPE("filter_type"),
 	FUNCTION("function"),
-	NAVIGATE("navigate"),
+	NAVIGATION("navigation"),
+	HANDLE_STATUS("handle_status"),
+	OPERATE_TYPE("operate_type"),
+	TASK_TYPE("task_type"),
+	FILE_TYPE("file_type"),
 	SEX("sex"),
 	VIEW("view"),
 	WHETHER("whether");

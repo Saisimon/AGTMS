@@ -1,19 +1,49 @@
+import { editGrid, save } from '@/api/edit'
+
 const state = {
-    template: {
-        
-    }
+    reset: {},
+    templateGrid: {
+        table: {
+            idx: 0,
+            columns: [],
+            rows: []
+        }
+    },
+    classOptions: [],
+    viewOptions: [],
+    whetherOptions: [],
 };
 
 const mutations = {
-    setTemplate(state, template) {
-        if (template) {
-            state.template = template;
+    setTemplateGrid(state, templateGrid) {
+        if (templateGrid) {
+            state.templateGrid = templateGrid;
+        }
+    },
+    setClassOptions(state, classOptions) {
+        if (classOptions) {
+            state.classOptions = classOptions;
+        }
+    },
+    setViewOptions(state, viewOptions) {
+        if (viewOptions) {
+            state.viewOptions = viewOptions;
+        }
+    },
+    setWhetherOptions(state, whetherOptions) {
+        if (whetherOptions) {
+            state.whetherOptions = whetherOptions;
         }
     }
 };
 
 const actions = {
-    
+    getTemplateGrid(context, id) {
+        return editGrid(context.rootState.base.user, "/template/edit", id);
+    },
+    saveTemplate(context, template) {
+        return save(context.rootState.base.user, "/template/edit", template);
+    }
 };
 
 export default {

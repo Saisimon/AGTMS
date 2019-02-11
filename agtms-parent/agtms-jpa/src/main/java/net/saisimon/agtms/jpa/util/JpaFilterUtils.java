@@ -33,6 +33,7 @@ import cn.hutool.core.util.NumberUtil;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
+import net.saisimon.agtms.core.util.DomainUtils;
 
 public class JpaFilterUtils {
 	
@@ -60,84 +61,6 @@ public class JpaFilterUtils {
 			sort += "`" + entry.getKey() + "` " + entry.getValue().toUpperCase();
 		}
 		return sort;
-	}
-	
-	private static String filter(List<FilterRequest> filters, boolean and) {
-		String sql = "( ";
-		for (FilterRequest filter : filters) {
-			if (!"( ".equals(sql)) {
-				if (and) {
-					sql += " AND ";
-				} else {
-					sql += " OR ";
-				}
-			}
-			if (filter.getClass() == FilterParam.class) {
-				sql += expression((FilterParam)filter);
-			} else {
-				sql += where(filter);
-			}
-		}
-		sql += " )";
-		return sql;
-	}
-	
-	private static String expression(FilterParam param) {
-		String expression = "";
-		if (param == null) {
-			return expression;
-		}
-		String key = param.getKey();
-		Object value = param.getValue();
-		String operator = param.getOperator();
-		String type = param.getType();
-		value = parseValue(value, type);
-		switch (operator) {
-		case LT:
-			expression = "`" + key + "` < '" + value.toString() + "'";
-			break;
-		case GT:
-			expression = "`" + key + "` > '" + value.toString() + "'";
-			break;
-		case LTE:
-			expression = "`" + key + "` <= '" + value.toString() + "'";
-			break;
-		case GTE:
-			expression = "`" + key + "` >= '" + value.toString() + "'";
-			break;
-		case REGEX:
-			expression = "`" + key + "` LIKE '%" + value.toString() + "%'";
-			break;
-		case NE:
-			expression = "`" + key + "` <> '" + value.toString() + "'";
-			break;
-		case EXISTS:
-			expression = "`" + key + "` IS NOT NULL";
-			break;
-		case IN:
-		case ALL:
-			if (value.getClass().isArray()) {
-				expression = "`" + key + "` IN (" + (Arrays.stream((Object[]) value)).map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
-			} else if (value instanceof Collection<?>) {
-				expression = "`" + key + "` IN (" + ((Collection<?>) value).stream().map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
-			} else {
-				expression = "`" + key + "` = '" + value.toString() + "'";
-			}
-			break;
-		case NIN:
-			if (value.getClass().isArray()) {
-				expression = "`" + key + "` NOT IN (" + (Arrays.stream((Object[]) value)).map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
-			} else if (value instanceof Collection<?>) {
-				expression = "`" + key + "` NOT IN (" + ((Collection<?>) value).stream().map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
-			} else {
-				expression = "`" + key + "` <> '" + value.toString() + "'";
-			}
-			break;
-		default:
-			expression = "`" + key + "` = '" + value.toString() + "'";
-			break;
-		}
-		return expression;
 	}
 	
 	public static <T> Specification<T> specification(FilterRequest filterRequest) {
@@ -195,7 +118,7 @@ public class JpaFilterUtils {
 		Object value = param.getValue();
 		String operator = param.getOperator();
 		String type = param.getType();
-		value = parseValue(value, type);
+		value = DomainUtils.parseFieldValue(value, type);
 		switch (operator) {
 		case LT:
 			if (NumberUtil.isNumber(value.toString())) {
@@ -274,27 +197,82 @@ public class JpaFilterUtils {
 		}
 	}
 	
-	private static Object parseValue(Object value, String type) {
-		switch (type) {
-		case "java.lang.Integer":
-		case "Integer":
-		case "int":
-			return Integer.parseInt(value.toString());
-		case "java.lang.Long":
-		case "Long":
-		case "long":
-			return Long.parseLong(value.toString());
-		case "java.lang.Double":
-		case "Double":
-		case "double":
-			return Double.parseDouble(value.toString());
-		case "java.lang.Boolean":
-		case "Boolean":
-		case "boolean":
-			return Boolean.parseBoolean(value.toString());
-		default:
-			return value;
+	private static String filter(List<FilterRequest> filters, boolean and) {
+		String sql = "( ";
+		for (FilterRequest filter : filters) {
+			if (!"( ".equals(sql)) {
+				if (and) {
+					sql += " AND ";
+				} else {
+					sql += " OR ";
+				}
+			}
+			if (filter.getClass() == FilterParam.class) {
+				sql += expression((FilterParam)filter);
+			} else {
+				sql += where(filter);
+			}
 		}
+		sql += " )";
+		return sql;
+	}
+	
+	private static String expression(FilterParam param) {
+		String expression = "";
+		if (param == null) {
+			return expression;
+		}
+		String key = param.getKey();
+		Object value = param.getValue();
+		String operator = param.getOperator();
+		String type = param.getType();
+		value = DomainUtils.parseFieldValue(value, type);
+		switch (operator) {
+		case LT:
+			expression = "`" + key + "` < '" + value.toString() + "'";
+			break;
+		case GT:
+			expression = "`" + key + "` > '" + value.toString() + "'";
+			break;
+		case LTE:
+			expression = "`" + key + "` <= '" + value.toString() + "'";
+			break;
+		case GTE:
+			expression = "`" + key + "` >= '" + value.toString() + "'";
+			break;
+		case REGEX:
+			expression = "`" + key + "` LIKE '%" + value.toString() + "%'";
+			break;
+		case NE:
+			expression = "`" + key + "` <> '" + value.toString() + "'";
+			break;
+		case EXISTS:
+			expression = "`" + key + "` IS NOT NULL";
+			break;
+		case IN:
+		case ALL:
+			if (value.getClass().isArray()) {
+				expression = "`" + key + "` IN (" + (Arrays.stream((Object[]) value)).map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
+			} else if (value instanceof Collection<?>) {
+				expression = "`" + key + "` IN (" + ((Collection<?>) value).stream().map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
+			} else {
+				expression = "`" + key + "` = '" + value.toString() + "'";
+			}
+			break;
+		case NIN:
+			if (value.getClass().isArray()) {
+				expression = "`" + key + "` NOT IN (" + (Arrays.stream((Object[]) value)).map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
+			} else if (value instanceof Collection<?>) {
+				expression = "`" + key + "` NOT IN (" + ((Collection<?>) value).stream().map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
+			} else {
+				expression = "`" + key + "` <> '" + value.toString() + "'";
+			}
+			break;
+		default:
+			expression = "`" + key + "` = '" + value.toString() + "'";
+			break;
+		}
+		return expression;
 	}
 	
 }

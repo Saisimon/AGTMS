@@ -18,6 +18,7 @@ eureka:
     hostname: ${spring.application.name}
     instance-id: ${spring.cloud.client.ip-address}:${server.port}
   client:
+    registry-fetch-interval-seconds: 5
     serviceUrl:
       defaultZone: http://agtms:agtms8000@eurekaserver:8000/eureka/
 

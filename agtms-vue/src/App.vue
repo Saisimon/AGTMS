@@ -26,7 +26,7 @@ export default {
     name: 'app',
     computed: {
         hasMainNavbarCollapse: function() {
-            return !this.$store.state.navigate.openTree;
+            return !this.$store.state.navigation.openTree;
         },
         progress: function() {
             return this.$store.state.base.progress;
@@ -54,7 +54,7 @@ export default {
                 element.setAttribute('fullscreen', '1');
             }
         }
-        if (this.$store.state.base.token !== '') {
+        if (this.$store.state.base.user != null) {
             this.$store.dispatch('getTrees');
         }
         document.getElementsByTagName("body")[0].setAttribute('style', 'width: ' + document.documentElement.clientWidth + 'px');
@@ -74,7 +74,7 @@ export default {
 <style>
 body {
     overflow-x: hidden;
-    font-size: 14px;
+    font-family: "Helvetica Neue",Helvetica,Arial,"Microsoft Yahei","Hiragino Sans GB","Heiti SC","WenQuanYi Micro Hei",sans-serif!important;
 }
 body::-webkit-scrollbar, .main-sidebar::-webkit-scrollbar, .navbar-collapse::-webkit-scrollbar {
     width: 8px;

@@ -8,6 +8,8 @@ public class UserSelection implements Selection {
 
 	@Override
 	public LinkedHashMap<String, String> select() {
+		// TODO
+		
 		return null;
 	}
 

@@ -10,8 +10,8 @@ import net.saisimon.agtms.mongodb.repository.base.BaseMongoRepository;
 @Repository
 public interface TemplateMongodbRepository extends BaseMongoRepository<Template, Long> {
 	
-	List<Template> findByNavigationIdAndUserId(Long navigationId, Long userId);
+	List<Template> findByNavigationIdAndOperatorId(Long navigationId, Long operatorId);
 	
-	boolean existsByTitleAndUserId(String title, Long userId);
+	boolean existsByTitleAndOperatorId(String title, Long operatorId);
 	
 }

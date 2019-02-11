@@ -8,13 +8,13 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class RpcConfig {
-	
+
 	@Autowired
-    private RestTemplateBuilder builder;
-	
+	private RestTemplateBuilder builder;
+
 	@Bean
-    public RestTemplate restTemplate() {
-        return builder.build();
-    }
-	
+	public RestTemplate restTemplate() {
+		return builder.build();
+	}
+
 }

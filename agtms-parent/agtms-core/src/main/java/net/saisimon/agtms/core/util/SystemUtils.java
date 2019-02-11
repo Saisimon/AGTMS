@@ -1,19 +1,27 @@
 package net.saisimon.agtms.core.util;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.mail.internet.MimeUtility;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.util.ClassUtils;
 
@@ -25,6 +33,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.domain.Task;
+import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.enums.HandleStatuses;
+import net.saisimon.agtms.core.factory.ActuatorFactory;
+import net.saisimon.agtms.core.factory.TaskServiceFactory;
+import net.saisimon.agtms.core.service.TaskService;
+import net.saisimon.agtms.core.task.Actuator;
 
 @Slf4j
 public final class SystemUtils {
@@ -32,6 +47,8 @@ public final class SystemUtils {
 	private static final Pattern EMAIL_PATTERN = Pattern.compile("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?");
 	private static final Pattern URL_PATTERN = Pattern.compile("[a-zA-z]+://[^\\s]*");
 	private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
+	
+	private static final Executor executor = Executors.newWorkStealingPool(26);
 	
 	private SystemUtils() {
 		throw new IllegalAccessError();
@@ -108,7 +125,7 @@ public final class SystemUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T> List<T> transform(final Object obj, final Class<T> clazz) {
+	public static <T> List<T> transformList(final Object obj, final Class<T> clazz) {
 		List<T> fields = null;
 		if (obj != null) {
 			if (obj.getClass().isArray()) {
@@ -146,26 +163,67 @@ public final class SystemUtils {
 		return contentDisposition;
 	}
 	
-	public static Object parseFieldValue(Object fieldValue, String fieldClassName) throws ClassNotFoundException {
-		if (fieldValue != null && fieldClassName != null) {
-			fieldClassName = handleFieldType(fieldClassName);
-			Class<?> fieldClass = Class.forName(fieldClassName);
-			if (Integer.class == fieldClass || int.class == fieldClass) {
-				return Integer.valueOf(fieldValue.toString());
-			} else if (Long.class == fieldClass || long.class == fieldClass) {
-				return Long.valueOf(fieldValue.toString());
-			} else if (Double.class == fieldClass || double.class == fieldClass) {
-				return Double.valueOf(fieldValue.toString());
+	public static Class<?> getInterfaceGenericClass(Class<?> subClass, Class<?> targetInterfaceClass, int genericIndex) {
+		Class<?> clazz = subClass;
+		while (clazz != null && clazz != Object.class) {
+			Type[] types = clazz.getGenericInterfaces();
+			for (Type type : types) {
+				if (type.getTypeName().startsWith(targetInterfaceClass.getName())) {
+					ParameterizedType pt = (ParameterizedType) type;
+					return (Class<?>) pt.getActualTypeArguments()[genericIndex];
+				}
 			}
+			Class<?>[] interfaces = clazz.getInterfaces();
+			if (interfaces != null) {
+				for (Class<?> inter : interfaces) {
+					return getInterfaceGenericClass(inter, targetInterfaceClass, genericIndex);
+				}
+			}
+			clazz = clazz.getSuperclass();
 		}
-		return fieldValue;
+		throw new RuntimeException("get interface generic class failed.");
 	}
 	
-	public static String handleFieldType(String type) {
-		if ("date".equalsIgnoreCase(type) || "datetime".equalsIgnoreCase(type)) {
-			return "java.lang.String";
+	public static <P> void submitTask(final Task task) {
+		CompletableFuture.runAsync(() -> {
+			TaskService taskService = TaskServiceFactory.get();
+			task.setHandleStatus(HandleStatuses.PROCESSING.getStatus());
+			taskService.saveOrUpdate(task);
+			try {
+				@SuppressWarnings("unchecked")
+				Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
+				if (actuator == null) {
+					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+					task.setHandleTime(new Date());
+					taskService.saveOrUpdate(task);
+					return;
+				}
+				Class<P> paramClass = actuator.getParamClass();
+				P param = fromJson(task.getTaskParam(), paramClass);
+				Result result = actuator.execute(param);
+				if (ResultUtils.isSuccess(result)) {
+					task.setHandleStatus(HandleStatuses.SUCCESS.getStatus());
+				} else {
+					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+				}
+				task.setHandleResult(result.getMessage());
+				task.setHandleTime(new Date());
+				taskService.saveOrUpdate(task);
+			} catch (Exception e) {
+				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+				task.setHandleTime(new Date());
+				taskService.saveOrUpdate(task);
+				log.error("任务执行异常", e);
+			}
+		}, executor);
+	}
+	
+	public static void sendObject(HttpServletResponse response, Object obj) throws IOException {
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("application/json; charset=utf-8");
+		try (PrintWriter out = response.getWriter()) {
+			out.append(toJson(obj));
 		}
-		return type;
 	}
 	
 	private static JavaType parse(Class<?> targetClass, Class<?>... genericClasses) {

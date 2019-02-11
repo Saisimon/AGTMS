@@ -10,8 +10,8 @@
             <b-form-textarea :id="field.name + '-input'"
                     :state="field.state"
                     v-model.trim="field.value"
-                    placeholder="Enter something"
-                    :max-rows="6">
+                    no-resize
+                    :rows="6">
             </b-form-textarea>
             <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required">
                 {{ $t('please_input_valid') }}{{ field.text }}

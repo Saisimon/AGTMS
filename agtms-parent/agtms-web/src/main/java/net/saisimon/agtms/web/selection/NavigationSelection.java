@@ -12,20 +12,20 @@ import net.saisimon.agtms.core.enums.Selections;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.service.NavigationService;
-import net.saisimon.agtms.core.util.TokenUtils;
+import net.saisimon.agtms.core.util.AuthUtils;
 
 @Component
 public class NavigationSelection extends AbstractSelection {
 	
 	@Override
 	public Selections key() {
-		return Selections.NAVIGATE;
+		return Selections.NAVIGATION;
 	}
 	
 	@Override
 	public LinkedHashMap<String, String> select() {
 		NavigationService navigationService = NavigationServiceFactory.get();
-		long userId = TokenUtils.getUserInfo().getUserId();
+		long userId = AuthUtils.getUserInfo().getUserId();
 		List<Navigation> navigations = navigationService.getNavigations(userId);
 		LinkedHashMap<String, String> navigationMap = new LinkedHashMap<>(navigations.size() + 1);
 		navigationMap.put("-1", "/");
@@ -37,7 +37,7 @@ public class NavigationSelection extends AbstractSelection {
 	
 	public LinkedHashMap<Long, String> selectWithParent(Long excludeId) {
 		NavigationService navigationService = NavigationServiceFactory.get();
-		long userId = TokenUtils.getUserInfo().getUserId();
+		long userId = AuthUtils.getUserInfo().getUserId();
 		List<Navigation> navigations = navigationService.getNavigations(userId);
 		LinkedHashMap<Long, String> navigationMap = new LinkedHashMap<>(navigations.size());
 		parse(navigations, -1L, navigationMap, excludeId);

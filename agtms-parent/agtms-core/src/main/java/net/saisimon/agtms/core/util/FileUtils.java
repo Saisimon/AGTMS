@@ -173,7 +173,7 @@ public final class FileUtils {
 	}
 
 	private static void setValue(Cell cell, Object obj) {
-		List<Object> list = SystemUtils.transform(obj, Object.class);
+		List<Object> list = SystemUtils.transformList(obj, Object.class);
 		if (list != null) {
 			String value = list.stream().map(Object::toString).collect(Collectors.joining(";"));
 			cell.setCellValue(value);
@@ -205,7 +205,7 @@ public final class FileUtils {
 	
 	private static String cellString(Object obj) {
 		String value = "";
-		List<Object> list = SystemUtils.transform(obj, Object.class);
+		List<Object> list = SystemUtils.transformList(obj, Object.class);
 		if (list != null) {
 			value = list.stream().map(Object::toString).collect(Collectors.joining(";"));
 		} else if (obj instanceof RichTextString) {

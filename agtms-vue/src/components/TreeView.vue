@@ -14,11 +14,11 @@
                     :key="children.id"
                     :tree="children">
                 </tree-view>
-                <li v-for="(value, key) in tree.linkMap"
-                    :key="key">
-                    <router-link :to="key" v-b-toggle="'nav-bar'">
+                <li v-for="(link, index) in tree.links"
+                    :key="index">
+                    <router-link :to="link.link" v-b-toggle="'nav-bar'">
                         <i class="fa fa-fw fa-link text-light"></i>
-                        <span class="text-light ml-1">{{value}}</span>
+                        <span class="text-light ml-1">{{link.name}}</span>
                     </router-link>
                 </li>
             </ul>
@@ -37,12 +37,12 @@ export default {
     },
     computed: {
         hasMenuOpen: function() {
-            return this.menuOpen && this.$store.state.navigate.openTree;
+            return this.menuOpen && this.$store.state.navigation.openTree;
         }
     },
     methods: {
         openMenu: function() {
-            if (this.$store.state.navigate.openTree) {
+            if (this.$store.state.navigation.openTree) {
                 this.menuOpen = !this.menuOpen;
             }
         }

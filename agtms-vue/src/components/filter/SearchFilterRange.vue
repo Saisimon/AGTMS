@@ -4,12 +4,14 @@
             <span>{{ $t("from") }}</span>
         </b-input-group-text>
         <search-filter-datepicker :input="filter.from" v-if="filter.from.type == 'date'" />
-        <b-form-input v-model="filter.from.value" v-else :type="filter.from.type" />
+        <b-form-input v-model="filter.from.value" v-else-if="filter.from.type == 'int' || filter.from.type == 'double'" :type="'number'" />
+        <b-form-input v-model="filter.from.value" v-else :type="'text'" />
         <b-input-group-text>
             <span>{{ $t("to") }}</span>
         </b-input-group-text>
         <search-filter-datepicker :input="filter.to" v-if="filter.to.type == 'date'" :calendarClass="'filter-datepicker-calendar-right'" />
-        <b-form-input v-model="filter.to.value" v-else :type="filter.to.type" />
+        <b-form-input v-model="filter.to.value" v-else-if="filter.to.type == 'int' || filter.to.type == 'double'" :type="'number'" />
+        <b-form-input v-model="filter.to.value" v-else :type="'text'" />
     </div>
 </template>
 

@@ -1,5 +1,8 @@
 package net.saisimon.agtms.core.factory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -8,12 +11,14 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.util.StringUtils;
 
 @Component
 public class GenerateServiceFactory implements BeanPostProcessor {
 	
+	private static final List<Sign> SIGNS = new ArrayList<>();
 	private static final Map<String, GenerateService> GENERATE_SERVICE_MAP = new ConcurrentHashMap<>(16);
 	
 	public static GenerateService build(Template template) {
@@ -28,16 +33,26 @@ public class GenerateServiceFactory implements BeanPostProcessor {
 		return generateService;
 	}
 	
+	public static List<Sign> getSigns() {
+		return SIGNS;
+	}
+	
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		if (! (bean instanceof GenerateService)) {
 			return bean;
 		}
 		GenerateService generateService = (GenerateService) bean;
-		if (generateService.key() == null) {
+		if (generateService.sign() == null || StringUtils.isBlank(generateService.sign().getName())) {
 			return bean;
 		}
-		GENERATE_SERVICE_MAP.put(generateService.key().getSource(), generateService);
+		if (!SIGNS.contains(generateService.sign())) {
+			SIGNS.add(generateService.sign());
+			Collections.sort(SIGNS, (s1, s2) -> {
+				return Integer.compare(s1.getOrder(), s1.getOrder());
+			});
+		}
+		GENERATE_SERVICE_MAP.put(generateService.sign().getName(), generateService);
 		return bean;
 	}
 	

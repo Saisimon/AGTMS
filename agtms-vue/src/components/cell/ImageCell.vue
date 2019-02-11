@@ -6,7 +6,7 @@
 
 <script>
 export default {
-    name: "text-cell",
+    name: "image-cell",
     props:{
         rowData:{
             type: Object

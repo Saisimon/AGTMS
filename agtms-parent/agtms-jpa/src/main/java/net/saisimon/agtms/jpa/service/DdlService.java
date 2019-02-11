@@ -10,10 +10,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Classes;
-import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
 @Service
@@ -100,19 +100,21 @@ public class DdlService {
 				sql += " DEFAULT NULL, ";
 			}
 		}
-		sql += AbstractGenerateRepository.CREATOR + " BIGINT(15) DEFAULT NULL, ";
-		sql += AbstractGenerateRepository.CTIME + " BIGINT(15) DEFAULT NULL, ";
-		sql += AbstractGenerateRepository.UTIME + " BIGINT(15) DEFAULT NULL, ";
+		sql += Constant.OPERATOR_ID + " BIGINT(15) DEFAULT NULL, ";
+		sql += Constant.CREATE_TIME + " BIGINT(15) DEFAULT NULL, ";
+		sql += Constant.UPDATE_TIME + " BIGINT(15) DEFAULT NULL, ";
 		sql += "PRIMARY KEY (id)";
 		sql += ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
 		return sql;
 	}
 	
 	private String columnType(TemplateField field) {
-		if (Classes.INTEGER.getClazz().equals(field.getFieldType())) {
-			return " BIGINT(15) ";
-		} else if (Classes.DOUBLE.getClazz().equals(field.getFieldType())) {
+		if (Classes.INTEGER.getName().equals(field.getFieldType())) {
+			return " INT(11) ";
+		} else if (Classes.DOUBLE.getName().equals(field.getFieldType())) {
 			return " DECIMAL(15,2) ";
+		} else if (Classes.DATE.getName().equals(field.getFieldType())) {
+			return " TIMESTAMP ";
 		} else {
 			return " VARCHAR(500) ";
 		}

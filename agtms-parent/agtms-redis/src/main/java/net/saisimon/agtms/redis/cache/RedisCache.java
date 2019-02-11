@@ -1,45 +1,49 @@
 package net.saisimon.agtms.redis.cache;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import net.saisimon.agtms.core.cache.Cache;
+import net.saisimon.agtms.core.cache.AbstractCache;
 import net.saisimon.agtms.core.util.StringUtils;
-import net.saisimon.agtms.core.util.SystemUtils;
-import net.saisimon.agtms.redis.order.AbstractRedisOrder;
+import net.saisimon.agtms.redis.order.RedisOrder;
 
 @Component
-public class RedisCache extends AbstractRedisOrder implements Cache {
+public class RedisCache extends AbstractCache implements RedisOrder {
+	
+	private Map<String, Long> timeoutMap = new ConcurrentHashMap<>();
 	
 	@Autowired
 	private StringRedisTemplate redisTemplate;
 	
 	@Override
-	public <T> T get(String key, Class<T> valueClass, Class<?>... genericClasses) {
+	protected String get(String key, boolean update) {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}
 		String json = redisTemplate.opsForValue().get(key);
-		if (StringUtils.isBlank(json)) {
-			return null;
+		if (update) {
+			Long timeout = timeoutMap.getOrDefault(key, 0L);
+			set(key, json, timeout);
 		}
-		return SystemUtils.fromJson(json, valueClass, genericClasses);
+		return json;
 	}
 	
 	@Override
-	public <T> void set(String key, T value, long timeout) {
-		if (StringUtils.isBlank(key) || value == null) {
+	protected void set(String key, String value, long timeout) {
+		if (StringUtils.isBlank(key)) {
 			return;
 		}
-		String json = SystemUtils.toJson(value);
 		if (timeout > 0) {
-			redisTemplate.opsForValue().set(key, json, timeout, TimeUnit.MILLISECONDS);
+			redisTemplate.opsForValue().set(key, value, timeout, TimeUnit.MILLISECONDS);
 		} else {
-			redisTemplate.opsForValue().set(key, json);
+			redisTemplate.opsForValue().set(key, value);
 		}
+		timeoutMap.put(key, timeout);
 	}
 	
 	@Override
@@ -48,6 +52,7 @@ public class RedisCache extends AbstractRedisOrder implements Cache {
 			return;
 		}
 		redisTemplate.delete(key);
+		timeoutMap.remove(key);
 	}
-	
+
 }

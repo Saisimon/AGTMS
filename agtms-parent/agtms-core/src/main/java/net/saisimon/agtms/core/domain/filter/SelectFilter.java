@@ -33,14 +33,18 @@ public class SelectFilter<T> extends FieldFilter {
 		return selectFilter;
 	}
 	
-	public static <T> FieldFilter selectFilter(T selected, List<T> optionValues, List<String> optionTexts) {
+	public static <T> FieldFilter selectFilter(T selected, String type, List<T> optionValues, List<String> optionTexts) {
 		SelectFilter<T> selectFilter = new SelectFilter<>(false);
-		selectFilter.setSelect(SingleSelect.select(selected, optionValues, optionTexts));
+		Select<T> select = SingleSelect.select(selected, optionValues, optionTexts);
+		select.setType(type);
+		selectFilter.setSelect(select);
 		return selectFilter;
 	}
 	
-	public static <T> FieldFilter multipleSelectFilter(List<T> selected, List<T> optionValues, List<String> optionTexts) {
+	public static <T> FieldFilter multipleSelectFilter(List<T> selected, String type, List<T> optionValues, List<String> optionTexts) {
 		SelectFilter<T> selectFilter = new SelectFilter<>(true);
+		Select<T> select = MultipleSelect.multipleSelect(selected, optionValues, optionTexts);
+		select.setType(type);
 		selectFilter.setSelect(MultipleSelect.multipleSelect(selected, optionValues, optionTexts));
 		return selectFilter;
 	}

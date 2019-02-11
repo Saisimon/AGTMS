@@ -17,17 +17,22 @@ import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
+import net.saisimon.agtms.core.domain.grid.BatchGrid;
+import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchEdit;
+import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchExport;
+import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchImport;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.MainGrid;
+import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
-import net.saisimon.agtms.core.domain.grid.MainGrid.Title;
 import net.saisimon.agtms.core.domain.page.Pageable;
 import net.saisimon.agtms.core.domain.tag.MultipleSelect;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.web.dto.resp.NavigationTree;
+import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
 
 @Slf4j
 public abstract class MainController extends BaseController {
@@ -38,28 +43,57 @@ public abstract class MainController extends BaseController {
 	
 	protected abstract List<Filter> filters(Object key);
 	
-	protected abstract List<List<Title>> titles(Object key);
-	
 	protected abstract List<Column> columns(Object key);
 	
-	protected abstract List<String> functions(Object key);
+	protected List<Action> actions(Object key) {
+		return null;
+	}
+	
+	protected List<String> functions(Object key) {
+		return null;
+	}
+	
+	protected BatchEdit batchEdit(Object key) {
+		return null;
+	}
+	
+	protected BatchExport batchExport(Object key) {
+		return null;
+	}
+	
+	protected BatchImport batchImport(Object key) {
+		return null;
+	}
 	
 	protected MainGrid getMainGrid(Object key) {
 		MainGrid mainGrid = new MainGrid();
 		mainGrid.setHeader(header(key));
 		mainGrid.setBreadcrumbs(breadcrumbs(key));
-		mainGrid.setTitles(titles(key));
 		List<Column> columns = columns(key);
 		previousSort(columns, key + "_pageable");
 		mainGrid.setColumns(columns);
+		List<Action> actions = actions(key);
+		mainGrid.setActions(actions);
 		List<Filter> filters = filters(key);
-		previousFilter(filters, key + "_filters");
+		boolean showFilters = previousFilter(filters, key + "_filters");
+		mainGrid.setShowFilters(showFilters);
 		mainGrid.setFilters(internationFilters(filters));
 		Pageable pageable = pageable();
 		previousPageable(pageable, key + "_pageable");
 		mainGrid.setPageable(pageable);
 		mainGrid.setFunctions(functions(key));
 		return mainGrid;
+	}
+	
+	protected BatchGrid getBatchGrid(Object key) {
+		BatchGrid batchGrid = new BatchGrid();
+		BatchEdit batchEdit = batchEdit(key);
+		batchGrid.setBatchEdit(batchEdit);
+		BatchExport batchExport = batchExport(key);
+		batchGrid.setBatchExport(batchExport);
+		BatchImport batchImport = batchImport(key);
+		batchGrid.setBatchImport(batchImport);
+		return batchGrid;
 	}
 	
 	protected Pageable pageable() {
@@ -75,9 +109,9 @@ public abstract class MainController extends BaseController {
 			try {
 				NavigationTree cloneTree = (NavigationTree) tree.clone();
 				cloneTree.setTitle(getMessage(cloneTree.getTitle()));
-				if (!CollectionUtils.isEmpty(cloneTree.getLinkMap())) {
-					for (Entry<String, String> entry : cloneTree.getLinkMap().entrySet()) {
-						cloneTree.getLinkMap().put(entry.getKey(), getMessage(entry.getValue()));
+				if (!CollectionUtils.isEmpty(cloneTree.getLinks())) {
+					for (NavigationLink link : cloneTree.getLinks()) {
+						link.setName(getMessage(link.getName()));
 					}
 				}
 				cloneTree.setChildrens(internationNavigationTrees(cloneTree.getChildrens()));
@@ -173,23 +207,26 @@ public abstract class MainController extends BaseController {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void previousFilter(List<Filter> filters, String sessionKey) {
+	private boolean previousFilter(List<Filter> filters, String sessionKey) {
 		if (CollectionUtils.isEmpty(filters)) {
-			return;
+			return false;
 		}
 		HttpSession session = request.getSession();
 		Map<String, Object> filterMap = (Map<String, Object>) session.getAttribute(sessionKey);
 		if (filterMap == null) {
-			return;
+			return false;
 		}
 		List<Map<String, Object>> andFilters = (List<Map<String, Object>>) filterMap.get("andFilters");
 		if (CollectionUtils.isEmpty(andFilters)) {
-			return;
+			return false;
 		}
 		for (Map<String, Object> andFilter : andFilters) {
 			String key = (String) andFilter.get("key");
 			String operator = (String) andFilter.get("operator");
 			Object value = andFilter.get("value");
+			if (value == null) {
+				continue;
+			}
 			for (Filter filter : filters) {
 				SingleSelect<String> keySelect = filter.getKey();
 				for (Option<String> option : keySelect.getOptions()) {
@@ -221,7 +258,7 @@ public abstract class MainController extends BaseController {
 							List<Option<Object>> selected = new ArrayList<>();
 							for (Option<Object> option : filterMultipleSelect.getOptions()) {
 								for (Object obj : list) {
-									if (option.getValue().equals(obj)) {
+									if (option.getValue().toString().equals(obj.toString())) {
 										selected.add(option);
 									}
 								}
@@ -230,7 +267,7 @@ public abstract class MainController extends BaseController {
 						} else {
 							SingleSelect<Object> filterSingleSelect = (SingleSelect<Object>) selectFilter.getSelect();
 							for (Option<Object> option : filterSingleSelect.getOptions()) {
-								if (option.getValue().equals(value)) {
+								if (option.getValue().toString().equals(value.toString())) {
 									filterSingleSelect.setSelected(option);
 									break;
 								}
@@ -247,6 +284,7 @@ public abstract class MainController extends BaseController {
 				}
 			}
 		}
+		return true;
 	}
 	
 }
