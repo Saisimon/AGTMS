@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: AGTMS-CONFIG
+  cloud:
+    config:
+      server:
+        git:
+          uri: *
+          search-paths: /**
+          username: *
+          password: *
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: ${spring.application.name}
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+  client:
+    serviceUrl:
+      defaultZone: http://agtms:agtms8000@eurekaserver:8000/eureka/
+
+server:
+  port: 8300
+
+encrypt:
+  key: agtms8300
