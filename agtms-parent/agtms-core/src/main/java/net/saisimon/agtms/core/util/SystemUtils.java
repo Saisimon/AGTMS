@@ -14,9 +14,12 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,7 +52,9 @@ public final class SystemUtils {
 	private static final Pattern URL_PATTERN = Pattern.compile("[a-zA-z]+://[^\\s]*");
 	private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
 	
-	private static final Executor executor = Executors.newWorkStealingPool(26);
+//	private static final ExecutorService executor = Executors.newWorkStealingPool(26);
+	private static final ExecutorService executor = Executors.newCachedThreadPool();
+	private static final Map<Long, Future<?>> taskFutureMap = new ConcurrentHashMap<>();
 	
 	private SystemUtils() {
 		throw new IllegalAccessError();
@@ -189,7 +194,7 @@ public final class SystemUtils {
 		if (task == null) {
 			return;
 		}
-		CompletableFuture.runAsync(() -> {
+		Future<?> future = executor.submit(() -> {
 			TaskService taskService = TaskServiceFactory.get();
 			task.setHandleStatus(HandleStatuses.PROCESSING.getStatus());
 			taskService.saveOrUpdate(task);
@@ -213,17 +218,22 @@ public final class SystemUtils {
 				task.setHandleResult(result.getMessage());
 				task.setHandleTime(new Date());
 				taskService.saveOrUpdate(task);
-			} catch (Exception e) {
+			} catch (InterruptedException e) {
+				log.warn("任务被中断");
+			} catch (Throwable e) {
 				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
 				task.setHandleTime(new Date());
 				taskService.saveOrUpdate(task);
 				log.error("任务执行异常", e);
+			} finally {
+				taskFutureMap.remove(task.getId());
 			}
-		}, executor);
+		});
+		taskFutureMap.put(task.getId(), future);
 	}
 	
 	public static <P> void downloadTask(final Task task, HttpServletRequest request, HttpServletResponse response) {
-		if (task == null) {
+		if (task == null || task.getHandleStatus() != HandleStatuses.SUCCESS.getStatus()) {
 			return;
 		}
 		@SuppressWarnings("unchecked")
@@ -232,6 +242,27 @@ public final class SystemUtils {
 			return;
 		}
 		actuator.download(task, request, response);
+	}
+	
+	public static void cancelTask(final Task task) {
+		Future<?> future = taskFutureMap.remove(task.getId());
+		if (future != null && !future.isDone() && !future.isCancelled()) {
+			future.cancel(true);
+			TaskService taskService = TaskServiceFactory.get();
+			try {
+				future.get();
+			} catch (CancellationException e) {
+				task.setHandleStatus(HandleStatuses.CANCEL.getStatus());
+				task.setHandleTime(new Date());
+				taskService.saveOrUpdate(task);
+				log.warn("手动取消任务");
+			} catch (Throwable e) {
+				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+				task.setHandleTime(new Date());
+				taskService.saveOrUpdate(task);
+				log.error("任务执行异常", e);
+			}
+		}
 	}
 	
 	public static void sendObject(HttpServletResponse response, Object obj) throws IOException {

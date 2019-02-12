@@ -43,7 +43,7 @@ public class GenerateRpcService implements GenerateService {
 	}
 	
 	@Override
-	public Domain findById(Long id, Long userId) {
+	public Domain findById(Long id, Long operatorId) {
 		if (id == null) {
 			return null;
 		}

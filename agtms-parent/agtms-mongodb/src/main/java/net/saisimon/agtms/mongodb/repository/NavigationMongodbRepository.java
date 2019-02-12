@@ -10,7 +10,7 @@ import net.saisimon.agtms.mongodb.repository.base.BaseMongoRepository;
 @Repository
 public interface NavigationMongodbRepository extends BaseMongoRepository<Navigation, Long> {
 	
-	List<Navigation> findByOperatorId(long userId);
+	List<Navigation> findByOperatorId(long operatorId);
 	
 	List<Navigation> findByIdInAndOperatorId(List<Long> ids, long operatorId);
 	

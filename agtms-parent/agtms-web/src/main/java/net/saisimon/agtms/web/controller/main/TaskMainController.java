@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +35,8 @@ import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.UserInfo;
 import net.saisimon.agtms.core.enums.Classes;
+import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
 import net.saisimon.agtms.core.service.TaskService;
@@ -76,8 +77,9 @@ public class TaskMainController extends MainController {
 	
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
+		UserInfo userInfo = AuthUtils.getUserInfo();
 		FilterRequest filter = FilterRequest.build(body, TASK_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getUserInfo().getUserId());
+		filter.and(Constant.OPERATORID, userInfo.getUserId());
 		FilterPageable pageable = FilterPageable.build(param);
 		TaskService taskService = TaskServiceFactory.get();
 		Page<Task> page = taskService.findPage(filter, pageable);
@@ -89,10 +91,20 @@ public class TaskMainController extends MainController {
 			result.setId(task.getId());
 			result.setTaskTime(task.getTaskTime());
 			result.setTaskType(taskTypeMap.get(task.getTaskType().toString()));
-			result.setHandleResult(task.getHandleResult());
-			result.setHandleStatus(handleStatusMap.get(task.getHandleStatus().toString()));
+			result.setHandleResult(handleStatusMap.get(task.getHandleStatus().toString()));
 			result.setHandleTime(task.getHandleTime());
 			result.setAction(TASK);
+			if (task.getHandleStatus() == HandleStatuses.SUCCESS.getStatus() && Functions.EXPORT.getFunction().equals(task.getTaskType())) {
+				result.getDisableActions().add(Boolean.FALSE);
+			} else {
+				result.getDisableActions().add(Boolean.TRUE);
+			}
+			if (task.getHandleStatus() == HandleStatuses.PROCESSING.getStatus()) {
+				result.getDisableActions().add(Boolean.FALSE);
+			} else {
+				result.getDisableActions().add(Boolean.TRUE);
+			}
+			result.getDisableActions().add(Boolean.FALSE);
 			results.add(result);
 		}
 		request.getSession().setAttribute(TASK_FILTERS, body);
@@ -101,18 +113,49 @@ public class TaskMainController extends MainController {
 	}
 	
 	@GetMapping("/download")
-	public <P> void download(@RequestParam(name = "id") Long id) {
+	public void download(@RequestParam(name = "id") Long id) {
 		try {
 			TaskService taskService = TaskServiceFactory.get();
-			Optional<Task> optional = taskService.findById(id);
-			if (!optional.isPresent()) {
+			long userId = AuthUtils.getUserInfo().getUserId();
+			Task task = taskService.getTask(id, userId);
+			if (task == null) {
 				SystemUtils.sendObject(response, ErrorMessage.Task.TASK_NOT_EXIST);
 				return;
 			}
-			SystemUtils.downloadTask(optional.get(), request, response);
+			SystemUtils.downloadTask(task, request, response);
 		} catch (IOException e) {
 			log.error("响应流异常", e);
 		}
+	}
+	
+	@PostMapping("/cancel")
+	public Result cancel(@RequestParam(name = "id") Long id) {
+		if (id < 0) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		TaskService taskService = TaskServiceFactory.get();
+		long userId = AuthUtils.getUserInfo().getUserId();
+		Task task = taskService.getTask(id, userId);
+		if (task == null) {
+			return ErrorMessage.Task.TASK_NOT_EXIST;
+		}
+		SystemUtils.cancelTask(task);
+		return ResultUtils.simpleSuccess();
+	}
+	
+	@PostMapping("/remove")
+	public Result remove(@RequestParam(name = "id") Long id) {
+		if (id < 0) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		TaskService taskService = TaskServiceFactory.get();
+		long userId = AuthUtils.getUserInfo().getUserId();
+		Task task = taskService.getTask(id, userId);
+		if (task == null) {
+			return ErrorMessage.Task.TASK_NOT_EXIST;
+		}
+		taskService.delete(id);
+		return ResultUtils.simpleSuccess();
 	}
 	
 	@Override
@@ -145,7 +188,7 @@ public class TaskMainController extends MainController {
 		
 		filter = new Filter();
 		keyValues = Arrays.asList("handleStatus", "handleTime");
-		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("handle.status", "handle.time")));
+		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("handle.result", "handle.time")));
 		value = new HashMap<>();
 		Map<String, String> handleStatusMap = handleStatusSelection.select();
 		values = new ArrayList<>(handleStatusMap.keySet());
@@ -162,7 +205,6 @@ public class TaskMainController extends MainController {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("taskType").label(getMessage("task.type")).view(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("taskTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("handleStatus").label(getMessage("handle.status")).view(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("handleResult").label(getMessage("handle.result")).view(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("handleTime").label(getMessage("handle.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
@@ -173,8 +215,9 @@ public class TaskMainController extends MainController {
 	protected List<Action> actions(Object key) {
 		UserInfo userInfo = AuthUtils.getUserInfo();
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().icon("download").to("/task/main/download?" + AuthUtils.AUTHORIZE_UID + "=" + userInfo.getUserId() + "&" + AuthUtils.AUTHORIZE_TOKEN + "=" + userInfo.getToken() + "&id=").text(getMessage("download")).type("download").build());
-		actions.add(Action.builder().icon("trash").text(getMessage("remove")).variant("outline-danger").type("remove").build());
+		actions.add(Action.builder().key("download").icon("download").to("/task/main/download?" + AuthUtils.AUTHORIZE_UID + "=" + userInfo.getUserId() + "&" + AuthUtils.AUTHORIZE_TOKEN + "=" + userInfo.getToken() + "&id=").text(getMessage("download")).type("download").build());
+		actions.add(Action.builder().key("cancel").icon("ban").to("/task/main/cancel").text(getMessage("cancel")).variant("outline-warning").type("modal").build());
+		actions.add(Action.builder().key("remove").icon("trash").to("/task/main/remove").text(getMessage("remove")).variant("outline-danger").type("modal").build());
 		return actions;
 	}
 

@@ -3,12 +3,12 @@
         <b-modal v-model="model.show"
             centered 
             :cancel-title="$t('cancel')"
-            :ok-title="$t('confirm_remove')"
+            :ok-title="$t('confirm')"
             @ok="batchRemove()"
             ok-variant="danger"
             button-size="sm">
             <div class="text-center font-weight-bold">
-                {{ $t('confirm' )}}
+                {{ $t('are_you_confirm' )}}
             </div>
         </b-modal>
     </div>

@@ -358,10 +358,10 @@ public class ManagementMainController extends MainController {
 		}
 		List<Action> actions = new ArrayList<>();
 		if (TemplateUtils.hasFunction(template, Functions.EDIT)) {
-			actions.add(Action.builder().to("/management/edit/" + key + "?id=").icon("edit").text(getMessage("edit")).type("link").build());
+			actions.add(Action.builder().key("edit").to("/management/edit/" + key + "?id=").icon("edit").text(getMessage("edit")).type("link").build());
 		}
 		if (TemplateUtils.hasFunction(template, Functions.REMOVE)) {
-			actions.add(Action.builder().icon("trash").text(getMessage("remove")).variant("outline-danger").type("remove").build());
+			actions.add(Action.builder().key("remove").to("/management/main/remove").icon("trash").text(getMessage("remove")).variant("outline-danger").type("modal").build());
 		}
 		return actions;
 	}

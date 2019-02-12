@@ -23,28 +23,28 @@ public class NavigationJpaService implements NavigationService, BaseOrder {
 	}
 	
 	@Override
-	public boolean existNavigation(String title, Long userId) {
-		return navigationJpaRepository.existsByTitleAndOperatorId(title, userId);
+	public boolean existNavigation(String title, Long operatorId) {
+		return navigationJpaRepository.existsByTitleAndOperatorId(title, operatorId);
 	}
 	
 	@Override
-	public Navigation getNavigation(Long id, Long userId) {
-		return navigationJpaRepository.findByIdAndOperatorId(id, userId);
+	public Navigation getNavigation(Long id, Long operatorId) {
+		return navigationJpaRepository.findByIdAndOperatorId(id, operatorId);
 	}
 	
 	@Override
-	public List<Navigation> getNavigations(List<Long> ids, Long userId) {
-		return navigationJpaRepository.findByIdInAndOperatorId(ids, userId);
+	public List<Navigation> getNavigations(List<Long> ids, Long operatorId) {
+		return navigationJpaRepository.findByIdInAndOperatorId(ids, operatorId);
 	}
 	
 	@Override
-	public List<Navigation> getChildrenNavigations(Long parentId, Long userId) {
-		return navigationJpaRepository.findByParentIdAndOperatorId(parentId, userId);
+	public List<Navigation> getChildrenNavigations(Long parentId, Long operatorId) {
+		return navigationJpaRepository.findByParentIdAndOperatorId(parentId, operatorId);
 	}
 
 	@Override
-	public List<Navigation> getNavigations(Long userId) {
-		return navigationJpaRepository.findByOperatorId(userId);
+	public List<Navigation> getNavigations(Long operatorId) {
+		return navigationJpaRepository.findByOperatorId(operatorId);
 	}
 	
 }

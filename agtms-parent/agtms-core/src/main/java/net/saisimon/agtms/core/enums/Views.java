@@ -2,9 +2,10 @@ package net.saisimon.agtms.core.enums;
 
 public enum Views {
 	
+	HTML("html"),
 	TEXT("text"), 
 	TEXTAREA("textarea"), 
-	ICON("icon"),
+	ICON("icon"), 
 	IMAGE("image"), 
 	LINK("link"), 
 	PASSWORD("password"), 
