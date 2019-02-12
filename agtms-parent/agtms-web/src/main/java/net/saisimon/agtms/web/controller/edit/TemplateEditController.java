@@ -114,6 +114,7 @@ public class TemplateEditController extends BaseController {
 			templateService.alterTable(template, oldTemplate);
 			templateService.saveOrUpdate(template);
 		} else {
+		//TODO 如果 template.getId() == null 创建表，表名就是agtms_generate_null
 			if (templateService.exists(template.getTitle(), userId)) {
 				return ErrorMessage.Template.TEMPLATE_ALREADY_EXISTS;
 			}
