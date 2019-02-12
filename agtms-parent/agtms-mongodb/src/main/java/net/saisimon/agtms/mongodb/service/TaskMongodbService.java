@@ -31,4 +31,9 @@ public class TaskMongodbService implements TaskService, MongodbOrder {
 		return TaskService.super.saveOrUpdate(entity);
 	}
 
+	@Override
+	public Task getTask(Long id, Long operatorId) {
+		return taskMongodbRepository.findByIdAndOperatorId(id, operatorId);
+	}
+
 }

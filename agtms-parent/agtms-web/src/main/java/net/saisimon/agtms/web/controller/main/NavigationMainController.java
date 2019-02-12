@@ -224,8 +224,8 @@ public class NavigationMainController extends MainController {
 	@Override
 	protected List<Action> actions(Object key) {
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().to("/navigation/edit?id=").icon("edit").text(getMessage("edit")).type("link").build());
-		actions.add(Action.builder().icon("trash").text(getMessage("remove")).variant("outline-danger").type("remove").build());
+		actions.add(Action.builder().key("edit").to("/navigation/edit?id=").icon("edit").text(getMessage("edit")).type("link").build());
+		actions.add(Action.builder().key("remove").icon("trash").to("/navigation/main/remove").text(getMessage("remove")).variant("outline-danger").type("modal").build());
 		return actions;
 	}
 

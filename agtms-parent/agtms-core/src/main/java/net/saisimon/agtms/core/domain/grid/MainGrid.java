@@ -79,6 +79,8 @@ public class MainGrid {
 		
 		private String type;
 		
+		private String key;
+		
 	}
 	
 }

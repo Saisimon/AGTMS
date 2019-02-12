@@ -56,6 +56,8 @@ public class ExportActuator implements Actuator<ExportParam> {
 		if (!TemplateUtils.hasFunction(template, Functions.BATCH_REMOVE)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
+		longTimeTask();
+		System.out.println(Thread.currentThread().isInterrupted());
 		List<String> heads = new ArrayList<>();
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		List<String> fields = new ArrayList<>();
@@ -98,6 +100,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			default:
 				break;
 		}
+		System.out.println(Thread.currentThread().isInterrupted());
 		if (file != null) {
 			return ResultUtils.success(name);
 		} else {
@@ -160,6 +163,17 @@ public class ExportActuator implements Actuator<ExportParam> {
 	@Override
 	public Sign sign() {
 		return EXPORT_SIGN;
+	}
+	
+	private boolean longTimeTask() throws Exception {
+		long num = 5000000033L;
+		boolean result = false;
+		for (long i = 2; i < num; i++) {
+			if (num % i == 0L) {
+				result = true;
+			}
+		}
+		return result;
 	}
 
 }

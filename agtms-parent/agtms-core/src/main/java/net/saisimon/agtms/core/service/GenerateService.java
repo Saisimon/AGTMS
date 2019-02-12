@@ -31,8 +31,8 @@ public interface GenerateService {
 	
 	void updateDomain(Long id, Map<String, Object> updateMap);
 	
-	default Domain findById(Long id, Long userId) {
-		if (id == null) {
+	default Domain findById(Long id, Long operatorId) {
+		if (id == null || operatorId == null) {
 			return null;
 		}
 		AbstractGenerateRepository repository = getRepository();
@@ -42,7 +42,7 @@ public interface GenerateService {
 			Domain domain = optional.get();
 			Object obj = domain.getField(Constant.OPERATORID);
 			String creator = obj == null ? "" : obj.toString();
-			if (userId.toString().equals(creator)) {
+			if (operatorId.toString().equals(creator)) {
 				return domain;
 			}
 		}

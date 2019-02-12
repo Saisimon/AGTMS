@@ -12,8 +12,6 @@ public class OperationInfo extends BaseInfo {
 
 	private static final long serialVersionUID = 2169109875986378350L;
 
-	private Long id;
-	
 	private String operateType;
 	
 	private Date operateTime;

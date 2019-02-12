@@ -164,9 +164,9 @@ public class TemplateMainController extends MainController {
 	@Override
 	protected List<Action> actions(Object key) {
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().to("/management/main/").icon("list").text(getMessage("view")).variant("outline-secondary").type("link").build());
-		actions.add(Action.builder().to("/template/edit?id=").icon("edit").text(getMessage("edit")).type("link").build());
-		actions.add(Action.builder().icon("trash").text(getMessage("remove")).variant("outline-danger").type("remove").build());
+		actions.add(Action.builder().key("view").to("/management/main/").icon("list").text(getMessage("view")).variant("outline-secondary").type("link").build());
+		actions.add(Action.builder().key("edit").to("/template/edit?id=").icon("edit").text(getMessage("edit")).type("link").build());
+		actions.add(Action.builder().key("remove").to("/template/main/remove").icon("trash").text(getMessage("remove")).variant("outline-danger").type("modal").build());
 		return actions;
 	}
 	

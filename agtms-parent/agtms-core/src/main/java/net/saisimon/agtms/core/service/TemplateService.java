@@ -21,14 +21,14 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		return false;
 	}
 	
-	default Template getTemplate(Object id, Long userId) {
-		if (id == null) {
+	default Template getTemplate(Object id, Long operatorId) {
+		if (id == null || operatorId == null) {
 			return null;
 		}
 		Optional<Template> optional = findById(Long.valueOf(id.toString()));
 		if (optional.isPresent()) {
 			Template template = optional.get();
-			if (userId == template.getOperatorId()) {
+			if (operatorId == template.getOperatorId()) {
 				return template;
 			}
 		}
@@ -47,8 +47,8 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		
 	}
 	
-	boolean exists(String title, Long userId);
+	boolean exists(String title, Long operatorId);
 	
-	List<Template> getTemplates(Long navigationId, Long userId);
+	List<Template> getTemplates(Long navigationId, Long operatorId);
 	
 }

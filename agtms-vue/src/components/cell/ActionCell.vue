@@ -1,7 +1,7 @@
 <template>
-    <div class="action-container text-right" v-if="actions">
+    <div class="action-container text-right d-flex justify-content-end " v-if="actions">
         <template v-for="(action, idx) in actions">
-            <template v-if="action.type == 'link'">
+            <template v-if="action.type == 'link' && (!rowData.disableActions || !rowData.disableActions[idx])">
                 <b-button :key="idx"
                     :size="'sm'" 
                     :variant="action.variant" 
@@ -12,7 +12,7 @@
                     <i class="fa fa-fw" :class="'fa-' + action.icon"></i>
                 </b-button>
             </template>
-            <template v-else-if="action.type == 'download'">
+            <template v-else-if="action.type == 'download' && (!rowData.disableActions || !rowData.disableActions[idx])">
                 <b-button :key="idx"
                     :size="'sm'" 
                     :variant="action.variant"
@@ -24,27 +24,27 @@
                     <i class="fa fa-fw" :class="'fa-' + action.icon"></i>
                 </b-button>
             </template>
-            <template v-else-if="action.type == 'remove'">
+            <template v-else-if="action.type == 'modal' && (!rowData.disableActions || !rowData.disableActions[idx])">
                 <b-button :key="idx"
                     :size="'sm'" 
                     :variant="action.variant" 
-                    v-b-modal="'remove-model-' + index" 
+                    v-b-modal="'modal-' + idx + '-' + index" 
                     v-b-tooltip.hover 
                     :title="action.text"
                     href="javascript:void(0);" 
                     class="ml-1" >
                     <i class="fa fa-fw" :class="'fa-' + action.icon"></i>
                 </b-button>
-                <b-modal :key="'model-' + idx"
-                    :id="'remove-model-' + index" 
+                <b-modal :key="'modal-' + idx"
+                    :id="'modal-' + idx + '-' + index" 
                     centered 
                     :cancel-title="$t('cancel')"
-                    :ok-title="$t('confirm_remove')"
-                    @ok="remove()"
+                    :ok-title="$t('confirm')"
+                    @ok="modal(action.to)"
                     ok-variant="danger"
                     button-size="sm">
                     <div class="text-center font-weight-bold">
-                        {{ $t('confirm' )}}
+                        {{ $t('are_you_confirm' )}}
                     </div>
                 </b-modal>
             </template>
@@ -70,11 +70,8 @@ export default {
         }
     },
     methods: {
-        remove: function() {
-            this.$store.dispatch('removeData', {
-                url: this.$route.path,
-                id: this.rowData.id
-            }).then(() => {
+        modal: function(link) {
+            this.$store.dispatch('requestUrl', link + "?id=" + this.rowData.id).then(() => {
                 this.$emit('succeed');
                 if (this.$route.params.module === 'navigation') {
                     this.$store.dispatch('getTrees');

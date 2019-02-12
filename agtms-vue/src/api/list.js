@@ -8,10 +8,6 @@ export function mainGrid(user, url) {
     return request(user, url + '/grid');
 }
 
-export function remove(user, url, id) {
-    return request(user, url + '/remove?id=' + id);
-}
-
 export function batchGrid(user, url) {
     return request(user, url + '/batch/grid');
 }

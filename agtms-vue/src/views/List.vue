@@ -145,6 +145,12 @@
                                 :field="props.column.field" 
                                 :index="props.row.originalIndex"  />
                         </span>
+                        <span v-else-if="props.column.view == 'html'">
+                            <html-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex"  />
+                        </span>
                         <span v-else>
                             <text-cell 
                                 :rowData="props.formattedRow" 
@@ -203,6 +209,7 @@ import TextCell from '@/components/cell/TextCell.vue'
 import IconCell from '@/components/cell/IconCell.vue'
 import ImageCell from '@/components/cell/ImageCell.vue'
 import LinkCell from '@/components/cell/LinkCell.vue'
+import HtmlCell from '@/components/cell/HtmlCell.vue'
 import ActionBatchRemove from '@/components/action/ActionBatchRemove.vue'
 import ActionBatchEdit from '@/components/action/ActionBatchEdit.vue'
 import ActionExport from '@/components/action/ActionExport.vue'
@@ -236,6 +243,7 @@ export default {
         'icon-cell': IconCell,
         'link-cell': LinkCell,
         'image-cell': ImageCell,
+        'html-cell': HtmlCell,
         'text-cell': TextCell
     },
     computed: {

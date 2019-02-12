@@ -12,15 +12,13 @@ public class TaskInfo extends BaseInfo {
 
 	private static final long serialVersionUID = 2169109875986378350L;
 
-	private Long id;
-	
 	private String taskType;
 	
 	private Date TaskTime;
 	
 	private Date handleTime;
 	
-	private String handleStatus;
+	private Integer handleStatus;
 	
 	private String handleResult;
 	

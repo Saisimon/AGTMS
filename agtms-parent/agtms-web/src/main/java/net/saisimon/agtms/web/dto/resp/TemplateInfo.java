@@ -12,8 +12,6 @@ public class TemplateInfo extends BaseInfo {
 	
 	private static final long serialVersionUID = 9049467055032392146L;
 
-	private Long id;
-	
 	private String navigationName;
 	
 	private String title;

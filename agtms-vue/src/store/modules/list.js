@@ -1,4 +1,5 @@
-import { list, mainGrid, remove, batchGrid, batchRemove, batchSave, batchExport, download } from '@/api/list'
+import { list, mainGrid, batchGrid, batchRemove, batchSave, batchExport } from '@/api/list'
+import request from '@/api/request'
 
 const state = {
     isLoading: true,
@@ -160,10 +161,6 @@ const mutations = {
             state.selects = [];
         }
     },
-    removeData(state, index) {
-        state.datas.splice(index, 1);
-        state.total = state.total - 1;
-    },
     setIsLoading(state, isLoading) {
         if (isLoading && isLoading === true) {
             state.isLoading = true;
@@ -194,8 +191,8 @@ const actions = {
             context.commit('clearProgress');
         });
     },
-    removeData(context, payload) {
-        return remove(context.rootState.base.user, payload.url, payload.id);
+    requestUrl(context, url) {
+        return request(context.rootState.base.user, url);
     },
     getBatchGrid(context, url) {
         return batchGrid(context.rootState.base.user, url).then(resp => {
@@ -212,10 +209,7 @@ const actions = {
     },
     batchExportData(context, payload) {
         return batchExport(context.rootState.base.user, payload.url, payload.data);
-    },
-    downloadData(context, payload) {
-        return download(context.rootState.base.user, payload.url, payload.id);
-    },
+    }
 };
 
 export default {
