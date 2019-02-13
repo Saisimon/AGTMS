@@ -208,7 +208,13 @@ public final class SystemUtils {
 				}
 				Class<P> paramClass = actuator.getParamClass();
 				P param = fromJson(task.getTaskParam(), paramClass);
+				if (Thread.currentThread().isInterrupted()) {
+					return;
+				}
 				Result result = actuator.execute(param);
+				if (Thread.currentThread().isInterrupted()) {
+					return;
+				}
 				if (ResultUtils.isSuccess(result)) {
 					task.setHandleStatus(HandleStatuses.SUCCESS.getStatus());
 				} else {

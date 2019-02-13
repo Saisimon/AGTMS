@@ -176,6 +176,7 @@
             <action-batch-remove 
                 v-if="functions.indexOf('batchRemove') !== -1" 
                 :model="showBatchRemoveModel"
+                :selects="selects"
                 @succeed="searchByFilters" />
             <action-batch-edit 
                 v-if="functions.indexOf('batchEdit') !== -1"

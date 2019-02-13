@@ -62,8 +62,6 @@ public class ExportActuator implements Actuator<ExportParam> {
 		if (!TemplateUtils.hasFunction(template, Functions.BATCH_REMOVE)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
-		longTimeTask();
-		System.out.println(Thread.currentThread().isInterrupted());
 		List<String> heads = new ArrayList<>();
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		List<String> fields = new ArrayList<>();
@@ -80,6 +78,9 @@ public class ExportActuator implements Actuator<ExportParam> {
 		List<Domain> domains = generateService.findList(filter, null);
 		List<List<Object>> datas = new ArrayList<>();
 		for (Domain domain : domains) {
+			if (Thread.currentThread().isInterrupted()) {
+				return ErrorMessage.Task.TASK_CANCEL;
+			}
 			List<Object> data = new ArrayList<>();
 			for (String field : fields) {
 				Object value = domain.getField(field);
@@ -106,7 +107,6 @@ public class ExportActuator implements Actuator<ExportParam> {
 			default:
 				break;
 		}
-		System.out.println(Thread.currentThread().isInterrupted());
 		if (file != null) {
 			return ResultUtils.success(name);
 		} else {
@@ -171,15 +171,4 @@ public class ExportActuator implements Actuator<ExportParam> {
 		return EXPORT_SIGN;
 	}
 	
-	private boolean longTimeTask() throws Exception {
-		long num = 5000000033L;
-		boolean result = false;
-		for (long i = 2; i < num; i++) {
-			if (num % i == 0L) {
-				result = true;
-			}
-		}
-		return result;
-	}
-
 }

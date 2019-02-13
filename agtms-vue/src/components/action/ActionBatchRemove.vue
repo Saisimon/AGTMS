@@ -19,10 +19,9 @@ export default {
     name: 'action-batch-remove',
     methods: {
         batchRemove() {
-            var selects = this.$store.state.list.selects;
             this.$store.dispatch('batchRemoveData', {
                 url: this.$route.path,
-                ids: selects
+                ids: this.selects
             }).then(resp => {
                 var data = resp.data;
                 if (data.code === 0) {
@@ -34,6 +33,9 @@ export default {
             });
         }
     },
-    props: ['model']
+    props: [
+        'model',
+        "selects",
+    ]
 }
 </script>
