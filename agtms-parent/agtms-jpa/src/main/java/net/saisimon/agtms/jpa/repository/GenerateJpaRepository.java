@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,8 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	
 	@Autowired
 	private EntityManager entityManager;
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 	
 	@Override
 	public Long count(FilterRequest filter) {
@@ -69,9 +72,10 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	public List<Domain> findList(FilterRequest filter, FilterSort sort) {
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(Constant.OPERATOR_ID);
-		columnNames.add(Constant.CREATE_TIME);
-		columnNames.add(Constant.UPDATE_TIME);
+		columnNames.add(Constant.ID);
+		columnNames.add(Constant.OPERATORID);
+		columnNames.add(Constant.CREATETIME);
+		columnNames.add(Constant.UPDATETIME);
 		String sql = buildSql(template, columnNames);
 		if (filter != null) {
 			String where = JpaFilterUtils.where(filter);
@@ -106,9 +110,10 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		}
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(Constant.OPERATOR_ID);
-		columnNames.add(Constant.CREATE_TIME);
-		columnNames.add(Constant.UPDATE_TIME);
+		columnNames.add(Constant.ID);
+		columnNames.add(Constant.OPERATORID);
+		columnNames.add(Constant.CREATETIME);
+		columnNames.add(Constant.UPDATETIME);
 		String sql = buildSql(template, columnNames);
 		if (filter != null) {
 			String where = JpaFilterUtils.where(filter);
@@ -141,9 +146,10 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort) {
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(Constant.OPERATOR_ID);
-		columnNames.add(Constant.CREATE_TIME);
-		columnNames.add(Constant.UPDATE_TIME);
+		columnNames.add(Constant.ID);
+		columnNames.add(Constant.OPERATORID);
+		columnNames.add(Constant.CREATETIME);
+		columnNames.add(Constant.UPDATETIME);
 		String sql = buildSql(template, columnNames);
 		if (filter != null) {
 			String where = JpaFilterUtils.where(filter);
@@ -183,7 +189,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 
 	@Override
 	public Optional<Domain> findById(Long id) {
-		FilterRequest filter = FilterRequest.build().and("id", id);
+		FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
 		return findOne(filter, null);
 	}
 
@@ -192,7 +198,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	public Domain deleteEntity(Long id) {
 		Optional<Domain> optional = findById(id);
 		if (optional.isPresent()) {
-			FilterRequest filter = FilterRequest.build().and("id", id);
+			FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
 			delete(filter);
 			return optional.get();
 		}
@@ -202,15 +208,12 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	@Override
 	@Transactional
 	public Domain saveOrUpdate(Domain entity) {
-		String sql;
-		Object id = entity.getField("id");
+		Object id = entity.getField(Constant.ID);
 		if (id == null) {
-			sql = buildInsertSql(entity);
+			insert(entity);
 		} else {
-			sql = buildUpdateSql(id, entity);
+			update(id, entity);
 		}
-		Query query = entityManager.createNativeQuery(sql);
-		query.executeUpdate();
 		return entity;
 	}
 
@@ -251,39 +254,56 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		return "DELETE FROM `" + TemplateUtils.getTableName(template()) + "` ";
 	}
 	
-	private String buildInsertSql(Domain domain) {
+	private boolean insert(Domain domain) {
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(Constant.OPERATOR_ID);
-		columnNames.add(Constant.CREATE_TIME);
-		columnNames.add(Constant.UPDATE_TIME);
+		columnNames.add(Constant.OPERATORID);
+		columnNames.add(Constant.CREATETIME);
+		columnNames.add(Constant.UPDATETIME);
+		List<Object> args = new ArrayList<>();
 		String columns = "`id`";
 		String values = "NULL";
 		for (String field : columnNames) {
-			Object value = domain.getField(field);
-			if (value != null) {
-				columns += ", `" + field + "`";
-				values += ", '" + value + "'";
-			}
+			columns += ", `" + field + "`";
+			values += ", ?";
+			args.add(domain.getField(field));
 		}
-		return "INSERT INTO `" + TemplateUtils.getTableName(template) + "` (" + columns + ") VALUES (" + values + ") ";
+		String sql = "INSERT INTO `" + TemplateUtils.getTableName(template) + "` (" + columns + ") VALUES (" + values + ") ";
+		boolean result = jdbcTemplate.update(sql, args.toArray()) > 0;
+		if (result) {
+			Long id = getLastInsertId();
+			domain.setField(Constant.ID, id, Long.class);
+		}
+		return result;
 	}
 	
-	private String buildUpdateSql(Object id, Domain domain) {
+	private Long getLastInsertId() {
+		String sql = "SELECT LAST_INSERT_ID()";
+		return jdbcTemplate.queryForObject(sql, Long.class);
+	}
+	
+	private boolean update(Object id, Domain domain) {
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(Constant.OPERATOR_ID);
-		columnNames.add(Constant.CREATE_TIME);
-		columnNames.add(Constant.UPDATE_TIME);
+		columnNames.add(Constant.OPERATORID);
+		columnNames.add(Constant.CREATETIME);
+		columnNames.add(Constant.UPDATETIME);
+		List<Object> args = new ArrayList<>();
 		String sql = "UPDATE `" + TemplateUtils.getTableName(template) + "` SET ";
+		String set = "";
 		for (String field : columnNames) {
 			Object value = domain.getField(field);
 			if (value != null) {
-				sql += "`" + field + "`='" + value.toString() + "'";
+				if (!"".equals(set)) {
+					set += ", ";
+				}
+				set += "`" + field + "` = ?";
+				args.add(value);
 			}
 		}
-		sql += " WHERE `id` = " + id.toString();
-		return sql;
+		sql += set + " WHERE `id` = ?";
+		args.add(id);
+		return jdbcTemplate.update(sql, args.toArray()) > 0;
 	}
 	
 	private List<Domain> conversions(List<Object[]> datas, List<String> columnNames) throws GenerateException {
@@ -307,7 +327,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			if (value != null) {
 				String columnName = columnNames.get(i);
 				if (value instanceof BigInteger) {
-					domain.setField(columnName, ((BigInteger) value).longValue(), Integer.class);
+					domain.setField(columnName, ((BigInteger) value).longValue(), Long.class);
 				} else if (value instanceof BigDecimal) {
 					domain.setField(columnName, ((BigDecimal) value).doubleValue(), Double.class);
 				} else if (value instanceof Date) {

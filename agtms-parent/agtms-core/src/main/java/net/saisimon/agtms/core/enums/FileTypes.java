@@ -1,5 +1,11 @@
 package net.saisimon.agtms.core.enums;
 
+/**
+ * 导入导出支持的文件类型枚举
+ * 
+ * @author saisimon
+ *
+ */
 public enum FileTypes {
 	
 	XLS("xls"),

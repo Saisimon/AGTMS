@@ -1,5 +1,11 @@
 package net.saisimon.agtms.core.enums;
 
+/**
+ * 
+ * 
+ * @author saisimon
+ *
+ */
 public enum EditorTypes {
 	
 	INPUT("input"), 

@@ -43,7 +43,7 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-mongodb</artifactId>
 			<version>${agtms-mongodb.version}</version>
@@ -52,7 +52,7 @@
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-redis</artifactId>
 			<version>${agtms-redis.version}</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- 
 		<dependency> 

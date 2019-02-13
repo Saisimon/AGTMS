@@ -10,6 +10,12 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.service.NavigationService;
 
+/**
+ * 导航服务构建工厂
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class NavigationServiceFactory implements BeanPostProcessor {
 	

@@ -1,12 +1,29 @@
 package net.saisimon.agtms.core.domain.generate;
 
+import java.util.Date;
+
+/**
+ * 生成自定义对象的基础对象
+ * 
+ * @author saisimon
+ *
+ */
 public class Generate {
 	
+	/**
+	 * 创建人员ID
+	 */
 	private Long operatorId;
 	
-	private Long createTime;
+	/**
+	 * 创建时间
+	 */
+	private Date createTime;
 	
-	private Long updateTime;
+	/**
+	 * 更新时间
+	 */
+	private Date updateTime;
 	
 	public Long getOperatorId() {
 		return operatorId;
@@ -16,19 +33,19 @@ public class Generate {
 		this.operatorId = operatorId;
 	}
 
-	public Long getCreateTime() {
+	public Date getCreateTime() {
 		return createTime;
 	}
 
-	public void setCreateTime(Long createTime) {
+	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
 	}
 
-	public Long getUpdateTime() {
+	public Date getUpdateTime() {
 		return updateTime;
 	}
 
-	public void setUpdateTime(Long updateTime) {
+	public void setUpdateTime(Date updateTime) {
 		this.updateTime = updateTime;
 	}
 

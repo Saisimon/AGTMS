@@ -4,6 +4,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.saisimon.agtms.core.domain.tag.Input;
 
+/**
+ * 前端范围过滤条件的对象
+ * 
+ * @author saisimon
+ *
+ * @param <T> value 的类型
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class RangeFilter<T> extends FieldFilter {

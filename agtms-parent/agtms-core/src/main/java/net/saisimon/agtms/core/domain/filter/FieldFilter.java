@@ -2,6 +2,12 @@ package net.saisimon.agtms.core.domain.filter;
 
 import lombok.Data;
 
+/**
+ * 前端属性过滤条件对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class FieldFilter implements Cloneable {
 	

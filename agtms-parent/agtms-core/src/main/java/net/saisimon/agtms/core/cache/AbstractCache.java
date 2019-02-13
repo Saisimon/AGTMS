@@ -3,6 +3,12 @@ package net.saisimon.agtms.core.cache;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 基础的缓存抽象类
+ * 
+ * @author saisimon
+ *
+ */
 public abstract class AbstractCache implements Cache {
 
 	@Override

@@ -1,5 +1,11 @@
 package net.saisimon.agtms.core.enums;
 
+/**
+ * 操作类型枚举
+ * 
+ * @author saisimon
+ *
+ */
 public enum OperateTypes {
 	
 	CREATE(10, "create"), 

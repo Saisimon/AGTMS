@@ -24,6 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.International;
 import net.saisimon.agtms.core.dto.Result;
 
+/**
+ * 全局响应消息国际化
+ * 
+ * @author saisimon
+ *
+ */
 @ControllerAdvice
 @Slf4j
 public class InternationalResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {

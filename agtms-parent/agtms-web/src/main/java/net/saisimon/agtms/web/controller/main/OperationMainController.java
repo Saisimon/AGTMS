@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Operation;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
-import net.saisimon.agtms.core.domain.filter.Filter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
@@ -39,6 +39,12 @@ import net.saisimon.agtms.web.controller.base.MainController;
 import net.saisimon.agtms.web.dto.resp.OperationInfo;
 import net.saisimon.agtms.web.selection.OperateTypeSelection;
 
+/**
+ * 操作记录主控制器
+ * 
+ * @author saisimon
+ *
+ */
 @RestController
 @RequestMapping("/operation/main")
 public class OperationMainController extends MainController {
@@ -105,7 +111,7 @@ public class OperationMainController extends MainController {
 		Map<String, String> operateTypeMap = operateTypeSelection.select();
 		List<String> values = new ArrayList<>(operateTypeMap.keySet());
 		List<String> texts = new ArrayList<>(operateTypeMap.values());
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.INTEGER.getName(), values, texts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), values, texts));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		filter.setValue(value);
 		filters.add(filter);

@@ -1,8 +1,14 @@
 package net.saisimon.agtms.core.enums;
 
+/**
+ * 模版列属性类型枚举
+ * 
+ * @author saisimon
+ *
+ */
 public enum Classes {
 	
-	INTEGER("int"), DATE("date"), STRING("string"), DOUBLE("double");
+	LONG("long"), DATE("date"), STRING("string"), DOUBLE("double");
 	
 	private String name;
 	

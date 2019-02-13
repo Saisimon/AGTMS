@@ -3,6 +3,12 @@ package net.saisimon.agtms.core.domain.sign;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * 标志对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 @Builder
 public class Sign {

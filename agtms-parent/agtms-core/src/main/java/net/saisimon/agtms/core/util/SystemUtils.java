@@ -52,7 +52,6 @@ public final class SystemUtils {
 	private static final Pattern URL_PATTERN = Pattern.compile("[a-zA-z]+://[^\\s]*");
 	private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
 	
-//	private static final ExecutorService executor = Executors.newWorkStealingPool(26);
 	private static final ExecutorService executor = Executors.newCachedThreadPool();
 	private static final Map<Long, Future<?>> taskFutureMap = new ConcurrentHashMap<>();
 	

@@ -11,6 +11,12 @@ import org.springframework.util.ReflectionUtils;
 
 import net.saisimon.agtms.core.handler.ParamHandler;
 
+/**
+ * 参数处理器构建工厂
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class ParamHandlerFactory implements BeanPostProcessor {
 	

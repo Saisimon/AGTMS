@@ -8,6 +8,13 @@ import net.saisimon.agtms.core.domain.tag.MultipleSelect;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 
+/**
+ * 前端下拉列表过滤条件的对象
+ * 
+ * @author saisimon
+ *
+ * @param <T> value 的类型
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class SelectFilter<T> extends FieldFilter {

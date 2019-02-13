@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.sign.Sign;
@@ -37,9 +38,9 @@ public class GenerateMongoService implements GenerateService {
 	@Override
 	public Boolean saveOrUpdate(Domain domain) {
 		Assert.notNull(domain, "domain can not be null");
-		if (domain.getField("id") == null) {
+		if (domain.getField(Constant.ID) == null) {
 			Long id = sequenceService.nextId(TemplateUtils.getTableName(template()));
-			domain.setField("id", id, Long.class);
+			domain.setField(Constant.ID, id, Long.class);
 		}
 		return generateMongoRepository.saveOrUpdate(domain) != null;
 	}

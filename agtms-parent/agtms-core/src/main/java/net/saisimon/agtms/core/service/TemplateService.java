@@ -8,6 +8,12 @@ import org.springframework.core.Ordered;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.generate.DomainGenerater;
 
+/**
+ * 模版服务接口
+ * 
+ * @author saisimon
+ *
+ */
 public interface TemplateService extends BaseService<Template, Long>, Ordered {
 	
 	default boolean removeTemplate(Template template) {

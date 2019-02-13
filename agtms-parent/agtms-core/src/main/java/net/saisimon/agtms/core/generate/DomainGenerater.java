@@ -24,6 +24,12 @@ import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 
+/**
+ * 自定义对象生成器
+ * 
+ * @author saisimon
+ *
+ */
 @Slf4j
 public class DomainGenerater {
 	
@@ -35,15 +41,42 @@ public class DomainGenerater {
 	
 	private static final Map<String, GenerateClassLoader> GENERATE_CLASSLOADER_MAP = new HashMap<>();
 	
+	/**
+	 * 构建自定义对象名称
+	 * 
+	 * @param id
+	 * @return
+	 */
 	public static String buildGenerateName(Long id) {
 		Assert.notNull(id, "id can not be null");
 		return "Generate$" + id;
 	}
 	
+	/**
+	 * 生成自定义对象 class 文件
+	 * 
+	 * @param namespace
+	 * @param fieldMap
+	 * @param domainName
+	 * @param force
+	 * @return
+	 * @throws GenerateException
+	 */
 	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String domainName, boolean force) throws GenerateException {
 		return generate(namespace, fieldMap, domainName, force, Generate.class);
 	}
 	
+	/**
+	 * 生成自定义对象 class 文件
+	 * 
+	 * @param namespace
+	 * @param fieldMap
+	 * @param domainName
+	 * @param force
+	 * @param templateClass
+	 * @return
+	 * @throws GenerateException
+	 */
 	@SuppressWarnings("unchecked")
 	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String domainName, boolean force, Class<?> templateClass) throws GenerateException {
 		if (fieldMap == null || StringUtils.isBlank(domainName)) {
@@ -112,6 +145,13 @@ public class DomainGenerater {
 		}
 	}
 	
+	/**
+	 * 删除自定义对象 class 文件
+	 * 
+	 * @param namespace
+	 * @param domainName
+	 * @return
+	 */
 	public static boolean removeDomainClass(String namespace, String domainName) {
 		String domainFullName = DEFAULT_PACKAGE + "." + domainName;
 		GenerateClassLoader oldClassloader = GENERATE_CLASSLOADER_MAP.get(namespace);

@@ -17,6 +17,12 @@ import org.springframework.util.CollectionUtils;
 import lombok.Getter;
 import net.saisimon.agtms.core.util.StringUtils;
 
+/**
+ * 排序过滤对象
+ * 
+ * @author saisimon
+ *
+ */
 @Getter
 public class FilterSort implements Serializable {
 	

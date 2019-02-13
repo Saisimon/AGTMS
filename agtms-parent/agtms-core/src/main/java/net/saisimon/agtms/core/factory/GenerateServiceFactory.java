@@ -15,6 +15,12 @@ import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.util.StringUtils;
 
+/**
+ * 自定义对象服务构建工厂
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class GenerateServiceFactory implements BeanPostProcessor {
 	

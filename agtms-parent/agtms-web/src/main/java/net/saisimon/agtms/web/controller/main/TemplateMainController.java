@@ -22,13 +22,13 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
-import net.saisimon.agtms.core.domain.filter.Filter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
@@ -48,6 +48,12 @@ import net.saisimon.agtms.web.controller.base.MainController;
 import net.saisimon.agtms.web.dto.resp.TemplateInfo;
 import net.saisimon.agtms.web.selection.NavigationSelection;
 
+/**
+ * 模版主控制器
+ * 
+ * @author saisimon
+ *
+ */
 @RestController
 @RequestMapping("/template/main")
 public class TemplateMainController extends MainController {
@@ -184,7 +190,7 @@ public class TemplateMainController extends MainController {
 			navigationValues.add(entry.getKey());
 			navigationTexts.add(entry.getValue());
 		}
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.INTEGER.getName(), navigationValues, navigationTexts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), navigationValues, navigationTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		

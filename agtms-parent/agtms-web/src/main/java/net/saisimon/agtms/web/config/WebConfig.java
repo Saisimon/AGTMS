@@ -8,9 +8,20 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
+/**
+ * web 配置
+ * 
+ * @author saisimon
+ *
+ */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 	
+	/**
+	 * 配置国际化
+	 * 
+	 * @return
+	 */
 	@Bean
 	public ReloadableResourceBundleMessageSource messageSource() {
 		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
@@ -21,6 +32,11 @@ public class WebConfig implements WebMvcConfigurer {
 		return messageSource;
 	}
 	
+	/**
+	 * 配置 cookie 解析，默认为简体中文
+	 * 
+	 * @return
+	 */
 	@Bean
 	public CookieLocaleResolver localeResolver() {
 		CookieLocaleResolver localeResolver = new CookieLocaleResolver();

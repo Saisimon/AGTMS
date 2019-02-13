@@ -4,7 +4,6 @@ import java.util.List;
 
 import lombok.Builder;
 import lombok.Data;
-import net.saisimon.agtms.core.domain.filter.Filter;
 import net.saisimon.agtms.core.domain.page.Pageable;
 
 @Data

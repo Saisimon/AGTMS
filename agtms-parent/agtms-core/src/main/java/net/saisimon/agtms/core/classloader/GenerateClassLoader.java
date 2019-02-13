@@ -12,8 +12,17 @@ import cn.hutool.core.util.URLUtil;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.PropertyUtils;
 
+/**
+ * 自动生成的自定义对象的累加载器
+ * 
+ * @author saisimon
+ *
+ */
 public class GenerateClassLoader extends URLClassLoader {
 	
+	/**
+	 * 自动生成的自定义对象的文件路径
+	 */
 	public static final String GENERATE_CLASS_PATH = FileUtil.normalize(PropertyUtils.fetchYaml("extra.class.path", "/tmp/classes").toString());
 	
 	private final Set<String> generateClasses = new HashSet<>();

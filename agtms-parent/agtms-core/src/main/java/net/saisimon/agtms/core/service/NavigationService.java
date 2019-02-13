@@ -9,6 +9,12 @@ import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.domain.Navigation;
 
+/**
+ * 导航服务接口
+ * 
+ * @author saisimon
+ *
+ */
 public interface NavigationService extends BaseService<Navigation, Long>, Ordered {
 	
 	boolean existNavigation(String title, Long operatorId);

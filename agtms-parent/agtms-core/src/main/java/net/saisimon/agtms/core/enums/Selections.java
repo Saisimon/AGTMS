@@ -1,5 +1,10 @@
 package net.saisimon.agtms.core.enums;
 
+/**
+ * 支持的下拉列表关键字枚举
+ * 
+ * @author saisimon
+ */
 public enum Selections {
 	
 	CLASS("class"),

@@ -14,8 +14,15 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Classes;
+import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
+/**
+ * DDL 服务 （暂只支持 mysql 语法）
+ * 
+ * @author saisimon
+ *
+ */
 @Service
 @Slf4j
 public class DdlService {
@@ -23,12 +30,23 @@ public class DdlService {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 	
+	/**
+	 * 根据模版创建表结构
+	 * 
+	 * @param template 模版对象
+	 */
 	public void createTable(Template template) {
 		String sql = buildCreateSql(template);
 		log.info("DDL: {}", sql);
 		jdbcTemplate.execute(sql);
 	}
 	
+	/**
+	 * 根据模版的变化修改表结构
+	 * 
+	 * @param template 新模版对象
+	 * @param oldTemplate 老模版对象
+	 */
 	public void alterTable(Template template, Template oldTemplate) {
 		String tableName = TemplateUtils.getTableName(template);
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
@@ -61,6 +79,11 @@ public class DdlService {
 		}
 	}
 	
+	/**
+	 * 根据模版删除表结构
+	 * 
+	 * @param template 模版对象
+	 */
 	public void dropTable(Template template) {
 		String sql = buildDropSql(template);
 		log.info("DDL: {}", sql);
@@ -94,30 +117,39 @@ public class DdlService {
 			sql += columnType(field);
 			if (field.getRequired()) {
 				sql += " NOT NULL, ";
-			} else if (field.getDefaultValue() != null) {
+			} else if (StringUtils.isNotEmpty(field.getDefaultValue())) {
 				sql += " DEFAULT '" + field.getDefaultValue() + "', ";
 			} else {
 				sql += " DEFAULT NULL, ";
 			}
 		}
-		sql += Constant.OPERATOR_ID + " BIGINT(15) DEFAULT NULL, ";
-		sql += Constant.CREATE_TIME + " BIGINT(15) DEFAULT NULL, ";
-		sql += Constant.UPDATE_TIME + " BIGINT(15) DEFAULT NULL, ";
+		sql += Constant.OPERATORID + " BIGINT(15) NOT NULL, ";
+		sql += Constant.CREATETIME + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ";
+		sql += Constant.UPDATETIME + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ";
 		sql += "PRIMARY KEY (id)";
 		sql += ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
 		return sql;
 	}
 	
 	private String columnType(TemplateField field) {
-		if (Classes.INTEGER.getName().equals(field.getFieldType())) {
-			return " INT(11) ";
+		String column = "";
+		if (Classes.LONG.getName().equals(field.getFieldType())) {
+			column = " BIGINT(15)";
 		} else if (Classes.DOUBLE.getName().equals(field.getFieldType())) {
-			return " DECIMAL(15,2) ";
+			column = " DECIMAL(15,2)";
 		} else if (Classes.DATE.getName().equals(field.getFieldType())) {
-			return " TIMESTAMP ";
+			column = " TIMESTAMP";
 		} else {
-			return " VARCHAR(500) ";
+			column = " VARCHAR(500)";
 		}
+		if (field.getRequired()) {
+			column += " NOT NULL";
+		} else if (StringUtils.isNotEmpty(field.getDefaultValue())) {
+			column += " DEFAULT '" + field.getDefaultValue() + "'";
+		} else {
+			column += " DEFAULT NULL";
+		}
+		return column;
 	}
 	
 }

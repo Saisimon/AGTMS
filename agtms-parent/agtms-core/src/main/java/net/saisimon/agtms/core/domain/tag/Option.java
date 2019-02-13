@@ -2,6 +2,13 @@ package net.saisimon.agtms.core.domain.tag;
 
 import lombok.Data;
 
+/**
+ * 前端下拉列表的选项
+ * 
+ * @author saisimon
+ *
+ * @param <T> value 的类型
+ */
 @Data
 public class Option<T> implements Cloneable {
 	

@@ -11,6 +11,12 @@ import net.saisimon.agtms.core.enums.Selections;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.selection.Selection;
 
+/**
+ * 下拉选择构建工厂
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class SelectionFactory implements BeanPostProcessor {
 	

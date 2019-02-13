@@ -17,24 +17,24 @@ public class DomainUtils {
 	public static void fillCommonFields(Domain newDomain, Domain oldDomain) {
 		Date time = new Date();
 		if (oldDomain == null) {
-			newDomain.setField(Constant.CREATETIME, time, Long.class);
+			newDomain.setField(Constant.CREATETIME, time, Date.class);
 			UserInfo userInfo = AuthUtils.getUserInfo();
 			if (userInfo != null) {
 				newDomain.setField(Constant.OPERATORID, userInfo.getUserId(), Long.class);
 			}
 		} else {
-			newDomain.setField("id", oldDomain.getField("id"), Long.class);
-			newDomain.setField(Constant.CREATETIME, oldDomain.getField(Constant.CREATETIME), Long.class);
+			newDomain.setField(Constant.ID, oldDomain.getField(Constant.ID), Long.class);
+			newDomain.setField(Constant.CREATETIME, oldDomain.getField(Constant.CREATETIME), Date.class);
 			newDomain.setField(Constant.OPERATORID, oldDomain.getField(Constant.OPERATORID), Long.class);
 		}
-		newDomain.setField(Constant.UPDATETIME, time, Long.class);
+		newDomain.setField(Constant.UPDATETIME, time, Date.class);
 	}
 	
 	public static Object parseFieldValue(Object fieldValue, String fieldType) {
 		if (fieldValue != null && fieldValue != null) {
 			try {
-				if (Classes.INTEGER.getName().equals(fieldType)) {
-					return Integer.valueOf(fieldValue.toString());
+				if (Classes.LONG.getName().equals(fieldType)) {
+					return Long.valueOf(fieldValue.toString());
 				} else if (Classes.DOUBLE.getName().equals(fieldType)) {
 					return Double.valueOf(fieldValue.toString());
 				} else if (Classes.DATE.getName().equals(fieldType)) {

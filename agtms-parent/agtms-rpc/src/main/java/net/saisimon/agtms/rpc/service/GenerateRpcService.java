@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.sign.Sign;
@@ -84,9 +85,9 @@ public class GenerateRpcService implements GenerateService {
 	@Override
 	public Boolean updateDomain(Domain domain, Domain oldDomain) {
 		try {
-			Object id = oldDomain.getField("id");
+			Object id = oldDomain.getField(Constant.ID);
 			if (id != null) {
-				domain.setField("id", id, id.getClass());
+				domain.setField(Constant.ID, id, id.getClass());
 				Domain d = generateRpcRepository.saveOrUpdate(domain);
 				if (d != null) {
 					return true;
@@ -103,7 +104,7 @@ public class GenerateRpcService implements GenerateService {
 	@Override
 	public void updateDomain(Long id, Map<String, Object> updateMap) {
 		try {
-			generateRpcRepository.batchUpdate(FilterRequest.build().and("id", id), updateMap);
+			generateRpcRepository.batchUpdate(FilterRequest.build().and(Constant.ID, id), updateMap);
 		} catch (Exception e) {
 			log.error("update domain error", e);
 		}

@@ -1,7 +1,7 @@
 <template>
     <div class="filter-input-group-container">
         <search-filter-datepicker :input="filter.input" v-if="filter.input.type == 'date'"/>
-        <b-form-input v-model="filter.input.value" v-else-if="filter.input.type == 'int' || filter.input.type == 'double'" :type="'number'" />
+        <b-form-input v-model="filter.input.value" v-else-if="filter.input.type == 'long' || filter.input.type == 'double'" :type="'number'" />
         <b-form-input v-model="filter.input.value" v-else :type="'text'" />
         <b-input-group-text slot="append" class="filter-select-container">
             <multiselect class="filter-select filter-select-right" 

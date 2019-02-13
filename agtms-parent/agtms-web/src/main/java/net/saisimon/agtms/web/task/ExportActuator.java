@@ -40,6 +40,12 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.ExportParam;
 
+/**
+ * 导出执行器
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 @Slf4j
 public class ExportActuator implements Actuator<ExportParam> {

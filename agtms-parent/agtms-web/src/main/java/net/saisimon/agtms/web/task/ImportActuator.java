@@ -8,6 +8,12 @@ import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.web.dto.req.ImportParam;
 
+/**
+ * 导入执行器
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class ImportActuator implements Actuator<ImportParam> {
 	

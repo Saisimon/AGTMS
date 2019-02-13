@@ -16,7 +16,7 @@ public class NavigationParam {
 	@NotBlank
 	private String icon;
 	
-	private Integer priority;
+	private Long priority;
 	
 	@NotNull
 	private Long parentId;

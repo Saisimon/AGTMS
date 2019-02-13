@@ -10,6 +10,12 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.service.OperationService;
 
+/**
+ * 操作记录服务构建工厂
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class OperationServiceFactory implements BeanPostProcessor {
 	

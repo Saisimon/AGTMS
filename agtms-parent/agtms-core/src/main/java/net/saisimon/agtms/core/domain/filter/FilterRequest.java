@@ -18,6 +18,12 @@ import lombok.Getter;
 import lombok.Setter;
 import net.saisimon.agtms.core.util.StringUtils;
 
+/**
+ * 条件过滤对象
+ * 
+ * @author saisimon
+ *
+ */
 @Setter
 @Getter
 public class FilterRequest implements Serializable {

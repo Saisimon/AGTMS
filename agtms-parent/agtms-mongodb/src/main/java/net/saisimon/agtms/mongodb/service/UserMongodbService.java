@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.User;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.repository.BaseRepository;
@@ -40,7 +41,7 @@ public class UserMongodbService implements UserService, MongodbOrder {
 		}
 		Map<String, Object> updateMap = new HashMap<>();
 		updateMap.put("lastLoginTime", System.currentTimeMillis());
-		batchUpdate(FilterRequest.build().and("id", user.getId()), updateMap);
+		batchUpdate(FilterRequest.build().and(Constant.ID, user.getId()), updateMap);
 		return user;
 	}
 

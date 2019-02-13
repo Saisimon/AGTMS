@@ -13,6 +13,12 @@ import org.springframework.data.domain.Pageable;
 
 import lombok.Getter;
 
+/**
+ * 分页过滤对象
+ * 
+ * @author saisimon
+ *
+ */
 @Getter
 public class FilterPageable implements Serializable {
 	

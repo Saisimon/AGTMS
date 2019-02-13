@@ -12,7 +12,6 @@ import org.springframework.util.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
-import net.saisimon.agtms.core.domain.filter.Filter;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
@@ -22,6 +21,7 @@ import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchEdit;
 import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchExport;
 import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchImport;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
@@ -34,37 +34,103 @@ import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.web.dto.resp.NavigationTree;
 import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
 
+/**
+ * 主列表页面抽象控制器
+ * 
+ * @author saisimon
+ *
+ */
 @Slf4j
 public abstract class MainController extends BaseController {
 	
+	/**
+	 * 前端头信息配置
+	 * 
+	 * @param key 关键词
+	 * @return 面包屑导航
+	 */
 	protected abstract Header header(Object key);
 	
+	/**
+	 * 前端面包屑导航配置
+	 * 
+	 * @param key 关键词
+	 * @return 面包屑导航
+	 */
 	protected abstract List<Breadcrumb> breadcrumbs(Object key);
 	
+	/**
+	 * 前端过滤条件配置
+	 * 
+	 * @param key 关键词
+	 * @return 过滤条件
+	 */
 	protected abstract List<Filter> filters(Object key);
 	
+	/**
+	 * 前端列表列信息配置
+	 * 
+	 * @param key 关键词
+	 * @return 列信息
+	 */
 	protected abstract List<Column> columns(Object key);
 	
+	/**
+	 * 前端操作列信息配置
+	 * 
+	 * @param key 关键词
+	 * @return 操作列信息
+	 */
 	protected List<Action> actions(Object key) {
 		return null;
 	}
 	
+	/**
+	 * 前端功能信息配置
+	 * 
+	 * @param key 关键词
+	 * @return 功能信息
+	 */
 	protected List<String> functions(Object key) {
 		return null;
 	}
 	
+	/**
+	 * 前端批量编辑配置
+	 * 
+	 * @param key 关键词
+	 * @return 批量编辑信息
+	 */
 	protected BatchEdit batchEdit(Object key) {
 		return null;
 	}
 	
+	/**
+	 * 前端批量导出配置
+	 * 
+	 * @param key 关键词
+	 * @return 批量导出信息
+	 */
 	protected BatchExport batchExport(Object key) {
 		return null;
 	}
 	
+	/**
+	 * 前端批量导入配置
+	 * 
+	 * @param key 关键词
+	 * @return 批量导入信息
+	 */
 	protected BatchImport batchImport(Object key) {
 		return null;
 	}
 	
+	/**
+	 * 前端主要信息的框架
+	 * 
+	 * @param key 关键词
+	 * @return 主要信息
+	 */
 	protected MainGrid getMainGrid(Object key) {
 		MainGrid mainGrid = new MainGrid();
 		mainGrid.setHeader(header(key));
@@ -85,6 +151,12 @@ public abstract class MainController extends BaseController {
 		return mainGrid;
 	}
 	
+	/**
+	 * 前端批量处理相关信息的框架
+	 * 
+	 * @param key 关键词
+	 * @return 批量处理相关信息
+	 */
 	protected BatchGrid getBatchGrid(Object key) {
 		BatchGrid batchGrid = new BatchGrid();
 		BatchEdit batchEdit = batchEdit(key);

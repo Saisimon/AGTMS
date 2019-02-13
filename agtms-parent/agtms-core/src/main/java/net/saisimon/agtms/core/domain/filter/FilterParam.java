@@ -14,6 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.util.StringUtils;
 
+/**
+ * 条件过滤对象
+ * 
+ * @author saisimon
+ *
+ */
 @Setter
 @Getter
 @Slf4j

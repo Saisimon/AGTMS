@@ -22,12 +22,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Task;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
-import net.saisimon.agtms.core.domain.filter.Filter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
@@ -49,6 +49,12 @@ import net.saisimon.agtms.web.dto.resp.TaskInfo;
 import net.saisimon.agtms.web.selection.HandleStatusSelection;
 import net.saisimon.agtms.web.selection.TaskTypeSelection;
 
+/**
+ * 任务主控制器
+ * 
+ * @author saisimon
+ *
+ */
 @RestController
 @RequestMapping("/task/main")
 @Slf4j
@@ -181,7 +187,7 @@ public class TaskMainController extends MainController {
 		Map<String, String> taskTypeMap = taskTypeSelection.select();
 		List<String> values = new ArrayList<>(taskTypeMap.keySet());
 		List<String> texts = new ArrayList<>(taskTypeMap.values());
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.INTEGER.getName(), values, texts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), values, texts));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		filter.setValue(value);
 		filters.add(filter);
@@ -193,7 +199,7 @@ public class TaskMainController extends MainController {
 		Map<String, String> handleStatusMap = handleStatusSelection.select();
 		values = new ArrayList<>(handleStatusMap.keySet());
 		texts = new ArrayList<>(handleStatusMap.values());
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.INTEGER.getName(), values, texts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), values, texts));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		filter.setValue(value);
 		filters.add(filter);

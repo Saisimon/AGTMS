@@ -21,6 +21,12 @@ import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
+/**
+ * 自定义对象服务接口
+ * 
+ * @author saisimon
+ *
+ */
 public interface GenerateService {
 	
 	AbstractGenerateRepository getRepository();

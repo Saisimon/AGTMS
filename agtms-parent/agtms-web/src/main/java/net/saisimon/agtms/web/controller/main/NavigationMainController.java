@@ -25,7 +25,6 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Navigation;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
-import net.saisimon.agtms.core.domain.filter.Filter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
@@ -33,6 +32,7 @@ import net.saisimon.agtms.core.domain.filter.TextFilter;
 import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchEdit;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
+import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
@@ -58,6 +58,12 @@ import net.saisimon.agtms.web.dto.resp.NavigationTree;
 import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
 import net.saisimon.agtms.web.selection.NavigationSelection;
 
+/**
+ * 导航主控制器
+ * 
+ * @author saisimon
+ *
+ */
 @RestController
 @RequestMapping("/navigation/main")
 public class NavigationMainController extends MainController {
@@ -160,7 +166,7 @@ public class NavigationMainController extends MainController {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		String icon = (String) body.get("icon");
-		Integer priority = (Integer) body.get("priority");
+		Object priorityObj = body.get("priority");
 		long userId = AuthUtils.getUserInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
 		List<Navigation> navigations = navigationService.getNavigations(ids, userId);
@@ -170,9 +176,9 @@ public class NavigationMainController extends MainController {
 				update = true;
 				navigation.setIcon(icon);
 			}
-			if (priority != null && !priority.equals(navigation.getPriority())) {
+			if (priorityObj != null && !priorityObj.toString().equals(navigation.getPriority().toString())) {
 				update = true;
-				navigation.setPriority(priority);
+				navigation.setPriority(Long.valueOf(priorityObj.toString()));
 			}
 			if (update) {
 				navigation.setUpdateTime(new Date());
@@ -240,7 +246,7 @@ public class NavigationMainController extends MainController {
 		batchEdit.setEditFieldOptions(editFieldOptions);
 		Map<String, Field<?>> editFields = new HashMap<>();
 		editFields.put("icon", Field.<String>builder().value(Navigation.DEFAULT_ICON).name("icon").required(true).text(getMessage("icon")).type(Classes.STRING.getName()).view("icon").build());
-		editFields.put("priority", Field.<Integer>builder().value(Navigation.DEFAULT_PRIORITY).name("priority").text(getMessage("priority")).type(Classes.INTEGER.getName()).build());
+		editFields.put("priority", Field.<Long>builder().value(Navigation.DEFAULT_PRIORITY).name("priority").text(getMessage("priority")).type(Classes.LONG.getName()).build());
 		batchEdit.setEditFields(editFields);
 		return batchEdit;
 	}
@@ -253,7 +259,7 @@ public class NavigationMainController extends MainController {
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
 		Map<String, FieldFilter> value = new HashMap<>();
 		value.put("title", TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
-		value.put("priority", RangeFilter.rangeFilter("", Classes.INTEGER.getName(), "", Classes.INTEGER.getName()));
+		value.put("priority", RangeFilter.rangeFilter("", Classes.LONG.getName(), "", Classes.LONG.getName()));
 		filter.setValue(value);
 		filters.add(filter);
 		

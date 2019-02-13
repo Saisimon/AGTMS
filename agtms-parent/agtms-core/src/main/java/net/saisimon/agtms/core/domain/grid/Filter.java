@@ -1,10 +1,11 @@
-package net.saisimon.agtms.core.domain.filter;
+package net.saisimon.agtms.core.domain.grid;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import lombok.Data;
+import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 
 @Data

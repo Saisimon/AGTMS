@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.springframework.util.CollectionUtils;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateColumn;
@@ -130,7 +131,7 @@ public class TemplateUtils {
 	
 	public static Map<String, String> buildFieldMap(Template template) {
 		Map<String, String> fieldMap = new LinkedHashMap<>();
-		fieldMap.put("id", Long.class.getName());
+		fieldMap.put(Constant.ID, Long.class.getName());
 		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
 			return fieldMap;
 		}

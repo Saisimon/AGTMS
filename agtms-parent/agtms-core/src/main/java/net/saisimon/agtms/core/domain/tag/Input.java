@@ -2,6 +2,13 @@ package net.saisimon.agtms.core.domain.tag;
 
 import lombok.Data;
 
+/**
+ * 前端 input 输入框
+ * 
+ * @author saisimon
+ *
+ * @param <T> value 的类型
+ */
 @Data
 public class Input<T> implements Cloneable {
 	

@@ -33,6 +33,12 @@ import net.saisimon.agtms.web.dto.req.NavigationParam;
 import net.saisimon.agtms.web.dto.resp.NavigationInfo;
 import net.saisimon.agtms.web.selection.NavigationSelection;
 
+/**
+ * 导航编辑控制器
+ * 
+ * @author saisimon
+ *
+ */
 @RestController
 @RequestMapping("/navigation/edit")
 public class NavigationEditController extends EditController {
@@ -124,7 +130,7 @@ public class NavigationEditController extends EditController {
 		Field<Option<Long>> parentIdField = Field.<Option<Long>>builder().name("parentId").text(getMessage("parent.navigation")).required(true).type("select").options(options).build();
 		Field<String> iconField = Field.<String>builder().name("icon").text(getMessage("icon")).type(Classes.STRING.getName()).required(true).view("icon").build();
 		Field<String> titleField = Field.<String>builder().name("title").text(getMessage("title")).type(Classes.STRING.getName()).required(true).build();
-		Field<Integer> priorityField = Field.<Integer>builder().name("priority").text(getMessage("priority")).type(Classes.INTEGER.getName()).build();
+		Field<Long> priorityField = Field.<Long>builder().name("priority").text(getMessage("priority")).type(Classes.LONG.getName()).build();
 		if (navigation != null) {
 			Option<Long> select = null;
 			for (Option<Long> option : options) {

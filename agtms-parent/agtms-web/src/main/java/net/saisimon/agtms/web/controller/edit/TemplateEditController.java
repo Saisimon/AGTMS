@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +43,12 @@ import net.saisimon.agtms.web.selection.NavigationSelection;
 import net.saisimon.agtms.web.selection.ViewSelection;
 import net.saisimon.agtms.web.selection.WhetherSelection;
 
+/**
+ * 模版编辑控制器
+ * 
+ * @author saisimon
+ *
+ */
 @RestController
 @RequestMapping("/template/edit")
 public class TemplateEditController extends BaseController {
@@ -96,6 +104,7 @@ public class TemplateEditController extends BaseController {
 		return ResultUtils.simpleSuccess(grid);
 	}
 
+	@Transactional
 	@PostMapping("/save")
 	public Result save(@RequestBody Template template) throws GenerateException {
 		if (!TemplateUtils.checkRequired(template)) {
@@ -114,7 +123,6 @@ public class TemplateEditController extends BaseController {
 			templateService.alterTable(template, oldTemplate);
 			templateService.saveOrUpdate(template);
 		} else {
-		//TODO 如果 template.getId() == null 创建表，表名就是agtms_generate_null
 			if (templateService.exists(template.getTitle(), userId)) {
 				return ErrorMessage.Template.TEMPLATE_ALREADY_EXISTS;
 			}
@@ -122,8 +130,8 @@ public class TemplateEditController extends BaseController {
 			template.setCreateTime(time);
 			template.setOperatorId(userId);
 			template.setUpdateTime(time);
+			template = templateService.saveOrUpdate(template);
 			templateService.createTable(template);
-			templateService.saveOrUpdate(template);
 		}
 		return ResultUtils.simpleSuccess();
 	}

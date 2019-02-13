@@ -6,6 +6,13 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 前端多选下拉列表
+ * 
+ * @author saisimon
+ *
+ * @param <T> value 的类型
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class MultipleSelect<T> extends Select<T> implements Cloneable {

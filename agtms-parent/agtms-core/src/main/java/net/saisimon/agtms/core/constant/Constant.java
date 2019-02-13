@@ -2,13 +2,10 @@ package net.saisimon.agtms.core.constant;
 
 public class Constant {
 	
+	public static final String ID = "id";
 	public static final String OPERATORID = "operatorId";
 	public static final String CREATETIME = "createTime";
 	public static final String UPDATETIME = "updateTime";
-	
-	public static final String OPERATOR_ID = "operator_id";
-	public static final String CREATE_TIME = "create_time";
-	public static final String UPDATE_TIME = "update_time";
 	
 	public static class Param {
 		public static final String TOTAL = "total";

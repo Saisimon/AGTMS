@@ -11,20 +11,37 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
+/**
+ * 自定义对象抽象 Repository
+ * 
+ * @author saisimon
+ *
+ */
 public abstract class AbstractGenerateRepository implements BaseRepository<Domain, Long> {
 	
 	private ThreadLocal<Template> local = new ThreadLocal<>();
 	
+	/**
+	 * 初始化模版对象
+	 * 
+	 * @param template 模版对象
+	 */
 	public void init(Template template) {
 		local.set(template);
 	}
 	
+	/**
+	 * 获取模版对象
+	 * 
+	 * @return 模版对象
+	 */
 	public Template template() {
 		Template template = local.get();
 		Assert.notNull(template, "uninit");
@@ -67,22 +84,22 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 		}
 		Object idObj = null;
 		Domain domain = newGenerate();
-		Field idField = ReflectionUtils.findField(domain.getClass(), "id");
+		Field idField = ReflectionUtils.findField(domain.getClass(), Constant.ID);
 		if (idField != null) {
 			if (null != (idObj = map.get("_id"))) {
 				map.remove("_id");
-			} else if (null != (idObj = map.get("id"))) {
-				map.remove("id");
+			} else if (null != (idObj = map.get(Constant.ID))) {
+				map.remove(Constant.ID);
 			} else {
 				return Optional.empty();
 			}
 			Class<?> idClass = idField.getType();
 			if (idClass == Long.class || idClass == long.class) {
-				domain.setField("id", Long.valueOf(idObj.toString()), idClass);
+				domain.setField(Constant.ID, Long.valueOf(idObj.toString()), idClass);
 			} else if (idClass == String.class) {
-				domain.setField("id", idObj.toString(), idClass);
+				domain.setField(Constant.ID, idObj.toString(), idClass);
 			} else {
-				domain.setField("id", idObj, idClass);
+				domain.setField(Constant.ID, idObj, idClass);
 			}
 		} else {
 			return Optional.empty();

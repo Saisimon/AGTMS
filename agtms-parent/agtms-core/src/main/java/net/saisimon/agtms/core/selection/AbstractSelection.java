@@ -6,6 +6,12 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import net.saisimon.agtms.core.enums.Selections;
 
+/**
+ * 下拉选项抽象类
+ * 
+ * @author saisimon
+ *
+ */
 public abstract class AbstractSelection implements Selection {
 	
 	@Autowired
@@ -15,6 +21,11 @@ public abstract class AbstractSelection implements Selection {
 		return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
 	}
 	
+	/**
+	 * 下拉选项的关键字
+	 * 
+	 * @return 关键字
+	 */
 	public abstract Selections key();
 
 }

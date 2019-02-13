@@ -10,6 +10,12 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.cache.Cache;
 
+/**
+ * 缓存构建工厂
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class CacheFactory implements BeanPostProcessor {
 	

@@ -22,7 +22,7 @@ export default {
     data: function() {
         var type = 'text';
         if (this.field) {
-            if (this.field.type == 'int' || this.field.type == 'double') {
+            if (this.field.type == 'long' || this.field.type == 'double') {
                 type = 'number';
             } else if (this.field.view == 'link' || this.field.view == 'image') {
                 type = 'url';

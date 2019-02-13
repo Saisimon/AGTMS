@@ -19,7 +19,7 @@ public class NavigationTree implements Serializable, Cloneable {
 	
 	private String icon;
 	
-	private Integer priority;
+	private Long priority;
 	
 	private List<NavigationLink> links;
 	

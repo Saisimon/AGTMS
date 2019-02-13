@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.Transactional;
+
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +37,12 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.EditController;
 
+/**
+ * 自定义对象管理编辑控制器
+ * 
+ * @author saisimon
+ *
+ */
 @RestController
 @RequestMapping("/management/edit/{mid}")
 public class ManagementEditController extends EditController {
@@ -44,6 +52,7 @@ public class ManagementEditController extends EditController {
 		return ResultUtils.simpleSuccess(getEditGrid(id, mid));
 	}
 	
+	@Transactional
 	@PostMapping("/save")
 	public Result save(@PathVariable("mid") Long mid, @RequestBody Map<String, Object> body) {
 		Long userId = AuthUtils.getUserInfo().getUserId();
@@ -53,7 +62,6 @@ public class ManagementEditController extends EditController {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
 		Object idObj = body.get("id");
-		
 		if (idObj == null && !TemplateUtils.hasFunction(template, Functions.CREATE)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		} else if (idObj != null && !TemplateUtils.hasFunction(template, Functions.EDIT)) {
@@ -68,7 +76,7 @@ public class ManagementEditController extends EditController {
 				TemplateField field = entry.getValue();
 				Object fieldValue = body.get(fieldName);
 				fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
-				if (fieldValue == null || StringUtils.isEmpty(fieldValue.toString())) {
+				if (StringUtils.isEmpty(fieldValue)) {
 					if (field.getRequired()) {
 						return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 					}
@@ -77,7 +85,9 @@ public class ManagementEditController extends EditController {
 						fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
 					}
 				}
-				domain.setField(fieldName, fieldValue, fieldValue.getClass());
+				if (fieldValue != null) {
+					domain.setField(fieldName, fieldValue, fieldValue.getClass());
+				}
 			}
 			if (idObj == null) {
 				if (generateService.checkExist(domain)) {

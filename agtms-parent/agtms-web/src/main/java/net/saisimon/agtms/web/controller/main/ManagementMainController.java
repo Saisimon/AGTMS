@@ -26,7 +26,6 @@ import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.Template.TemplateField;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
-import net.saisimon.agtms.core.domain.filter.Filter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
@@ -36,6 +35,7 @@ import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchExport;
 import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchImport;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
+import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
@@ -66,6 +66,12 @@ import net.saisimon.agtms.web.dto.req.ExportParam;
 import net.saisimon.agtms.web.dto.req.ImportParam;
 import net.saisimon.agtms.web.selection.FileTypeSelection;
 
+/**
+ * 自定义对象管理主控制器
+ * 
+ * @author saisimon
+ *
+ */
 @RestController
 @RequestMapping("/management/main/{mid}")
 public class ManagementMainController extends MainController {
@@ -293,7 +299,7 @@ public class ManagementMainController extends MainController {
 				String fieldName = column.getColumnName() + field.getFieldName();
 				keyValues.add(fieldName);
 				keyTexts.add(field.getFieldTitle());
-				if (Classes.INTEGER.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {
+				if (Classes.LONG.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {
 					value.put(fieldName, RangeFilter.rangeFilter("", field.getFieldType(), "", field.getFieldType()));
 				} else if (Classes.DATE.getName().equals(field.getFieldType())) {
 					value.put(fieldName, RangeFilter.rangeFilter("", field.getFieldType(), "", field.getFieldType()));
@@ -327,7 +333,7 @@ public class ManagementMainController extends MainController {
 				}
 				String fieldName = templateColumn.getColumnName() + templateField.getFieldName();
 				Column column = Column.builder().field(fieldName).label(templateField.getFieldTitle()).width(templateField.getWidth()).view(templateField.getView()).build();
-				if (Classes.INTEGER.getName().equals(templateField.getFieldType())) {
+				if (Classes.LONG.getName().equals(templateField.getFieldType())) {
 					column.setType("number");
 				} else if (Classes.DOUBLE.getName().equals(templateField.getFieldType())) {
 					column.setType("decimal");

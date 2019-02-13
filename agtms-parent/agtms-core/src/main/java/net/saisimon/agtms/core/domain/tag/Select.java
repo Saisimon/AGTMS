@@ -7,6 +7,13 @@ import java.util.Map.Entry;
 
 import lombok.Data;
 
+/**
+ * 前端下拉列表
+ * 
+ * @author saisimon
+ *
+ * @param <T> value 的类型
+ */
 @Data
 public class Select<T> implements Cloneable {
 	

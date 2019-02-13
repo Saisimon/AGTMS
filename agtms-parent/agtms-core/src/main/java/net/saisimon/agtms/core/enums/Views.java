@@ -1,8 +1,13 @@
 package net.saisimon.agtms.core.enums;
 
+/**
+ * 模版列属性展现类型枚举
+ * 
+ * @author saisimon
+ *
+ */
 public enum Views {
 	
-	HTML("html"),
 	TEXT("text"), 
 	TEXTAREA("textarea"), 
 	ICON("icon"), 

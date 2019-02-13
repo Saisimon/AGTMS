@@ -14,6 +14,12 @@ import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.StringUtils;
 
+/**
+ * 执行器构建工厂
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class ActuatorFactory implements BeanPostProcessor {
 

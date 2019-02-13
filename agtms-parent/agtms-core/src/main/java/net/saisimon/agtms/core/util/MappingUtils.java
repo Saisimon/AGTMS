@@ -11,6 +11,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 import net.saisimon.agtms.core.annotation.Mapping;
+import net.saisimon.agtms.core.constant.Constant;
 
 public final class MappingUtils {
 	
@@ -21,7 +22,7 @@ public final class MappingUtils {
 	public static <T> Map<String, Object> entityToMap(T entity) {
 		Map<String, Object> result = new HashMap<>();
 		ReflectionUtils.doWithFields(entity.getClass(), field -> {
-			if ("id".equalsIgnoreCase(field.getName())) {
+			if (Constant.ID.equalsIgnoreCase(field.getName())) {
 				field.setAccessible(true);
 				result.put(field.getName(), ReflectionUtils.getField(field, entity));
 			} else {

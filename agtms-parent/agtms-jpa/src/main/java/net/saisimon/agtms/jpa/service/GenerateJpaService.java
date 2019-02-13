@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.sign.Sign;
@@ -39,7 +40,7 @@ public class GenerateJpaService implements GenerateService {
 
 	@Override
 	public void updateDomain(Long id, Map<String, Object> updateMap) {
-		FilterRequest filter = FilterRequest.build().and("id", id);
+		FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
 		generateJpaRepository.batchUpdate(filter, updateMap);
 	}
 

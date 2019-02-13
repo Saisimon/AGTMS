@@ -8,6 +8,12 @@ import net.saisimon.agtms.core.cache.AbstractCache;
 import net.saisimon.agtms.core.order.BaseOrder;
 import net.saisimon.agtms.core.util.StringUtils;
 
+/**
+ * 默认本地缓存
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class DefaultCache extends AbstractCache implements BaseOrder {
 	

@@ -3,6 +3,12 @@ package net.saisimon.agtms.web.constant;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.util.ResultUtils;
 
+/**
+ * 错误消息响应
+ * 
+ * @author saisimon
+ *
+ */
 public class ErrorMessage {
 	
 	public static class Common {

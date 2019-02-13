@@ -5,6 +5,13 @@ import lombok.EqualsAndHashCode;
 import net.saisimon.agtms.core.domain.tag.Input;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 
+/**
+ * 前端普通文本过滤条件对象
+ * 
+ * @author saisimon
+ *
+ * @param <T> value 的类型
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class TextFilter<T> extends FieldFilter {
