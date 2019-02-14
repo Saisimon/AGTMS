@@ -183,7 +183,7 @@ export default {
                 }).then(resp => {
                     var data = resp.data;
                     if (data.code === 0) {
-                        this.$store.dispatch('getTrees');
+                        this.$store.dispatch('getTree');
                         this.alert.variant = 'success';
                     } else {
                         this.alert.variant = 'danger';

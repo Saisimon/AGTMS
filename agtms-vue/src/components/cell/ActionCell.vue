@@ -74,7 +74,7 @@ export default {
             this.$store.dispatch('requestUrl', link + "?id=" + this.rowData.id).then(() => {
                 this.$emit('succeed');
                 if (this.$route.params.module === 'navigation') {
-                    this.$store.dispatch('getTrees');
+                    this.$store.dispatch('getTree');
                 }
             });
         }

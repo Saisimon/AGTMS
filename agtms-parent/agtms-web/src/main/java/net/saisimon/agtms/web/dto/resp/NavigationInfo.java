@@ -16,7 +16,7 @@ public class NavigationInfo extends BaseInfo {
 	
 	private String icon;
 	
-	private Integer priority;
+	private Long priority;
 	
 	private Long parentId;
 	

@@ -1,36 +1,6 @@
 spring:
   main:
     banner-mode: 'off'
-  jpa:
-    show-sql: true
-    generate-ddl: true
-  datasource:
-    url: jdbc:mysql://mysqlserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true
-    username: root
-    password: 1qaz1QAZ
-    driver-class-name: com.mysql.jdbc.Driver
-    hikari:
-      connection-test-query: SELECT 1 FROM DUAL
-      minimum-idle: 10
-      maximum-pool-size: 100
-      max-lifetime: 1800000
-  data:
-    mongodb:
-      host: mongodbserver
-      port: 27017
-      username: agtms
-      password: 1qaz1QAZ
-      database: agtms
-  redis:
-    database: 0
-    host: redisserver
-    port: 6379
-    password: 1qaz1QAZ
-        
 extra:
   class:
     path: /tmp/classes
-    
-logging:
-  level:
-    net.saisimon: DEBUG

@@ -208,6 +208,16 @@ export default {
             if (navigationSelect) {
                 this.navigationField['options'] = navigationSelect.options;
                 this.navigationField['value'] = navigationSelect.selected;
+                var nid = this.$route.query.nid;
+                if (nid && nid > 0) {
+                    for (var i = 0; i < navigationSelect.options.length; i++) {
+                        var option = navigationSelect.options[i];
+                        if (option.value == nid) {
+                            this.navigationField['value'] = option;
+                            break;
+                        }
+                    }
+                }
             }
             var dataSourceSelect = templateGrid.dataSourceSelect;
             if (dataSourceSelect) {
@@ -598,7 +608,7 @@ export default {
             this.$store.dispatch('saveTemplate', template).then(resp => {
                 var data = resp.data;
                 if (data.code === 0) {
-                    this.$store.dispatch('getTrees');
+                    this.$store.dispatch('getTree');
                     this.alert.variant = 'success';
                 } else {
                     this.alert.variant = 'danger';

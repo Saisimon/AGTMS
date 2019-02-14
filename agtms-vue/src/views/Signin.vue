@@ -77,7 +77,7 @@ export default {
                 if (data) {
                     if (data.code === 0) {
                         this.$store.commit('setUser', data.data);
-                        this.$store.dispatch('getTrees');
+                        this.$store.dispatch('getTree');
                         var reply = this.$route.query.reply;
                         if (reply && reply != '/') {
                             this.$router.push({

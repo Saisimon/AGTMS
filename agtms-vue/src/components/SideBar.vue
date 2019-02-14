@@ -5,10 +5,17 @@
         </div>
         <ul class="sidebar-menu" @click="openBars">
             <tree-view
-                v-for="(tree, index) in menuTrees"
-                :key="index"
+                v-for="(tree, index) in menuTree.childrens"
+                :key="'tree' + index"
                 :tree="tree">
             </tree-view>
+            <li v-for="(link, index) in menuTree.links"
+                :key="'link' + index">
+                <router-link :to="link.link" v-b-toggle="'nav-bar'">
+                    <i class="fa fa-fw fa-link text-light"></i>
+                    <span class="text-light ml-1">{{link.name}}</span>
+                </router-link>
+            </li>
         </ul>
     </div>
 </template>
@@ -24,43 +31,50 @@ export default {
         }
     },
     computed: {
-        menuTrees: function() {
-            return this.filterTrees(this.search.toLowerCase(), this.$store.state.navigation.trees);
+        menuTree: function() {
+            return this.filterTree(this.search.toLowerCase(), this.$store.state.navigation.tree);
         }
     },
     methods: {
-        filterTrees: function(search, trees) {
-            var menuTrees = new Array();
-            for (var index in trees) {
-                var tree = trees[index];
-                var menuTree = {};
-                var needPush = false;
-                for (var key in tree) {
-                    var value = tree[key];
-                    if (key == "childrens" && value && value.length > 0) {
-                        var childrenMenuTrees = this.filterTrees(search, tree.childrens);
-                        if (childrenMenuTrees.length > 0) {
-                            needPush = true;
+        filterTree: function(search, tree) {
+            var menuTree = {};
+            if (tree.id == undefined) {
+                return menuTree;
+            }
+            var needPush = false;
+            for (var key in tree) {
+                var value = tree[key];
+                if (key == "childrens" && value && value.length > 0) {
+                    var childrenMenuTrees = new Array();
+                    for (var i = 0; i < value.length; i++) {
+                        var childrenMenuTree = this.filterTree(search, value[i]);
+                        if (childrenMenuTree) {
+                            childrenMenuTrees.push(childrenMenuTree);
                         }
-                        menuTree[key] = childrenMenuTrees;
-                    } else if (key == "linkMap" && value) {
-                        var menuLinkMap = {};
-                        for (var link in value) {
-                            if (value[link].toLowerCase().indexOf(search) !== -1) {
-                                needPush = true;
-                                menuLinkMap[link] = value[link];
-                            }
-                        }
-                        menuTree[key] = menuLinkMap;
-                    } else {
-                        menuTree[key] = value;
                     }
-                }
-                if (tree.title.toLowerCase().indexOf(search) !== -1 || needPush) {
-                    menuTrees.push(menuTree);
+                    menuTree[key] = childrenMenuTrees;
+                } else if (key == "links" && value && value.length > 0) {
+                    var menuLinks = new Array();
+                    for (var i = 0; i < value.length; i++) {
+                        var menuLink = {};
+                        var link = value[i];
+                        if (link["name"].toLowerCase().indexOf(search) !== -1) {
+                            needPush = true;
+                            menuLink["name"] = link["name"];
+                            menuLink["link"] = link["link"];
+                            menuLinks.push(menuLink);
+                        }
+                    }
+                    menuTree[key] = menuLinks;
+                } else {
+                    menuTree[key] = value;
                 }
             }
-            return menuTrees;
+            if (tree.id == -1 || tree.title.toLowerCase().indexOf(search) !== -1 || needPush) {
+                return menuTree;
+            } else {
+                return null;
+            }
         },
         openBars: function() {
             this.$store.commit('changeOpenTree', true);

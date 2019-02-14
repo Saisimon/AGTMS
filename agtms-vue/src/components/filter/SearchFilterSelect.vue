@@ -6,7 +6,7 @@
             track-by="value"
             select-label=""
             deselect-label=""
-            selectedLabel=""
+            selected-label=""
             :multiple="filter.multiple"
             :options="filter.select.options" 
             :placeholder="''" />

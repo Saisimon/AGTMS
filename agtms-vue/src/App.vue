@@ -55,7 +55,7 @@ export default {
             }
         }
         if (this.$store.state.base.user != null) {
-            this.$store.dispatch('getTrees');
+            this.$store.dispatch('getTree');
         }
         document.getElementsByTagName("body")[0].setAttribute('style', 'width: ' + document.documentElement.clientWidth + 'px');
     },

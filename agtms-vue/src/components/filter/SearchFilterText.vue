@@ -11,7 +11,7 @@
                 track-by="value"
                 select-label=""
                 deselect-label=""
-                selectedLabel=""
+                selected-label=""
                 :allow-empty="false"
                 :searchable="false"
                 :placeholder="''" />

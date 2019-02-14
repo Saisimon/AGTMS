@@ -101,7 +101,19 @@ public class NavigationMainController extends MainController {
 			trees = new ArrayList<>(1);
 		}
 		trees.add(0, NavigationTree.SYSTEM_MODEL_TREE);
-		return ResultUtils.simpleSuccess(internationNavigationTrees(trees));
+		NavigationTree root = new NavigationTree();
+		root.setId(-1L);
+		root.setChildrens(internationNavigationTrees(trees));
+		TemplateService templateService = TemplateServiceFactory.get();
+		List<Template> templates = templateService.getTemplates(-1L, userInfo.getUserId());
+		if (!CollectionUtils.isEmpty(templates)) {
+			List<NavigationLink> links = new ArrayList<>(templates.size());
+			for (Template template : templates) {
+				links.add(new NavigationLink("/management/main/" + template.getId(), template.getTitle()));
+			}
+			root.setLinks(links);
+		}
+		return ResultUtils.simpleSuccess(root);
 	}
 	
 	@PostMapping("/selection")
@@ -230,6 +242,7 @@ public class NavigationMainController extends MainController {
 	@Override
 	protected List<Action> actions(Object key) {
 		List<Action> actions = new ArrayList<>();
+		actions.add(Action.builder().key("template").to("/template/edit?nid=").icon("plus").text(getMessage("add.template")).variant("outline-dark").type("link").build());
 		actions.add(Action.builder().key("edit").to("/navigation/edit?id=").icon("edit").text(getMessage("edit")).type("link").build());
 		actions.add(Action.builder().key("remove").icon("trash").to("/navigation/main/remove").text(getMessage("remove")).variant("outline-danger").type("modal").build());
 		return actions;

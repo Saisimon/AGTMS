@@ -2,7 +2,7 @@ import { side } from '@/api/navigation'
 
 const state = {
     openTree: false,
-    trees: []
+    tree: {}
 };
 
 const mutations = {
@@ -13,9 +13,9 @@ const mutations = {
             state.openTree = false;
         }
     },
-    setTrees(state, trees) {
-        if (trees) {
-            state.trees = trees;
+    setTree(state, tree) {
+        if (tree) {
+            state.tree = tree;
         }
     }
 };
@@ -24,9 +24,9 @@ const actions = {
     changeOpenTree(context, status) {
         context.commit('changeOpenTree', status);
     },
-    getTrees(context) {
+    getTree(context) {
         side(context.rootState.base.user).then(resp => {
-            return context.commit('setTrees', resp.data.data);
+            return context.commit('setTree', resp.data.data);
         });
     }
 };

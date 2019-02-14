@@ -13,7 +13,7 @@
                             track-by="value"
                             select-label=""
                             deselect-label=""
-                            selectedLabel=""
+                            selected-label=""
                             :searchable="false"
                             :multiple="true"
                             :options="batchEdit.editFieldOptions"

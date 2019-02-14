@@ -27,7 +27,7 @@ export default {
                 if (data.code === 0) {
                     this.$emit('succeed');
                     if (this.$route.params.module === 'navigation') {
-                        this.$store.dispatch('getTrees');
+                        this.$store.dispatch('getTree');
                     }
                 }
             });

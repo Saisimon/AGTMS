@@ -114,20 +114,13 @@ public class DdlService {
 			String fieldname = entry.getKey();
 			TemplateField field = entry.getValue();
 			sql += fieldname;
-			sql += columnType(field);
-			if (field.getRequired()) {
-				sql += " NOT NULL, ";
-			} else if (StringUtils.isNotEmpty(field.getDefaultValue())) {
-				sql += " DEFAULT '" + field.getDefaultValue() + "', ";
-			} else {
-				sql += " DEFAULT NULL, ";
-			}
+			sql += columnType(field) + ", ";
 		}
 		sql += Constant.OPERATORID + " BIGINT(15) NOT NULL, ";
 		sql += Constant.CREATETIME + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ";
 		sql += Constant.UPDATETIME + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ";
 		sql += "PRIMARY KEY (id)";
-		sql += ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
+		sql += ") DEFAULT CHARSET=utf8";
 		return sql;
 	}
 	
