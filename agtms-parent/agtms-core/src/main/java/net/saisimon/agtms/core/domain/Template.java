@@ -1,11 +1,12 @@
 package net.saisimon.agtms.core.domain;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -54,9 +55,9 @@ public class Template implements Cloneable {
 	/**
 	 * 模版下属的列信息
 	 */
-	@OneToMany(cascade=CascadeType.ALL)
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
 	@JoinColumn(name="template_id")
-	private List<TemplateColumn> columns;
+	private Set<TemplateColumn> columns;
 	
 	/**
 	 * 模版下属的列下一个下标
@@ -125,9 +126,9 @@ public class Template implements Cloneable {
 		/**
 		 * 列下属的属性信息
 		 */
-		@OneToMany(cascade=CascadeType.ALL)
+		@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
 		@JoinColumn(name="template_column_id")
-		private List<TemplateField> fields;
+		private Set<TemplateField> fields;
 		
 		/**
 		 * 列顺序值

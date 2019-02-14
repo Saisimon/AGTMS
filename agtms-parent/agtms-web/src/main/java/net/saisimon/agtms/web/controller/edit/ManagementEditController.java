@@ -1,6 +1,7 @@
 package net.saisimon.agtms.web.controller.edit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -145,21 +146,36 @@ public class ManagementEditController extends EditController {
 			domain = generateService.findById(id, userId);
 		}
 		List<Field<?>> fields = new ArrayList<>();
-		for (TemplateColumn pageColumn : template.getColumns()) {
-			for (TemplateField pageField : pageColumn.getFields()) {
-				String fieldName = pageColumn.getColumnName() + pageField.getFieldName();
-				Field<Object> field = Field.builder().name(fieldName).text(pageField.getFieldTitle()).type(pageField.getFieldType()).view(pageField.getView()).build();
-				if (pageField.getRequired()) {
+		for (TemplateColumn templateColumn : template.getColumns()) {
+			for (TemplateField templateField : templateColumn.getFields()) {
+				String fieldName = templateColumn.getColumnName() + templateField.getFieldName();
+				Field<Object> field = Field.builder()
+						.name(fieldName)
+						.text(templateField.getFieldTitle())
+						.type(templateField.getFieldType())
+						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
+						.view(templateField.getView())
+						.build();
+				if (templateField.getRequired()) {
 					field.setRequired(true);
 				}
 				if (domain != null) {
 					field.setValue(domain.getField(fieldName));
 				} else {
-					field.setValue(pageField.getDefaultValue());
+					field.setValue(templateField.getDefaultValue());
 				}
 				fields.add(field);
 			}
 		}
+		Collections.sort(fields, (f1, f2) -> {
+			if (f1.getOrdered() == null) {
+				return -1;
+			}
+			if (f2.getOrdered() == null) {
+				return 1;
+			}
+			return f1.getOrdered().compareTo(f2.getOrdered());
+		});
 		return fields;
 	}
 

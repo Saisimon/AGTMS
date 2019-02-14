@@ -1,17 +1,12 @@
 package net.saisimon.agtms.jpa.repository;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +27,7 @@ import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
+import net.saisimon.agtms.jpa.domain.Statement;
 import net.saisimon.agtms.jpa.util.JpaFilterUtils;
 
 @Repository
@@ -39,27 +35,23 @@ import net.saisimon.agtms.jpa.util.JpaFilterUtils;
 public class GenerateJpaRepository extends AbstractGenerateRepository {
 	
 	@Autowired
-	private EntityManager entityManager;
-	@Autowired
 	private JdbcTemplate jdbcTemplate;
 	
 	@Override
 	public Long count(FilterRequest filter) {
-		String countSql = buildCountSql();
+		String sql = buildCountSql();
+		Object[] args = null;
 		if (filter != null) {
-			String where = JpaFilterUtils.where(filter);
-			if (StringUtils.isNotBlank(where)) {
-				countSql += " WHERE " + where;
+			Statement where = JpaFilterUtils.where(filter);
+			if (where.isNotEmpty()) {
+				sql += " WHERE " + where.getExpression();
+				args = where.getArgs().toArray();
 			}
 		}
-		Query query = entityManager.createNativeQuery(countSql);
-		@SuppressWarnings("unchecked")
-		List<BigInteger> totals = query.getResultList();
-		long total = 0L;
-		for (BigInteger element : totals) {
-			total += element == null ? 0 : element.longValue();
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
 		}
-		return total;
+		return jdbcTemplate.queryForObject(sql, args, Long.class);
 	}
 
 	@Override
@@ -67,7 +59,6 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		return count(filter) > 0;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<Domain> findList(FilterRequest filter, FilterSort sort) {
 		Template template = template();
@@ -77,10 +68,12 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		columnNames.add(Constant.CREATETIME);
 		columnNames.add(Constant.UPDATETIME);
 		String sql = buildSql(template, columnNames);
+		Object[] args = null;
 		if (filter != null) {
-			String where = JpaFilterUtils.where(filter);
-			if (StringUtils.isNotBlank(where)) {
-				sql += " WHERE " + where;
+			Statement where = JpaFilterUtils.where(filter);
+			if (where.isNotEmpty()) {
+				sql += " WHERE " + where.getExpression();
+				args = where.getArgs().toArray();
 			}
 		}
 		if (sort != null) {
@@ -89,9 +82,12 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 				sql += " ORDER BY " + orderby;
 			}
 		}
-		Query query = entityManager.createNativeQuery(sql);
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
+		}
+		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, args);
 		try {
-			return conversions(query.getResultList(), columnNames);
+			return conversions(list);
 		} catch (GenerateException e) {
 			log.error("find list error", e);
 			return new ArrayList<>(0);
@@ -115,10 +111,12 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		columnNames.add(Constant.CREATETIME);
 		columnNames.add(Constant.UPDATETIME);
 		String sql = buildSql(template, columnNames);
+		List<Object> args = new ArrayList<>();
 		if (filter != null) {
-			String where = JpaFilterUtils.where(filter);
-			if (StringUtils.isNotBlank(where)) {
-				sql += " WHERE " + where;
+			Statement where = JpaFilterUtils.where(filter);
+			if (where.isNotEmpty()) {
+				sql += " WHERE " + where.getExpression();
+				args = where.getArgs();
 			}
 		}
 		if (pageable.getSort() != null) {
@@ -127,14 +125,15 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 				sql += " ORDER BY " + orderby;
 			}
 		}
-		Query query = entityManager.createNativeQuery(sql);
-		if (springPageable.isPaged()) {
-			query.setFirstResult((int) springPageable.getOffset());
-			query.setMaxResults(springPageable.getPageSize());
+		sql += " LIMIT ?, ?";
+		args.add(springPageable.getOffset());
+		args.add(springPageable.getPageSize());
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
 		}
+		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, args.toArray());
 		try {
-			@SuppressWarnings("unchecked")
-			List<Domain> domains = conversions(query.getResultList(), columnNames);
+			List<Domain> domains = conversions(list);
 			return new PageImpl<>(domains, springPageable, total);
 		} catch (GenerateException e) {
 			log.error("find page error", e);
@@ -151,10 +150,12 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		columnNames.add(Constant.CREATETIME);
 		columnNames.add(Constant.UPDATETIME);
 		String sql = buildSql(template, columnNames);
+		Object[] args = null;
 		if (filter != null) {
-			String where = JpaFilterUtils.where(filter);
-			if (StringUtils.isNotBlank(where)) {
-				sql += " WHERE " + where;
+			Statement where = JpaFilterUtils.where(filter);
+			if (where.isNotEmpty()) {
+				sql += " WHERE " + where.getExpression();
+				args = where.getArgs().toArray();
 			}
 		}
 		if (sort != null) {
@@ -163,10 +164,13 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 				sql += " ORDER BY " + orderby;
 			}
 		}
-		Query query = entityManager.createNativeQuery(sql);
-		query.setMaxResults(1);
+		sql += " LIMIT 0, 1";
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
+		}
+		Map<String, Object> map = jdbcTemplate.queryForMap(sql, args);
 		try {
-			return conversion((Object[])query.getSingleResult(), columnNames);
+			return conversion(map);
 		} catch (GenerateException e) {
 			log.error("find one error", e);
 			return Optional.empty();
@@ -177,14 +181,18 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	@Transactional
 	public Long delete(FilterRequest filter) {
 		String sql = buildDeleteSql();
+		Object[] args = null;
 		if (filter != null) {
-			String where = JpaFilterUtils.where(filter);
-			if (StringUtils.isNotBlank(where)) {
-				sql += " WHERE " + where;
+			Statement where = JpaFilterUtils.where(filter);
+			if (where.isNotEmpty()) {
+				sql += " WHERE " + where.getExpression();
+				args = where.getArgs().toArray();
 			}
 		}
-		Query query = entityManager.createNativeQuery(sql);
-		return (long) query.executeUpdate();
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
+		}
+		return (long) jdbcTemplate.update(sql, args);
 	}
 
 	@Override
@@ -220,23 +228,36 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	@Override
 	@Transactional
 	public void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
+		if (filter == null) {
+			return;
+		}
 		Template template = template();
 		String sql = "UPDATE `" + TemplateUtils.getTableName(template) + "` SET ";
+		List<Object> args = new ArrayList<>();
+		String set = "";
 		for (Entry<String, Object> entry : updateMap.entrySet()) {
 			String field = entry.getKey();
 			Object value = entry.getValue();
 			if (value != null) {
-				sql += "`" + field + "`='" + value.toString() + "'";
+				if (!"".equals(set)) {
+					set += ", ";
+				}
+				set += "`" + field + "` = ?";
+				args.add(value);
 			}
 		}
-		if (filter != null) {
-			String where = JpaFilterUtils.where(filter);
-			if (StringUtils.isNotBlank(where)) {
-				sql += " WHERE " + where;
+		sql += set;
+		Statement where = JpaFilterUtils.where(filter);
+		if (where.isNotEmpty()) {
+			sql += " WHERE " + where.getExpression();
+			if (where.getArgs() != null) {
+				args.addAll(where.getArgs());
 			}
 		}
-		Query query = entityManager.createNativeQuery(sql);
-		query.executeUpdate();
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
+		}
+		jdbcTemplate.update(sql, args);
 	}
 	
 	private String buildCountSql() {
@@ -269,6 +290,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			args.add(domain.getField(field));
 		}
 		String sql = "INSERT INTO `" + TemplateUtils.getTableName(template) + "` (" + columns + ") VALUES (" + values + ") ";
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
+		}
 		boolean result = jdbcTemplate.update(sql, args.toArray()) > 0;
 		if (result) {
 			Long id = getLastInsertId();
@@ -279,6 +303,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	
 	private Long getLastInsertId() {
 		String sql = "SELECT LAST_INSERT_ID()";
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
+		}
 		return jdbcTemplate.queryForObject(sql, Long.class);
 	}
 	
@@ -303,41 +330,21 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		}
 		sql += set + " WHERE `id` = ?";
 		args.add(id);
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
+		}
 		return jdbcTemplate.update(sql, args.toArray()) > 0;
 	}
 	
-	private List<Domain> conversions(List<Object[]> datas, List<String> columnNames) throws GenerateException {
+	private List<Domain> conversions(List<Map<String, Object>> list) throws GenerateException {
 		List<Domain> domains = new ArrayList<>();
-		for (Object[] data : datas) {
-			Optional<Domain> optional = conversion(data, columnNames);
+		for (Map<String, Object> map : list) {
+			Optional<Domain> optional = conversion(map, null);
 			if (optional.isPresent()) {
 				domains.add(optional.get());
 			}
 		}
 		return domains;
-	}
-	
-	private Optional<Domain> conversion(Object[] data, List<String> columnNames) throws GenerateException {
-		if (data == null || data.length == 0) {
-			return Optional.empty();
-		}
-		Domain domain = newGenerate();
-		for (int i = 0; i < data.length; i++) {
-			Object value = data[i];
-			if (value != null) {
-				String columnName = columnNames.get(i);
-				if (value instanceof BigInteger) {
-					domain.setField(columnName, ((BigInteger) value).longValue(), Long.class);
-				} else if (value instanceof BigDecimal) {
-					domain.setField(columnName, ((BigDecimal) value).doubleValue(), Double.class);
-				} else if (value instanceof Date) {
-					domain.setField(columnName, ((Date) value), Date.class);
-				} else {
-					domain.setField(columnName, value, value.getClass());
-				}
-			}
-		}
-		return Optional.of(domain);
 	}
 	
 }

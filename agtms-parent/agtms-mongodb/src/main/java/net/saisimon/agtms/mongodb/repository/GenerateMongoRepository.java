@@ -175,4 +175,16 @@ public class GenerateMongoRepository extends AbstractGenerateRepository {
 		return TemplateUtils.getTableName(template());
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private List<Domain> conversions(List<Map> list) throws GenerateException {
+		List<Domain> domains = new ArrayList<>();
+		for (Map<String, Object> map : list) {
+			Optional<Domain> optional = conversion(map, null);
+			if (optional.isPresent()) {
+				domains.add(optional.get());
+			}
+		}
+		return domains;
+	}
+	
 }

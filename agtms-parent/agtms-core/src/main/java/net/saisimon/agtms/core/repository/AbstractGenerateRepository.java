@@ -1,7 +1,10 @@
 package net.saisimon.agtms.core.repository;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,23 +60,6 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public List<Domain> conversions(List<Map> list) throws GenerateException {
-		return conversions(list, null);
-	}
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<Domain> conversions(List<Map> list, Map<String, String> mapping) throws GenerateException {
-		List<Domain> domains = new ArrayList<>();
-		for (Map<String, Object> map : list) {
-			Optional<Domain> optional = conversion(map, mapping);
-			if (optional.isPresent()) {
-				domains.add(optional.get());
-			}
-		}
-		return domains;
-	}
-	
 	public Optional<Domain> conversion(Map<String, Object> map) throws GenerateException {
 		return conversion(map, null);
 	}
@@ -118,7 +104,15 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 				if (mapping != null && StringUtils.isNotBlank(mappingName = mapping.get(name))) {
 					name = mappingName;
 				}
-				domain.setField(name, val, val.getClass());
+				if (val instanceof BigInteger) {
+					domain.setField(name, ((BigInteger) val).longValue(), Long.class);
+				} else if (val instanceof BigDecimal) {
+					domain.setField(name, ((BigDecimal) val).doubleValue(), Double.class);
+				} else if (val instanceof Date) {
+					domain.setField(name, ((Date) val), Date.class);
+				} else {
+					domain.setField(name, val, val.getClass());
+				}
 			}
 		}
 		return Optional.of(domain);

@@ -222,7 +222,9 @@ public class TemplateMainController extends MainController {
 		TemplateInfo templateInfo = new TemplateInfo();
 		templateInfo.setId(template.getId());
 		templateInfo.setTitle(template.getTitle());
-		templateInfo.setColumns(template.getColumns().stream().map(TemplateColumn::getTitle).collect(Collectors.joining(", ")));
+		templateInfo.setColumns(template.getColumns().stream().sorted((c1, c2) -> {
+			return c1.getOrdered().compareTo(c2.getOrdered());
+		}).map(TemplateColumn::getTitle).collect(Collectors.joining(", ")));
 		if (template.getFunction() != null && template.getFunction() != 0) {
 			List<String> funcs = TemplateUtils.getFunctions(template);
 			String functions = funcs.stream().map(func -> {

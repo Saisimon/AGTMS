@@ -16,7 +16,6 @@ import static net.saisimon.agtms.rpc.constant.RpcConstant.FIND_BY_ID;
 import static net.saisimon.agtms.rpc.constant.RpcConstant.FIND_LIST;
 import static net.saisimon.agtms.rpc.constant.RpcConstant.FIND_ONE;
 import static net.saisimon.agtms.rpc.constant.RpcConstant.FIND_PAGE;
-import static net.saisimon.agtms.rpc.constant.RpcConstant.MAPPING;
 import static net.saisimon.agtms.rpc.constant.RpcConstant.SAVE_OR_UPDATE;
 
 import java.util.ArrayList;
@@ -38,9 +37,6 @@ import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.Template;
-import net.saisimon.agtms.core.domain.Template.TemplateColumn;
-import net.saisimon.agtms.core.domain.Template.TemplateField;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -292,29 +288,22 @@ public class GenerateRpcRepository extends AbstractGenerateRepository implements
 		return null;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Map<String, String> mapping() {
-		Template template = template();
-		String mappingUrl = template.getSourceUrl() + MAPPING;
-		ResponseEntity<List> response = restTemplate.postForEntity(mappingUrl, null, List.class);
-		if (response != null && response.getStatusCode() == HttpStatus.OK) {
-			List<List<String>> mapss = response.getBody();
-			List<TemplateColumn> columns = template.getColumns();
-			if (mapss != null && columns != null && mapss.size() == columns.size()) {
-				Map<String, String> mapping = new HashMap<>();
-				for (int i = 0; i < columns.size(); i++) {
-					List<String> maps = mapss.get(i);
-					TemplateColumn column = columns.get(i);
-					List<TemplateField> fields = column.getFields();
-					for (int j = 0; j < fields.size(); j++) {
-						TemplateField field = fields.get(j);
-						mapping.put(column.getColumnName() + field.getFieldName(), maps.get(j));
-					}
-				}
-				return mapping;
+		// TODO
+		
+		return null;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private List<Domain> conversions(List<Map> list, Map<String, String> mapping) throws GenerateException {
+		List<Domain> domains = new ArrayList<>();
+		for (Map<String, Object> map : list) {
+			Optional<Domain> optional = conversion(map, mapping);
+			if (optional.isPresent()) {
+				domains.add(optional.get());
 			}
 		}
-		return null;
+		return domains;
 	}
 	
 }

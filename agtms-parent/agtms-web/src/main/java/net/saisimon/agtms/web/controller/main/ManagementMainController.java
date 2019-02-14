@@ -1,6 +1,7 @@
 package net.saisimon.agtms.web.controller.main;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -324,7 +325,6 @@ public class ManagementMainController extends MainController {
 		if (template == null) {
 			return null;
 		}
-		TemplateUtils.sort(template);
 		List<Column> columns = new ArrayList<>();
 		for (TemplateColumn templateColumn : template.getColumns()) {
 			for (TemplateField templateField : templateColumn.getFields()) {
@@ -332,7 +332,12 @@ public class ManagementMainController extends MainController {
 					continue;
 				}
 				String fieldName = templateColumn.getColumnName() + templateField.getFieldName();
-				Column column = Column.builder().field(fieldName).label(templateField.getFieldTitle()).width(templateField.getWidth()).view(templateField.getView()).build();
+				Column column = Column.builder().field(fieldName)
+						.label(templateField.getFieldTitle())
+						.width(templateField.getWidth())
+						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
+						.view(templateField.getView())
+						.build();
 				if (Classes.LONG.getName().equals(templateField.getFieldType())) {
 					column.setType("number");
 				} else if (Classes.DOUBLE.getName().equals(templateField.getFieldType())) {
@@ -349,6 +354,15 @@ public class ManagementMainController extends MainController {
 				columns.add(column);
 			}
 		}
+		Collections.sort(columns, (c1, c2) -> {
+			if (c1.getOrdered() == null) {
+				return -1;
+			}
+			if (c2.getOrdered() == null) {
+				return 1;
+			}
+			return c1.getOrdered().compareTo(c2.getOrdered());
+		});
 		if (TemplateUtils.hasOneOfFunctions(template, Functions.EDIT, Functions.REMOVE)) {
 			columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		}
@@ -367,7 +381,7 @@ public class ManagementMainController extends MainController {
 			actions.add(Action.builder().key("edit").to("/management/edit/" + key + "?id=").icon("edit").text(getMessage("edit")).type("link").build());
 		}
 		if (TemplateUtils.hasFunction(template, Functions.REMOVE)) {
-			actions.add(Action.builder().key("remove").to("/management/main/remove").icon("trash").text(getMessage("remove")).variant("outline-danger").type("modal").build());
+			actions.add(Action.builder().key("remove").to("/management/main/" + key + "/remove").icon("trash").text(getMessage("remove")).variant("outline-danger").type("modal").build());
 		}
 		return actions;
 	}

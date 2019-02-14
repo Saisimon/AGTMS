@@ -147,21 +147,6 @@ public class TemplateUtils {
 		return fieldMap;
 	}
 	
-	public static void sort(Template template) {
-		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
-			return;
-		}
-		template.getColumns().stream().sorted((tc1, tc2) -> {
-			return tc1.getOrdered().compareTo(tc2.getOrdered());
-		}).forEach(templateColumn -> {
-			if (!CollectionUtils.isEmpty(templateColumn.getFields())) {
-				templateColumn.getFields().stream().sorted((tf1, tf2) -> {
-					return tf1.getOrdered().compareTo(tf2.getOrdered());
-				});
-			}
-		});
-	}
-	
 	public static boolean checkRequired(Template template) {
 		if (template == null || StringUtils.isBlank(template.getTitle())) {
 			return false;

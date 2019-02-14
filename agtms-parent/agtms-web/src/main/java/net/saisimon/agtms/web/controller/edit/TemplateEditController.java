@@ -1,6 +1,7 @@
 package net.saisimon.agtms.web.controller.edit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,6 @@ public class TemplateEditController extends BaseController {
 		grid.setViewOptions(Select.buildOptions(viewSelection.select()));
 		grid.setWhetherOptions(Select.buildOptions(whetherSelection.select()));
 		Template template = getTemplate(id);
-		TemplateUtils.sort(template);
 		grid.setTable(buildTable(grid, template));
 		MultipleSelect<String> functionSelect = new MultipleSelect<>();
 		functionSelect.setOptions(Select.buildOptions(functionSelection.select()));
@@ -175,6 +175,15 @@ public class TemplateEditController extends BaseController {
 		}
 		table.setIdx(idx);
 		table.setRows(rows);
+		Collections.sort(columns, (c1, c2) -> {
+			if (c1.getOrdered() == null) {
+				return -1;
+			}
+			if (c2.getOrdered() == null) {
+				return 1;
+			}
+			return c1.getOrdered().compareTo(c2.getOrdered());
+		});
 		table.setColumns(columns);
 		return table;
 	}
@@ -226,6 +235,15 @@ public class TemplateEditController extends BaseController {
 			widthRow.put(fieldName, new Editor<>(""));
 			subremoveRow.put(fieldName, "");
 		}
+		Collections.sort(subColumns, (c1, c2) -> {
+			if (c1.getOrdered() == null) {
+				return -1;
+			}
+			if (c2.getOrdered() == null) {
+				return 1;
+			}
+			return c1.getOrdered().compareTo(c2.getOrdered());
+		});
 		subColumns.add(Column.builder().field("add").width(50).build());
 		subRows.add(fieldNameRow);
 		subRows.add(fieldTypeRow);

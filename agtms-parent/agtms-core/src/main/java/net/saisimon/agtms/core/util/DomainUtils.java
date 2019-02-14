@@ -31,7 +31,7 @@ public class DomainUtils {
 	}
 	
 	public static Object parseFieldValue(Object fieldValue, String fieldType) {
-		if (fieldValue != null && fieldValue != null) {
+		if (fieldValue != null && fieldType != null) {
 			try {
 				if (Classes.LONG.getName().equals(fieldType)) {
 					return Long.valueOf(fieldValue.toString());
@@ -39,8 +39,6 @@ public class DomainUtils {
 					return Double.valueOf(fieldValue.toString());
 				} else if (Classes.DATE.getName().equals(fieldType)) {
 					return DateUtil.parseDate(fieldValue.toString()).toJdkDate();
-				} else if (Classes.STRING.getName().equals(fieldType)) {
-					return fieldValue.toString();
 				}
 			} catch (Exception e) {
 				return null;

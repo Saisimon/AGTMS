@@ -38,7 +38,7 @@ public interface Cache extends Ordered {
 	 * 
 	 * @param key 缓存key
 	 * @param value 缓存对象
-	 * @param timeout 过期时间（小于等于 0 代表无过期时间）
+	 * @param timeout 过期时间（小于等于 0 代表无过期时间）单位毫秒
 	 */
 	<T> void set(String key, T value, long timeout);
 	

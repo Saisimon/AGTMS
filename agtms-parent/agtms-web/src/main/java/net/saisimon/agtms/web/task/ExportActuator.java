@@ -59,7 +59,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		if (!TemplateUtils.hasFunction(template, Functions.BATCH_REMOVE)) {
+		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		List<String> heads = new ArrayList<>();

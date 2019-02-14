@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -34,21 +33,28 @@ import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.util.DomainUtils;
+import net.saisimon.agtms.jpa.domain.Statement;
 
 public class JpaFilterUtils {
 	
-	public static String where(FilterRequest filterRequest) {
+	public static Statement where(FilterRequest filterRequest) {
+		Statement statement = new Statement();
 		String where = "";
 		if (!CollectionUtils.isEmpty(filterRequest.getAndFilters())) {
-			where += filter(filterRequest.getAndFilters(), true);
+			Statement filter = filter(filterRequest.getAndFilters(), true);
+			where += filter.getExpression();
+			statement.addArgs(filter.getArgs());
 		}
 		if (!CollectionUtils.isEmpty(filterRequest.getOrFilters())) {
 			if (!"".equals(where)) {
 				where += " OR ";
 			}
-			where += filter(filterRequest.getOrFilters(), false);
+			Statement filter = filter(filterRequest.getOrFilters(), false);
+			where += filter.getExpression();
+			statement.addArgs(filter.getArgs());
 		}
-		return where;
+		statement.setExpression(where);
+		return statement;
 	}
 	
 	public static String orderby(FilterSort filterSort) {
@@ -197,7 +203,8 @@ public class JpaFilterUtils {
 		}
 	}
 	
-	private static String filter(List<FilterRequest> filters, boolean and) {
+	private static Statement filter(List<FilterRequest> filters, boolean and) {
+		Statement statement = new Statement();
 		String sql = "( ";
 		for (FilterRequest filter : filters) {
 			if (!"( ".equals(sql)) {
@@ -208,20 +215,26 @@ public class JpaFilterUtils {
 				}
 			}
 			if (filter.getClass() == FilterParam.class) {
-				sql += expression((FilterParam)filter);
+				Statement expression = expression((FilterParam)filter);
+				sql += expression.getExpression();
+				statement.addArgs(expression.getArgs());
 			} else {
-				sql += where(filter);
+				Statement where = where(filter);
+				sql += where.getExpression();
+				statement.addArgs(where.getArgs());
 			}
 		}
 		sql += " )";
-		return sql;
+		statement.setExpression(sql);
+		return statement;
 	}
 	
-	private static String expression(FilterParam param) {
-		String expression = "";
+	private static Statement expression(FilterParam param) {
+		Statement statement = new Statement();
 		if (param == null) {
-			return expression;
+			return statement;
 		}
+		String expression = "";
 		String key = param.getKey();
 		Object value = param.getValue();
 		String operator = param.getOperator();
@@ -229,22 +242,28 @@ public class JpaFilterUtils {
 		value = DomainUtils.parseFieldValue(value, type);
 		switch (operator) {
 		case LT:
-			expression = "`" + key + "` < '" + value.toString() + "'";
+			expression = "`" + key + "` < ?";
+			statement.addArgs(value);
 			break;
 		case GT:
-			expression = "`" + key + "` > '" + value.toString() + "'";
+			expression = "`" + key + "` > ?";
+			statement.addArgs(value);
 			break;
 		case LTE:
-			expression = "`" + key + "` <= '" + value.toString() + "'";
+			expression = "`" + key + "` <= ?";
+			statement.addArgs(value);
 			break;
 		case GTE:
-			expression = "`" + key + "` >= '" + value.toString() + "'";
+			expression = "`" + key + "` >= ?";
+			statement.addArgs(value);
 			break;
 		case REGEX:
-			expression = "`" + key + "` LIKE '%" + value.toString() + "%'";
+			expression = "`" + key + "` LIKE ?";
+			statement.addArgs("%" + value + "%");
 			break;
 		case NE:
-			expression = "`" + key + "` <> '" + value.toString() + "'";
+			expression = "`" + key + "` <> ?";
+			statement.addArgs(value);
 			break;
 		case EXISTS:
 			expression = "`" + key + "` IS NOT NULL";
@@ -252,27 +271,67 @@ public class JpaFilterUtils {
 		case IN:
 		case ALL:
 			if (value.getClass().isArray()) {
-				expression = "`" + key + "` IN (" + (Arrays.stream((Object[]) value)).map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
+				String in = "";
+				Object[] arr = (Object[]) value;
+				for (Object val : arr) {
+					statement.addArgs(val);
+					if (!"".equals(in)) {
+						in += ", ";
+					}
+					in += "?";
+				}
+				expression = "`" + key + "` IN (" + in + ")";
 			} else if (value instanceof Collection<?>) {
-				expression = "`" + key + "` IN (" + ((Collection<?>) value).stream().map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
+				String in = "";
+				Collection<?> col = (Collection<?>) value;
+				for (Object val : col) {
+					statement.addArgs(val);
+					if (!"".equals(in)) {
+						in += ", ";
+					}
+					in += "?";
+				}
+				expression = "`" + key + "` IN (" + in + ")";
 			} else {
-				expression = "`" + key + "` = '" + value.toString() + "'";
+				expression = "`" + key + "` = ?";
+				statement.addArgs(value);
 			}
 			break;
 		case NIN:
 			if (value.getClass().isArray()) {
-				expression = "`" + key + "` NOT IN (" + (Arrays.stream((Object[]) value)).map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
+				String in = "";
+				Object[] arr = (Object[]) value;
+				for (Object val : arr) {
+					statement.addArgs(val);
+					if (!"".equals(in)) {
+						in += ", ";
+					}
+					in += "?";
+				}
+				expression = "`" + key + "` NOT IN (" + in + ")";
 			} else if (value instanceof Collection<?>) {
-				expression = "`" + key + "` NOT IN (" + ((Collection<?>) value).stream().map(val -> "'" + val.toString() + "'").collect(Collectors.joining(",")) + ")";
+				String in = "";
+				Collection<?> col = (Collection<?>) value;
+				for (Object val : col) {
+					statement.addArgs(val);
+					if (!"".equals(in)) {
+						in += ", ";
+					}
+					in += "?";
+				}
+				expression = "`" + key + "` NOT IN (" + in + ")";
 			} else {
-				expression = "`" + key + "` <> '" + value.toString() + "'";
+				expression = "`" + key + "` <> ?";
+				statement.addArgs(value);
 			}
 			break;
 		default:
-			expression = "`" + key + "` = '" + value.toString() + "'";
+			expression = "`" + key + "` = ?";
+			statement.addArgs(value);
 			break;
 		}
-		return expression;
+		statement.setExpression(expression);
+		return statement;
 	}
 	
 }

@@ -23,6 +23,8 @@ public class Field<T> {
 	
 	private String view;
 	
-	List<T> options;
+	private List<T> options;
+	
+	private Integer ordered;
 	
 }

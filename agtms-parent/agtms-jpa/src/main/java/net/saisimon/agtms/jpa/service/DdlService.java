@@ -137,10 +137,11 @@ public class DdlService {
 		}
 		if (field.getRequired()) {
 			column += " NOT NULL";
+		}
+		if (Classes.DATE.getName().equals(field.getFieldType())) {
+			column += " DEFAULT CURRENT_TIMESTAMP";
 		} else if (StringUtils.isNotEmpty(field.getDefaultValue())) {
 			column += " DEFAULT '" + field.getDefaultValue() + "'";
-		} else {
-			column += " DEFAULT NULL";
 		}
 		return column;
 	}

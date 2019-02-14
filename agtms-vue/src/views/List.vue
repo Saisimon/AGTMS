@@ -660,7 +660,7 @@ export default {
     color: #606266!important;
     line-height: 30px!important;
     height: 44px;
-    padding: 5px .5em!important;
+    padding: 5px 0.5em!important;
     position: absolute;
     width: 100%;
 }
@@ -678,7 +678,6 @@ table.vgt-table {
 table.vgt-table .vgt-left-align {
     vertical-align: inherit!important;
     padding: 0.5em!important;
-    min-width: 50px;
 }
 table.vgt-table .sorting {
     padding-right: 1.5em!important;
@@ -686,7 +685,6 @@ table.vgt-table .sorting {
 table.vgt-table .vgt-right-align {
     vertical-align: inherit!important;
     padding: 0.5em;
-    min-width: 100px;
 }
 table.vgt-table th {
     height: 40px;
