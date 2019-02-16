@@ -31,6 +31,7 @@ public class ErrorMessage {
 		public static final Result TEMPLATE_NOT_EXIST = ResultUtils.error(3001, "template.not.exist");
 		public static final Result TEMPLATE_ALREADY_EXISTS = ResultUtils.error(3002, "template.already.exists");
 		public static final Result TEMPLATE_NO_FUNCTION = ResultUtils.error(3003, "template.no.function");
+		public static final Result TEMPLATE_SIZE_ERROR = ResultUtils.error(3003, "template.size.error");
 	}
 	
 	public static class Domain {
@@ -42,6 +43,15 @@ public class ErrorMessage {
 	public static class Task {
 		public static final Result TASK_NOT_EXIST = ResultUtils.error(5001, "task.not.exist");
 		public static final Result TASK_CANCEL = ResultUtils.error(5002, "task.cancel");
+		
+		public static class EXPORT {
+			public static final Result TASK_EXPORT_FAILED = ResultUtils.error(5101, "export.failed");
+			public static final Result TASK_XLS_FILE_MAX_SIZE_LIMIT = ResultUtils.error(5102, "xls.file.max.size.limit");
+		}
+		
+		public static class IMPORT {
+			public static final Result TASK_IMPORT_FAILED = ResultUtils.error(5201, "import.failed");
+		}
 	}
 	
 }

@@ -1,12 +1,15 @@
 package net.saisimon.agtms.core.util;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -16,6 +19,7 @@ import java.util.stream.Collectors;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -24,6 +28,7 @@ import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.CollectionUtils;
 
+import cn.hutool.core.date.DateUtil;
 import net.saisimon.agtms.core.constant.FileConstant;
 
 public final class FileUtils {
@@ -114,7 +119,7 @@ public final class FileUtils {
 		return file;
 	}
 	
-	public static Map<String, List<List<String>>> fromXLS(InputStream in) throws IOException {
+	public static Map<String, List<List<String>>> fromXLS(FileInputStream in) throws IOException {
 		Map<String, List<List<String>>> result = new LinkedHashMap<>();
 		try (Workbook workbook = new HSSFWorkbook(in)) {
 			fillDatas(workbook, result);
@@ -122,10 +127,25 @@ public final class FileUtils {
 		return result;
 	}
 
-	public static Map<String, List<List<String>>> fromXLSX(InputStream in) throws IOException {
+	public static Map<String, List<List<String>>> fromXLSX(FileInputStream in) throws IOException {
 		Map<String, List<List<String>>> result = new LinkedHashMap<>();
 		try (Workbook workbook = new XSSFWorkbook(in)) {
 			fillDatas(workbook, result);
+		}
+		return result;
+	}
+	
+	public static List<List<String>> fromCSV(FileInputStream in, String separator) throws IOException {
+		List<List<String>> result = new ArrayList<>();
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				if (StringUtils.isBlank(line)) {
+					continue;
+				}
+				List<String> data = Arrays.asList(line.split(separator));
+				result.add(data);
+			}
 		}
 		return result;
 	}
@@ -177,29 +197,40 @@ public final class FileUtils {
 		if (list != null) {
 			String value = list.stream().map(Object::toString).collect(Collectors.joining(";"));
 			cell.setCellValue(value);
+			cell.setCellType(CellType.STRING);
 		} else if (obj instanceof Integer) {
 			Integer value = (Integer) obj;
 			cell.setCellValue(value);
+			cell.setCellType(CellType.NUMERIC);
 		} else if (obj instanceof Double) {
 			Double value = (Double) obj;
+			cell.setCellType(CellType.NUMERIC);
 			cell.setCellValue(value);
 		} else if (obj instanceof Float) {
 			Float value = (Float) obj;
+			cell.setCellType(CellType.NUMERIC);
 			cell.setCellValue(value);
 		} else if (obj instanceof Long) {
 			Long value = (Long) obj;
+			cell.setCellType(CellType.NUMERIC);
 			cell.setCellValue(value);
 		} else if (obj instanceof Date) {
 			Date value = (Date) obj;
-			cell.setCellValue(value);
+			cell.setCellValue(DateUtil.formatDate(value));
+			cell.setCellType(CellType.STRING);
 		} else if (obj instanceof Calendar) {
 			Calendar value = (Calendar) obj;
-			cell.setCellValue(value);
+			cell.setCellValue(DateUtil.formatDate(DateUtil.date(value)));
+			cell.setCellType(CellType.STRING);
 		} else if (obj instanceof RichTextString) {
 			RichTextString value = (RichTextString) obj;
 			cell.setCellValue(value);
-		} else {
+		} else if (obj != null) {
 			cell.setCellValue(obj.toString());
+			cell.setCellType(CellType.STRING);
+		} else {
+			cell.setCellValue("");
+			cell.setCellType(CellType.BLANK);
 		}
 	}
 	

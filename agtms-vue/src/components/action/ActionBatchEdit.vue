@@ -94,6 +94,8 @@ export default {
                     if (data.code === 0) {
                         this.model.show = false;
                         this.$emit('succeed');
+                    } else {
+                        this.$emit('failed');
                     }
                 });
             }

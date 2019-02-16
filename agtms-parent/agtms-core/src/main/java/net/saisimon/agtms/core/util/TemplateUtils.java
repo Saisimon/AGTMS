@@ -157,6 +157,21 @@ public class TemplateUtils {
 		return true;
 	}
 	
+	public static boolean checkSize(Template template) {
+		if (template == null) {
+			return false;
+		}
+		if (CollectionUtils.isEmpty(template.getColumns()) || template.getColumns().size() > 10) {
+			return false;
+		}
+		for (TemplateColumn templateColumn : template.getColumns()) {
+			if (CollectionUtils.isEmpty(templateColumn.getFields()) || templateColumn.getFields().size() > 10) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public static Map<String, String> getHeadMap(Template template) {
 		Map<String, String> headMap = new LinkedHashMap<>();
 		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {

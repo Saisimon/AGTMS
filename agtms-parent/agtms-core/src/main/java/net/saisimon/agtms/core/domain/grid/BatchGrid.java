@@ -27,6 +27,8 @@ public class BatchGrid {
 	@Data
 	public static class BatchExport {
 		
+		private String exportFileName;
+		
 		private List<Option<String>> exportFieldOptions;
 		
 		private List<Option<String>> exportFileTypeOptions;
@@ -35,6 +37,8 @@ public class BatchGrid {
 	
 	@Data
 	public static class BatchImport {
+		
+		private String importFileName;
 		
 		private List<Option<String>> importFieldOptions;
 		

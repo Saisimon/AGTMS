@@ -29,6 +29,8 @@ export default {
                     if (this.$route.params.module === 'navigation') {
                         this.$store.dispatch('getTree');
                     }
+                } else {
+                    this.$emit('failed');
                 }
             });
         }

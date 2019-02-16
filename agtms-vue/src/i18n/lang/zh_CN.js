@@ -60,6 +60,8 @@ export default {
     select_edit_fields: '请选择编辑字段',
     select_export_fields: '请选择导出字段',
     select_import_fields: '请选择导入字段',
+    input_export_file_name: '请输入导出文件名称',
+    input_import_file_name: '请输入导入文件名称',
     select_export_file_type: '请选择导出文件类型',
     select_import_file_type: '请选择导入文件类型',
     choose_import_file: '请选择导入文件',
@@ -83,5 +85,6 @@ export default {
     draggable_mode: '拖拽模式',
     datasource: '数据来源',
     rows: '条记录',
-    total: '共'
+    total: '共',
+    upload_file_max_size_limit: '请不要上传大于10M的文件'
 }

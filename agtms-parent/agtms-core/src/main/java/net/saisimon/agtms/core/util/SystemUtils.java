@@ -27,6 +27,7 @@ import javax.mail.internet.MimeUtility;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.util.ClassUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -52,7 +53,7 @@ public final class SystemUtils {
 	private static final Pattern URL_PATTERN = Pattern.compile("[a-zA-z]+://[^\\s]*");
 	private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
 	
-	private static final ExecutorService executor = Executors.newCachedThreadPool();
+	private static final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 	private static final Map<Long, Future<?>> taskFutureMap = new ConcurrentHashMap<>();
 	
 	private SystemUtils() {
@@ -215,13 +216,17 @@ public final class SystemUtils {
 				if (Thread.currentThread().isInterrupted()) {
 					return;
 				}
+				task.setHandleTime(new Date());
 				if (ResultUtils.isSuccess(result)) {
 					task.setHandleStatus(HandleStatuses.SUCCESS.getStatus());
+					task.setHandleResult(result.getMessage());
+					task.setTaskParam(SystemUtils.toJson(param));
 				} else {
 					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+					if (result != null) {
+						task.setHandleResult(result.getMessage());
+					}
 				}
-				task.setHandleResult(result.getMessage());
-				task.setHandleTime(new Date());
 				taskService.saveOrUpdate(task);
 			} catch (InterruptedException e) {
 				log.warn("任务被中断");
@@ -237,19 +242,24 @@ public final class SystemUtils {
 		taskFutureMap.put(task.getId(), future);
 	}
 	
-	public static <P> void downloadTask(final Task task, HttpServletRequest request, HttpServletResponse response) {
+	public static <P> void downloadTask(final Task task, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		if (task == null || task.getHandleStatus() != HandleStatuses.SUCCESS.getStatus()) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
 		@SuppressWarnings("unchecked")
 		Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
 		if (actuator == null) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
 		actuator.download(task, request, response);
 	}
 	
 	public static void cancelTask(final Task task) {
+		if (task.getHandleStatus() != HandleStatuses.PROCESSING.getStatus()) {
+			return;
+		}
 		Future<?> future = taskFutureMap.remove(task.getId());
 		if (future != null && !future.isDone() && !future.isCancelled()) {
 			future.cancel(true);

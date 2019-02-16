@@ -111,6 +111,9 @@ export default {
             var pcolumn = params.column;
             var prow = params.row;
             if (pcolumn.field == 'add') {
+                if (this.columns.length > 10) {
+                    return;
+                }
                 var idx = this.table.idx;
                 var fieldKey = "field" + idx;
                 var ordered = this.columns.length - 1;

@@ -1,12 +1,19 @@
 package net.saisimon.agtms.web.controller.main;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
@@ -18,8 +25,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.constant.FileConstant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Navigation;
 import net.saisimon.agtms.core.domain.Task;
@@ -45,6 +55,7 @@ import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
+import net.saisimon.agtms.core.enums.FileTypes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
@@ -57,6 +68,7 @@ import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.DomainUtils;
+import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -75,6 +87,7 @@ import net.saisimon.agtms.web.selection.FileTypeSelection;
  */
 @RestController
 @RequestMapping("/management/main/{mid}")
+@Slf4j
 public class ManagementMainController extends MainController {
 	
 	@Autowired
@@ -201,8 +214,20 @@ public class ManagementMainController extends MainController {
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
+		if (body.getExportFileType() == FileConstant.XLS) {
+			GenerateService generateService = GenerateServiceFactory.build(template);
+			FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
+			filter.and(Constant.OPERATORID, template.getOperatorId());
+			Long total = generateService.count(filter);
+			if (total > (2 << 16 - 1)) {
+				return ErrorMessage.Task.EXPORT.TASK_XLS_FILE_MAX_SIZE_LIMIT;
+			}
+		}
 		body.setTemplateId(template.getId());
 		body.setUserId(userId);
+		if (StringUtils.isBlank(body.getExportFileName())) {
+			body.setExportFileName(template.getTitle());
+		}
 		Task exportTask = new Task();
 		exportTask.setOperatorId(userId);
 		exportTask.setTaskTime(new Date());
@@ -216,10 +241,11 @@ public class ManagementMainController extends MainController {
 	}
 	
 	@PostMapping("/batch/import")
-	public Result batchImport(@PathVariable("mid") Long mid, @Validated @RequestBody ImportParam body, BindingResult bindingResult) {
-		if (bindingResult.hasErrors()) {
-			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
-		}
+	public Result batchImport(@PathVariable("mid") Long mid, 
+			@RequestParam(name="importFileName", required=false) String importFileName, 
+			@RequestParam("importFileType") String importFileType, 
+			@RequestParam("importFields") List<String> importFields, 
+			@RequestParam("importFile") MultipartFile importFile) {
 		long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
 		Template template = templateService.getTemplate(mid, userId);
@@ -229,6 +255,31 @@ public class ManagementMainController extends MainController {
 		if (!TemplateUtils.hasFunction(template, Functions.IMPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
+		Set<String> requireds = TemplateUtils.getRequireds(template);
+		if (!CollectionUtils.isEmpty(requireds)) {
+			for (String required : requireds) {
+				if (!importFields.contains(required)) {
+					return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+				}
+			}
+		}
+		String path = FileConstant.IMPORT_PATH + File.separatorChar + userId;
+		String name = UUID.randomUUID().toString();
+		File file = new File(path + File.separator + name + "." + importFileType);
+		try {
+			FileUtils.createDir(file.getParentFile());
+			FileOutputStream output = new FileOutputStream(file);
+			IOUtils.copy(importFile.getInputStream(), output);
+			output.flush();
+		} catch (IOException e) {
+			log.error("导入异常", e);
+			return ErrorMessage.Task.IMPORT.TASK_IMPORT_FAILED;
+		}
+		ImportParam body = new ImportParam();
+		body.setImportFields(importFields);
+		body.setImportFileName(importFileName);
+		body.setImportFileType(importFileType);
+		body.setImportFileUUID(name);
 		body.setTemplateId(template.getId());
 		body.setUserId(userId);
 		Task exportTask = new Task();
@@ -325,50 +376,13 @@ public class ManagementMainController extends MainController {
 		if (template == null) {
 			return null;
 		}
-		List<Column> columns = new ArrayList<>();
-		for (TemplateColumn templateColumn : template.getColumns()) {
-			for (TemplateField templateField : templateColumn.getFields()) {
-				if (templateField.getHidden()) {
-					continue;
-				}
-				String fieldName = templateColumn.getColumnName() + templateField.getFieldName();
-				Column column = Column.builder().field(fieldName)
-						.label(templateField.getFieldTitle())
-						.width(templateField.getWidth())
-						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
-						.view(templateField.getView())
-						.build();
-				if (Classes.LONG.getName().equals(templateField.getFieldType())) {
-					column.setType("number");
-				} else if (Classes.DOUBLE.getName().equals(templateField.getFieldType())) {
-					column.setType("decimal");
-				} else if (Classes.DATE.getName().equals(templateField.getFieldType())) {
-					column.setType("date");
-					column.setDateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ");
-					column.setDateOutputFormat("YYYY-MM-DD");
-				}
-				if (templateField.getSorted()) {
-					column.setSortable(true);
-					column.setOrderBy("");
-				}
-				columns.add(column);
-			}
-		}
-		Collections.sort(columns, (c1, c2) -> {
-			if (c1.getOrdered() == null) {
-				return -1;
-			}
-			if (c2.getOrdered() == null) {
-				return 1;
-			}
-			return c1.getOrdered().compareTo(c2.getOrdered());
-		});
+		List<Column> columns = buildColumns(template);
 		if (TemplateUtils.hasOneOfFunctions(template, Functions.EDIT, Functions.REMOVE)) {
 			columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		}
 		return columns;
 	}
-	
+
 	@Override
 	protected List<Action> actions(Object key) {
 		TemplateService templateService = TemplateServiceFactory.get();
@@ -430,13 +444,12 @@ public class ManagementMainController extends MainController {
 			return null;
 		}
 		BatchExport batchExport = new BatchExport();
-		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-		List<Option<String>> exportFieldOptions = new ArrayList<>(fieldInfoMap.size());
-		for (Map.Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
-			String fieldName = entry.getKey();
-			TemplateField templateField = entry.getValue();
-			exportFieldOptions.add(new Option<>(fieldName, templateField.getFieldTitle()));
+		List<Column> columns = buildColumns(template);
+		List<Option<String>> exportFieldOptions = new ArrayList<>(columns.size());
+		for (Column column : columns) {
+			exportFieldOptions.add(new Option<>(column.getField(), column.getLabel()));
 		}
+		batchExport.setExportFileName(template.getTitle());
 		batchExport.setExportFieldOptions(exportFieldOptions);
 		batchExport.setExportFileTypeOptions(Select.buildOptions(fileTypeSelection.select()));
 		return batchExport;
@@ -450,16 +463,58 @@ public class ManagementMainController extends MainController {
 			return null;
 		}
 		BatchImport batchImport = new BatchImport();
-		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-		List<Option<String>> importFieldOptions = new ArrayList<>(fieldInfoMap.size());
-		for (Map.Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
-			String fieldName = entry.getKey();
-			TemplateField templateField = entry.getValue();
-			importFieldOptions.add(new Option<>(fieldName, templateField.getFieldTitle()));
+		List<Column> columns = buildColumns(template);
+		List<Option<String>> importFieldOptions = new ArrayList<>(columns.size());
+		for (Column column : columns) {
+			importFieldOptions.add(new Option<>(column.getField(), column.getLabel()));
 		}
+		batchImport.setImportFileName(template.getTitle());
 		batchImport.setImportFieldOptions(importFieldOptions);
-		batchImport.setImportFileTypeOptions(Select.buildOptions(fileTypeSelection.select()));
+		LinkedHashMap<String, String> select = fileTypeSelection.select();
+		select.remove(FileTypes.JSON.getType());
+		batchImport.setImportFileTypeOptions(Select.buildOptions(select));
 		return batchImport;
+	}
+	
+	private List<Column> buildColumns(Template template) {
+		List<Column> columns = new ArrayList<>();
+		for (TemplateColumn templateColumn : template.getColumns()) {
+			for (TemplateField templateField : templateColumn.getFields()) {
+				if (templateField.getHidden()) {
+					continue;
+				}
+				Column column = Column.builder().field(templateColumn.getColumnName() + templateField.getFieldName())
+						.label(templateField.getFieldTitle())
+						.width(templateField.getWidth())
+						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
+						.view(templateField.getView())
+						.build();
+				if (Classes.LONG.getName().equals(templateField.getFieldType())) {
+					column.setType("number");
+				} else if (Classes.DOUBLE.getName().equals(templateField.getFieldType())) {
+					column.setType("decimal");
+				} else if (Classes.DATE.getName().equals(templateField.getFieldType())) {
+					column.setType("date");
+					column.setDateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ");
+					column.setDateOutputFormat("YYYY-MM-DD");
+				}
+				if (templateField.getSorted()) {
+					column.setSortable(true);
+					column.setOrderBy("");
+				}
+				columns.add(column);
+			}
+		}
+		Collections.sort(columns, (c1, c2) -> {
+			if (c1.getOrdered() == null) {
+				return -1;
+			}
+			if (c2.getOrdered() == null) {
+				return 1;
+			}
+			return c1.getOrdered().compareTo(c2.getOrdered());
+		});
+		return columns;
 	}
 	
 }

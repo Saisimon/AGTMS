@@ -8,6 +8,11 @@
             <div class="form-container">
                 <b-row class="mb-3">
                     <b-col>
+                        <b-form-input v-model.trim="batchExport.exportFileName" :placeholder="$t('input_export_file_name')" />
+                    </b-col>
+                </b-row>
+                <b-row class="mb-3">
+                    <b-col>
                         <multiselect style="z-index: 10"
                             v-model="exportFieldSelects"
                             label="text"
@@ -81,10 +86,9 @@ export default {
     methods: {
         save: function() {
             var data = {
-                ids: this.selects,
                 filter: this.filter
             }
-            if (this.exportFieldSelects.length <= 0 || this.exportFileType == null) {
+            if (this.exportFieldSelects.length == 0 || this.exportFileType == null) {
                 return;
             }
             var exportFields = [];
@@ -94,6 +98,7 @@ export default {
             }
             data['exportFields'] = exportFields;
             data['exportFileType'] = this.exportFileType.value;
+            data['exportFileName'] = this.batchExport.exportFileName;
             this.$store.dispatch('batchExportData', {
                 url: this.$route.path,
                 data: data
@@ -101,6 +106,9 @@ export default {
                 var data = resp.data;
                 if (data.code === 0) {
                     this.model.show = false;
+                    this.$emit('showAlert', data.message, 'success');
+                } else {
+                    this.$emit('showAlert', data.message, 'danger');
                 }
             });
         }

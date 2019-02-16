@@ -21,6 +21,10 @@ public class ExportParam {
 	@NotBlank
 	private String exportFileType;
 	
+	private String exportFileName;
+	
+	private String exportFileUUID;
+	
 	private Map<String, Object> filter;
 	
 }

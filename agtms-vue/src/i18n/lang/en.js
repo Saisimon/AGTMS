@@ -60,6 +60,8 @@ export default {
     select_edit_fields: 'Please select edit field',
     select_export_fields: 'Please select export field',
     select_import_fields: 'Please select import field',
+    input_export_file_name: 'Please input export file name',
+    input_import_file_name: 'Please input import file name',
     select_export_file_type: 'Please select export file type',
     select_import_file_type: 'Please select import file type',
     choose_import_file: 'Please choose import file',
@@ -83,5 +85,6 @@ export default {
     draggable_mode: 'Draggable Mode',
     datasource: 'Data Source',
     rows: ' rows',
-    total: 'Total '
+    total: 'Total ',
+    upload_file_max_size_limit: 'Please do not upload file larger than 10M'
 }

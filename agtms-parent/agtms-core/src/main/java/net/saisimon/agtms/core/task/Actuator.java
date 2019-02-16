@@ -1,5 +1,7 @@
 package net.saisimon.agtms.core.task;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,9 +28,22 @@ public interface Actuator<P> {
 	 */
 	Result execute(P param) throws Exception;
 	
-	default void download(Task task, HttpServletRequest request, HttpServletResponse response) {
-		
-	}
+	/**
+	 * 构建任务内容说明
+	 * 
+	 * @param task 任务
+	 * @return 任务内容
+	 */
+	String taskContent(Task task);
+	
+	/**
+	 * 任务结果输出
+	 * 
+	 * @param task 任务
+	 * @param request http 请求
+	 * @param response http 响应
+	 */
+	void download(Task task, HttpServletRequest request, HttpServletResponse response) throws IOException;
 	
 	/**
 	 * 获取执行器标志

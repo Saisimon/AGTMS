@@ -24,13 +24,11 @@ export default function request(user, reqUrl, payload) {
                 if (error.response.status === 401) {
                     store.commit('setUser', null);
                     store.commit('setTree', {});
-                    router.push({
-                        path: '/signin?reply=' + encodeURIComponent(window.location.pathname + window.location.search)
-                    });
-                } else if (error.response.status === 404) {
-                    router.push({
-                        path: '/notfound'
-                    });
+                    if (window.location.pathname != '/') {
+                        router.push({
+                            path: '/signin?reply=' + encodeURIComponent(window.location.pathname + window.location.search)
+                        });
+                    }
                 }
             }
             reject(error);

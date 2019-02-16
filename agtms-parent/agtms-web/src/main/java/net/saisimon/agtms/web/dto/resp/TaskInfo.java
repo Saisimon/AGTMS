@@ -11,6 +11,8 @@ import net.saisimon.agtms.web.dto.resp.common.BaseInfo;
 public class TaskInfo extends BaseInfo {
 
 	private static final long serialVersionUID = 2169109875986378350L;
+	
+	private String taskContent;
 
 	private String taskType;
 	
@@ -18,7 +20,7 @@ public class TaskInfo extends BaseInfo {
 	
 	private Date handleTime;
 	
-	private Integer handleStatus;
+	private String handleStatus;
 	
 	private String handleResult;
 	

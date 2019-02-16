@@ -24,6 +24,10 @@ export function batchExport(user, url, data) {
     return request(user, url + '/batch/export', data);
 }
 
+export function batchImport(user, url, data) {
+    return request(user, url + '/batch/import', data);
+}
+
 export function download(user, url, id) {
     return request(user, url + '/download?id=' + id);
 }

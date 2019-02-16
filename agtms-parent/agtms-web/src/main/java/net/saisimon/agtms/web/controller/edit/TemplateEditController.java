@@ -110,6 +110,9 @@ public class TemplateEditController extends BaseController {
 		if (!TemplateUtils.checkRequired(template)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
+		if (!TemplateUtils.checkSize(template)) {
+			return ErrorMessage.Template.TEMPLATE_SIZE_ERROR;
+		}
 		long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
 		if (template.getId() != null) {

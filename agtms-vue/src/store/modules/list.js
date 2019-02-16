@@ -1,4 +1,4 @@
-import { list, mainGrid, batchGrid, batchRemove, batchSave, batchExport } from '@/api/list'
+import { list, mainGrid, batchGrid, batchRemove, batchSave, batchExport, batchImport } from '@/api/list'
 import request from '@/api/request'
 
 const state = {
@@ -209,6 +209,9 @@ const actions = {
     },
     batchExportData(context, payload) {
         return batchExport(context.rootState.base.user, payload.url, payload.data);
+    },
+    batchImportData(context, payload) {
+        return batchImport(context.rootState.base.user, payload.url, payload.data);
     }
 };
 

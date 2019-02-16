@@ -358,6 +358,9 @@ export default {
             this.$store.commit('setTemplateGrid', this.cloneObject(this.resetTemplateGrid));
         },
         addColumn: function() {
+            if (this.columns.length > 10) {
+                return;
+            }
             var idx = this.templateGrid.table.idx;
             var columnKey = 'column' + idx;
             var ordered = this.columns.length - 1;
@@ -644,9 +647,6 @@ export default {
 }
 .form-container >>> .vgt-table thead {
     display: none!important;
-}
-.form-container >>> .vgt-responsive {
-    top: 0px;
 }
 .draggable-container {
     width: 100%;

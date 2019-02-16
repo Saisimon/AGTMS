@@ -62,12 +62,16 @@ public interface GenerateService {
 		Template template = template();
 		Set<String> uniques = TemplateUtils.getUniques(template);
 		if (CollectionUtils.isNotEmpty(uniques)) {
+			FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, template.getOperatorId());
+			FilterRequest uniquesFilter = FilterRequest.build();
 			for (String fieldName : uniques) {
-				FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, template.getOperatorId()).and(fieldName, domain.getField(fieldName));
-				if (repository.exists(filter)) {
-					return true;
+				Object fieldValue = domain.getField(fieldName);
+				if (fieldValue != null) {
+					uniquesFilter.or(fieldName, fieldValue);
 				}
 			}
+			filter.and(uniquesFilter);
+			return repository.exists(filter);
 		}
 		return false;
 	}

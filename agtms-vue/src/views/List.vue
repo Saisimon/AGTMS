@@ -23,7 +23,7 @@
                 </b-col>
             </b-row>
             <!-- 筛选 -->
-            <div class="filter-container">
+            <div class="filter-container" v-if="filters.length > 0">
                 <b-btn href="javascript:void(0);" 
                     v-b-toggle.filterToggle
                     variant="outline-light"
@@ -77,6 +77,29 @@
                     </div>
                 </b-collapse>
             </div>
+            <!-- 批量操作 -->
+            <div class="batch-action-container mb-2" v-if="batches.length > 0">
+                <b-row>
+                    <b-col>
+                        <div class="selects-hint">
+                        {{ selects.length }} {{ $t('rows_selected') }}
+                        </div>
+                    </b-col>
+                    <b-col class="text-right">
+                        <template v-for="(batch, index) in batches" >
+                            <b-button :key="index" 
+                                :size="'sm'" 
+                                :variant="batch.variant" 
+                                @click="batch.click"
+                                v-b-tooltip.hover 
+                                :title="batch.text"
+                                class="ml-1">
+                                <i class="fa fa-fw" :class="batch.icon"></i>
+                            </b-button>
+                        </template>
+                    </b-col>
+                </b-row>
+            </div>
             <!-- 列表 -->
             <div class="table-container">
                 <vue-good-table
@@ -105,19 +128,6 @@
                             <b-pagination :total-rows="total" :per-page="10" align="right" @change="pageChange"></b-pagination>
                         </b-col>
                     </b-row>
-                    <div slot="selected-row-actions">
-                        <template v-for="(batch, index) in batches" >
-                            <b-button :key="index" 
-                                :size="'sm'" 
-                                :variant="batch.variant" 
-                                @click="batch.click"
-                                v-b-tooltip.hover 
-                                :title="batch.text"
-                                class="ml-1">
-                                <i class="fa fa-fw" :class="batch.icon"></i>
-                            </b-button>
-                        </template>
-                    </div>
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.field == 'action'">
                             <action-cell 
@@ -161,7 +171,7 @@
                 </vue-good-table>
             </div>
             <!-- 警告框 -->
-            <div class="modal d-block" v-if="alert.dismissCountDown">
+            <div class="modal d-block" v-if="alert.dismissCountDown" style="z-index: 9999">
                 <div class="modal-dialog modal-md modal-dialog-centered">
                     <b-alert :variant="alert.variant"
                         dismissible
@@ -177,26 +187,28 @@
                 v-if="functions.indexOf('batchRemove') !== -1" 
                 :model="showBatchRemoveModel"
                 :selects="selects"
-                @succeed="searchByFilters" />
+                @succeed="searchByFilters"
+                @failed="showAlert" />
             <action-batch-edit 
                 v-if="functions.indexOf('batchEdit') !== -1"
                 :model="showBatchEditModel"
                 :batchEdit="batchEdit"
                 :selects="selects"
-                @succeed="searchByFilters" />
+                @succeed="searchByFilters"
+                @failed="showAlert" />
             <action-export 
                 v-if="functions.indexOf('export') !== -1" 
                 :model="showExportModel"
                 :batchExport="batchExport"
                 :selects="selects"
                 :filter="searchFilters()"
-                @succeed="searchByFilters" />
+                @showAlert="showAlert" />
             <action-import 
                 v-if="functions.indexOf('import') !== -1" 
                 :model="showImportModel"
                 :batchImport="batchImport"
                 :selects="selects"
-                @succeed="searchByFilters" />
+                @showAlert="showAlert" />
         </b-card>
     </div>
 </template>
@@ -309,29 +321,12 @@ export default {
             return this.$store.state.list.filters;
         },
         columns: function() {
-            var columns = this.$store.state.list.columns;
-            var sortable = false;
-            var initialSortBy = [];
-            for (var i in columns) {
-                var column = columns[i];
-                if (column.sortable) {
-                    sortable = true;
-                    if (column.orderBy && column.orderBy !== '') {
-                        initialSortBy.push({
-                            field: column.field,
-                            type: column.orderBy
-                        });
-                    }
-                }
-            }
-            if (sortable) {
-                this.sortOptions.enabled = true;
-                this.sortOptions['initialSortBy'] = initialSortBy;
-            }
             if (this.batches.length > 0) {
                 this.selectOptions.enabled = true;
+            } else {
+                this.selectOptions.enabled = false;
             }
-            return columns;
+            return this.$store.state.list.columns;
         },
         actions: function() {
             return this.$store.state.list.actions;
@@ -385,7 +380,7 @@ export default {
                 text: ''
             },
             sortOptions: {
-                enabled: false
+                enabled: true
             },
             selectOptions: {
                 enabled: false,
@@ -409,24 +404,26 @@ export default {
             }
         },
         exportClick: function() {
-            if (this.checkSelect()) {
-                this.$store.dispatch('getBatchGrid', this.$route.path);
-                this.showExportModel.show = true;
-            }
+            this.$store.dispatch('getBatchGrid', this.$route.path);
+            this.showExportModel.show = true;
         },
         importClick: function() {
-            if (this.checkSelect()) {
-                this.$store.dispatch('getBatchGrid', this.$route.path);
-                this.showImportModel.show = true;
-            }
+            this.$store.dispatch('getBatchGrid', this.$route.path);
+            this.showImportModel.show = true;
         },
         checkSelect: function() {
             if (this.selects.length == 0) {
-                this.alert.text = this.$t("notselected");
-                this.alert.dismissCountDown = this.alert.dismissSecs;
+                this.showAlert(this.$t("notselected"), 'danger');
                 return false;
             } else {
                 return true;
+            }
+        },
+        showAlert: function(message, variant) {
+            this.alert.text = message;
+            this.alert.dismissCountDown = this.alert.dismissSecs;
+            if (variant) {
+                this.alert.variant = variant;
             }
         },
         selectAll: function(params) {
@@ -647,8 +644,12 @@ export default {
     height: 40px!important;
     border: 1px solid #e8e8e8!important;
 }
-.table-container {
-    padding-bottom: 44px;
+.selects-hint {
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 31px;
+    color: #606266;
+    padding-left: 0.5em;
 }
 .rows-div {
     font-size: 14px;
@@ -656,20 +657,10 @@ export default {
     height: 38px;
 }
 .vgt-selection-info-row {
-    background-color: #fff!important;
-    color: #606266!important;
-    line-height: 30px!important;
-    height: 44px;
-    padding: 5px 0.5em!important;
-    position: absolute;
-    width: 100%;
-}
-.vgt-responsive {
-    top: 44px;
+    display: none!important;
 }
 .vgt-wrap__actions-footer {
     border: 0px!important;
-    top: 44px;
     position: relative;
 }
 table.vgt-table {

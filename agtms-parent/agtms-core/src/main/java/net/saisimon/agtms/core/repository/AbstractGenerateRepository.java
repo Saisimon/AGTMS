@@ -100,9 +100,19 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 					}
 				}
 				String name = entry.getKey();
-				String mappingName = null;
-				if (mapping != null && StringUtils.isNotBlank(mappingName = mapping.get(name))) {
-					name = mappingName;
+				name = name.toLowerCase();
+				if (Constant.OPERATORID.equalsIgnoreCase(name)) {
+					name = Constant.OPERATORID;
+				} else if (Constant.CREATETIME.equalsIgnoreCase(name)) {
+					name = Constant.CREATETIME;
+				} else if (Constant.UPDATETIME.equalsIgnoreCase(name)) {
+					name = Constant.UPDATETIME;
+				}
+				if (mapping != null) {
+					String mappingName = mapping.get(name);
+					if (StringUtils.isNotBlank(mappingName)) {
+						name = mappingName;
+					}
 				}
 				if (val instanceof BigInteger) {
 					domain.setField(name, ((BigInteger) val).longValue(), Long.class);

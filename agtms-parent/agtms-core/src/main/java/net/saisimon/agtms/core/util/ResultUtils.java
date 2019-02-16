@@ -36,10 +36,6 @@ public class ResultUtils {
 		return pageResult;
 	}
 	
-	public static Result success(String message, Object... messageArgs) {
-		return error(SUCCESS_CODE, message, messageArgs);
-	}
-	
 	public static Result error(int code, String message, Object... messageArgs) {
 		Result result = new Result();
 		result.setCode(code);

@@ -126,15 +126,9 @@ public class TemplateMainController extends MainController {
 		}
 		Long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
-		List<Template> templates = new ArrayList<>();
 		for (Long id : ids) {
 			Template template = templateService.getTemplate(id, userId);
-			if (templates != null) {
-				templates.add(template);
-			}
-		}
-		for (Template template : templates) {
-			if (templateService.removeTemplate(template)) {
+			if (template != null && templateService.removeTemplate(template)) {
 				templateService.dropTable(template);
 			}
 		}

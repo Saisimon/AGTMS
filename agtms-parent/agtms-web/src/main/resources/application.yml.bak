@@ -1,6 +1,10 @@
 spring:
   main:
     banner-mode: 'off'
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   jpa:
     show-sql: true
     generate-ddl: true
