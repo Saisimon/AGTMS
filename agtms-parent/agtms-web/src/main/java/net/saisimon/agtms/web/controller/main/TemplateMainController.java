@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.saisimon.agtms.core.annotation.ControllerInfo;
+import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateColumn;
@@ -36,6 +38,7 @@ import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.TemplateService;
@@ -56,6 +59,7 @@ import net.saisimon.agtms.web.selection.NavigationSelection;
  */
 @RestController
 @RequestMapping("/template/main")
+@ControllerInfo("template.management")
 public class TemplateMainController extends MainController {
 	
 	public static final String TEMPLATE = "template";
@@ -84,6 +88,7 @@ public class TemplateMainController extends MainController {
 		return ResultUtils.simpleSuccess(getMainGrid(TEMPLATE));
 	}
 	
+	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, TEMPLATE_FILTER_FIELDS);
@@ -104,6 +109,7 @@ public class TemplateMainController extends MainController {
 		return ResultUtils.pageSuccess(results, page.getTotalElements());
 	}
 	
+	@Operate(type=OperateTypes.REMOVE)
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
 		Long userId = AuthUtils.getUserInfo().getUserId();
@@ -119,6 +125,7 @@ public class TemplateMainController extends MainController {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	@Operate(type=OperateTypes.BATCH_REMOVE)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody List<Long> ids) {
 		if (ids.size() == 0) {

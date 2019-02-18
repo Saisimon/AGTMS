@@ -37,7 +37,9 @@ public class DdlService {
 	 */
 	public void createTable(Template template) {
 		String sql = buildCreateSql(template);
-		log.info("DDL: {}", sql);
+		if (log.isDebugEnabled()) {
+			log.debug("DDL: {}", sql);
+		}
 		jdbcTemplate.execute(sql);
 	}
 	
@@ -58,7 +60,9 @@ public class DdlService {
 				continue;
 			}
 			String sql = buildAlterDropSql(tableName, fieldName);
-			log.info("DDL: {}", sql);
+			if (log.isDebugEnabled()) {
+				log.debug("DDL: {}", sql);
+			}
 			jdbcTemplate.execute(sql);
 		}
 		for (Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
@@ -68,12 +72,16 @@ public class DdlService {
 				TemplateField oldField = oldFieldInfoMap.get(fieldName);
 				if (!oldField.getFieldType().equals(field.getFieldType())) {
 					String sql = buildAlterModifySql(tableName, fieldName, field);
-					log.info("DDL: {}", sql);
+					if (log.isDebugEnabled()) {
+						log.debug("DDL: {}", sql);
+					}
 					jdbcTemplate.execute(sql);
 				}
 			} else {
 				String sql = buildAlterAddSql(tableName, fieldName, field);
-				log.info("DDL: {}", sql);
+				if (log.isDebugEnabled()) {
+					log.debug("DDL: {}", sql);
+				}
 				jdbcTemplate.execute(sql);
 			}
 		}
@@ -86,7 +94,9 @@ public class DdlService {
 	 */
 	public void dropTable(Template template) {
 		String sql = buildDropSql(template);
-		log.info("DDL: {}", sql);
+		if (log.isDebugEnabled()) {
+			log.debug("DDL: {}", sql);
+		}
 		jdbcTemplate.execute(sql);
 	}
 	

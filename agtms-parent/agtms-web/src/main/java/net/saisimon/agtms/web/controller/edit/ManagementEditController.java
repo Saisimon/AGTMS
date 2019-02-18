@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.saisimon.agtms.core.annotation.ControllerInfo;
+import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Navigation;
 import net.saisimon.agtms.core.domain.Template;
@@ -23,6 +25,7 @@ import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
@@ -46,6 +49,7 @@ import net.saisimon.agtms.web.controller.base.EditController;
  */
 @RestController
 @RequestMapping("/management/edit/{mid}")
+@ControllerInfo("management")
 public class ManagementEditController extends EditController {
 	
 	@PostMapping("/grid")
@@ -53,6 +57,7 @@ public class ManagementEditController extends EditController {
 		return ResultUtils.simpleSuccess(getEditGrid(id, mid));
 	}
 	
+	@Operate(type=OperateTypes.EDIT)
 	@Transactional
 	@PostMapping("/save")
 	public Result save(@PathVariable("mid") Long mid, @RequestBody Map<String, Object> body) {

@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.saisimon.agtms.core.annotation.ControllerInfo;
+import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.Navigation;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
@@ -22,6 +23,7 @@ import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
+import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -30,7 +32,6 @@ import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.EditController;
 import net.saisimon.agtms.web.controller.main.NavigationMainController;
 import net.saisimon.agtms.web.dto.req.NavigationParam;
-import net.saisimon.agtms.web.dto.resp.NavigationInfo;
 import net.saisimon.agtms.web.selection.NavigationSelection;
 
 /**
@@ -41,6 +42,7 @@ import net.saisimon.agtms.web.selection.NavigationSelection;
  */
 @RestController
 @RequestMapping("/navigation/edit")
+@ControllerInfo("navigation.management")
 public class NavigationEditController extends EditController {
 	
 	@Autowired
@@ -51,13 +53,7 @@ public class NavigationEditController extends EditController {
 		return ResultUtils.simpleSuccess(getEditGrid(id, NavigationMainController.NAVIGATION));
 	}
 	
-	@PostMapping("/info")
-	public Result info(@RequestParam("id") Long id) {
-		long userId = AuthUtils.getUserInfo().getUserId();
-		NavigationService navigationService = NavigationServiceFactory.get();
-		return ResultUtils.simpleSuccess(buildNavigationResult(navigationService.getNavigation(id, userId)));
-	}
-	
+	@Operate(type=OperateTypes.EDIT)
 	@PostMapping("/save")
 	public Result save(@Validated @RequestBody NavigationParam body, BindingResult result) {
 		if (result.hasErrors()) {
@@ -156,13 +152,4 @@ public class NavigationEditController extends EditController {
 		return fields;
 	}
 	
-	private NavigationInfo buildNavigationResult(Navigation navigation) {
-		if (navigation == null) {
-			return null;
-		}
-		NavigationInfo result = new NavigationInfo();
-		BeanUtils.copyProperties(navigation, result);
-		return result;
-	}
-
 }

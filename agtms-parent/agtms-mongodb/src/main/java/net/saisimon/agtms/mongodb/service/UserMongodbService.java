@@ -40,7 +40,9 @@ public class UserMongodbService implements UserService, MongodbOrder {
 			return null;
 		}
 		Map<String, Object> updateMap = new HashMap<>();
-		updateMap.put("lastLoginTime", System.currentTimeMillis());
+		Long time = System.currentTimeMillis();
+		updateMap.put("updateTime", time);
+		updateMap.put("lastLoginTime", time);
 		batchUpdate(FilterRequest.build().and(Constant.ID, user.getId()), updateMap);
 		return user;
 	}

@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.saisimon.agtms.core.annotation.ControllerInfo;
+import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.Template.TemplateField;
@@ -28,6 +30,7 @@ import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.EditorTypes;
+import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.TemplateService;
@@ -52,6 +55,7 @@ import net.saisimon.agtms.web.selection.WhetherSelection;
  */
 @RestController
 @RequestMapping("/template/edit")
+@ControllerInfo("template.management")
 public class TemplateEditController extends BaseController {
 	
 	@Autowired
@@ -104,6 +108,7 @@ public class TemplateEditController extends BaseController {
 		return ResultUtils.simpleSuccess(grid);
 	}
 
+	@Operate(type=OperateTypes.EDIT)
 	@Transactional
 	@PostMapping("/save")
 	public Result save(@RequestBody Template template) throws GenerateException {

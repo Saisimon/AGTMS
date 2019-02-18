@@ -7,9 +7,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.saisimon.agtms.core.annotation.ControllerInfo;
+import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.User;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.UserInfo;
+import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -26,6 +29,7 @@ import net.saisimon.agtms.web.dto.req.UserRegisterParam;
  */
 @RestController
 @RequestMapping(path = "/user")
+@ControllerInfo("user")
 public class UserController {
 	
 	/**
@@ -35,6 +39,7 @@ public class UserController {
 	 * @param result
 	 * @return 用户信息正确返回成功响应，否则返回失败原因响应
 	 */
+	@Operate(type=OperateTypes.LOGIN)
 	@PostMapping("/auth")
 	public Result auth(@Validated @RequestBody UserAuthParam param, BindingResult result) {
 		if (result.hasErrors()) {
@@ -58,6 +63,7 @@ public class UserController {
 	 * @param result
 	 * @return 注册结果响应
 	 */
+	@Operate(type=OperateTypes.REGISTER)
 	@PostMapping("/register")
 	public Result register(@Validated @RequestBody UserRegisterParam param, BindingResult result) {
 		if (result.hasErrors()) {
@@ -79,10 +85,12 @@ public class UserController {
 	 * 
 	 * @return 登出结果响应
 	 */
+	@Operate(type=OperateTypes.LOGOUT)
 	@RequestMapping("/logout")
 	public Result logout() {
-		AuthUtils.setUserInfo(AuthUtils.getUid(), null);
-		return ResultUtils.simpleSuccess();
+		String uid = AuthUtils.getUid();
+		AuthUtils.setUserInfo(uid, null);
+		return ResultUtils.simpleSuccess(uid);
 	}
 	
 	public UserInfo buildUserInfo(User user) {

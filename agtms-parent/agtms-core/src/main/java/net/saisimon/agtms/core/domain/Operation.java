@@ -38,13 +38,37 @@ public class Operation {
 	/**
 	 * 操作类型
 	 */
-	@Column(columnDefinition="bigint(15) not null")
-	private Long operateType;
+	@Column(columnDefinition="int(11) not null")
+	private Integer operateType;
 	
 	/**
 	 * 操作时间
 	 */
 	@Column(columnDefinition="timestamp default current_timestamp")
 	private Date operateTime;
+	
+	/**
+	 * 操作链接
+	 */
+	@Column(length=50)
+	private String operateUrl;
+	
+	/**
+	 * 操作内容
+	 */
+	@Column(length=50)
+	private String operateIp;
+	
+	/**
+	 * 操作状态
+	 */
+	@Column(columnDefinition="int(11) not null")
+	private Integer operateStatus;
+	
+	/**
+	 * 操作内容
+	 */
+	@Column(length=50)
+	private String operateContent;
 	
 }

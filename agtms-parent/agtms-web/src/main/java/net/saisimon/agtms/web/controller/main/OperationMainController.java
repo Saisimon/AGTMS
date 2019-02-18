@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -56,6 +57,7 @@ public class OperationMainController extends MainController {
 	static {
 		OPERATION_FILTER_FIELDS.add("operateType");
 		OPERATION_FILTER_FIELDS.add("operateTime");
+		OPERATION_FILTER_FIELDS.add("operateIp");
 	}
 	
 	@Autowired
@@ -80,6 +82,10 @@ public class OperationMainController extends MainController {
 			result.setId(operation.getId());
 			result.setOperateTime(operation.getOperateTime());
 			result.setOperateType(operateTypeMap.get(operation.getOperateType().toString()));
+			result.setOperateIp(operation.getOperateIp());
+			if (operation.getOperateContent() != null) {
+				result.setOperateContent(Arrays.stream(operation.getOperateContent().split(",")).map(msg -> { return getMessage(msg);}).collect(Collectors.joining(" / ")));
+			}
 			result.setAction(OPERATION);
 			results.add(result);
 		}
@@ -87,7 +93,7 @@ public class OperationMainController extends MainController {
 		request.getSession().setAttribute(OPERATION_PAGEABLE, param);
 		return ResultUtils.pageSuccess(results, page.getTotalElements());
 	}
-
+	
 	@Override
 	protected Header header(Object key) {
 		return Header.builder().title(getMessage("operation.management")).build();
@@ -121,9 +127,10 @@ public class OperationMainController extends MainController {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
+		columns.add(Column.builder().field("operateContent").label(getMessage("operate.content")).view(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("operateType").label(getMessage("operate.type")).view(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("operateTime").label(getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
+		columns.add(Column.builder().field("operateIp").label(getMessage("operate.ip")).view(Views.TEXT.getView()).width(200).build());
 		return columns;
 	}
 

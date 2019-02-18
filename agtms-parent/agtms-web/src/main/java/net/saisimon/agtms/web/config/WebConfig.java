@@ -1,6 +1,8 @@
 package net.saisimon.agtms.web.config;
 
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,6 +45,11 @@ public class WebConfig implements WebMvcConfigurer {
 		localeResolver.setCookieName("language");
 		localeResolver.setDefaultLocale(Locale.SIMPLIFIED_CHINESE);
 		return localeResolver;
+	}
+	
+	@Bean
+	public ExecutorService executorService() {
+		return Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 	}
 
 }

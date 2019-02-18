@@ -16,12 +16,8 @@ public class OperationInfo extends BaseInfo {
 	
 	private Date operateTime;
 	
-	private Date handleTime;
+	private String operateIp;
 	
-	private String handleStatus;
-	
-	private String handleResult;
-	
-	private String handleContent;
+	private String operateContent;
 	
 }

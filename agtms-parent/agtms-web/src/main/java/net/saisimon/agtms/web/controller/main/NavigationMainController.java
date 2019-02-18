@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.saisimon.agtms.core.annotation.ControllerInfo;
+import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Navigation;
 import net.saisimon.agtms.core.domain.Template;
@@ -42,6 +44,7 @@ import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.UserInfo;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
@@ -66,6 +69,7 @@ import net.saisimon.agtms.web.selection.NavigationSelection;
  */
 @RestController
 @RequestMapping("/navigation/main")
+@ControllerInfo("navigation.management")
 public class NavigationMainController extends MainController {
 	
 	public static final String NAVIGATION = "navigation";
@@ -89,6 +93,7 @@ public class NavigationMainController extends MainController {
 	@Autowired
 	private NavigationSelection navigationSelection;
 	
+	@Operate(type=OperateTypes.QUERY, value="side")
 	@PostMapping("/side")
 	public Result side() {
 		UserInfo userInfo = AuthUtils.getUserInfo();
@@ -116,6 +121,7 @@ public class NavigationMainController extends MainController {
 		return ResultUtils.simpleSuccess(root);
 	}
 	
+	@Operate(type=OperateTypes.QUERY, value="selection")
 	@PostMapping("/selection")
 	public Result selection(@RequestParam(name = "id", required = false) Long excludeId) {
 		Map<Long, String> navigationMap = navigationSelection.selectWithParent(excludeId);
@@ -132,6 +138,7 @@ public class NavigationMainController extends MainController {
 		return ResultUtils.simpleSuccess(getMainGrid(NAVIGATION));
 	}
 	
+	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, NAVIGATION_FILTER_FIELDS);
@@ -151,6 +158,7 @@ public class NavigationMainController extends MainController {
 		return ResultUtils.pageSuccess(results, page.getTotalElements());
 	}
 	
+	@Operate(type=OperateTypes.REMOVE)
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
 		if (id < 0) {
@@ -171,6 +179,7 @@ public class NavigationMainController extends MainController {
 		return ResultUtils.simpleSuccess(getBatchGrid(NAVIGATION));
 	}
 	
+	@Operate(type=OperateTypes.EDIT)
 	@PostMapping("/batch/save")
 	public Result batchSave(@RequestBody Map<String, Object> body) {
 		List<Long> ids = SystemUtils.transformList(body.get("ids"), Long.class);
@@ -200,6 +209,7 @@ public class NavigationMainController extends MainController {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	@Operate(type=OperateTypes.BATCH_REMOVE)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody List<Long> ids) {
 		if (ids.size() == 0) {

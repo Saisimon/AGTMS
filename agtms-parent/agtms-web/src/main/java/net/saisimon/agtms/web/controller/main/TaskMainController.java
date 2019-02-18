@@ -3,14 +3,21 @@ package net.saisimon.agtms.web.controller.main;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.annotation.ControllerInfo;
+import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Task;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
@@ -37,6 +46,7 @@ import net.saisimon.agtms.core.dto.UserInfo;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
+import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
@@ -44,6 +54,7 @@ import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.MainController;
@@ -59,6 +70,7 @@ import net.saisimon.agtms.web.selection.TaskTypeSelection;
  */
 @RestController
 @RequestMapping("/task/main")
+@ControllerInfo("task.management")
 @Slf4j
 public class TaskMainController extends MainController {
 	
@@ -87,6 +99,7 @@ public class TaskMainController extends MainController {
 		return ResultUtils.simpleSuccess(getMainGrid(TASK));
 	}
 	
+	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		UserInfo userInfo = AuthUtils.getUserInfo();
@@ -106,7 +119,9 @@ public class TaskMainController extends MainController {
 			result.setTaskType(taskTypeMap.get(task.getTaskType().toString()));
 			result.setTaskTime(task.getTaskTime());
 			result.setHandleStatus(handleStatusMap.get(task.getHandleStatus().toString()));
-			result.setHandleResult(getMessage(task.getHandleResult()));
+			if (StringUtils.isNotBlank(task.getHandleResult())) {
+				result.setHandleResult(getMessage(task.getHandleResult()));
+			}
 			result.setHandleTime(task.getHandleTime());
 			result.setAction(TASK);
 			if (task.getHandleStatus() == HandleStatuses.SUCCESS.getStatus()) { // download
@@ -127,6 +142,7 @@ public class TaskMainController extends MainController {
 		return ResultUtils.pageSuccess(results, page.getTotalElements());
 	}
 	
+	@Operate(type=OperateTypes.QUERY, value="download")
 	@GetMapping("/download")
 	public void download(@RequestParam(name = "id") Long id) {
 		try {
@@ -137,12 +153,13 @@ public class TaskMainController extends MainController {
 				SystemUtils.sendObject(response, ErrorMessage.Task.TASK_NOT_EXIST);
 				return;
 			}
-			SystemUtils.downloadTask(task, request, response);
+			downloadTask(task, request, response);
 		} catch (IOException e) {
 			log.error("响应流异常", e);
 		}
 	}
 	
+	@Operate(type=OperateTypes.QUERY, value="cancel")
 	@PostMapping("/cancel")
 	public Result cancel(@RequestParam(name = "id") Long id) {
 		if (id < 0) {
@@ -154,10 +171,11 @@ public class TaskMainController extends MainController {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
-		SystemUtils.cancelTask(task);
+		cancelTask(task);
 		return ResultUtils.simpleSuccess();
 	}
 	
+	@Operate(type=OperateTypes.REMOVE)
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
 		if (id < 0) {
@@ -173,6 +191,7 @@ public class TaskMainController extends MainController {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	@Operate(type=OperateTypes.BATCH_REMOVE)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody List<Long> ids) {
 		if (ids.size() == 0) {
@@ -257,6 +276,45 @@ public class TaskMainController extends MainController {
 	@Override
 	protected List<String> functions(Object key) {
 		return FUNCTIONS;
+	}
+	
+	private <P> void downloadTask(final Task task, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		if (task == null || task.getHandleStatus() != HandleStatuses.SUCCESS.getStatus()) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		@SuppressWarnings("unchecked")
+		Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
+		if (actuator == null) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		actuator.download(task, request, response);
+	}
+	
+	private void cancelTask(final Task task) {
+		if (task.getHandleStatus() != HandleStatuses.PROCESSING.getStatus()) {
+			return;
+		}
+		Future<?> future = SystemUtils.removeTaskFuture(task.getId());
+		if (future != null && !future.isDone() && !future.isCancelled()) {
+			future.cancel(true);
+			TaskService taskService = TaskServiceFactory.get();
+			try {
+				future.get();
+			} catch (CancellationException e) {
+				task.setHandleStatus(HandleStatuses.CANCEL.getStatus());
+				task.setHandleTime(new Date());
+				task.setHandleResult("manually.cancel.task");
+				taskService.saveOrUpdate(task);
+				log.warn("手动取消任务");
+			} catch (Throwable e) {
+				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+				task.setHandleTime(new Date());
+				taskService.saveOrUpdate(task);
+				log.error("任务执行异常", e);
+			}
+		}
 	}
 
 }

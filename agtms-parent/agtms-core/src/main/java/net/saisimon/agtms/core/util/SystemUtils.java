@@ -11,14 +11,10 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,7 +23,6 @@ import javax.mail.internet.MimeUtility;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.util.ClassUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -38,13 +33,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import lombok.extern.slf4j.Slf4j;
-import net.saisimon.agtms.core.domain.Task;
-import net.saisimon.agtms.core.dto.Result;
-import net.saisimon.agtms.core.enums.HandleStatuses;
-import net.saisimon.agtms.core.factory.ActuatorFactory;
-import net.saisimon.agtms.core.factory.TaskServiceFactory;
-import net.saisimon.agtms.core.service.TaskService;
-import net.saisimon.agtms.core.task.Actuator;
 
 @Slf4j
 public final class SystemUtils {
@@ -52,8 +40,6 @@ public final class SystemUtils {
 	private static final Pattern EMAIL_PATTERN = Pattern.compile("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?");
 	private static final Pattern URL_PATTERN = Pattern.compile("[a-zA-z]+://[^\\s]*");
 	private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
-	
-	private static final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 	private static final Map<Long, Future<?>> taskFutureMap = new ConcurrentHashMap<>();
 	
 	private SystemUtils() {
@@ -169,6 +155,31 @@ public final class SystemUtils {
 		return contentDisposition;
 	}
 	
+	public static String getIPAddress(HttpServletRequest request) {
+		String ip = null;
+		String unknown = "unknown";
+		String ipAddresses = request.getHeader("X-Forwarded-For"); // X-Forwarded-For：Squid 服务代理
+		if (ipAddresses == null || ipAddresses.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+			ipAddresses = request.getHeader("Proxy-Client-IP"); // Proxy-Client-IP：apache 服务代理
+		}
+		if (ipAddresses == null || ipAddresses.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+			ipAddresses = request.getHeader("WL-Proxy-Client-IP"); // WL-Proxy-Client-IP：weblogic 服务代理
+		}
+		if (ipAddresses == null || ipAddresses.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+			ipAddresses = request.getHeader("HTTP_CLIENT_IP"); // HTTP_CLIENT_IP：有些代理服务器
+		}
+		if (ipAddresses == null || ipAddresses.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+			ipAddresses = request.getHeader("X-Real-IP"); // X-Real-IP：nginx服务代理
+		}
+		if (ipAddresses != null && ipAddresses.length() != 0) {
+			ip = ipAddresses.split(",")[0]; // 有些网络通过多层代理，那么获取到的ip就会有多个，一般都是通过逗号（,）分割开来，并且第一个ip为客户端的真实IP
+		}
+		if (ip == null || ip.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+			ip = request.getRemoteAddr(); // 还是不能获取到，最后再通过request.getRemoteAddr();获取
+		}
+		return ip;
+	}
+	
 	public static Class<?> getInterfaceGenericClass(Class<?> subClass, Class<?> targetInterfaceClass, int genericIndex) {
 		Class<?> clazz = subClass;
 		while (clazz != null && clazz != Object.class) {
@@ -190,102 +201,20 @@ public final class SystemUtils {
 		throw new RuntimeException("get interface generic class failed.");
 	}
 	
-	public static <P> void submitTask(final Task task) {
-		if (task == null) {
-			return;
-		}
-		Future<?> future = executor.submit(() -> {
-			TaskService taskService = TaskServiceFactory.get();
-			task.setHandleStatus(HandleStatuses.PROCESSING.getStatus());
-			taskService.saveOrUpdate(task);
-			try {
-				@SuppressWarnings("unchecked")
-				Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
-				if (actuator == null) {
-					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
-					task.setHandleTime(new Date());
-					taskService.saveOrUpdate(task);
-					return;
-				}
-				Class<P> paramClass = actuator.getParamClass();
-				P param = fromJson(task.getTaskParam(), paramClass);
-				if (Thread.currentThread().isInterrupted()) {
-					return;
-				}
-				Result result = actuator.execute(param);
-				if (Thread.currentThread().isInterrupted()) {
-					return;
-				}
-				task.setHandleTime(new Date());
-				if (ResultUtils.isSuccess(result)) {
-					task.setHandleStatus(HandleStatuses.SUCCESS.getStatus());
-					task.setHandleResult(result.getMessage());
-					task.setTaskParam(SystemUtils.toJson(param));
-				} else {
-					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
-					if (result != null) {
-						task.setHandleResult(result.getMessage());
-					}
-				}
-				taskService.saveOrUpdate(task);
-			} catch (InterruptedException e) {
-				log.warn("任务被中断");
-			} catch (Throwable e) {
-				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
-				task.setHandleTime(new Date());
-				taskService.saveOrUpdate(task);
-				log.error("任务执行异常", e);
-			} finally {
-				taskFutureMap.remove(task.getId());
-			}
-		});
-		taskFutureMap.put(task.getId(), future);
-	}
-	
-	public static <P> void downloadTask(final Task task, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		if (task == null || task.getHandleStatus() != HandleStatuses.SUCCESS.getStatus()) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		@SuppressWarnings("unchecked")
-		Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
-		if (actuator == null) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		actuator.download(task, request, response);
-	}
-	
-	public static void cancelTask(final Task task) {
-		if (task.getHandleStatus() != HandleStatuses.PROCESSING.getStatus()) {
-			return;
-		}
-		Future<?> future = taskFutureMap.remove(task.getId());
-		if (future != null && !future.isDone() && !future.isCancelled()) {
-			future.cancel(true);
-			TaskService taskService = TaskServiceFactory.get();
-			try {
-				future.get();
-			} catch (CancellationException e) {
-				task.setHandleStatus(HandleStatuses.CANCEL.getStatus());
-				task.setHandleTime(new Date());
-				taskService.saveOrUpdate(task);
-				log.warn("手动取消任务");
-			} catch (Throwable e) {
-				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
-				task.setHandleTime(new Date());
-				taskService.saveOrUpdate(task);
-				log.error("任务执行异常", e);
-			}
-		}
-	}
-	
 	public static void sendObject(HttpServletResponse response, Object obj) throws IOException {
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType("application/json; charset=utf-8");
 		try (PrintWriter out = response.getWriter()) {
 			out.append(toJson(obj));
 		}
+	}
+	
+	public static void putTaskFuture(Long taskId, Future<?> future) {
+		taskFutureMap.put(taskId, future);
+	}
+	
+	public static Future<?> removeTaskFuture(Long taskId) {
+		return taskFutureMap.remove(taskId);
 	}
 	
 	private static JavaType parse(Class<?> targetClass, Class<?>... genericClasses) {

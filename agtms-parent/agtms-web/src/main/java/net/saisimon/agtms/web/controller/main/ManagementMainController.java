@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.annotation.ControllerInfo;
+import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.FileConstant;
 import net.saisimon.agtms.core.domain.Domain;
@@ -58,6 +62,8 @@ import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.FileTypes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
+import net.saisimon.agtms.core.enums.OperateTypes;
+import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
@@ -66,6 +72,7 @@ import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.service.TemplateService;
+import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
@@ -87,17 +94,21 @@ import net.saisimon.agtms.web.selection.FileTypeSelection;
  */
 @RestController
 @RequestMapping("/management/main/{mid}")
+@ControllerInfo("management")
 @Slf4j
 public class ManagementMainController extends MainController {
 	
 	@Autowired
 	private FileTypeSelection fileTypeSelection;
+	@Autowired
+	private ExecutorService executorService;
 	
 	@PostMapping("/grid")
 	public Result grid(@PathVariable("mid") Long mid) {
 		return ResultUtils.simpleSuccess(getMainGrid(mid));
 	}
 	
+	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
 	public Result list(@PathVariable("mid") Long mid, @RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		TemplateService templateService = TemplateServiceFactory.get();
@@ -114,6 +125,7 @@ public class ManagementMainController extends MainController {
 		return ResultUtils.pageSuccess(page.getContent(), page.getTotalElements());
 	}
 	
+	@Operate(type=OperateTypes.REMOVE)
 	@PostMapping("/remove")
 	public Result remove(@PathVariable("mid") Long mid, @RequestParam(name = "id") Long id) {
 		long userId = AuthUtils.getUserInfo().getUserId();
@@ -135,6 +147,7 @@ public class ManagementMainController extends MainController {
 		return ResultUtils.simpleSuccess(getBatchGrid(mid));
 	}
 	
+	@Operate(type=OperateTypes.BATCH_EDIT)
 	@PostMapping("/batch/save")
 	public Result batchSave(@PathVariable("mid") Long mid, @RequestBody Map<String, Object> body) {
 		List<Integer> ids = SystemUtils.transformList(body.get("ids"), Integer.class);
@@ -182,6 +195,7 @@ public class ManagementMainController extends MainController {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	@Operate(type=OperateTypes.BATCH_REMOVE)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@PathVariable("mid") Long mid, @RequestBody List<Long> ids) {
 		long userId = AuthUtils.getUserInfo().getUserId();
@@ -200,6 +214,7 @@ public class ManagementMainController extends MainController {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	@Operate(type=OperateTypes.EXPORT)
 	@PostMapping("/batch/export")
 	public Result batchExport(@PathVariable("mid") Long mid, @Validated @RequestBody ExportParam body, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
@@ -236,10 +251,11 @@ public class ManagementMainController extends MainController {
 		exportTask.setHandleStatus(HandleStatuses.CREATE.getStatus());
 		TaskService taskService = TaskServiceFactory.get();
 		exportTask = taskService.saveOrUpdate(exportTask);
-		SystemUtils.submitTask(exportTask);
+		submitTask(exportTask);
 		return ResultUtils.simpleSuccess();
 	}
 	
+	@Operate(type=OperateTypes.IMPORT)
 	@PostMapping("/batch/import")
 	public Result batchImport(@PathVariable("mid") Long mid, 
 			@RequestParam(name="importFileName", required=false) String importFileName, 
@@ -290,7 +306,7 @@ public class ManagementMainController extends MainController {
 		exportTask.setHandleStatus(HandleStatuses.CREATE.getStatus());
 		TaskService taskService = TaskServiceFactory.get();
 		exportTask = taskService.saveOrUpdate(exportTask);
-		SystemUtils.submitTask(exportTask);
+		submitTask(exportTask);
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -515,6 +531,58 @@ public class ManagementMainController extends MainController {
 			return c1.getOrdered().compareTo(c2.getOrdered());
 		});
 		return columns;
+	}
+	
+	private <P> void submitTask(final Task task) {
+		if (task == null) {
+			return;
+		}
+		Future<?> future = executorService.submit(() -> {
+			TaskService taskService = TaskServiceFactory.get();
+			task.setHandleStatus(HandleStatuses.PROCESSING.getStatus());
+			taskService.saveOrUpdate(task);
+			try {
+				@SuppressWarnings("unchecked")
+				Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
+				if (actuator == null) {
+					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+					task.setHandleTime(new Date());
+					taskService.saveOrUpdate(task);
+					return;
+				}
+				Class<P> paramClass = actuator.getParamClass();
+				P param = SystemUtils.fromJson(task.getTaskParam(), paramClass);
+				if (Thread.currentThread().isInterrupted()) {
+					return;
+				}
+				Result result = actuator.execute(param);
+				if (Thread.currentThread().isInterrupted()) {
+					return;
+				}
+				task.setHandleTime(new Date());
+				if (ResultUtils.isSuccess(result)) {
+					task.setHandleStatus(HandleStatuses.SUCCESS.getStatus());
+					task.setHandleResult(result.getMessage());
+					task.setTaskParam(SystemUtils.toJson(param));
+				} else {
+					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+					if (result != null) {
+						task.setHandleResult(result.getMessage());
+					}
+				}
+				taskService.saveOrUpdate(task);
+			} catch (InterruptedException e) {
+				log.warn("任务被中断");
+			} catch (Throwable e) {
+				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+				task.setHandleTime(new Date());
+				taskService.saveOrUpdate(task);
+				log.error("任务执行异常", e);
+			} finally {
+				SystemUtils.removeTaskFuture(task.getId());
+			}
+		});
+		SystemUtils.putTaskFuture(task.getId(), future);
 	}
 	
 }
