@@ -1,6 +1,13 @@
 <template>
-    <div class="marquee">
-        <img :src="rowData[field]" :alt="rowData[field]" />
+    <div class="marquee" style="width: 150px">
+        <b-img fluid thumbnail :src="rowData[field]" :alt="rowData[field]" style="cursor: pointer;" @click="modalShow = true" />
+        <b-modal v-model="modalShow" 
+            centered 
+            size="lg" 
+            hide-footer 
+            hide-header >
+            <b-img center thumbnail fluid :src="rowData[field]" />
+        </b-modal>
     </div>
 </template>
 
@@ -18,9 +25,10 @@ export default {
             type: Number
         }
     },
+    data: function() {
+        return {
+            modalShow: false
+        }
+    }
 }
 </script>
-
-<style>
-
-</style>

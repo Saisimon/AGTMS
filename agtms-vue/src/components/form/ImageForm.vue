@@ -7,31 +7,22 @@
             </label>
         </b-col>
         <b-col sm="10">
-            <b-form-input :id="field.name + '-input'" :name="field.name" v-model.trim="field.value" :state="field.state" :type="type" />
+            <b-form-input :id="field.name + '-input'" :name="field.name" v-model.trim="field.value" :state="field.state" type="url" @change="blank = false" />
             <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required">
                 {{ $t('please_input_valid') }}{{ field.text }}
             </b-form-invalid-feedback>
+            <b-img class="mt-2" :src="field.value" thumbnail fluid :blank="blank" :width="200" @error="blank = true" />
         </b-col>
     </b-row>
 </template>
 
 <script>
 export default {
-    name: 'text-form',
+    name: 'image-form',
     props: [ 'field' ],
     data: function() {
-        var type = 'text';
-        if (this.field) {
-            if (this.field.type == 'long' || this.field.type == 'double') {
-                type = 'number';
-            } else if (this.field.view == 'link') {
-                type = 'url';
-            } else if (this.field.view == 'email') {
-                type = 'email';
-            }
-        }
         return {
-            type: type
+            blank: false
         }
     }
 }

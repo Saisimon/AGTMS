@@ -92,6 +92,7 @@ export default {
             this.$store.dispatch('logout');
             this.$store.commit('setUser', null);
             this.$store.commit('setTree', {});
+            this.$store.commit('setBreadcrumbs', []);
             this.$router.push({
                 path: '/signin?reply=' + encodeURIComponent(this.$route.path)
             });

@@ -115,7 +115,7 @@ public class ManagementEditController extends EditController {
 	}
 	
 	@Override
-	protected List<Breadcrumb> breadcrumbs(Object key) {
+	protected List<Breadcrumb> breadcrumbs(Long id, Object key) {
 		Long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
 		Template template = templateService.getTemplate(key, userId);
@@ -133,6 +133,11 @@ public class ManagementEditController extends EditController {
 				breadcrumbs.add(0, Breadcrumb.builder().text(navigation.getTitle()).to("/").build());
 				nid = navigation.getParentId();
 			} while (nid != null && nid != -1);
+		}
+		if (id == null) {
+			breadcrumbs.add(Breadcrumb.builder().text(getMessage("create")).active(true).build());
+		} else {
+			breadcrumbs.add(Breadcrumb.builder().text(getMessage("edit")).active(true).build());
 		}
 		return breadcrumbs;
 	}

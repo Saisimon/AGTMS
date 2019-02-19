@@ -21,10 +21,12 @@ import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.Template.TemplateField;
+import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Editor;
 import net.saisimon.agtms.core.domain.grid.TemplateGrid;
 import net.saisimon.agtms.core.domain.grid.TemplateGrid.Column;
 import net.saisimon.agtms.core.domain.grid.TemplateGrid.Table;
+import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.domain.tag.MultipleSelect;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
@@ -32,6 +34,7 @@ import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.EditorTypes;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.exception.GenerateException;
+import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -41,7 +44,6 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.BaseController;
 import net.saisimon.agtms.web.selection.ClassSelection;
-import net.saisimon.agtms.web.selection.DataSourceSelection;
 import net.saisimon.agtms.web.selection.FunctionSelection;
 import net.saisimon.agtms.web.selection.NavigationSelection;
 import net.saisimon.agtms.web.selection.ViewSelection;
@@ -68,12 +70,11 @@ public class TemplateEditController extends BaseController {
 	private FunctionSelection functionSelection;
 	@Autowired
 	private NavigationSelection navigationSelection;
-	@Autowired
-	private DataSourceSelection dataSourceSelection;
 	
 	@PostMapping("/grid")
 	public Result grid(@RequestParam(name = "id", required = false) Long id) {
 		TemplateGrid grid = new TemplateGrid();
+		grid.setBreadcrumbs(breadcrumbs(id));
 		grid.setClassOptions(Select.buildOptions(classSelection.select()));
 		grid.setViewOptions(Select.buildOptions(viewSelection.select()));
 		grid.setWhetherOptions(Select.buildOptions(whetherSelection.select()));
@@ -83,9 +84,8 @@ public class TemplateEditController extends BaseController {
 		functionSelect.setOptions(Select.buildOptions(functionSelection.select()));
 		SingleSelect<String> navigationSelect = new SingleSelect<>();
 		navigationSelect.setOptions(Select.buildOptions(navigationSelection.select()));
-		SingleSelect<String> dataSourceSelect = new SingleSelect<>();
-		dataSourceSelect.setOptions(Select.buildOptions(dataSourceSelection.select()));
 		if (template != null) {
+			grid.setTitle(new Editor<>(template.getTitle()));
 			List<String> functionCodes = TemplateUtils.getFunctionCodes(template);
 			if (CollectionUtils.isEmpty(functionCodes)) {
 				functionSelect.setSelected(new ArrayList<>());
@@ -93,18 +93,13 @@ public class TemplateEditController extends BaseController {
 				functionSelect.setSelected(Select.getOption(functionSelect.getOptions(), functionCodes));
 			}
 			navigationSelect.setSelected(Select.getOption(navigationSelect.getOptions(), template.getNavigationId().toString()));
-			dataSourceSelect.setSelected(Select.getOption(dataSourceSelect.getOptions(), template.getSource()));
-			grid.setTitle(new Editor<>(template.getTitle()));
-			grid.setSourceUrl(template.getSourceUrl());
 		} else {
 			grid.setTitle(new Editor<>(""));
 			functionSelect.setSelected(new ArrayList<>());
 			navigationSelect.setSelected(navigationSelect.getOptions().get(0));
-			dataSourceSelect.setSelected(dataSourceSelect.getOptions().get(0));
 		}
 		grid.setFunctionSelect(functionSelect);
 		grid.setNavigationSelect(navigationSelect);
-		grid.setDataSourceSelect(dataSourceSelect);
 		return ResultUtils.simpleSuccess(grid);
 	}
 
@@ -125,6 +120,8 @@ public class TemplateEditController extends BaseController {
 			if (oldTemplate == null) {
 				return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 			}
+			template.setSource(oldTemplate.getSource());
+			template.setSourceUrl(oldTemplate.getSourceUrl());
 			template.setCreateTime(oldTemplate.getCreateTime());
 			template.setOperatorId(oldTemplate.getOperatorId());
 			template.setUpdateTime(new Date());
@@ -134,6 +131,8 @@ public class TemplateEditController extends BaseController {
 			if (templateService.exists(template.getTitle(), userId)) {
 				return ErrorMessage.Template.TEMPLATE_ALREADY_EXISTS;
 			}
+			List<Sign> signs = GenerateServiceFactory.getSigns();
+			template.setSource(signs.get(0).getName());
 			Date time = new Date();
 			template.setCreateTime(time);
 			template.setOperatorId(userId);
@@ -268,6 +267,18 @@ public class TemplateEditController extends BaseController {
 		subTable.setRows(subRows);
 		subTable.setColumns(subColumns);
 		return subTable;
+	}
+	
+	private List<Breadcrumb> breadcrumbs(Long id) {
+		List<Breadcrumb> breadcrumbs = new ArrayList<>();
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("template.management")).to("/template/main").build());
+		if (id == null) {
+			breadcrumbs.add(Breadcrumb.builder().text(getMessage("create")).active(true).build());
+		} else {
+			breadcrumbs.add(Breadcrumb.builder().text(getMessage("edit")).active(true).build());
+		}
+		return breadcrumbs;
 	}
 	
 }

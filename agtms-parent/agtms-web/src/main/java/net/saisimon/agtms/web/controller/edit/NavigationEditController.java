@@ -105,10 +105,15 @@ public class NavigationEditController extends EditController {
 	}
 	
 	@Override
-	protected List<Breadcrumb> breadcrumbs(Object key) {
+	protected List<Breadcrumb> breadcrumbs(Long id, Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("navigation.management")).to("/navigation/main").build());
+		if (id == null) {
+			breadcrumbs.add(Breadcrumb.builder().text(getMessage("create")).active(true).build());
+		} else {
+			breadcrumbs.add(Breadcrumb.builder().text(getMessage("edit")).active(true).build());
+		}
 		return breadcrumbs;
 	}
 	

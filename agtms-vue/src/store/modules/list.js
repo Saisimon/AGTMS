@@ -6,7 +6,6 @@ const state = {
     header: {
         title: ''
     },
-    breadcrumbs:[],
     functions: [],
     showFilters: false,
     filters: [],
@@ -29,7 +28,6 @@ const mutations = {
         state.header = {
             title: ''
         };
-        state.breadcrumbs = [];
         state.functions = [];
         state.showFilters = false;
         state.filters = [];
@@ -48,11 +46,6 @@ const mutations = {
     setHeader(state, header) {
         if (header) {
             state.header = header;
-        }
-    },
-    setBreadcrumbs(state, breadcrumbs) {
-        if (breadcrumbs) {
-            state.breadcrumbs = breadcrumbs;
         }
     },
     setFunctions(state, functions) {

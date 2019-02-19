@@ -14,6 +14,8 @@ import net.saisimon.agtms.core.enums.EditorTypes;
 @Data
 public class TemplateGrid {
 	
+	private List<Breadcrumb> breadcrumbs;
+	
 	private Editor<String> title;
 	
 	private Table table;

@@ -1,7 +1,5 @@
 <template>
     <div class="edit-container">
-        <!-- 面包屑导航 -->
-        <b-breadcrumb :items="breadcrumbs" />
         <b-card header-tag="header" footer-tag="footer">
             <!-- 头部 -->
             <b-row slot="header">
@@ -22,6 +20,8 @@
                     <date-form :field="field" :key="key" v-else-if="field.type == 'date'" />
                     <textarea-form :field="field" :key="key" v-else-if="field.view == 'textarea'" />
                     <icon-form :field="field" :key="key" v-else-if="field.view == 'icon'" />
+                    <image-form :field="field" :key="key" v-else-if="field.view == 'image'" />
+                    <password-form :field="field" :key="key" v-else-if="field.view == 'password'" />
                     <text-form :field="field" :key="key" v-else />
                 </template>
             </div>
@@ -93,6 +93,8 @@ import TextareaForm from '@/components/form/TextareaForm.vue'
 import IconForm from '@/components/form/IconForm.vue'
 import SelectForm from '@/components/form/SelectForm.vue'
 import DateForm from '@/components/form/DateForm.vue'
+import ImageForm from '@/components/form/ImageForm.vue'
+import PasswordForm from '@/components/form/PasswordForm.vue'
 
 export default {
     name: 'edit',
@@ -109,24 +111,6 @@ export default {
         }
     },
     computed: {
-        breadcrumbs: function() {
-            var breadcrumbs = this.$store.state.edit.breadcrumbs;
-            if (breadcrumbs.length > 0) {
-                this.backUrl = breadcrumbs[breadcrumbs.length - 1].to;
-            }
-            if (this.$route.query.id == null) {
-                breadcrumbs.push({
-                    active: true,
-                    text: this.$t('create')
-                });
-            } else {
-                breadcrumbs.push({
-                    active: true,
-                    text: this.$t('edit')
-                });
-            }
-            return breadcrumbs;
-        },
         fields: function() {
             return this.$store.state.edit.fields;
         }
@@ -136,7 +120,9 @@ export default {
         'textarea-form': TextareaForm,
         'icon-form': IconForm,
         'select-form': SelectForm,
-        'date-form': DateForm
+        'date-form': DateForm,
+        'image-form': ImageForm,
+        'password-form': PasswordForm
     },
     created: function() {
         if (this.$store.state.base.user !== '') {
@@ -144,7 +130,16 @@ export default {
                 url: this.$route.path,
                 id: this.$route.query.id
             }).then(resp => {
-                this.$store.commit('setBreadcrumbs', resp.data.data.breadcrumbs);
+                var breadcrumbs = resp.data.data.breadcrumbs;
+                this.$store.commit('setBreadcrumbs', breadcrumbs);
+                if (breadcrumbs && breadcrumbs.length > 0) {
+                    for (var i = breadcrumbs.length - 1; i >= 0; i--) {
+                        if (breadcrumbs[i].to) {
+                            this.backUrl = breadcrumbs[i].to;
+                            break;
+                        }
+                    }
+                }
                 var fields = resp.data.data.fields;
                 this.$store.commit('setFields', fields);
                 this.resetFields = this.cloneObject(fields);

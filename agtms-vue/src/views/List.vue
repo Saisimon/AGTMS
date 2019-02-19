@@ -1,7 +1,5 @@
 <template>
     <div class="list-container">
-        <!-- 面包屑导航 -->
-        <b-breadcrumb :items="breadcrumbs" />
         <b-card header-tag="header" footer-tag="footer">
             <!-- 头部 -->
             <b-row slot="header">
@@ -85,7 +83,7 @@
                         {{ selects.length }} {{ $t('rows_selected') }}
                         </div>
                     </b-col>
-                    <b-col class="text-right">
+                    <b-col cols="8" class="text-right">
                         <template v-for="(batch, index) in batches" >
                             <b-button :key="index" 
                                 :size="'sm'" 
@@ -262,9 +260,6 @@ export default {
     computed: {
         header: function() {
             return this.$store.state.list.header;
-        },
-        breadcrumbs: function() {
-            return this.$store.state.list.breadcrumbs;
         },
         isLoading: function() {
             return this.$store.state.list.isLoading;

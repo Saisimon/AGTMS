@@ -23,7 +23,7 @@ public abstract class EditController extends BaseController {
 	 */
 	protected EditGrid getEditGrid(Long id, Object key) {
 		EditGrid editGrid = new EditGrid();
-		editGrid.setBreadcrumbs(breadcrumbs(key));
+		editGrid.setBreadcrumbs(breadcrumbs(id, key));
 		editGrid.setFields(fields(id, key));
 		return editGrid;
 	}
@@ -34,7 +34,7 @@ public abstract class EditController extends BaseController {
 	 * @param key 关键词
 	 * @return 面包屑导航
 	 */
-	protected abstract List<Breadcrumb> breadcrumbs(Object key);
+	protected abstract List<Breadcrumb> breadcrumbs(Long id, Object key);
 	
 	/**
 	 * 前端编辑字段信息配置

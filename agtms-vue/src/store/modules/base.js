@@ -5,7 +5,8 @@ const state = {
     progress: 100,
     intervalId: -1,
     user: JSON.parse(getCookie('user', null)),
-    language: getCookie('language', 'zh_CN')
+    language: getCookie('language', 'zh_CN'),
+    breadcrumbs:[],
 };
 
 const mutations = {
@@ -32,6 +33,11 @@ const mutations = {
     },
     setIntervalId(state, intervalId) {
         state.intervalId = intervalId;
+    },
+    setBreadcrumbs(state, breadcrumbs) {
+        if (breadcrumbs) {
+            state.breadcrumbs = breadcrumbs;
+        }
     },
     clearProgress(state) {
         state.progress = 100

@@ -10,6 +10,8 @@
             v-if="progress != 100" />
         <nav-bar />
         <div class="main-container">
+            <!-- 面包屑导航 -->
+            <b-breadcrumb :items="breadcrumbs" v-if="breadcrumbs && breadcrumbs.length > 0" />
             <transition name="switch-view" mode="out-in">
                 <router-view/>
             </transition>
@@ -30,6 +32,9 @@ export default {
         },
         progress: function() {
             return this.$store.state.base.progress;
+        },
+        breadcrumbs: function() {
+            return this.$store.state.base.breadcrumbs;
         }
     },
     created: function() {

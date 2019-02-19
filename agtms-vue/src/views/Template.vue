@@ -1,6 +1,5 @@
 <template>
-    <div>
-        <b-breadcrumb :items="breadcrumbs" />
+    <div class="template-container">
         <b-card header-tag="header" footer-tag="footer">
             <!-- 头部 -->
             <b-row slot="header">
@@ -104,7 +103,6 @@
             </div>
             <select-form :field="navigationField"></select-form>
             <select-form :field="functionField"></select-form>
-            <select-form :field="dataSourceField"></select-form>
             <!-- 尾部 -->
             <b-row slot="footer">
                 <b-col class="text-right">
@@ -126,6 +124,16 @@
                         <i class="fa fa-fw fa-repeat"></i>
                         {{ $t("reset") }}
                     </b-button>
+                    <!-- 预览 -->
+                    <b-button 
+                        variant="info" 
+                        v-b-modal="'preview-model'"
+                        @click="toExample"
+                        size="sm" 
+                        class="ml-2">
+                        <i class="fa fa-fw fa-eye"></i>
+                        {{ $t("preview") }}
+                    </b-button>
                     <!-- 保存 -->
                     <b-button 
                         variant="primary" 
@@ -138,8 +146,7 @@
                 </b-col>
             </b-row>
             <!-- 重置确认 -->
-            <b-modal
-                id="reset-model"
+            <b-modal id="reset-model"
                 centered 
                 :cancel-title="$t('cancel')"
                 :ok-title="$t('confirm_reset')"
@@ -147,8 +154,58 @@
                 ok-variant="danger"
                 button-size="sm">
                 <div class="text-center font-weight-bold">
-                    {{ $t('confirm' )}}
+                    {{ $t('are_you_confirm' )}}
                 </div>
+            </b-modal>
+            <b-modal id="preview-model"
+                centered
+                size="lg" 
+                hide-footer 
+                hide-header >
+                <vue-good-table
+                    :columns="exampleColumns"
+                    :rows="exampleRows">
+                    <template slot="table-row" slot-scope="props">
+                        <span v-if="props.column.field == 'action'">
+                            <action-cell 
+                                :rowData="props.row" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex" 
+                                :actions="actions" 
+                                @succeed="searchByFilters" />
+                        </span>
+                        <span v-else-if="props.column.view == 'icon'">
+                            <icon-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex"  />
+                        </span>
+                        <span v-else-if="props.column.view == 'link'">
+                            <link-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex"  />
+                        </span>
+                        <span v-else-if="props.column.view == 'image'">
+                            <image-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex"  />
+                        </span>
+                        <span v-else-if="props.column.view == 'html'">
+                            <html-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex"  />
+                        </span>
+                        <span v-else>
+                            <text-cell 
+                                :rowData="props.formattedRow" 
+                                :field="props.column.field" 
+                                :index="props.row.originalIndex" />
+                        </span>
+                    </template>
+                </vue-good-table>
             </b-modal>
             <!-- 警告框 -->
             <div class="modal d-block" v-if="alert.dismissCountDown">
@@ -173,6 +230,12 @@ import InputEditor from '@/components/editor/InputEditor.vue'
 import SelectEditor from '@/components/editor/SelectEditor.vue'
 import TableEditor from '@/components/editor/TableEditor.vue'
 import SelectForm from '@/components/form/SelectForm.vue'
+import ActionCell from '@/components/cell/ActionCell.vue'
+import TextCell from '@/components/cell/TextCell.vue'
+import IconCell from '@/components/cell/IconCell.vue'
+import ImageCell from '@/components/cell/ImageCell.vue'
+import LinkCell from '@/components/cell/LinkCell.vue'
+import HtmlCell from '@/components/cell/HtmlCell.vue'
 
 export default {
     name: 'template-edit',
@@ -181,6 +244,7 @@ export default {
             this.$store.dispatch('getTemplateGrid', this.$route.query.id).then(resp => {
                 var templateGrid = resp.data.data;
                 this.$store.commit('setTemplateGrid', templateGrid);
+                this.$store.commit('setBreadcrumbs', templateGrid.breadcrumbs);
                 this.$store.commit('setClassOptions', templateGrid.classOptions);
                 this.$store.commit('setViewOptions', templateGrid.viewOptions);
                 this.$store.commit('setWhetherOptions', templateGrid.whetherOptions);
@@ -195,6 +259,12 @@ export default {
         'select-editor': SelectEditor,
         'table-editor': TableEditor,
         'select-form': SelectForm,
+        'action-cell': ActionCell,
+        'icon-cell': IconCell,
+        'link-cell': LinkCell,
+        'image-cell': ImageCell,
+        'html-cell': HtmlCell,
+        'text-cell': TextCell
     },
     computed: {
         templateGrid: function() {
@@ -219,11 +289,6 @@ export default {
                     }
                 }
             }
-            var dataSourceSelect = templateGrid.dataSourceSelect;
-            if (dataSourceSelect) {
-                this.dataSourceField['options'] = dataSourceSelect.options;
-                this.dataSourceField['value'] = dataSourceSelect.selected;
-            }
             return templateGrid;
         },
         columns: function() {
@@ -246,18 +311,8 @@ export default {
     },
     data: function() {
         return {
-            breadcrumbs: [
-                {
-                    to: '/',
-                    text: this.$t('system_module')
-                }, {
-                    to: '/template/main',
-                    text: this.$t('template_management'),
-                }, {
-                    text: this.$route.query.id ? this.$t('edit') : this.$t('create'),
-                    active: true,
-                }
-            ],
+            exampleColumns: [],
+            exampleRows: [],
             alert: {
                 dismissSecs: 3,
                 dismissCountDown: 0,
@@ -343,14 +398,7 @@ export default {
                 required: true,
                 options: [],
                 value: {}
-            },
-            dataSourceField: {
-                name: 'source',
-                text: this.$t('datasource'),
-                required: true,
-                options: [],
-                value: {}
-            },
+            }
         }
     },
     methods: {
@@ -447,6 +495,52 @@ export default {
             const draggedElement = draggedContext.element;
             return ((!relatedElement || !relatedElement.fixed) && !draggedElement.fixed);
         },
+        toExample: function() {
+            var exampleColumns = [];
+            var exampleRows = [];
+            var exampleRow = {};
+            var tableRow = this.rows[1];
+            for (var i = 1; i < this.columns.length; i++) {
+                var column = this.columns[i];
+                var fieldTable = tableRow[column.field];
+                var fieldColumns = fieldTable.columns;
+                var fieldRows = fieldTable.rows;
+                for (var j = 0; j < fieldColumns.length - 1; j++) {
+                    var fieldColumn = fieldColumns[j];
+                    var fieldName = column.field + fieldColumn.field
+                    var fieldTitle = fieldRows[0][fieldColumn.field].value;
+                    var view = fieldRows[2][fieldColumn.field].value.value;
+                    var fieldType = fieldRows[1][fieldColumn.field].value.value;
+                    var exampleColumn = {
+                        field: fieldName,
+                        label: fieldTitle,
+                        view: view,
+                        sortable: false
+                    };
+                    var exampleValue = '';
+                    if (fieldType == 'date') {
+                        exampleValue = '1970-01-01';
+                    } else if (fieldType == 'long') {
+                        exampleValue = 999
+                    } else if (fieldType == 'double') {
+                        exampleValue = 999.99
+                    } else if (view == 'icon') {
+                        exampleValue = 'list'
+                    } else if (view == 'link') {
+                        exampleValue = 'https://www.google.com'
+                    } else if (view == 'image') {
+                        exampleValue = '/images/preview.jpg'
+                    } else {
+                        exampleValue = this.$t('preview');
+                    }
+                    exampleRow[fieldName] = exampleValue;
+                    exampleColumns.push(exampleColumn);
+                }
+            }
+            exampleRows[0] = exampleRow;
+            this.exampleColumns = exampleColumns;
+            this.exampleRows = exampleRows;
+        },
         toTemplate: function() {
             var template = {};
             var title = this.templateGrid.title.value;
@@ -458,7 +552,6 @@ export default {
                 return false;
             }
             template['navigationId'] = this.navigationField.value.value;
-            template['source'] = this.dataSourceField.value.value;
             var functions = this.functionField.value;
             var func = new Number(0);
             for (var i = 0; i < functions.length; i++) {
