@@ -1,5 +1,7 @@
 <template>
-    
+    <div class="home-container">
+        AGTMS
+    </div>
 </template>
 
 <script>

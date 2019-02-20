@@ -53,7 +53,7 @@
                         </b-col>
                     </b-row>
                 </form>
-                <b-row class="mb-3" v-if="importFieldSelects.length > 0 && importFileType != null && Boolean(importFile)">
+                <b-row class="mb-3" v-if="importFieldSelects.length > 0 && importFileType != null && importFile">
                     <b-col class="text-right">
                         <b-button variant="primary" 
                             @click="save">
@@ -92,7 +92,7 @@ export default {
     },
     methods: {
         save: function() {
-            if (this.importFieldSelects.length == 0 || this.importFileType == null || !Boolean(this.importFile)) {
+            if (this.importFieldSelects.length == 0 || this.importFileType == null || !this.importFile) {
                 return;
             }
             if (this.importFile.size > 10 * 1024 * 1024) {

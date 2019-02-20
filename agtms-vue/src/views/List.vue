@@ -311,8 +311,10 @@ export default {
             }
             return batches;
         },
+        showFilters: function() {
+            return this.$store.state.list.showFilters;
+        },
         filters: function() {
-            this.showFilters = this.$store.state.list.showFilters;
             return this.$store.state.list.filters;
         },
         columns: function() {
@@ -382,8 +384,7 @@ export default {
                 selectionText: this.$t('rows_selected'),
                 clearSelectionText: '',
             },
-            selects: [],
-            showFilters: false
+            selects: []
         }
     },
     methods: {
@@ -447,7 +448,7 @@ export default {
             this.searchByFilters();
         },
         pageSizeChange: function(pageSize) {
-            this.$store.commit('setPageSize', params.pageSize);
+            this.$store.commit('setPageSize', pageSize);
             this.searchByFilters();
         },
         sortChange: function(params) {
@@ -502,8 +503,8 @@ export default {
                             break;
                     }
                     if (parseFilters && parseFilters.length > 0) {
-                        for (var i = 0; i < parseFilters.length; i++) {
-                            searchFilters.push(parseFilters[i]);
+                        for (var j = 0; j < parseFilters.length; j++) {
+                            searchFilters.push(parseFilters[j]);
                         }
                     }
                 }
@@ -534,7 +535,7 @@ export default {
                 }
             }
             filters.push(filter);
-	        return filters;
+            return filters;
         },
         parseSelectFilter: function(fieldName, fieldFilter) {
             var selected = fieldFilter.select.selected;
@@ -557,33 +558,33 @@ export default {
                 filter['operator'] = '$eq';
             }
             filters.push(filter);
-	        return filters;
+            return filters;
         },
         parseRangeFilter: function(fieldName, fieldFilter) {
             var fromText = fieldFilter.from.value;
             var toText = fieldFilter.to.value;
             var filters = [];
             if (fromText && fromText !== '') {
-                var filter = {};
+                var fromFilter = {};
                 if (fieldFilter.from.type === 'number') {
                     fromText = new Number(fromText);
                 }
-                filter['key'] = fieldName;
-                filter['type'] = fieldFilter.from.type;
-                filter['operator'] = '$gte';
-                filter['value'] = fromText;
-                filters.push(filter);
+                fromFilter['key'] = fieldName;
+                fromFilter['type'] = fieldFilter.from.type;
+                fromFilter['operator'] = '$gte';
+                fromFilter['value'] = fromText;
+                filters.push(fromFilter);
             }
             if (toText && toText !== '') {
-                var filter = {};
+                var toFilter = {};
                 if (fieldFilter.to.type === 'number') {
                     toText = new Number(toText);
                 }
-                filter['key'] = fieldName;
-                filter['type'] = fieldFilter.to.type;
-                filter['operator'] = '$lte';
-                filter['value'] = toText;
-                filters.push(filter);
+                toFilter['key'] = fieldName;
+                toFilter['type'] = fieldFilter.to.type;
+                toFilter['operator'] = '$lte';
+                toFilter['value'] = toText;
+                filters.push(toFilter);
             }
             return filters;
         }

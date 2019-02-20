@@ -13,7 +13,7 @@ import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.PropertyUtils;
 
 /**
- * 自动生成的自定义对象的累加载器
+ * 自动生成的自定义对象的类加载器
  * 
  * @author saisimon
  *
@@ -52,7 +52,7 @@ public class GenerateClassLoader extends URLClassLoader {
 			Class<?> cls = findLoadedClass(name);
 			if (cls == null) {
 				if (!generateClasses.contains(name)) {
-					return super.loadClass(name, resolve);
+					return Thread.currentThread().getContextClassLoader().loadClass(name);
 				}
 				cls = findClass(name);
 				generateClasses.add(name);

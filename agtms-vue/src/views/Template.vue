@@ -471,8 +471,7 @@ export default {
                 }
                 this.columns.splice(idx, 1);
                 for (var i = 0; i < this.rows.length; i++) {
-                    var row = this.rows[i];
-                    delete row[key];
+                    delete this.rows[i][key];
                 }
                 this.rows.push();
             }
@@ -529,7 +528,7 @@ export default {
                     } else if (view == 'link') {
                         exampleValue = 'https://www.google.com'
                     } else if (view == 'image') {
-                        exampleValue = '/images/preview.jpg'
+                        exampleValue = '/img/preview.jpg'
                     } else {
                         exampleValue = this.$t('preview');
                     }
