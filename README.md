@@ -17,35 +17,43 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 │   └── agtms-web       Web 服务
 ├── agtms-vue           前端页面
 ├── agtms-zuul          Zuul 网关服务
-└── README.md           README 文件
+├── README.md           README 文件
+└── start               一键启动脚本 (Unix)
 ```
 
-## 安装
-### 启动服务发现 (agtms-eureka)
+## 要求
+1. [JRE(JDK) 8+](https://www.java.com)
+2. [Node.js](https://nodejs.org/)
+
+## 安装并启动
+### 一键启动
+```
+./start
+```
+
+### 分步启动
+1. 启动服务发现 (agtms-eureka)
 ```
 cd agtms-eureka
 ./mvnw clean install spring-boot:run
 ```
-
-### 启动Web 服务 (agtms-web)
+2. 启动Web 服务 (agtms-web)
 ```
 cd agtms-parent
 ./mvnw clean install && ./mvnw spring-boot:run -pl agtms-web
 ```
-
-### 启动网关服务 (agtms-gateway 或 agtms-zuul)
+3. 启动网关服务 (agtms-gateway 或 agtms-zuul)
 ```
 cd agtms-gateway
 ./mvnw clean install spring-boot:run
 ```
-
-### 启动前端页面 (agtms-vue)
+4. 启动前端页面 (agtms-vue)
 ```
 npm install
 npm run serve
 ```
 
-### 访问
+## 访问
 ```
 http://localhost:8080
 ```

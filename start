@@ -1,0 +1,50 @@
+#!/bin/sh
+mkdir -p data/logs
+
+cd agtms-eureka
+if [ -f ../data/eureka.pid ]; then
+    kill -9 `cat ../data/eureka.pid`
+    rm ../data/eureka.pid
+    echo "agtms-eureka 已停止."
+fi
+bash mvnw clean install
+java -jar target/agtms-eureka.jar > ../data/logs/eureka.log 2>&1 &
+echo $! > ../data/eureka.pid
+echo "agtms-eureka 已启动."
+cd ../
+
+cd agtms-parent
+if [ -f ../data/web.pid ]; then
+    kill -9 `cat ../data/web.pid`
+    rm ../data/web.pid
+    echo "agtms-web 已停止."
+fi
+bash mvnw clean install
+java -jar agtms-web/target/agtms-web.jar > ../data/logs/web.log 2>&1 &
+echo $! > ../data/web.pid
+echo "agtms-web 已启动."
+cd ../
+
+cd agtms-gateway
+if [ -f ../data/gateway.pid ]; then
+    kill -9 `cat ../data/gateway.pid`
+    rm ../data/gateway.pid
+    echo "agtms-gateway 已停止."
+fi
+bash mvnw clean install
+java -jar target/agtms-gateway.jar > ../data/logs/gateway.log 2>&1 &
+echo $! > ../data/gateway.pid
+echo "agtms-gateway 已启动."
+cd ../
+
+cd agtms-vue
+if [ -f ../data/vue.pid ]; then
+    kill -9 `cat ../data/vue.pid`
+    rm ../data/vue.pid
+    echo "agtms-vue 已停止."
+fi
+npm install
+npm run serve > ../data/logs/vue.log 2>&1 &
+echo $! > ../data/vue.pid
+echo "agtms-vue 已启动."
+cd ../

@@ -49,6 +49,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>agtms-eureka</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

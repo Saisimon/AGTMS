@@ -67,6 +67,7 @@
 	</dependencies>
 	
 	<build>
+		<finalName>agtms-zuul</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

@@ -1,1 +1,0 @@
-(mvn clean install spring-boot:run -DskipTests > /Users/saisimon/logs/agtms/agtms-zuul.log 2>&1 &)
