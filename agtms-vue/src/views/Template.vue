@@ -207,19 +207,6 @@
                     </template>
                 </vue-good-table>
             </b-modal>
-            <!-- 警告框 -->
-            <div class="modal d-block" v-if="alert.dismissCountDown">
-                <div class="modal-dialog modal-md modal-dialog-centered">
-                    <b-alert :variant="alert.variant"
-                        dismissible
-                        :show="alert.dismissCountDown"
-                        style="pointer-events: auto;"
-                        class="w-100"
-                        @dismissed="alert.dismissCountDown=0">
-                        {{ alert.text }}
-                    </b-alert>
-                </div>
-            </div>
         </b-card>
     </div>
 </template>
@@ -313,12 +300,6 @@ export default {
         return {
             exampleColumns: [],
             exampleRows: [],
-            alert: {
-                dismissSecs: 3,
-                dismissCountDown: 0,
-                variant: 'success',
-                text: ''
-            },
             fieldTitleColumns: [
                 { field: 'title', label: '', width: 100, sortable:false }
             ],
@@ -544,12 +525,12 @@ export default {
             var template = {};
             var title = this.templateGrid.title.value;
             if (title == '') {
+                this.$store.commit('showAlert', {
+                    message: this.$t('title_not_blank')
+                });
                 return false;
             }
             template['title'] = title;
-            if (this.columns.length < 2) {
-                return false;
-            }
             template['navigationId'] = this.navigationField.value.value;
             var functions = this.functionField.value;
             var func = new Number(0);
@@ -568,6 +549,9 @@ export default {
                     title: columnNameRow[column.field].value,
                     ordered: column.ordered
                 };
+                if (templateColumn.title == null || templateColumn.title == '') {
+                    continue;
+                }
                 var fieldTable = tableRow[column.field];
                 var fieldColumns = fieldTable.columns;
                 var fieldRows = fieldTable.rows;
@@ -593,6 +577,12 @@ export default {
                 templateColumn['fields'] = templateFields;
                 templateColumn['fieldIndex'] = fieldTable.idx;
                 templateColumns[i - 1] = templateColumn;
+            }
+            if (templateColumns.length < 1) {
+                this.$store.commit('showAlert', {
+                    message: this.$t('column_not_blank')
+                });
+                return false;
             }
             template['columns'] = templateColumns;
             return template;
@@ -702,14 +692,15 @@ export default {
             }
             this.$store.dispatch('saveTemplate', template).then(resp => {
                 var data = resp.data;
+                var variant = 'danger';
                 if (data.code === 0) {
                     this.$store.dispatch('getTree');
-                    this.alert.variant = 'success';
-                } else {
-                    this.alert.variant = 'danger';
+                    variant = 'success';
                 }
-                this.alert.text = data.message;
-                this.alert.dismissCountDown = this.alert.dismissSecs;
+                this.$store.commit('showAlert', {
+                    message: data.message,
+                    variant: variant
+                });
             });
         }
     },

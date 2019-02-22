@@ -20,9 +20,4 @@ public class TaskJpaService implements TaskService, BaseOrder {
 		return taskJpaRepository;
 	}
 
-	@Override
-	public Task getTask(Long id, Long operatorId) {
-		return taskJpaRepository.findByIdAndOperatorId(id, operatorId);
-	}
-
 }

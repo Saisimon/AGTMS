@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import net.saisimon.agtms.core.service.TemplateService;
 
 /**
- * 模版服务构建工厂
+ * 模板服务构建工厂
  * 
  * @author saisimon
  *

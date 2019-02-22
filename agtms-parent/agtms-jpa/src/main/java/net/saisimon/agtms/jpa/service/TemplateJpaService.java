@@ -1,7 +1,5 @@
 package net.saisimon.agtms.jpa.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,28 +23,18 @@ public class TemplateJpaService implements TemplateService, BaseOrder {
 	}
 
 	@Override
-	public boolean exists(String title, Long operatorId) {
-		return templateJpaRepository.existsByTitleAndOperatorId(title, operatorId);
+	public boolean createTable(Template template) {
+		return ddlService.createTable(template);
 	}
 
 	@Override
-	public List<Template> getTemplates(Long navigationId, Long operatorId) {
-		return templateJpaRepository.findByNavigationIdAndOperatorId(navigationId, operatorId);
+	public boolean alterTable(Template template, Template oldTemplate) {
+		return ddlService.alterTable(template, oldTemplate);
 	}
 
 	@Override
-	public void createTable(Template template) {
-		ddlService.createTable(template);
-	}
-
-	@Override
-	public void alterTable(Template template, Template oldTemplate) {
-		ddlService.alterTable(template, oldTemplate);
-	}
-
-	@Override
-	public void dropTable(Template template) {
-		ddlService.dropTable(template);
+	public boolean dropTable(Template template) {
+		return ddlService.dropTable(template);
 	}
 	
 }

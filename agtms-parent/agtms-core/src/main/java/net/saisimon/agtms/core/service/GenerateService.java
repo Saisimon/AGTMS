@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
@@ -33,9 +33,71 @@ public interface GenerateService {
 	
 	Sign sign();
 	
-	Boolean saveOrUpdate(Domain domain);
+	default void init(Template template) {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		repository.init(template);
+	}
 	
-	void updateDomain(Long id, Map<String, Object> updateMap);
+	default Template template() {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		return repository.template();
+	}
+	
+	default Domain newGenerate() throws GenerateException {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		return repository.newGenerate();
+	}
+	
+	default Long count(FilterRequest filter) {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		return repository.count(filter);
+	}
+	
+	default Boolean checkExist(Domain domain) {
+		Assert.notNull(domain, "domain can not be null");
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		Template template = template();
+		Set<String> uniques = TemplateUtils.getUniques(template);
+		if (!CollectionUtils.isEmpty(uniques)) {
+			FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, template.getOperatorId());
+			FilterRequest uniquesFilter = FilterRequest.build();
+			for (String fieldName : uniques) {
+				Object fieldValue = domain.getField(fieldName);
+				if (fieldValue != null) {
+					uniquesFilter.or(fieldName, fieldValue);
+				}
+			}
+			filter.and(uniquesFilter);
+			return repository.exists(filter);
+		}
+		return false;
+	}
+	
+	default List<Domain> findList(FilterRequest filter, FilterSort sort) {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		return repository.findList(filter, sort);
+	}
+	
+	default Page<Domain> findPage(FilterRequest filter, FilterPageable pageable) {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		return repository.findPage(filter, pageable);
+	}
+	
+	default Domain delete(Long id) {
+		if (id == null) {
+			return null;
+		}
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		return repository.deleteEntity(id);
+	}
 	
 	default Domain findById(Long id, Long operatorId) {
 		if (id == null || operatorId == null) {
@@ -55,86 +117,30 @@ public interface GenerateService {
 		return null;
 	}
 	
-	default Boolean checkExist(Domain domain) {
-		Assert.notNull(domain, "domain can not be null");
-		AbstractGenerateRepository repository = getRepository();
-		Assert.notNull(repository, "repository can not be null");
-		Template template = template();
-		Set<String> uniques = TemplateUtils.getUniques(template);
-		if (CollectionUtils.isNotEmpty(uniques)) {
-			FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, template.getOperatorId());
-			FilterRequest uniquesFilter = FilterRequest.build();
-			for (String fieldName : uniques) {
-				Object fieldValue = domain.getField(fieldName);
-				if (fieldValue != null) {
-					uniquesFilter.or(fieldName, fieldValue);
-				}
-			}
-			filter.and(uniquesFilter);
-			return repository.exists(filter);
-		}
-		return false;
-	}
-	
-	default Boolean saveDomain(Domain domain) {
+	default Domain saveDomain(Domain domain) {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		DomainUtils.fillCommonFields(domain, null);
-		return saveOrUpdate(domain);
+		return repository.saveOrUpdate(domain);
 	}
 	
-	default Boolean updateDomain(Domain domain, Domain oldDomain) {
+	default Domain updateDomain(Domain domain, Domain oldDomain) {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		DomainUtils.fillCommonFields(domain, oldDomain);
-		return saveOrUpdate(domain);
+		return repository.saveOrUpdate(domain);
 	}
 	
-	default Domain newGenerate() throws GenerateException {
-		AbstractGenerateRepository repository = getRepository();
-		Assert.notNull(repository, "repository can not be null");
-		return repository.newGenerate();
-	}
-	
-	default Long count(FilterRequest filter) {
-		AbstractGenerateRepository repository = getRepository();
-		Assert.notNull(repository, "repository can not be null");
-		return repository.count(filter);
-	}
-	
-	default Page<Domain> findPage(FilterRequest filter, FilterPageable pageable) {
-		AbstractGenerateRepository repository = getRepository();
-		Assert.notNull(repository, "repository can not be null");
-		return repository.findPage(filter, pageable);
-	}
-	
-	default List<Domain> findList(FilterRequest filter, FilterSort sort) {
-		AbstractGenerateRepository repository = getRepository();
-		Assert.notNull(repository, "repository can not be null");
-		return repository.findList(filter, sort);
-	}
-	
-	default Domain delete(Long id) {
-		if (id == null) {
-			return null;
+	default void updateDomain(Long id, Map<String, Object> updateMap) {
+		if (id == null || CollectionUtils.isEmpty(updateMap)) {
+			return;
 		}
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		return repository.deleteEntity(id);
-	}
-	
-	default Template template() {
-		AbstractGenerateRepository repository = getRepository();
-		Assert.notNull(repository, "repository can not be null");
-		return repository.template();
-	}
-	
-	default void init(Template template) {
-		AbstractGenerateRepository repository = getRepository();
-		Assert.notNull(repository, "repository can not be null");
-		repository.init(template);
+		FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
+		repository.batchUpdate(filter, updateMap);
 	}
 	
 }

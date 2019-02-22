@@ -86,5 +86,7 @@ export default {
     datasource: 'Data Source',
     rows: ' rows',
     total: 'Total ',
-    upload_file_max_size_limit: 'Please do not upload file larger than 10M'
+    upload_file_max_size_limit: 'Please do not upload file larger than 10M',
+    title_not_blank: 'Title can not be blank',
+    column_not_blank: 'Column can not be blank'
 }

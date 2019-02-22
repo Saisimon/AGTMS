@@ -29,7 +29,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.date.DateUtil;
-import net.saisimon.agtms.core.constant.FileConstant;
+import net.saisimon.agtms.core.constant.Constant;
 
 public final class FileUtils {
 	
@@ -38,7 +38,7 @@ public final class FileUtils {
 	}
 	
 	public static File toXLS(String path, String name, List<String> heads, List<List<Object>> datas, String sheetName) throws IOException {
-		File file = createFile(path, name, FileConstant.XLS_SUFFIX);
+		File file = createFile(path, name, Constant.File.XLS_SUFFIX);
 		try(FileOutputStream fileOut = new FileOutputStream(file);
 				Workbook wb = new HSSFWorkbook()) {
 			fillWorkbook(wb, heads, datas, sheetName);
@@ -48,7 +48,7 @@ public final class FileUtils {
 	}
 
 	public static File toXLSX(String path, String name, List<String> heads, List<List<Object>> datas, String sheetName) throws IOException {
-		File file = createFile(path, name, FileConstant.XLSX_SUFFIX);
+		File file = createFile(path, name, Constant.File.XLSX_SUFFIX);
 		try(FileOutputStream fileOut = new FileOutputStream(file)) {
 			Workbook wb = new XSSFWorkbook();
 			fillWorkbook(wb, heads, datas, sheetName);
@@ -58,7 +58,7 @@ public final class FileUtils {
 	}
 	
 	public static File toCSV(String path, String name, List<String> heads, List<List<Object>> datas, String separator) throws IOException {
-		File file = createFile(path, name, FileConstant.CSV_SUFFIX);
+		File file = createFile(path, name, Constant.File.CSV_SUFFIX);
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
 			if (null == separator) {
 				separator = ",";
@@ -91,7 +91,7 @@ public final class FileUtils {
 	}
 	
 	public static File toJSON(String path, String name, List<String> heads, List<List<Object>> datas) throws IOException {
-		File file = createFile(path, name, FileConstant.JSON_SUFFIX);
+		File file = createFile(path, name, Constant.File.JSON_SUFFIX);
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
 			bw.write("[");
 			bw.newLine();

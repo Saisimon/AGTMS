@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,7 +51,7 @@ import net.saisimon.agtms.web.selection.ViewSelection;
 import net.saisimon.agtms.web.selection.WhetherSelection;
 
 /**
- * 模版编辑控制器
+ * 模板编辑控制器
  * 
  * @author saisimon
  *
@@ -125,7 +126,9 @@ public class TemplateEditController extends BaseController {
 			template.setCreateTime(oldTemplate.getCreateTime());
 			template.setOperatorId(oldTemplate.getOperatorId());
 			template.setUpdateTime(new Date());
-			templateService.alterTable(template, oldTemplate);
+			if (!templateService.alterTable(template, oldTemplate)) {
+				return ErrorMessage.Template.TEMPLATE_MODIFY_FAILED;
+			}
 			templateService.saveOrUpdate(template);
 		} else {
 			if (templateService.exists(template.getTitle(), userId)) {
@@ -138,7 +141,10 @@ public class TemplateEditController extends BaseController {
 			template.setOperatorId(userId);
 			template.setUpdateTime(time);
 			template = templateService.saveOrUpdate(template);
-			templateService.createTable(template);
+			if (!templateService.createTable(template)) {
+				TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+				return ErrorMessage.Template.TEMPLATE_CREATE_FAILED;
+			}
 		}
 		return ResultUtils.simpleSuccess();
 	}

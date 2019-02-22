@@ -25,11 +25,16 @@ export default function request(user, reqUrl, payload) {
                     store.commit('setUser', null);
                     store.commit('setTree', {});
                     store.commit('setBreadcrumbs', []);
-                    if (window.location.pathname != '/') {
+                    const whiteList = ['/', '/signin', '/register'];
+                    if (whiteList.indexOf(window.location.pathname) === -1) {
                         router.push({
                             path: '/signin?reply=' + encodeURIComponent(window.location.pathname + window.location.search)
                         });
                     }
+                } else if (error.response.status === 500) {
+                    store.commit('showAlert', {
+                        message: error.response.statusText
+                    });
                 }
             }
             reject(error);

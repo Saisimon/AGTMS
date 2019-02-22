@@ -170,7 +170,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		}
 		Map<String, Object> map = jdbcTemplate.queryForMap(sql, args);
 		try {
-			return conversion(map);
+			return Optional.ofNullable(conversion(map));
 		} catch (GenerateException e) {
 			log.error("find one error", e);
 			return Optional.empty();
@@ -257,7 +257,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		if (log.isDebugEnabled()) {
 			log.debug("Generate SQL: " + sql);
 		}
-		jdbcTemplate.update(sql, args);
+		jdbcTemplate.update(sql, args.toArray());
 	}
 	
 	private String buildCountSql() {
@@ -339,9 +339,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	private List<Domain> conversions(List<Map<String, Object>> list) throws GenerateException {
 		List<Domain> domains = new ArrayList<>();
 		for (Map<String, Object> map : list) {
-			Optional<Domain> optional = conversion(map, null);
-			if (optional.isPresent()) {
-				domains.add(optional.get());
+			Domain domain = conversion(map, null);
+			if (domain != null) {
+				domains.add(domain);
 			}
 		}
 		return domains;

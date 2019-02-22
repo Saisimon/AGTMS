@@ -1,10 +1,9 @@
-package net.saisimon.agtms.web.cache;
+package net.saisimon.agtms.core.cache;
 
 import org.springframework.stereotype.Component;
 
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
-import net.saisimon.agtms.core.cache.AbstractCache;
 import net.saisimon.agtms.core.order.BaseOrder;
 import net.saisimon.agtms.core.util.StringUtils;
 

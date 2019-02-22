@@ -26,7 +26,7 @@ public class RedisCache extends AbstractCache implements RedisOrder {
 			return null;
 		}
 		String json = redisTemplate.opsForValue().get(key);
-		if (update) {
+		if (update && json != null) {
 			Long timeout = timeoutMap.getOrDefault(key, 0L);
 			set(key, json, timeout);
 		}

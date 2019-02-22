@@ -70,19 +70,6 @@
                     {{ $t('confirm' )}}
                 </div>
             </b-modal>
-            <!-- 警告框 -->
-            <div class="modal d-block" v-if="alert.dismissCountDown">
-                <div class="modal-dialog modal-md modal-dialog-centered">
-                    <b-alert :variant="alert.variant"
-                        dismissible
-                        :show="alert.dismissCountDown"
-                        style="pointer-events: auto;"
-                        class="w-100"
-                        @dismissed="alert.dismissCountDown=0">
-                        {{ alert.text }}
-                    </b-alert>
-                </div>
-            </div>
         </b-card>
     </div>
 </template>
@@ -100,12 +87,6 @@ export default {
     name: 'edit',
     data: function() {
         return {
-            alert: {
-                dismissSecs: 3,
-                dismissCountDown: 0,
-                variant: 'success',
-                text: ''
-            },
             backUrl: "",
             resetFields: []
         }
@@ -177,14 +158,15 @@ export default {
                     data: data
                 }).then(resp => {
                     var data = resp.data;
+                    var variant = 'danger';
                     if (data.code === 0) {
                         this.$store.dispatch('getTree');
-                        this.alert.variant = 'success';
-                    } else {
-                        this.alert.variant = 'danger';
+                        variant = 'success';
                     }
-                    this.alert.text = data.message;
-                    this.alert.dismissCountDown = this.alert.dismissSecs;
+                    this.$store.commit('showAlert', {
+                        message: data.message,
+                        variant: variant
+                    });
                 });
             }
         }

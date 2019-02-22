@@ -1,7 +1,5 @@
 package net.saisimon.agtms.mongodb.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -29,16 +27,6 @@ public class TemplateMongodbService implements TemplateService, MongodbOrder {
 	}
 
 	@Override
-	public boolean exists(String title, Long operatorId) {
-		return templateMongodbRepository.existsByTitleAndOperatorId(title, operatorId);
-	}
-
-	@Override
-	public List<Template> getTemplates(Long navigationId, Long operatorId) {
-		return templateMongodbRepository.findByNavigationIdAndOperatorId(navigationId, operatorId);
-	}
-	
-	@Override
 	public Template saveOrUpdate(Template entity) {
 		if (entity.getId() == null) {
 			Long id = sequenceService.nextId(templateMongodbRepository.getCollectionName());
@@ -48,8 +36,9 @@ public class TemplateMongodbService implements TemplateService, MongodbOrder {
 	}
 
 	@Override
-	public void dropTable(Template template) {
+	public boolean dropTable(Template template) {
 		mongoTemplate.dropCollection(TemplateUtils.getTableName(template));
+		return true;
 	}
 	
 }

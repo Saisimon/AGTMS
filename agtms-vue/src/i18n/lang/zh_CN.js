@@ -86,5 +86,7 @@ export default {
     datasource: '数据来源',
     rows: '条记录',
     total: '共',
-    upload_file_max_size_limit: '请不要上传大于10M的文件'
+    upload_file_max_size_limit: '请不要上传大于10M的文件',
+    title_not_blank: '标题不能为空',
+    column_not_blank: '列不能为空'
 }

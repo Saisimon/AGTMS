@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.constant.FileConstant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Task;
 import net.saisimon.agtms.core.domain.Template;
@@ -88,19 +87,19 @@ public class ExportActuator implements Actuator<ExportParam> {
 			datas.add(data);
 		}
 		File file = null;
-		String path = FileConstant.EXPORT_PATH + File.separatorChar + param.getUserId();
+		String path = Constant.File.EXPORT_PATH + File.separatorChar + param.getUserId();
 		String name = UUID.randomUUID().toString();
 		switch (param.getExportFileType()) {
-			case FileConstant.XLS:
+			case Constant.File.XLS:
 				file = FileUtils.toXLS(path, name, heads, datas, null);
 				break;
-			case FileConstant.CSV:
+			case Constant.File.CSV:
 				file = FileUtils.toCSV(path, name, heads, datas, ",");
 				break;
-			case FileConstant.JSON:
+			case Constant.File.JSON:
 				file = FileUtils.toJSON(path, name, heads, datas);
 				break;
-			case FileConstant.XLSX:
+			case Constant.File.XLSX:
 				file = FileUtils.toXLSX(path, name, heads, datas, null);
 				break;
 			default:
@@ -141,29 +140,29 @@ public class ExportActuator implements Actuator<ExportParam> {
 			return;
 		}
 		String userAgent = request.getHeader("user-agent");
-		String path = FileConstant.EXPORT_PATH + File.separatorChar + param.getUserId();
+		String path = Constant.File.EXPORT_PATH + File.separatorChar + param.getUserId();
 		File file = null;
 		String filename = param.getExportFileName();
 		switch (param.getExportFileType()) {
-			case FileConstant.XLS:
+			case Constant.File.XLS:
 				response.setContentType("application/vnd.ms-excel");
-				file = new File(path + File.separatorChar + param.getExportFileUUID() + FileConstant.XLS_SUFFIX);
-				filename += FileConstant.XLS_SUFFIX;
+				file = new File(path + File.separatorChar + param.getExportFileUUID() + Constant.File.XLS_SUFFIX);
+				filename += Constant.File.XLS_SUFFIX;
 				break;
-			case FileConstant.CSV:
+			case Constant.File.CSV:
 				response.setContentType("application/CSV");
-				file = new File(path + File.separatorChar + param.getExportFileUUID() + FileConstant.CSV_SUFFIX);
-				filename += FileConstant.CSV_SUFFIX;
+				file = new File(path + File.separatorChar + param.getExportFileUUID() + Constant.File.CSV_SUFFIX);
+				filename += Constant.File.CSV_SUFFIX;
 				break;
-			case FileConstant.JSON:
+			case Constant.File.JSON:
 				response.setContentType("application/json");
-				file = new File(path + File.separatorChar + param.getExportFileUUID() + FileConstant.JSON_SUFFIX);
-				filename += FileConstant.JSON_SUFFIX;
+				file = new File(path + File.separatorChar + param.getExportFileUUID() + Constant.File.JSON_SUFFIX);
+				filename += Constant.File.JSON_SUFFIX;
 				break;
-			case FileConstant.XLSX:
+			case Constant.File.XLSX:
 				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				file = new File(path + File.separatorChar + param.getExportFileUUID() + FileConstant.XLSX_SUFFIX);
-				filename += FileConstant.XLSX_SUFFIX;
+				file = new File(path + File.separatorChar + param.getExportFileUUID() + Constant.File.XLSX_SUFFIX);
+				filename += Constant.File.XLSX_SUFFIX;
 				break;
 			default:
 				break;

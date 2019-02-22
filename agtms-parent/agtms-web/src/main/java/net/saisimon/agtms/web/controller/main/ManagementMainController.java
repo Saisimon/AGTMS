@@ -33,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.constant.FileConstant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Navigation;
 import net.saisimon.agtms.core.domain.Task;
@@ -189,7 +188,7 @@ public class ManagementMainController extends MainController {
 			if (domain == null) {
 				continue;
 			}
-			map.put(Constant.UPDATETIME, System.currentTimeMillis());
+			map.put(Constant.UPDATETIME, new Date());
 			generateService.updateDomain(id.longValue(), map);
 		}
 		return ResultUtils.simpleSuccess();
@@ -229,7 +228,7 @@ public class ManagementMainController extends MainController {
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
-		if (body.getExportFileType() == FileConstant.XLS) {
+		if (body.getExportFileType() == Constant.File.XLS) {
 			GenerateService generateService = GenerateServiceFactory.build(template);
 			FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
 			filter.and(Constant.OPERATORID, template.getOperatorId());
@@ -279,7 +278,7 @@ public class ManagementMainController extends MainController {
 				}
 			}
 		}
-		String path = FileConstant.IMPORT_PATH + File.separatorChar + userId;
+		String path = Constant.File.IMPORT_PATH + File.separatorChar + userId;
 		String name = UUID.randomUUID().toString();
 		File file = new File(path + File.separator + name + "." + importFileType);
 		try {

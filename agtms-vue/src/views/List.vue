@@ -168,19 +168,6 @@
                     </template>
                 </vue-good-table>
             </div>
-            <!-- 警告框 -->
-            <div class="modal d-block" v-if="alert.dismissCountDown" style="z-index: 9999">
-                <div class="modal-dialog modal-md modal-dialog-centered">
-                    <b-alert :variant="alert.variant"
-                        dismissible
-                        :show="alert.dismissCountDown"
-                        style="pointer-events: auto;"
-                        class="w-100"
-                        @dismissed="alert.dismissCountDown=0">
-                        {{ alert.text }}
-                    </b-alert>
-                </div>
-            </div>
             <action-batch-remove 
                 v-if="functions.indexOf('batchRemove') !== -1" 
                 :model="showBatchRemoveModel"
@@ -370,12 +357,6 @@ export default {
             showImportModel: {
                 show: false
             },
-            alert: {
-                dismissSecs: 3,
-                dismissCountDown: 0,
-                variant: 'danger',
-                text: ''
-            },
             sortOptions: {
                 enabled: true
             },
@@ -416,11 +397,10 @@ export default {
             }
         },
         showAlert: function(message, variant) {
-            this.alert.text = message;
-            this.alert.dismissCountDown = this.alert.dismissSecs;
-            if (variant) {
-                this.alert.variant = variant;
-            }
+            this.$store.commit('showAlert', {
+                message: message,
+                variant: variant
+            });
         },
         selectAll: function(params) {
             this.select(params.selectedRows);

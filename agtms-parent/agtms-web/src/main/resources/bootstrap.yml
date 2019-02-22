@@ -1,16 +1,6 @@
 spring:
   application:
     name: AGTMS-WEB
-  cloud:
-    config:
-      discovery:
-        enabled: true
-        service-id: AGTMS-CONFIG
-      name: agtms-web
-      username: agtms
-      password: agtms8300
-      profile: master
-      label: master
 
 eureka:
   instance:
@@ -19,13 +9,13 @@ eureka:
     instance-id: ${spring.cloud.client.ip-address}:${server.port}
   client:
     serviceUrl:
-      defaultZone: http://agtms:agtms8000@eurekaserver:8000/eureka/
+      defaultZone: http://agtms:agtms7890@eurekaserver:7890/eureka/
 
 ribbon:
   eager-load:
     enabled: true
     
 server:
-  port: 8200
+  port: 7892
   compression:
     enabled: true

@@ -1,12 +1,18 @@
 import { signIn, register, signOut } from '@/api/user'
 
 const state = {
-    urlPrefix: '///' + window.location.hostname + ':8100/agtms',
+    urlPrefix: '///' + window.location.hostname + ':7891/agtms',
     progress: 100,
     intervalId: -1,
     user: JSON.parse(getCookie('user', null)),
     language: getCookie('language', 'zh_CN'),
     breadcrumbs:[],
+    alert: {
+        dismissSecs: 3,
+        dismissCountDown: 0,
+        variant: 'success',
+        text: ''
+    }
 };
 
 const mutations = {
@@ -43,6 +49,19 @@ const mutations = {
         state.progress = 100
         if (state.intervalId && state.intervalId !== -1) {
             clearInterval(state.intervalId);
+        }
+    },
+    showAlert(state, alert) {
+        if (alert) {
+            if (alert.message != null) {
+                state.alert.text = alert.message;
+            }
+            if (alert.variant) {
+                state.alert.variant = alert.variant;
+            } else {
+                state.alert.variant = 'danger';
+            }
+            state.alert.dismissCountDown = state.alert.dismissSecs;
         }
     }
 };

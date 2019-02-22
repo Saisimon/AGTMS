@@ -1,16 +1,6 @@
 spring:
   application:
     name: AGTMS-ZUUL
-  cloud:
-    config:
-      discovery:
-        enabled: true
-        service-id: AGTMS-CONFIG
-      name: agtms-zuul
-      username: agtms
-      password: agtms8300
-      profile: master
-      label: master
 
 eureka:
   instance:
@@ -20,13 +10,7 @@ eureka:
   client:
     registry-fetch-interval-seconds: 5
     serviceUrl:
-      defaultZone: http://agtms:agtms8000@eurekaserver:8000/eureka/
+      defaultZone: http://agtms:agtms7890@eurekaserver:7890/eureka/
 
 server:
-  port: 8100
-  
-management:
-  endpoints:
-    web:
-      exposure:
-        include: 'refresh'
+  port: 7891

@@ -8,7 +8,10 @@ package net.saisimon.agtms.core.enums;
  */
 public enum Classes {
 	
-	LONG("long"), DATE("date"), STRING("string"), DOUBLE("double");
+	STRING("string"), 
+	LONG("long"), 
+	DOUBLE("double"), 
+	DATE("date");
 	
 	private String name;
 	

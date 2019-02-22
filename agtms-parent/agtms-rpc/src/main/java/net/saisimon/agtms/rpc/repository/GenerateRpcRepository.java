@@ -171,7 +171,7 @@ public class GenerateRpcRepository extends AbstractGenerateRepository implements
 		if (response != null && response.getStatusCode() == HttpStatus.OK) {
 			Map<String, Object> map = response.getBody();
 			try {
-				return conversion(map, MappingUtils.reverse(mapping));
+				return Optional.ofNullable(conversion(map, MappingUtils.reverse(mapping)));
 			} catch (GenerateException e) {
 				log.error("API-find one error", e);
 				return Optional.empty();
@@ -216,7 +216,7 @@ public class GenerateRpcRepository extends AbstractGenerateRepository implements
 			if (response != null && response.getStatusCode() == HttpStatus.OK) {
 				Map<String, Object> map = response.getBody();
 				try {
-					return conversion(map, MappingUtils.reverse(mapping)).get();
+					return conversion(map, MappingUtils.reverse(mapping));
 				} catch (GenerateException e) {
 					log.error("API-save or update error", e);
 				}
@@ -255,7 +255,7 @@ public class GenerateRpcRepository extends AbstractGenerateRepository implements
 			if (response != null && response.getStatusCode() == HttpStatus.OK) {
 				Map<String, Object> map = response.getBody();
 				try {
-					return conversion(map, MappingUtils.reverse(mapping)).get();
+					return conversion(map, MappingUtils.reverse(mapping));
 				} catch (GenerateException e) {
 					log.error("API-delete error", e);
 				}
@@ -279,7 +279,7 @@ public class GenerateRpcRepository extends AbstractGenerateRepository implements
 			if (response != null && response.getStatusCode() == HttpStatus.OK) {
 				Map<String, Object> map = response.getBody();
 				try {
-					return conversion(map, MappingUtils.reverse(mapping));
+					return Optional.ofNullable(conversion(map, MappingUtils.reverse(mapping)));
 				} catch (GenerateException e) {
 					return Optional.empty();
 				}
@@ -298,9 +298,9 @@ public class GenerateRpcRepository extends AbstractGenerateRepository implements
 	private List<Domain> conversions(List<Map> list, Map<String, String> mapping) throws GenerateException {
 		List<Domain> domains = new ArrayList<>();
 		for (Map<String, Object> map : list) {
-			Optional<Domain> optional = conversion(map, mapping);
-			if (optional.isPresent()) {
-				domains.add(optional.get());
+			Domain domain = conversion(map, mapping);
+			if (domain != null) {
+				domains.add(domain);
 			}
 		}
 		return domains;

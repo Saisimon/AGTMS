@@ -56,7 +56,12 @@
 		</dependency>
 		<dependency>
 			<groupId>cn.hutool</groupId>
-			<artifactId>hutool-all</artifactId>
+			<artifactId>hutool-core</artifactId>
+			<version>4.1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-cache</artifactId>
 			<version>4.1.4</version>
 		</dependency>
 	</dependencies>

@@ -19,7 +19,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
 
 /**
- * 模版实体对象
+ * 模板实体对象
  * 
  * @author saisimon
  *
@@ -41,62 +41,62 @@ public class Template implements Cloneable {
 	private Long navigationId;
 	
 	/**
-	 * 模版标题
+	 * 模板标题
 	 */
 	@Column(length=50, nullable=false)
 	private String title;
 	
 	/**
-	 * 模版支持的功能
+	 * 模板支持的功能
 	 */
 	@Column(columnDefinition="bigint(11)")
 	private Integer function;
 	
 	/**
-	 * 模版下属的列信息
+	 * 模板下属的列信息
 	 */
 	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
 	@JoinColumn(name="template_id")
 	private Set<TemplateColumn> columns;
 	
 	/**
-	 * 模版下属的列下一个下标
+	 * 模板下属的列下一个下标
 	 */
 	@Column(columnDefinition="bigint(11)")
 	private Integer columnIndex;
 	
 	/**
-	 * 模版创建时间
+	 * 模板创建时间
 	 */
 	@Column(columnDefinition="timestamp default current_timestamp")
 	private Date createTime;
 	
 	/**
-	 * 模版更新时间
+	 * 模板更新时间
 	 */
 	@Column(columnDefinition="timestamp default current_timestamp")
 	private Date updateTime;
 	
 	/**
-	 * 模版创建人员ID
+	 * 模板创建人员ID
 	 */
 	@Column(columnDefinition="bigint(15) not null")
 	private Long operatorId;
 	
 	/**
-	 * 模版数据来源
+	 * 模板数据来源
 	 */
 	@Column(length=50, nullable=false)
 	private String source;
 	
 	/**
-	 * 模版数据来源地址
+	 * 模板数据来源地址
 	 */
 	@Column(length=500)
 	private String sourceUrl;
 	
 	/**
-	 * 模版列实体对象
+	 * 模板列实体对象
 	 * 
 	 * @author saisimon
 	 *
@@ -145,7 +145,7 @@ public class Template implements Cloneable {
 	}
 	
 	/**
-	 * 模版列属性实体对象
+	 * 模板列属性实体对象
 	 * 
 	 * @author saisimon
 	 *

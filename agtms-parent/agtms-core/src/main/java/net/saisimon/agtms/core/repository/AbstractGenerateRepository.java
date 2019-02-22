@@ -3,12 +3,9 @@ package net.saisimon.agtms.core.repository;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -60,45 +57,30 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 		}
 	}
 	
-	public Optional<Domain> conversion(Map<String, Object> map) throws GenerateException {
+	public Domain conversion(Map<String, Object> map) throws GenerateException {
 		return conversion(map, null);
 	}
 	
-	public Optional<Domain> conversion(Map<String, Object> map, Map<String, String> mapping) throws GenerateException {
+	public Domain conversion(Map<String, Object> map, Map<String, String> mapping) throws GenerateException {
 		if (CollectionUtils.isEmpty(map)) {
-			return Optional.empty();
+			return null;
 		}
-		Object idObj = null;
 		Domain domain = newGenerate();
 		Field idField = ReflectionUtils.findField(domain.getClass(), Constant.ID);
-		if (idField != null) {
-			if (null != (idObj = map.get("_id"))) {
-				map.remove("_id");
-			} else if (null != (idObj = map.get(Constant.ID))) {
-				map.remove(Constant.ID);
-			} else {
-				return Optional.empty();
-			}
-			Class<?> idClass = idField.getType();
-			if (idClass == Long.class || idClass == long.class) {
-				domain.setField(Constant.ID, Long.valueOf(idObj.toString()), idClass);
-			} else if (idClass == String.class) {
-				domain.setField(Constant.ID, idObj.toString(), idClass);
-			} else {
-				domain.setField(Constant.ID, idObj, idClass);
-			}
-		} else {
-			return Optional.empty();
+		if (idField == null) {
+			return null;
 		}
+		Object idObj = map.remove("_id");
+		if (idObj == null) {
+			idObj = map.remove(Constant.ID);
+		}
+		if (idObj == null) {
+			return null;
+		}
+		domain.setField(Constant.ID, Long.valueOf(idObj.toString()), Long.class);
 		for (Entry<String, Object> entry : map.entrySet()) {
 			Object val = entry.getValue();
 			if (val != null) {
-				String[] keys = entry.getKey().split("\\.");
-				if (keys.length > 1) {
-					for (int i = 1; i < keys.length; i++) {
-						val = getValue(val, keys[i]);
-					}
-				}
 				String name = entry.getKey();
 				name = name.toLowerCase();
 				if (Constant.OPERATORID.equalsIgnoreCase(name)) {
@@ -125,34 +107,7 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 				}
 			}
 		}
-		return Optional.of(domain);
-	}
-	
-	@SuppressWarnings("unchecked")
-	private Object getValue(Object val, String key) {
-		if (val == null) {
-			return val;
-		}
-		if (val.getClass().isArray()) {
-			Object[] objs = (Object[]) val;
-			Object[] results = new Object[objs.length];
-			for (int i = 0; i < objs.length; i++) {
-				results[i] = getValue(objs[i], key);
-			}
-			return results;
-		} else if (val instanceof Map) {
-			Map<String, Object> map = (Map<String, Object>) val;
-			return map.get(key);
-		} else if (val instanceof List) {
-			List<Object> list = (List<Object>) val;
-			List<Object> results = new ArrayList<>();
-			for (Object obj : list) {
-				results.add(getValue(obj, key));
-			}
-			return results;
-		} else {
-			return val;
-		}
+		return domain;
 	}
 	
 }

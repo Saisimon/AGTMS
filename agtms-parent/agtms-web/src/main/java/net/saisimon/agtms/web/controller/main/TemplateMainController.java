@@ -52,7 +52,7 @@ import net.saisimon.agtms.web.dto.resp.TemplateInfo;
 import net.saisimon.agtms.web.selection.NavigationSelection;
 
 /**
- * 模版主控制器
+ * 模板主控制器
  * 
  * @author saisimon
  *
@@ -118,9 +118,7 @@ public class TemplateMainController extends MainController {
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		if (!templateService.removeTemplate(template)) {
-			return ErrorMessage.Common.SERVER_ERROR;
-		}
+		templateService.delete(id);
 		templateService.dropTable(template);
 		return ResultUtils.simpleSuccess();
 	}
@@ -135,7 +133,8 @@ public class TemplateMainController extends MainController {
 		TemplateService templateService = TemplateServiceFactory.get();
 		for (Long id : ids) {
 			Template template = templateService.getTemplate(id, userId);
-			if (template != null && templateService.removeTemplate(template)) {
+			if (template != null) {
+				templateService.delete(id);
 				templateService.dropTable(template);
 			}
 		}

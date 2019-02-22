@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,7 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.constant.FileConstant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Task;
 import net.saisimon.agtms.core.domain.Template;
@@ -68,7 +66,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
-		String path = FileConstant.IMPORT_PATH + File.separatorChar + param.getUserId();
+		String path = Constant.File.IMPORT_PATH + File.separatorChar + param.getUserId();
 		File file = new File(path + File.separator + param.getImportFileUUID() + "." + param.getImportFileType());
 		if (!file.exists()) {
 			return ErrorMessage.Task.IMPORT.TASK_IMPORT_FAILED;
@@ -112,28 +110,24 @@ public class ImportActuator implements Actuator<ImportParam> {
 				}
 			}
 			domain.setField(Constant.OPERATORID, template.getOperatorId(), Long.class);
-			Date time = new Date();
-			domain.setField(Constant.CREATETIME, time, Date.class);
-			domain.setField(Constant.UPDATETIME, time, Date.class);
 			if (missRequireds.size() > 0) {
 				resultData.add(getMessage("missing.required.field") + ": " + missRequireds.stream().collect(Collectors.joining(", ")));
 			} else if (generateService.checkExist(domain)) {
 				resultData.add(getMessage("domain.already.exists"));
-			} else if (!generateService.saveOrUpdate(domain)) {
-				resultData.add(getMessage("domain.save.failed"));
 			} else {
+				generateService.saveDomain(domain);
 				resultData.add(getMessage("success"));
 			}
 			resultDatas.add(resultData);
 		}
 		switch (param.getImportFileType()) {
-			case FileConstant.XLS:
+			case Constant.File.XLS:
 				file = FileUtils.toXLS(path, param.getImportFileUUID(), heads, resultDatas, null);
 				break;
-			case FileConstant.CSV:
+			case Constant.File.CSV:
 				file = FileUtils.toCSV(path, param.getImportFileUUID(), heads, resultDatas, ",");
 				break;
-			case FileConstant.XLSX:
+			case Constant.File.XLSX:
 				file = FileUtils.toXLSX(path, param.getImportFileUUID(), heads, resultDatas, null);
 				break;
 			default:
@@ -169,24 +163,24 @@ public class ImportActuator implements Actuator<ImportParam> {
 			return;
 		}
 		String userAgent = request.getHeader("user-agent");
-		String path = FileConstant.IMPORT_PATH + File.separatorChar + param.getUserId();
+		String path = Constant.File.IMPORT_PATH + File.separatorChar + param.getUserId();
 		File file = null;
 		String filename = param.getImportFileName();
 		switch (param.getImportFileType()) {
-			case FileConstant.XLS:
+			case Constant.File.XLS:
 				response.setContentType("application/vnd.ms-excel");
-				file = new File(path + File.separatorChar + param.getImportFileUUID() + FileConstant.XLS_SUFFIX);
-				filename += FileConstant.XLS_SUFFIX;
+				file = new File(path + File.separatorChar + param.getImportFileUUID() + Constant.File.XLS_SUFFIX);
+				filename += Constant.File.XLS_SUFFIX;
 				break;
-			case FileConstant.CSV:
+			case Constant.File.CSV:
 				response.setContentType("application/CSV");
-				file = new File(path + File.separatorChar + param.getImportFileUUID() + FileConstant.CSV_SUFFIX);
-				filename += FileConstant.CSV_SUFFIX;
+				file = new File(path + File.separatorChar + param.getImportFileUUID() + Constant.File.CSV_SUFFIX);
+				filename += Constant.File.CSV_SUFFIX;
 				break;
-			case FileConstant.XLSX:
+			case Constant.File.XLSX:
 				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				file = new File(path + File.separatorChar + param.getImportFileUUID() + FileConstant.XLSX_SUFFIX);
-				filename += FileConstant.XLSX_SUFFIX;
+				file = new File(path + File.separatorChar + param.getImportFileUUID() + Constant.File.XLSX_SUFFIX);
+				filename += Constant.File.XLSX_SUFFIX;
 				break;
 			default:
 				break;
@@ -211,7 +205,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 		List<List<String>> datas = new ArrayList<>();
 		try (FileInputStream in = new FileInputStream(file)) {
 			switch (fileType) {
-				case FileConstant.XLS:
+				case Constant.File.XLS:
 					Map<String, List<List<String>>> dataXLSMap = FileUtils.fromXLS(in);
 					for (List<List<String>> value : dataXLSMap.values()) {
 						if (value.size() > 1) {
@@ -222,11 +216,11 @@ public class ImportActuator implements Actuator<ImportParam> {
 						}
 					}
 					break;
-				case FileConstant.CSV:
+				case Constant.File.CSV:
 					List<List<String>> dataCSVList = FileUtils.fromCSV(in, ",");
 					datas.addAll(dataCSVList);
 					break;
-				case FileConstant.XLSX:
+				case Constant.File.XLSX:
 					Map<String, List<List<String>>> dataXLSXMap = FileUtils.fromXLSX(in);
 					for (List<List<String>> value : dataXLSXMap.values()) {
 						if (value.size() > 1) {

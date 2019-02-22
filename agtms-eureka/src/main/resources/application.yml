@@ -6,13 +6,13 @@ spring:
   security:
     user:
       name: agtms
-      password: agtms8000
+      password: agtms7890
   cloud:
     inetutils:
       ignored-interfaces[0]: eth0
 
 server:
-  port: 8000
+  port: 7890
 
 eureka:
   server:
@@ -25,4 +25,4 @@ eureka:
     registerWithEureka: false
     fetchRegistry: false
     serviceUrl:
-      defaultZone: http://eurekaserver:8000/eureka/
+      defaultZone: http://eurekaserver:7890/eureka/

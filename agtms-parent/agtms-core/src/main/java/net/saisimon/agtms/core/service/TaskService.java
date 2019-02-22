@@ -1,5 +1,7 @@
 package net.saisimon.agtms.core.service;
 
+import java.util.Optional;
+
 import org.springframework.core.Ordered;
 
 import net.saisimon.agtms.core.domain.Task;
@@ -12,6 +14,18 @@ import net.saisimon.agtms.core.domain.Task;
  */
 public interface TaskService extends BaseService<Task, Long>, Ordered {
 	
-	Task getTask(Long id, Long operatorId);
+	default Task getTask(Long id, Long operatorId) {
+		if (id == null || operatorId == null) {
+			return null;
+		}
+		Optional<Task> optional = findById(id);
+		if (optional.isPresent()) {
+			Task task = optional.get();
+			if (operatorId == task.getOperatorId()) {
+				return task;
+			}
+		}
+		return null;
+	}
 	
 }

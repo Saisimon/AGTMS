@@ -87,7 +87,7 @@ public class GenerateMongoRepository extends AbstractGenerateRepository {
 			query.with(sort.getSort());
 		}
 		try {
-			return conversion(mongoTemplate.findOne(query, Map.class, collectionName()));
+			return Optional.ofNullable(conversion(mongoTemplate.findOne(query, Map.class, collectionName())));
 		} catch (GenerateException e) {
 			log.error("find one error", e);
 			return Optional.empty();
@@ -97,7 +97,7 @@ public class GenerateMongoRepository extends AbstractGenerateRepository {
 	@SuppressWarnings("unchecked")
 	public Optional<Domain> findById(Long id) {
 		try {
-			return conversion(mongoTemplate.findById(id, Map.class, collectionName()));
+			return Optional.ofNullable(conversion(mongoTemplate.findById(id, Map.class, collectionName())));
 		} catch (GenerateException e) {
 			log.error("find by id error", e);
 			return Optional.empty();
@@ -179,9 +179,9 @@ public class GenerateMongoRepository extends AbstractGenerateRepository {
 	private List<Domain> conversions(List<Map> list) throws GenerateException {
 		List<Domain> domains = new ArrayList<>();
 		for (Map<String, Object> map : list) {
-			Optional<Domain> optional = conversion(map, null);
-			if (optional.isPresent()) {
-				domains.add(optional.get());
+			Domain domain = conversion(map, null);
+			if (domain != null) {
+				domains.add(domain);
 			}
 		}
 		return domains;

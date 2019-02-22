@@ -8,6 +8,4 @@ import net.saisimon.agtms.jpa.repository.base.BaseJpaRepository;
 @Repository
 public interface UserJpaRepository extends BaseJpaRepository<User, Long> {
 	
-	User findByLoginNameOrEmail(String loginName, String email);
-	
 }

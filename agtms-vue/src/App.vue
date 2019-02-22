@@ -15,6 +15,19 @@
             <transition name="switch-view" mode="out-in">
                 <router-view/>
             </transition>
+            <!-- 警告框 -->
+            <div class="modal d-block" v-if="alert.dismissCountDown" style="z-index: 9999">
+                <div class="modal-dialog modal-md modal-dialog-centered">
+                    <b-alert :variant="alert.variant"
+                        dismissible
+                        :show="alert.dismissCountDown"
+                        style="pointer-events: auto;"
+                        class="w-100"
+                        @dismissed="alert.dismissCountDown=0">
+                        {{ alert.text }}
+                    </b-alert>
+                </div>
+            </div>
         </div>
         <copy-right/>
     </div>
@@ -35,7 +48,10 @@ export default {
         },
         breadcrumbs: function() {
             return this.$store.state.base.breadcrumbs;
-        }
+        },
+        alert: function() {
+            return this.$store.state.base.alert;
+        },
     },
     created: function() {
         document.addEventListener('fullscreenchange', function() {

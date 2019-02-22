@@ -68,7 +68,7 @@ public class NavigationEditController extends EditController {
 				return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 			}
 			if (!body.getTitle().equals(oldNavigation.getTitle())) {
-				if (navigationService.existNavigation(body.getTitle(), userId)) {
+				if (navigationService.exists(body.getTitle(), userId)) {
 					return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
 				}
 			}
@@ -83,7 +83,7 @@ public class NavigationEditController extends EditController {
 			oldNavigation.setUpdateTime(new Date());
 			navigationService.saveOrUpdate(oldNavigation);
 		} else {
-			if (navigationService.existNavigation(body.getTitle(), userId)) {
+			if (navigationService.exists(body.getTitle(), userId)) {
 				return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
 			}
 			Map<Long, String> navigationMap = navigationSelection.selectWithParent(null);
