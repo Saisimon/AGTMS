@@ -20,7 +20,7 @@ import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
 /**
- * DDL 服务 （暂只支持 mysql 语法）
+ * DDL 服务
  * 
  * @author saisimon
  *

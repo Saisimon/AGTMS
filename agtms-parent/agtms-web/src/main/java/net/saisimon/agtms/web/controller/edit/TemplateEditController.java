@@ -79,7 +79,7 @@ public class TemplateEditController extends BaseController {
 		grid.setClassOptions(Select.buildOptions(classSelection.select()));
 		grid.setViewOptions(Select.buildOptions(viewSelection.select()));
 		grid.setWhetherOptions(Select.buildOptions(whetherSelection.select()));
-		Template template = getTemplate(id);
+		Template template = TemplateUtils.getTemplate(id, AuthUtils.getUserInfo().getUserId());
 		grid.setTable(buildTable(grid, template));
 		MultipleSelect<String> functionSelect = new MultipleSelect<>();
 		functionSelect.setOptions(Select.buildOptions(functionSelection.select()));
@@ -117,7 +117,7 @@ public class TemplateEditController extends BaseController {
 		long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
 		if (template.getId() != null) {
-			Template oldTemplate = templateService.getTemplate(template.getId(), userId);
+			Template oldTemplate = TemplateUtils.getTemplate(template.getId(), userId);
 			if (oldTemplate == null) {
 				return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 			}
@@ -127,6 +127,7 @@ public class TemplateEditController extends BaseController {
 			template.setOperatorId(oldTemplate.getOperatorId());
 			template.setUpdateTime(new Date());
 			if (!templateService.alterTable(template, oldTemplate)) {
+				TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 				return ErrorMessage.Template.TEMPLATE_MODIFY_FAILED;
 			}
 			templateService.saveOrUpdate(template);
@@ -147,15 +148,6 @@ public class TemplateEditController extends BaseController {
 			}
 		}
 		return ResultUtils.simpleSuccess();
-	}
-	
-	private Template getTemplate(Long id) {
-		if (id == null) {
-			return null;
-		}
-		long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		return templateService.getTemplate(id, userId);
 	}
 	
 	private Table buildTable(TemplateGrid grid, Template template) {

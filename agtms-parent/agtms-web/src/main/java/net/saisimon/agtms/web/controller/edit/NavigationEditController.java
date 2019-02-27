@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -54,6 +56,7 @@ public class NavigationEditController extends EditController {
 	}
 	
 	@Operate(type=OperateTypes.EDIT)
+	@Transactional
 	@PostMapping("/save")
 	public Result save(@Validated @RequestBody NavigationParam body, BindingResult result) {
 		if (result.hasErrors()) {

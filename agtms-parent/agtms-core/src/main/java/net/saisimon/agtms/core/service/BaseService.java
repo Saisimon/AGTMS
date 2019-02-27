@@ -130,7 +130,8 @@ public interface BaseService<T, ID> {
 		Assert.notNull(id, "id can not be null");
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
-		return repository.findById(id);
+		FilterRequest filter = FilterRequest.build().and("id", id);
+		return repository.findOne(filter, null);
 	}
 	
 	/**
@@ -143,7 +144,13 @@ public interface BaseService<T, ID> {
 		Assert.notNull(id, "id can not be null");
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
-		return repository.deleteEntity(id);
+		FilterRequest filter = FilterRequest.build().and("id", id);
+		Optional<T> optional = repository.findOne(filter, null);
+		if (optional.isPresent()) {
+			repository.delete(filter);
+			return optional.get();
+		}
+		return null;
 	}
 	
 	/**

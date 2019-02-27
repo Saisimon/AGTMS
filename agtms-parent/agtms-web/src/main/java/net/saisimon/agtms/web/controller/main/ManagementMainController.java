@@ -15,6 +15,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import javax.transaction.Transactional;
+
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -66,11 +68,9 @@ import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
-import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.TaskService;
-import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.DomainUtils;
@@ -92,7 +92,7 @@ import net.saisimon.agtms.web.selection.FileTypeSelection;
  *
  */
 @RestController
-@RequestMapping("/management/main/{mid}")
+@RequestMapping("/management/main/{key}")
 @ControllerInfo("management")
 @Slf4j
 public class ManagementMainController extends MainController {
@@ -103,15 +103,18 @@ public class ManagementMainController extends MainController {
 	private ExecutorService executorService;
 	
 	@PostMapping("/grid")
-	public Result grid(@PathVariable("mid") Long mid) {
-		return ResultUtils.simpleSuccess(getMainGrid(mid));
+	public Result grid(@PathVariable("key") String key) {
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		if (template == null) {
+			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
+		}
+		return ResultUtils.simpleSuccess(getMainGrid(template));
 	}
 	
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
-	public Result list(@PathVariable("mid") Long mid, @RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(mid, AuthUtils.getUserInfo().getUserId());
+	public Result list(@PathVariable("key") String key, @RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUserInfo().getUserId());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -119,17 +122,17 @@ public class ManagementMainController extends MainController {
 		FilterPageable pageable = FilterPageable.build(param);
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		Page<Domain> page = generateService.findPage(filter, pageable);
-		request.getSession().setAttribute(mid + "_filters", body);
-		request.getSession().setAttribute(mid + "_pageable", param);
+		request.getSession().setAttribute(key + "_filters", body);
+		request.getSession().setAttribute(key + "_pageable", param);
 		return ResultUtils.pageSuccess(page.getContent(), page.getTotalElements());
 	}
 	
 	@Operate(type=OperateTypes.REMOVE)
+	@Transactional
 	@PostMapping("/remove")
-	public Result remove(@PathVariable("mid") Long mid, @RequestParam(name = "id") Long id) {
+	public Result remove(@PathVariable("key") String key, @RequestParam(name = "id") Long id) {
 		long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(mid, userId);
+		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -142,19 +145,23 @@ public class ManagementMainController extends MainController {
 	}
 	
 	@PostMapping("/batch/grid")
-	public Result batchGrid(@PathVariable("mid") Long mid) {
-		return ResultUtils.simpleSuccess(getBatchGrid(mid));
+	public Result batchGrid(@PathVariable("key") String key) {
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		if (template == null) {
+			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
+		}
+		return ResultUtils.simpleSuccess(getBatchGrid(template));
 	}
 	
 	@Operate(type=OperateTypes.BATCH_EDIT)
+	@Transactional
 	@PostMapping("/batch/save")
-	public Result batchSave(@PathVariable("mid") Long mid, @RequestBody Map<String, Object> body) {
+	public Result batchSave(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
 		List<Integer> ids = SystemUtils.transformList(body.get("ids"), Integer.class);
 		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(mid, AuthUtils.getUserInfo().getUserId());
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUserInfo().getUserId());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -164,18 +171,18 @@ public class ManagementMainController extends MainController {
 		Map<String, Object> map = new HashMap<>();
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		for (Map.Entry<String, Object> entry : body.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			if (StringUtils.isEmpty(value)) {
+			String fieldName = entry.getKey();
+			Object fieldValue = entry.getValue();
+			if (StringUtils.isEmpty(fieldValue)) {
 				continue;
 			}
-			TemplateField field = fieldInfoMap.get(key);
+			TemplateField field = fieldInfoMap.get(fieldName);
 			if (field == null || field.getUniqued()) {
 				continue;
 			}
-			value = DomainUtils.parseFieldValue(value, field.getFieldType());
-			if (value != null) {
-				map.put(key, value);
+			fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
+			if (fieldValue != null) {
+				map.put(fieldName, fieldValue);
 			}
 		}
 		if (CollectionUtils.isEmpty(map)) {
@@ -195,11 +202,11 @@ public class ManagementMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.BATCH_REMOVE)
+	@Transactional
 	@PostMapping("/batch/remove")
-	public Result batchRemove(@PathVariable("mid") Long mid, @RequestBody List<Long> ids) {
+	public Result batchRemove(@PathVariable("key") String key, @RequestBody List<Long> ids) {
 		long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(mid, userId);
+		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -214,14 +221,14 @@ public class ManagementMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.EXPORT)
+	@Transactional
 	@PostMapping("/batch/export")
-	public Result batchExport(@PathVariable("mid") Long mid, @Validated @RequestBody ExportParam body, BindingResult bindingResult) {
+	public Result batchExport(@PathVariable("key") String key, @Validated @RequestBody ExportParam body, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(mid, userId);
+		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -237,7 +244,7 @@ public class ManagementMainController extends MainController {
 				return ErrorMessage.Task.EXPORT.TASK_XLS_FILE_MAX_SIZE_LIMIT;
 			}
 		}
-		body.setTemplateId(template.getId());
+		body.setTemplateId(template.sign());
 		body.setUserId(userId);
 		if (StringUtils.isBlank(body.getExportFileName())) {
 			body.setExportFileName(template.getTitle());
@@ -255,15 +262,15 @@ public class ManagementMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.IMPORT)
+	@Transactional
 	@PostMapping("/batch/import")
-	public Result batchImport(@PathVariable("mid") Long mid, 
+	public Result batchImport(@PathVariable("key") String key, 
 			@RequestParam(name="importFileName", required=false) String importFileName, 
 			@RequestParam("importFileType") String importFileType, 
 			@RequestParam("importFields") List<String> importFields, 
 			@RequestParam("importFile") MultipartFile importFile) {
 		long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(mid, userId);
+		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -295,7 +302,7 @@ public class ManagementMainController extends MainController {
 		body.setImportFileName(importFileName);
 		body.setImportFileType(importFileType);
 		body.setImportFileUUID(name);
-		body.setTemplateId(template.getId());
+		body.setTemplateId(template.sign());
 		body.setUserId(userId);
 		Task exportTask = new Task();
 		exportTask.setOperatorId(userId);
@@ -311,32 +318,35 @@ public class ManagementMainController extends MainController {
 	
 	@Override
 	protected Header header(Object key) {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, AuthUtils.getUserInfo().getUserId());
-		if (template == null) {
+		if (!(key instanceof Template)) {
 			return null;
 		}
-		Header header = Header.builder().title(template.getTitle()).editUrl("/template/edit?id=" + template.getId()).build();
+		Template template = (Template) key;
+		Header header = Header.builder().title(template.getTitle()).build();
+		if (template.getId() != null) {
+			header.setEditUrl("/template/edit?id=" + template.getId());
+		}
 		if (Functions.CREATE.getCode().equals(template.getFunction() & Functions.CREATE.getCode())) {
-			header.setCreateUrl("/management/edit/" + template.getId());
+			String sign = template.sign();
+			if (sign != null) {
+				header.setCreateUrl("/management/edit/" + sign);
+			}
 		}
 		return header;
 	}
 
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, userId);
-		if (template == null) {
+		if (!(key instanceof Template)) {
 			return null;
 		}
+		Template template = (Template) key;
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
 		breadcrumbs.add(Breadcrumb.builder().text(template.getTitle()).active(true).build());
 		Long nid = template.getNavigationId();
 		if (nid != null && nid != -1) {
 			NavigationService navigationService = NavigationServiceFactory.get();
-			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(userId);
+			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(AuthUtils.getUserInfo().getUserId());
 			do {
 				Navigation navigation = navigationMap.get(nid);
 				breadcrumbs.add(0, Breadcrumb.builder().text(navigation.getTitle()).to("/").build());
@@ -348,11 +358,10 @@ public class ManagementMainController extends MainController {
 
 	@Override
 	protected List<Filter> filters(Object key) {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, AuthUtils.getUserInfo().getUserId());
-		if (template == null) {
+		if (!(key instanceof Template)) {
 			return null;
 		}
+		Template template = (Template) key;
 		List<Filter> filters = new ArrayList<>();
 		for (TemplateColumn column : template.getColumns()) {
 			Filter filter = new Filter();
@@ -386,12 +395,11 @@ public class ManagementMainController extends MainController {
 	
 	@Override
 	protected List<Column> columns(Object key) {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, AuthUtils.getUserInfo().getUserId());
-		if (template == null) {
+		if (!(key instanceof Template)) {
 			return null;
 		}
-		List<Column> columns = buildColumns(template);
+		Template template = (Template) key;
+		List<Column> columns = buildColumns(template, false);
 		if (TemplateUtils.hasOneOfFunctions(template, Functions.EDIT, Functions.REMOVE)) {
 			columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		}
@@ -400,32 +408,45 @@ public class ManagementMainController extends MainController {
 
 	@Override
 	protected List<Action> actions(Object key) {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, AuthUtils.getUserInfo().getUserId());
-		if (template == null) {
+		if (!(key instanceof Template)) {
 			return null;
 		}
+		Template template = (Template) key;
+		String sign = template.sign();
 		List<Action> actions = new ArrayList<>();
 		if (TemplateUtils.hasFunction(template, Functions.EDIT)) {
-			actions.add(Action.builder().key("edit").to("/management/edit/" + key + "?id=").icon("edit").text(getMessage("edit")).type("link").build());
+			actions.add(Action.builder().key("edit").to("/management/edit/" + sign + "?id=").icon("edit").text(getMessage("edit")).type("link").build());
 		}
 		if (TemplateUtils.hasFunction(template, Functions.REMOVE)) {
-			actions.add(Action.builder().key("remove").to("/management/main/" + key + "/remove").icon("trash").text(getMessage("remove")).variant("outline-danger").type("modal").build());
+			actions.add(Action.builder().key("remove").to("/management/main/" + sign + "/remove").icon("trash").text(getMessage("remove")).variant("outline-danger").type("modal").build());
 		}
 		return actions;
 	}
 
 	@Override
 	protected List<String> functions(Object key) {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		if (!(key instanceof Template)) {
+			return null;
+		}
+		Template template = (Template) key;
 		return TemplateUtils.getFunctions(template);
 	}
 	
 	@Override
+	protected String sign(Object key) {
+		if (!(key instanceof Template)) {
+			return null;
+		}
+		Template template = (Template) key;
+		return template.sign();
+	}
+
+	@Override
 	protected BatchEdit batchEdit(Object key) {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		if (!(key instanceof Template)) {
+			return null;
+		}
+		Template template = (Template) key;
 		if (!TemplateUtils.hasFunction(template, Functions.BATCH_EDIT)) {
 			return null;
 		}
@@ -453,13 +474,15 @@ public class ManagementMainController extends MainController {
 
 	@Override
 	protected BatchExport batchExport(Object key) {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		if (!(key instanceof Template)) {
+			return null;
+		}
+		Template template = (Template) key;
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return null;
 		}
 		BatchExport batchExport = new BatchExport();
-		List<Column> columns = buildColumns(template);
+		List<Column> columns = buildColumns(template, true);
 		List<Option<String>> exportFieldOptions = new ArrayList<>(columns.size());
 		for (Column column : columns) {
 			exportFieldOptions.add(new Option<>(column.getField(), column.getLabel()));
@@ -472,13 +495,15 @@ public class ManagementMainController extends MainController {
 
 	@Override
 	protected BatchImport batchImport(Object key) {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		if (!(key instanceof Template)) {
+			return null;
+		}
+		Template template = (Template) key;
 		if (!TemplateUtils.hasFunction(template, Functions.IMPORT)) {
 			return null;
 		}
 		BatchImport batchImport = new BatchImport();
-		List<Column> columns = buildColumns(template);
+		List<Column> columns = buildColumns(template, true);
 		List<Option<String>> importFieldOptions = new ArrayList<>(columns.size());
 		for (Column column : columns) {
 			importFieldOptions.add(new Option<>(column.getField(), column.getLabel()));
@@ -491,11 +516,11 @@ public class ManagementMainController extends MainController {
 		return batchImport;
 	}
 	
-	private List<Column> buildColumns(Template template) {
+	private List<Column> buildColumns(Template template, boolean includeHidden) {
 		List<Column> columns = new ArrayList<>();
 		for (TemplateColumn templateColumn : template.getColumns()) {
 			for (TemplateField templateField : templateColumn.getFields()) {
-				if (templateField.getHidden()) {
+				if (!includeHidden && templateField.getHidden()) {
 					continue;
 				}
 				Column column = Column.builder().field(templateColumn.getColumnName() + templateField.getFieldName())

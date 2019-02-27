@@ -107,26 +107,31 @@ export default {
     },
     created: function() {
         if (this.$store.state.base.user !== '') {
+            var vm = this;
             this.$store.dispatch('getEditGrid', {
                 url: this.$route.path,
                 id: this.$route.query.id
             }).then(resp => {
-                var breadcrumbs = resp.data.data.breadcrumbs;
-                this.$store.commit('setBreadcrumbs', breadcrumbs);
-                if (breadcrumbs && breadcrumbs.length > 0) {
-                    for (var i = breadcrumbs.length - 1; i >= 0; i--) {
-                        if (breadcrumbs[i].to) {
-                            this.backUrl = breadcrumbs[i].to;
-                            break;
+                if (resp.data.code === 0) {
+                    var breadcrumbs = resp.data.data.breadcrumbs;
+                    vm.$store.commit('setBreadcrumbs', breadcrumbs);
+                    if (breadcrumbs && breadcrumbs.length > 0) {
+                        for (var i = breadcrumbs.length - 1; i >= 0; i--) {
+                            if (breadcrumbs[i].to) {
+                                vm.backUrl = breadcrumbs[i].to;
+                                break;
+                            }
                         }
                     }
+                    var fields = resp.data.data.fields;
+                    vm.$store.commit('setFields', fields);
+                    vm.resetFields = vm.cloneObject(fields);
                 }
-                var fields = resp.data.data.fields;
-                this.$store.commit('setFields', fields);
-                this.resetFields = this.cloneObject(fields);
+                vm.$store.commit('clearProgress');
             });
+        } else {
+            this.$store.commit('clearProgress');
         }
-        this.$store.commit('clearProgress');
     },
     methods: {
         reset: function() {

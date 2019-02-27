@@ -219,12 +219,23 @@ export default {
         this.$store.commit('initState');
         if (this.$store.state.base.user != null) {
             var vm = this;
-            this.$store.dispatch('getMainGrid', to.path).then(() => {
-                vm.$store.dispatch('getDatas', {
-                    url: to.path,
-                    filters: vm.searchFilters(),
-                    pageable: vm.searchPageable()
-                });
+            this.$store.dispatch('getMainGrid', to.path).then(resp => {
+                if (resp.data.code === 0) {
+                    vm.$store.commit('setFunctions', resp.data.data.functions);
+                    vm.$store.commit('setPageable', resp.data.data.pageable);
+                    vm.$store.commit('setShowFilters', resp.data.data.showFilters);
+                    vm.$store.commit('setFilters', resp.data.data.filters);
+                    vm.$store.commit('setHeader', resp.data.data.header);
+                    vm.$store.commit('setBreadcrumbs', resp.data.data.breadcrumbs);
+                    vm.$store.commit('setColumns', resp.data.data.columns);
+                    vm.$store.commit('setActions', resp.data.data.actions);
+                    vm.$store.dispatch('getDatas', {
+                        url: to.path,
+                        filters: vm.searchFilters(),
+                        pageable: vm.searchPageable()
+                    });
+                }
+                vm.$store.commit('clearProgress');
             });
         }
         next();
@@ -338,9 +349,26 @@ export default {
         var vm = this;
         this.$store.commit('initState');
         if (this.$store.state.base.user != null) {
-            this.$store.dispatch('getMainGrid', this.$route.path).then(() => {
-                vm.searchByFilters();
+            this.$store.dispatch('getMainGrid', this.$route.path).then(resp => {
+                if (resp.data.code === 0) {
+                    vm.$store.commit('setFunctions', resp.data.data.functions);
+                    vm.$store.commit('setPageable', resp.data.data.pageable);
+                    vm.$store.commit('setShowFilters', resp.data.data.showFilters);
+                    vm.$store.commit('setFilters', resp.data.data.filters);
+                    vm.$store.commit('setHeader', resp.data.data.header);
+                    vm.$store.commit('setBreadcrumbs', resp.data.data.breadcrumbs);
+                    vm.$store.commit('setColumns', resp.data.data.columns);
+                    vm.$store.commit('setActions', resp.data.data.actions);
+                    vm.searchByFilters();
+                } else {
+                    vm.$store.commit('showAlert', {
+                        message: resp.data.message
+                    });
+                }
+                vm.$store.commit('clearProgress');
             });
+        } else {
+            this.$store.commit('clearProgress');
         }
     },
     data: function() {
@@ -545,10 +573,10 @@ export default {
             var toText = fieldFilter.to.value;
             var filters = [];
             if (fromText && fromText !== '') {
-                var fromFilter = {};
                 if (fieldFilter.from.type === 'number') {
                     fromText = new Number(fromText);
                 }
+                var fromFilter = {};
                 fromFilter['key'] = fieldName;
                 fromFilter['type'] = fieldFilter.from.type;
                 fromFilter['operator'] = '$gte';
@@ -556,10 +584,10 @@ export default {
                 filters.push(fromFilter);
             }
             if (toText && toText !== '') {
-                var toFilter = {};
                 if (fieldFilter.to.type === 'number') {
                     toText = new Number(toText);
                 }
+                var toFilter = {};
                 toFilter['key'] = fieldName;
                 toFilter['type'] = fieldFilter.to.type;
                 toFilter['operator'] = '$lte';

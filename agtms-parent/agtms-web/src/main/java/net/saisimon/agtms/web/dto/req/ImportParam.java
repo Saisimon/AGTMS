@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class ImportParam {
 	
-	private Long templateId;
+	private Object templateId;
 	
 	private Long userId;
 	

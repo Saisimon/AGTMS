@@ -14,6 +14,7 @@ import static net.saisimon.agtms.core.constant.Constant.Operator.REGEX;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,7 +29,6 @@ import javax.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
 
-import cn.hutool.core.util.NumberUtil;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -114,7 +114,6 @@ public class JpaFilterUtils {
 		};
 	}
 	
-	@SuppressWarnings("unchecked")
 	private static <T> Predicate predicate(Root<T> root, CriteriaBuilder criteriaBuilder, FilterParam param) {
 		if (param == null) {
 			return null;
@@ -127,35 +126,43 @@ public class JpaFilterUtils {
 		value = DomainUtils.parseFieldValue(value, type);
 		switch (operator) {
 		case LT:
-			if (NumberUtil.isNumber(value.toString())) {
+			if (value instanceof Date) {
+				predicate = criteriaBuilder.lessThan(buildExpression(root, key), (Date) value);
+			} else if (value instanceof Number) {
 				predicate = criteriaBuilder.lt(buildExpression(root, key), (Number)value);
 			} else {
 				predicate = criteriaBuilder.lessThan(buildExpression(root, key), value.toString());
 			}
 			break;
 		case GT:
-			if (NumberUtil.isNumber(value.toString())) {
+			if (value instanceof Date) {
+				predicate = criteriaBuilder.greaterThan(buildExpression(root, key), (Date) value);
+			} else if (value instanceof Number) {
 				predicate = criteriaBuilder.gt(buildExpression(root, key), (Number)value);
 			} else {
 				predicate = criteriaBuilder.greaterThan(buildExpression(root, key), value.toString());
 			}
 			break;
 		case LTE:
-			if (NumberUtil.isNumber(value.toString())) {
+			if (value instanceof Date) {
+				predicate = criteriaBuilder.lessThanOrEqualTo(buildExpression(root, key), (Date) value);
+			} else if (value instanceof Number) {
 				predicate = criteriaBuilder.le(buildExpression(root, key), (Number)value);
 			} else {
 				predicate = criteriaBuilder.lessThanOrEqualTo(buildExpression(root, key), value.toString());
 			}
 			break;
 		case GTE:
-			if (NumberUtil.isNumber(value.toString())) {
+			if (value instanceof Date) {
+				predicate = criteriaBuilder.greaterThanOrEqualTo(buildExpression(root, key), (Date) value);
+			} else if (value instanceof Number) {
 				predicate = criteriaBuilder.ge(buildExpression(root, key), (Number)value);
 			} else {
 				predicate = criteriaBuilder.greaterThanOrEqualTo(buildExpression(root, key), value.toString());
 			}
 			break;
 		case REGEX:
-			predicate = criteriaBuilder.like((Expression<String>) buildExpression(root, key), "%" + value.toString() + "%");
+			predicate = criteriaBuilder.like(buildExpression(root, key), "%" + value.toString() + "%");
 			break;
 		case NE:
 			predicate = criteriaBuilder.notEqual(buildExpression(root, key), value);
@@ -189,11 +196,10 @@ public class JpaFilterUtils {
 		return predicate;
 	}
 	
-	@SuppressWarnings("rawtypes")
-	private static Expression buildExpression(Root root, String key) {
+	private static <Y, T> Expression<Y> buildExpression(Root<T> root, String key) {
 		String[] ks = key.split("\\.");
 		if (ks.length > 1) {
-			Join join = null;
+			Join<?, ?> join = null;
 			for (int i = 0; i < ks.length - 1; i++) {
 				join = root.join(ks[i]);
 			}

@@ -7,7 +7,7 @@
 
 	<parent>
 		<groupId>net.saisimon</groupId>
-		<artifactId>agtms</artifactId>
+		<artifactId>agtms-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
@@ -17,16 +17,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>net.saisimon</groupId>
-			<artifactId>agtms-api</artifactId>
-			<version>${agtms-api.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.saisimon</groupId>
-			<artifactId>agtms-core</artifactId>
-			<version>${agtms-core.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
@@ -35,9 +25,30 @@
 			<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>jcl-over-slf4j</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>javax.transaction</groupId>
+			<artifactId>javax.transaction-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.saisimon</groupId>
+			<artifactId>agtms-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.saisimon</groupId>
+			<artifactId>agtms-config</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-jpa</artifactId>
-			<version>${agtms-jpa.version}</version>
 		</dependency>
 		<!-- 
 		<dependency>
@@ -47,13 +58,11 @@
 		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-mongodb</artifactId>
-			<version>${agtms-mongodb.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.saisimon</groupId>
-			<artifactId>agtms-redis</artifactId>
-			<version>${agtms-redis.version}</version>
-		</dependency> 
+			<artifactId>agtms-remote</artifactId>
+		</dependency>
 		-->
 	</dependencies>
 

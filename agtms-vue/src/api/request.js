@@ -18,6 +18,11 @@ export default function request(user, reqUrl, payload) {
     }
     return new Promise((resolve, reject) => {
         axios(req).then(response => {
+            if (response.data.code !== 0) {
+                store.commit('showAlert', {
+                    message: response.data.message
+                });
+            }
             resolve(response);
         }).catch(error => {
             if (error.response) {
@@ -32,8 +37,12 @@ export default function request(user, reqUrl, payload) {
                         });
                     }
                 } else if (error.response.status === 500) {
+                    var message = 'Error';
+                    if (error.response.statusText) {
+                        message = error.response.statusText;
+                    }
                     store.commit('showAlert', {
-                        message: error.response.statusText
+                        message: message
                     });
                 }
             }

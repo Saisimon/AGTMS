@@ -50,11 +50,6 @@ public class SimpleBaseMongoRepository<T, ID extends Serializable> extends Simpl
 	}
 
 	@Override
-	public Boolean exists(final FilterRequest filter) {
-		return mongoOperations.exists(MongodbFilterUtils.query(filter), entityClass, collectionName);
-	}
-
-	@Override
 	public List<T> findList(final FilterRequest filter, FilterSort sort) {
 		Query query = MongodbFilterUtils.query(filter);
 		if (sort != null) {
@@ -94,17 +89,6 @@ public class SimpleBaseMongoRepository<T, ID extends Serializable> extends Simpl
 		return mongoOperations.remove(MongodbFilterUtils.query(filter), entityClass, collectionName).getDeletedCount();
 	}
 	
-	@Override
-	public T deleteEntity(ID id) {
-		Optional<T> optional = findById(id);
-		T entity = null;
-		if (optional.isPresent()) {
-			entity = optional.get();
-			mongoOperations.remove(entity, collectionName);
-		}
-		return entity;
-	}
-
 	@Override
 	public T saveOrUpdate(T entity) {
 		mongoOperations.save(entity, collectionName);

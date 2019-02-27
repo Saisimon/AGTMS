@@ -1,5 +1,7 @@
 package net.saisimon.agtms.web.controller.user;
 
+import javax.transaction.Transactional;
+
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,6 +42,7 @@ public class UserController {
 	 * @return 用户信息正确返回成功响应，否则返回失败原因响应
 	 */
 	@Operate(type=OperateTypes.LOGIN)
+	@Transactional
 	@PostMapping("/auth")
 	public Result auth(@Validated @RequestBody UserAuthParam param, BindingResult result) {
 		if (result.hasErrors()) {
@@ -64,6 +67,7 @@ public class UserController {
 	 * @return 注册结果响应
 	 */
 	@Operate(type=OperateTypes.REGISTER)
+	@Transactional
 	@PostMapping("/register")
 	public Result register(@Validated @RequestBody UserRegisterParam param, BindingResult result) {
 		if (result.hasErrors()) {

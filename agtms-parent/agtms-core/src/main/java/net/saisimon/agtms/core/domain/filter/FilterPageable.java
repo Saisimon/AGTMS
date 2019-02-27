@@ -97,12 +97,6 @@ public class FilterPageable implements Serializable {
 		return new FilterPageable(index, size, sort);
 	}
 	
-	public void mapping(Map<String, String> mapping) {
-		if (sort != null) {
-			sort.mapping(mapping);
-		}
-	}
-	
 	public Map<String, Object> toMap() {
 		Map<String, Object> pageableMap = new HashMap<>();
 		pageableMap.put(INDEX, index);

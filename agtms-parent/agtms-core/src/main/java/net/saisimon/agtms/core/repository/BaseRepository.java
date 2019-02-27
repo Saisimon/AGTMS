@@ -34,7 +34,10 @@ public interface BaseRepository<T, ID> {
 	 * @param filter 指定过滤条件
 	 * @return 存在返回 true， 否则返回 false
 	 */
-	Boolean exists(FilterRequest filter);
+	default Boolean exists(FilterRequest filter) {
+		Long count = count(filter);
+		return count == null ? null : count > 0;
+	}
 	
 	/**
 	 * 根据指定条件查询列表
@@ -90,22 +93,6 @@ public interface BaseRepository<T, ID> {
 	 * @return 删除数量
 	 */
 	Long delete(FilterRequest filter);
-	
-	/**
-	 * 根据实体 ID 查询实体对象
-	 * 
-	 * @param id 实体ID
-	 * @return 实体对象的 Optional 对象
-	 */
-	Optional<T> findById(ID id);
-	
-	/**
-	 * 删除指定 ID 的实体对象
-	 * 
-	 * @param id 实体ID
-	 * @return 被删除实体对象
-	 */
-	T deleteEntity(ID id);
 	
 	/**
 	 * 保存或更新指定实体对象

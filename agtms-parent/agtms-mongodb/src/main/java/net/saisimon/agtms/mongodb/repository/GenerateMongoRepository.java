@@ -94,27 +94,6 @@ public class GenerateMongoRepository extends AbstractGenerateRepository {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	public Optional<Domain> findById(Long id) {
-		try {
-			return Optional.ofNullable(conversion(mongoTemplate.findById(id, Map.class, collectionName())));
-		} catch (GenerateException e) {
-			log.error("find by id error", e);
-			return Optional.empty();
-		}
-	}
-	
-	@Override
-	public Domain deleteEntity(Long id) {
-		Optional<Domain> optional = findById(id);
-		Domain domain = null;
-		if (optional.isPresent()) {
-			domain = optional.get();
-			mongoTemplate.remove(domain, collectionName());
-		}
-		return domain;
-	}
-	
 	@Override
 	public Domain saveOrUpdate(Domain entity) {
 		mongoTemplate.save(entity, collectionName());
@@ -150,17 +129,6 @@ public class GenerateMongoRepository extends AbstractGenerateRepository {
 	}
 
 	@Override
-	public Boolean exists(FilterRequest filter) {
-		Query query = null;
-		if (filter != null) {
-			query = MongodbFilterUtils.query(filter);
-		} else {
-			query = new Query();
-		}
-		return mongoTemplate.exists(query, collectionName());
-	}
-
-	@Override
 	public Long delete(FilterRequest filter) {
 		Query query = null;
 		if (filter != null) {
@@ -179,7 +147,7 @@ public class GenerateMongoRepository extends AbstractGenerateRepository {
 	private List<Domain> conversions(List<Map> list) throws GenerateException {
 		List<Domain> domains = new ArrayList<>();
 		for (Map<String, Object> map : list) {
-			Domain domain = conversion(map, null);
+			Domain domain = conversion(map);
 			if (domain != null) {
 				domains.add(domain);
 			}

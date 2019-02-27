@@ -6,10 +6,14 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.util.CollectionUtils;
 
+import cn.hutool.core.util.NumberUtil;
+import net.saisimon.agtms.core.cache.Cache;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.Template;
@@ -17,12 +21,41 @@ import net.saisimon.agtms.core.domain.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.exception.GenerateException;
+import net.saisimon.agtms.core.factory.CacheFactory;
+import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.service.TemplateService;
 
 public class TemplateUtils {
 	
+	public static Map<String, Template> REMOTE_TEMPLATE_MAP = new ConcurrentHashMap<>();
+	
 	private TemplateUtils() {
 		throw new IllegalAccessError();
+	}
+	
+	public static Template getTemplate(Object id, Long operatorId) {
+		if (id == null || operatorId == null) {
+			return null;
+		}
+		if (!NumberUtil.isNumber(id.toString())) {
+			return REMOTE_TEMPLATE_MAP.get(id.toString());
+		}
+		String key = String.format(TemplateService.TEMPLATE_KEY, id);
+		Cache cache = CacheFactory.get();
+		Template template = cache.get(key, Template.class);
+		if (template == null) {
+			TemplateService templateService = TemplateServiceFactory.get();
+			Optional<Template> optional = templateService.findById(Long.valueOf(id.toString()));
+			if (optional.isPresent()) {
+				template = optional.get();
+				cache.set(key, template, TemplateService.TEMPLATE_TIMEOUT);
+			}
+		}
+		if (template != null && operatorId == template.getOperatorId()) {
+			return template;
+		}
+		return null;
 	}
 	
 	public static String getTableName(Template template) {
@@ -43,6 +76,23 @@ public class TemplateUtils {
 			}
 		}
 		return columnNames;
+	}
+	
+	public static Set<String> getFieldNames(Template template) {
+		Set<String> fieldNames = new HashSet<>();
+		fieldNames.add(Constant.ID);
+		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
+			return fieldNames;
+		}
+		for (TemplateColumn column : template.getColumns()) {
+			if (CollectionUtils.isEmpty(column.getFields())) {
+				continue;
+			}
+			for (TemplateField field : column.getFields()) {
+				fieldNames.add(column.getColumnName() + field.getFieldName());
+			}
+		}
+		return fieldNames;
 	}
 	
 	public static Map<String, TemplateField> getFieldInfoMap(Template template) {
@@ -122,10 +172,14 @@ public class TemplateUtils {
 	}
 	
 	public static Class<Domain> getDomainClass(Template template) throws GenerateException {
-		if (template == null || template.getId() == null) {
+		if (template == null) {
 			return null;
 		}
-		String generateClassName = DomainGenerater.buildGenerateName(template.getId());
+		String sign = template.sign();
+		if (sign == null) {
+			return null;
+		}
+		String generateClassName = DomainGenerater.buildGenerateName(sign);
 		return DomainGenerater.generate(template.getOperatorId().toString(), buildFieldMap(template), generateClassName, false);
 	}
 	
@@ -270,12 +324,4 @@ public class TemplateUtils {
 		return clazz;
 	}
 	
-	public static void main(String[] args) {
-		// 0000101
-		Integer functions = 14;
-		// 0001110
-		// 0001010
-		// 
-		System.out.println(functions & 10);
-	}
 }

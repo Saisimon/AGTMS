@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: EXAMPLE
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: ${spring.application.name}
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+  client:
+    serviceUrl:
+      defaultZone: http://agtms:agtms7890@eurekaserver:7890/eureka/
+
+ribbon:
+  eager-load:
+    enabled: true
+    
+server:
+  port: 7899
+  compression:
+    enabled: true

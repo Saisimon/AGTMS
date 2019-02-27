@@ -29,10 +29,8 @@ import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
-import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.NavigationService;
-import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -48,22 +46,21 @@ import net.saisimon.agtms.web.controller.base.EditController;
  *
  */
 @RestController
-@RequestMapping("/management/edit/{mid}")
+@RequestMapping("/management/edit/{key}")
 @ControllerInfo("management")
 public class ManagementEditController extends EditController {
 	
 	@PostMapping("/grid")
-	public Result grid(@PathVariable("mid") Long mid, @RequestParam(name = "id", required = false) Long id) {
-		return ResultUtils.simpleSuccess(getEditGrid(id, mid));
+	public Result grid(@PathVariable("key") String key, @RequestParam(name = "id", required = false) Long id) {
+		return ResultUtils.simpleSuccess(getEditGrid(id, key));
 	}
 	
 	@Operate(type=OperateTypes.EDIT)
 	@Transactional
 	@PostMapping("/save")
-	public Result save(@PathVariable("mid") Long mid, @RequestBody Map<String, Object> body) {
+	public Result save(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
 		Long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(mid, userId);
+		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -117,8 +114,7 @@ public class ManagementEditController extends EditController {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Long id, Object key) {
 		Long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, userId);
+		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return null;
 		}
@@ -145,8 +141,7 @@ public class ManagementEditController extends EditController {
 	@Override
 	protected List<Field<?>> fields(Long id, Object key) {
 		Long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(key, userId);
+		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return null;
 		}

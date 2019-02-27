@@ -8,6 +8,8 @@ public class ResultUtils {
 	
 	public static final int SUCCESS_CODE = 0;
 	public static final String SUCCESS_MESSAGE = "success";
+	public static final int ERROR_CODE = 500;
+	public static final String ERROR_MESSAGE = "error";
 
 	public static boolean isSuccess(Result result) {
 		return result != null && result.getCode() == SUCCESS_CODE;
@@ -34,6 +36,10 @@ public class ResultUtils {
 		}
 		pageResult.setTotal(total);
 		return pageResult;
+	}
+	
+	public static Result error() {
+		return error(ERROR_CODE, ERROR_MESSAGE);
 	}
 	
 	public static Result error(int code, String message, Object... messageArgs) {

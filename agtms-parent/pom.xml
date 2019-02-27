@@ -1,37 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>net.saisimon</groupId>
-	<artifactId>agtms</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
-
-	<name>agtms</name>
-	<url>https://www.saisimon.net</url>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<java.version>1.8</java.version>
-		<agtms-api.version>1.0.0-SNAPSHOT</agtms-api.version>
-		<agtms-core.version>1.0.0-SNAPSHOT</agtms-core.version>
-		<agtms-redis.version>1.0.0-SNAPSHOT</agtms-redis.version>
-		<agtms-jpa.version>1.0.0-SNAPSHOT</agtms-jpa.version>
-		<agtms-mongodb.version>1.0.0-SNAPSHOT</agtms-mongodb.version>
-		<agtms-rpc.version>1.0.0-SNAPSHOT</agtms-rpc.version>
-		<agtms-web.version>1.0.0-SNAPSHOT</agtms-web.version>
-		<spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
-	</properties>
-
+	
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.1.RELEASE</version>
+		<groupId>net.saisimon</groupId>
+		<artifactId>agtms</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
+
+	<artifactId>agtms-parent</artifactId>
+	<packaging>pom</packaging>
+	<name>agtms-parent</name>
 
 	<modules>
 		<module>agtms-api</module>
@@ -39,32 +22,8 @@
 		<module>agtms-redis</module>
 		<module>agtms-jpa</module>
 		<module>agtms-mongodb</module>
-		<module>agtms-rpc</module>
+		<module>agtms-remote</module>
+		<module>agtms-config</module>
 		<module>agtms-web</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
 </project>

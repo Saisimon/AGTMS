@@ -9,14 +9,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.springframework.util.CollectionUtils;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.saisimon.agtms.core.util.StringUtils;
 
 /**
  * 条件过滤对象
@@ -93,32 +91,31 @@ public class FilterRequest implements Serializable {
 		return new FilterRequest();
 	}
 	
-	public Map<String, Map<String, Object>> getParamMap() {
-		Map<String, Map<String, Object>> filterParamMap = new HashMap<>();
-		if (!CollectionUtils.isEmpty(andFilters)) {
-			for (FilterRequest filter : andFilters) {
-				if (filter.getClass() == FilterParam.class) {
-					FilterParam param = (FilterParam)filter;
-					Map<String, Object> operatorMap = filterParamMap.get(param.getKey());
-					if (operatorMap == null) {
-						operatorMap = new HashMap<>();
-						filterParamMap.put(param.getKey(), operatorMap);
-					}
-					operatorMap.put(param.getOperator(), param.getValue());
+	public Map<String, Object> toMap() {
+		Map<String, Object> filterMap = new HashMap<>();
+		if (andFilters != null) {
+			List<Map<String, Object>> andFilterList = new ArrayList<>();
+			for (FilterRequest filterRequest : andFilters) {
+				if (filterRequest instanceof FilterParam) {
+					andFilterList.add(((FilterParam) filterRequest).toMap());
 				} else {
-					Map<String, Map<String, Object>> paramMap = filter.getParamMap();
-					for (Entry<String, Map<String, Object>> entry : paramMap.entrySet()) {
-						Map<String, Object> map = filterParamMap.get(entry.getKey());
-						if (map == null) {
-							filterParamMap.put(entry.getKey(), entry.getValue());
-						} else {
-							map.putAll(entry.getValue());
-						}
-					}
+					andFilterList.add(filterRequest.toMap());
 				}
 			}
+			filterMap.put("andFilters", andFilterList);
 		}
-		return filterParamMap;
+		if (orFilters != null) {
+			List<Map<String, Object>> orFilterList = new ArrayList<>();
+			for (FilterRequest filterRequest : orFilters) {
+				if (filterRequest instanceof FilterParam) {
+					orFilterList.add(((FilterParam) filterRequest).toMap());
+				} else {
+					orFilterList.add(filterRequest.toMap());
+				}
+			}
+			filterMap.put("orFilters", orFilterList);
+		}
+		return filterMap;
 	}
 	
 	public static FilterRequest build(Map<String, Object> map, Set<String> filterFields) {
@@ -129,29 +126,6 @@ public class FilterRequest implements Serializable {
 			return filterRequest;
 		} else {
 			return null;
-		}
-	}
-	
-	public void mapping(Map<String, String> mapping) {
-		if (!CollectionUtils.isEmpty(mapping)) {
-			mapping(mapping, andFilters);
-			mapping(mapping, orFilters);
-		}
-	}
-	
-	private void mapping(Map<String, String> mapping, List<FilterRequest> filters) {
-		if (!CollectionUtils.isEmpty(filters)) {
-			for (FilterRequest filter : filters) {
-				if (filter.getClass() == FilterParam.class) {
-					FilterParam param = (FilterParam)filter;
-					String key = mapping.get(param.getKey());
-					if (StringUtils.isNotBlank(key)) {
-						param.setKey(key);
-					}
-				} else {
-					filter.mapping(mapping);
-				}
-			}
 		}
 	}
 	

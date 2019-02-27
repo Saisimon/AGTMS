@@ -14,6 +14,7 @@ import java.util.concurrent.Future;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -143,6 +144,7 @@ public class TaskMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.QUERY, value="download")
+	@Transactional
 	@GetMapping("/download")
 	public void download(@RequestParam(name = "id") Long id) {
 		try {
@@ -160,6 +162,7 @@ public class TaskMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.QUERY, value="cancel")
+	@Transactional
 	@PostMapping("/cancel")
 	public Result cancel(@RequestParam(name = "id") Long id) {
 		if (id < 0) {
@@ -176,6 +179,7 @@ public class TaskMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.REMOVE)
+	@Transactional
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
 		if (id < 0) {
@@ -192,6 +196,7 @@ public class TaskMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.BATCH_REMOVE)
+	@Transactional
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody List<Long> ids) {
 		if (ids.size() == 0) {

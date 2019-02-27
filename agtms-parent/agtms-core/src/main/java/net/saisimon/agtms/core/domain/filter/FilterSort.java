@@ -2,7 +2,6 @@ package net.saisimon.agtms.core.domain.filter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.util.CollectionUtils;
 
 import lombok.Getter;
 import net.saisimon.agtms.core.util.StringUtils;
@@ -89,20 +87,7 @@ public class FilterSort implements Serializable {
 		return filterSort;
 	}
 	
-	public void mapping(Map<String, String> mapping) {
-		if (!CollectionUtils.isEmpty(sortMap)) {
-			Map<String, String> map = new HashMap<>(sortMap.size());
-			for (Entry<String, String> entry : sortMap.entrySet()) {
-				String key = mapping.get(entry.getKey());
-				if (StringUtils.isBlank(key)) {
-					key = entry.getKey();
-				}
-				map.put(key, entry.getValue());
-			}
-			sortMap = map;
-		}
-	}
-	
+	@Override
 	public String toString() {
 		List<String> orders = new ArrayList<>();
 		for (Entry<String, String> entry : sortMap.entrySet()) {

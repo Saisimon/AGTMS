@@ -1,11 +1,14 @@
 package net.saisimon.agtms.mongodb.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
+import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.service.GenerateService;
@@ -40,4 +43,24 @@ public class GenerateMongoService implements GenerateService {
 		return GenerateService.super.saveDomain(domain);
 	}
 
+	@Override
+	public Domain findById(Long id, Long operatorId) {
+		if (id == null || operatorId == null) {
+			return null;
+		}
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		FilterRequest filter = FilterRequest.build().and("_id", id);
+		Optional<Domain> optional = repository.findOne(filter, null);
+		if (optional.isPresent()) {
+			Domain domain = optional.get();
+			Object obj = domain.getField(Constant.OPERATORID);
+			String creator = obj == null ? "" : obj.toString();
+			if (operatorId.toString().equals(creator)) {
+				return domain;
+			}
+		}
+		return null;
+	}
+	
 }

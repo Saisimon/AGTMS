@@ -33,7 +33,7 @@ public class SpringContext implements ApplicationContextAware {
 	public static ApplicationContext getApplicationContext() {
 		return context;
 	}
-
+	
 	/**
 	 * 获取指定名称的 Spring bean 对象
 	 * 

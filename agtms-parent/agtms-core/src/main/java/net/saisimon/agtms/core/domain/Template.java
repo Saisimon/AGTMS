@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -94,6 +95,9 @@ public class Template implements Cloneable {
 	 */
 	@Column(length=500)
 	private String sourceUrl;
+	
+	@Transient
+	private String key;
 	
 	/**
 	 * 模板列实体对象
@@ -236,6 +240,16 @@ public class Template implements Cloneable {
 		@Column(columnDefinition="bigint(11)")
 		private Integer ordered;
 
+	}
+	
+	public String sign() {
+		if (id != null) {
+			return id.toString();
+		}
+		if (sourceUrl != null && key != null) {
+			return sourceUrl + "-" + key;
+		}
+		return null;
 	}
 	
 }

@@ -132,23 +132,37 @@ public abstract class MainController extends BaseController {
 	 * @return 主要信息
 	 */
 	protected MainGrid getMainGrid(Object key) {
+		if (key == null) {
+			return null;
+		}
+		String sign = sign(key);
+		if (sign == null) {
+			return null;
+		}
 		MainGrid mainGrid = new MainGrid();
 		mainGrid.setHeader(header(key));
 		mainGrid.setBreadcrumbs(breadcrumbs(key));
 		List<Column> columns = columns(key);
-		previousSort(columns, key + "_pageable");
+		previousSort(columns, sign + "_pageable");
 		mainGrid.setColumns(columns);
 		List<Action> actions = actions(key);
 		mainGrid.setActions(actions);
 		List<Filter> filters = filters(key);
-		boolean showFilters = previousFilter(filters, key + "_filters");
+		boolean showFilters = previousFilter(filters, sign + "_filters");
 		mainGrid.setShowFilters(showFilters);
 		mainGrid.setFilters(internationFilters(filters));
 		Pageable pageable = pageable();
-		previousPageable(pageable, key + "_pageable");
+		previousPageable(pageable, sign + "_pageable");
 		mainGrid.setPageable(pageable);
 		mainGrid.setFunctions(functions(key));
 		return mainGrid;
+	}
+	
+	protected String sign(Object key) {
+		if (key == null) {
+			return null;
+		}
+		return key.toString();
 	}
 	
 	/**
@@ -158,6 +172,9 @@ public abstract class MainController extends BaseController {
 	 * @return 批量处理相关信息
 	 */
 	protected BatchGrid getBatchGrid(Object key) {
+		if (key == null) {
+			return null;
+		}
 		BatchGrid batchGrid = new BatchGrid();
 		BatchEdit batchEdit = batchEdit(key);
 		batchGrid.setBatchEdit(batchEdit);

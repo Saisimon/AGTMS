@@ -55,11 +55,6 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 
 	@Override
-	public Boolean exists(FilterRequest filter) {
-		return count(filter) > 0;
-	}
-
-	@Override
 	public List<Domain> findList(FilterRequest filter, FilterSort sort) {
 		Template template = template();
 		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
@@ -196,24 +191,6 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 
 	@Override
-	public Optional<Domain> findById(Long id) {
-		FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
-		return findOne(filter, null);
-	}
-
-	@Override
-	@Transactional
-	public Domain deleteEntity(Long id) {
-		Optional<Domain> optional = findById(id);
-		if (optional.isPresent()) {
-			FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
-			delete(filter);
-			return optional.get();
-		}
-		return null;
-	}
-
-	@Override
 	@Transactional
 	public Domain saveOrUpdate(Domain entity) {
 		Object id = entity.getField(Constant.ID);
@@ -339,7 +316,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	private List<Domain> conversions(List<Map<String, Object>> list) throws GenerateException {
 		List<Domain> domains = new ArrayList<>();
 		for (Map<String, Object> map : list) {
-			Domain domain = conversion(map, null);
+			Domain domain = conversion(map);
 			if (domain != null) {
 				domains.add(domain);
 			}

@@ -6,8 +6,8 @@
 export default {
     name: 'home',
     created: function() {
-        this.$store.commit('clearProgress');
         this.$store.commit('setBreadcrumbs', []);
+        this.$store.commit('clearProgress');
     }
 }
 </script>

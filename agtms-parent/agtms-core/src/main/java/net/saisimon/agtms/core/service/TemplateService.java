@@ -1,7 +1,6 @@
 package net.saisimon.agtms.core.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.core.Ordered;
 
@@ -38,26 +37,6 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		return findList(filter);
 	}
 	
-	default Template getTemplate(Object id, Long operatorId) {
-		if (id == null || operatorId == null) {
-			return null;
-		}
-		String key = String.format(TEMPLATE_KEY, id);
-		Cache cache = CacheFactory.get();
-		Template template = cache.get(key, Template.class);
-		if (template == null) {
-			Optional<Template> optional = findById(Long.valueOf(id.toString()));
-			if (optional.isPresent()) {
-				template = optional.get();
-				cache.set(key, template, TEMPLATE_TIMEOUT);
-			}
-		}
-		if (template != null && operatorId == template.getOperatorId()) {
-			return template;
-		}
-		return null;
-	}
-	
 	@Override
 	default Template delete(Long id) {
 		Template template = BaseService.super.delete(id);
@@ -65,7 +44,7 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 			Cache cache = CacheFactory.get();
 			cache.delete(String.format(TEMPLATE_KEY, id));
 			if (template.getOperatorId() != null) {
-				DomainGenerater.removeDomainClass(template.getOperatorId().toString(), DomainGenerater.buildGenerateName(template.getId()));
+				DomainGenerater.removeDomainClass(template.getOperatorId().toString(), DomainGenerater.buildGenerateName(id.toString()));
 			}
 		}
 		return template;

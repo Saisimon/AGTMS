@@ -61,7 +61,7 @@ router.beforeEach((to, from, next) => {
     const whiteList = ['/', '/signin', '/register'];
     if (whiteList.indexOf(to.path) === -1 && store.state.base.user == null) {
         next('/signin?reply=' + encodeURIComponent(to.path));
-    } else if (to.path === '/signin' && store.state.base.user != null) {
+    } else if ((to.path === '/signin' || to.path === '/register') && store.state.base.user != null) {
         if (to.query.reply && to.query.reply != '/') {
             next(decodeURIComponent(to.query.reply));
         } else {

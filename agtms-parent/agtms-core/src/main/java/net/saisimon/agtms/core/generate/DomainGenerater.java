@@ -47,9 +47,9 @@ public class DomainGenerater {
 	 * @param id
 	 * @return
 	 */
-	public static String buildGenerateName(Long id) {
-		Assert.notNull(id, "id can not be null");
-		return "Generate$" + id;
+	public static String buildGenerateName(String key) {
+		Assert.notNull(key, "key can not be null");
+		return "Generate$" + key;
 	}
 	
 	/**

@@ -38,11 +38,6 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 	}
 
 	@Override
-	public Boolean exists(final FilterRequest filter) {
-		return count(filter) > 0;
-	}
-
-	@Override
 	public List<T> findList(final FilterRequest filter, FilterSort sort) {
 		if (sort != null) {
 			return findAll(JpaFilterUtils.specification(filter), sort.getSort());
@@ -86,18 +81,6 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 		}
 	}
 	
-	@Transactional
-	@Override
-	public T deleteEntity(ID id) {
-		Optional<T> optional = findById(id);
-		T entity = null;
-		if (optional.isPresent()) {
-			entity = optional.get();
-			delete(entity);
-		}
-		return entity;
-	}
-
 	@Transactional
 	@Override
 	public T saveOrUpdate(T entity) {

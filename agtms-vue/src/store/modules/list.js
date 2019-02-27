@@ -165,23 +165,13 @@ const mutations = {
 
 const actions = {
     getMainGrid(context, url) {
-        return mainGrid(context.rootState.base.user, url).then(resp => {
-            context.commit('setFunctions', resp.data.data.functions);
-            context.commit('setPageable', resp.data.data.pageable);
-            context.commit('setShowFilters', resp.data.data.showFilters);
-            context.commit('setFilters', resp.data.data.filters);
-            context.commit('setHeader', resp.data.data.header);
-            context.commit('setBreadcrumbs', resp.data.data.breadcrumbs);
-            context.commit('setColumns', resp.data.data.columns);
-            context.commit('setActions', resp.data.data.actions);
-        });
+        return mainGrid(context.rootState.base.user, url);
     },
     getDatas(context, payload) {
         context.commit('setIsLoading', true);
         return list(context.rootState.base.user, payload).then(resp => {
             context.commit('setIsLoading', false);
             context.commit('setDatas', resp.data);
-            context.commit('clearProgress');
         });
     },
     requestUrl(context, url) {

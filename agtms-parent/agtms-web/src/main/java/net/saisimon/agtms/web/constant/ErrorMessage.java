@@ -12,9 +12,9 @@ import net.saisimon.agtms.core.util.ResultUtils;
 public class ErrorMessage {
 	
 	public static class Common {
-		public static final Result SERVER_ERROR = ResultUtils.error(500, "server.error");
-		public static final Result MISSING_REQUIRED_FIELD = ResultUtils.error(501, "missing.required.field");
-		public static final Result PARAM_ERROR = ResultUtils.error(502, "param.error");
+		public static final Result SERVER_ERROR = ResultUtils.error(501, "server.error");
+		public static final Result MISSING_REQUIRED_FIELD = ResultUtils.error(502, "missing.required.field");
+		public static final Result PARAM_ERROR = ResultUtils.error(503, "param.error");
 	}
 	
 	public static class User {

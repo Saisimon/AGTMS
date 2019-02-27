@@ -228,16 +228,21 @@ export default {
     name: 'template-edit',
     created: function() {
         if (this.$store.state.base.user != null) {
+            var vm = this;
             this.$store.dispatch('getTemplateGrid', this.$route.query.id).then(resp => {
-                var templateGrid = resp.data.data;
-                this.$store.commit('setTemplateGrid', templateGrid);
-                this.$store.commit('setBreadcrumbs', templateGrid.breadcrumbs);
-                this.$store.commit('setClassOptions', templateGrid.classOptions);
-                this.$store.commit('setViewOptions', templateGrid.viewOptions);
-                this.$store.commit('setWhetherOptions', templateGrid.whetherOptions);
-                this.resetTemplateGrid = this.cloneObject(templateGrid);
-                this.$store.commit('clearProgress');
+                if (resp.data.code === 0) {
+                    var templateGrid = resp.data.data;
+                    vm.$store.commit('setTemplateGrid', templateGrid);
+                    vm.$store.commit('setBreadcrumbs', templateGrid.breadcrumbs);
+                    vm.$store.commit('setClassOptions', templateGrid.classOptions);
+                    vm.$store.commit('setViewOptions', templateGrid.viewOptions);
+                    vm.$store.commit('setWhetherOptions', templateGrid.whetherOptions);
+                    vm.resetTemplateGrid = vm.cloneObject(templateGrid);
+                }
+                vm.$store.commit('clearProgress');
             });
+        } else {
+            this.$store.commit('clearProgress');
         }
     },
     components: {

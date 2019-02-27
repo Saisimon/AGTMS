@@ -6,14 +6,12 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 @SpringCloudApplication
 @EnableZuulProxy
-@Configuration
 @EnableFeignClients("net.saisimon.agtms.api")
 @ComponentScan(basePackages="net.saisimon.agtms")
 public class ZuulApplication {

@@ -3,6 +3,7 @@ package net.saisimon.agtms.core.domain.filter;
 import static net.saisimon.agtms.core.constant.Constant.Operator.EQ;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -81,6 +82,15 @@ public class FilterParam extends FilterRequest {
 			log.error("build filter param error", e);
 			return null;
 		}
+	}
+	
+	public Map<String, Object> toMap() {
+		Map<String, Object> filterMap = new HashMap<>();
+		filterMap.put("key", key);
+		filterMap.put("type", type);
+		filterMap.put("operator", operator);
+		filterMap.put("value", value);
+		return filterMap;
 	}
 	
 }

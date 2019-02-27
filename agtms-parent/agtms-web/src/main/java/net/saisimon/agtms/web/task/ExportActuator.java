@@ -28,9 +28,7 @@ import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
-import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.GenerateService;
-import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -52,8 +50,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 	
 	@Override
 	public Result execute(ExportParam param) throws Exception {
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(param.getTemplateId(), param.getUserId());
+		Template template = TemplateUtils.getTemplate(param.getTemplateId(), param.getUserId());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -133,8 +130,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(param.getTemplateId(), param.getUserId());
+		Template template = TemplateUtils.getTemplate(param.getTemplateId(), param.getUserId());
 		if (template == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;

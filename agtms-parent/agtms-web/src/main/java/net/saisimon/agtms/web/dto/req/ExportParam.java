@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class ExportParam {
 	
-	private Long templateId;
+	private Object templateId;
 	
 	private Long userId;
 	

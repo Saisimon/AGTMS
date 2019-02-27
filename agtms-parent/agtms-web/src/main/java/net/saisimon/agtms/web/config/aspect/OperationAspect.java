@@ -19,12 +19,11 @@ import net.saisimon.agtms.core.domain.Operation;
 import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.factory.OperationHandlerFactory;
 import net.saisimon.agtms.core.factory.OperationServiceFactory;
-import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.handler.DefaultOperationHandler;
 import net.saisimon.agtms.core.handler.OperationHandler;
 import net.saisimon.agtms.core.service.OperationService;
-import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
+import net.saisimon.agtms.core.util.TemplateUtils;
 
 /**
  * 操作记录切面
@@ -67,6 +66,9 @@ public class OperationAspect {
 					}
 				}
 				Operation operation = operationHandler.handle(info, operate, result);
+				if (operation == null || operation.getOperatorId() == null) {
+					return;
+				}
 				executorService.execute(() -> {
 					OperationService operationService = OperationServiceFactory.get();
 					operationService.saveOrUpdate(operation);
@@ -79,19 +81,7 @@ public class OperationAspect {
 		if (args == null || args.length == 0) {
 			return null;
 		}
-		Long mid = null;
-		for (Object arg : args) {
-			if (arg instanceof Long) {
-				mid = (Long) arg;
-				break;
-			}
-		}
-		if (mid == null) {
-			return null;
-		}
-		Long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(mid, userId);
+		Template template = TemplateUtils.getTemplate(args[0], AuthUtils.getUserInfo().getUserId());
 		if (template == null) {
 			return null;
 		}

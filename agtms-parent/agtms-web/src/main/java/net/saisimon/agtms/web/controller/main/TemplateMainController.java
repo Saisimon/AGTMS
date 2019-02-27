@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -110,20 +112,22 @@ public class TemplateMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.REMOVE)
+	@Transactional
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
 		Long userId = AuthUtils.getUserInfo().getUserId();
-		TemplateService templateService = TemplateServiceFactory.get();
-		Template template = templateService.getTemplate(id, userId);
+		Template template = TemplateUtils.getTemplate(id, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
+		TemplateService templateService = TemplateServiceFactory.get();
 		templateService.delete(id);
 		templateService.dropTable(template);
 		return ResultUtils.simpleSuccess();
 	}
 	
 	@Operate(type=OperateTypes.BATCH_REMOVE)
+	@Transactional
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody List<Long> ids) {
 		if (ids.size() == 0) {
@@ -132,7 +136,7 @@ public class TemplateMainController extends MainController {
 		Long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
 		for (Long id : ids) {
-			Template template = templateService.getTemplate(id, userId);
+			Template template = TemplateUtils.getTemplate(id, userId);
 			if (template != null) {
 				templateService.delete(id);
 				templateService.dropTable(template);
