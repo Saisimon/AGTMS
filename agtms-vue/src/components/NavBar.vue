@@ -51,6 +51,7 @@
                 </b-nav-item-dropdown>
                 <!-- 登录/退出 -->
                 <b-nav-item v-if="signIn" 
+                    href="javascript:void(0);"
                     @click.stop="signOut" 
                     class="nav-bar-item" 
                     :title="$t('sign_out')">

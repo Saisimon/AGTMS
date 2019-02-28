@@ -88,5 +88,6 @@ export default {
     total: '共',
     upload_file_max_size_limit: '请不要上传大于10M的文件',
     title_not_blank: '标题不能为空',
-    column_not_blank: '列不能为空'
+    column_not_blank: '列不能为空',
+    refresh: '刷新'
 }

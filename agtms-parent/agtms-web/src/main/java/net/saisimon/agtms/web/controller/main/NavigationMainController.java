@@ -338,7 +338,7 @@ public class NavigationMainController extends MainController {
 				recursiveRemove(n, userId);
 			}
 		}
-		navigationService.delete(id);
+		navigationService.delete(navigation);
 	}
 	
 	private List<NavigationTree> getChildNavs(List<Navigation> navigations, Long parentId) {

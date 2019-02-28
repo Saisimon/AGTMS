@@ -4,10 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import net.saisimon.agtms.core.domain.Navigation;
-import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.mongodb.order.MongodbOrder;
 import net.saisimon.agtms.mongodb.repository.NavigationMongodbRepository;
+import net.saisimon.agtms.mongodb.repository.base.BaseMongodbRepository;
 
 @Service
 public class NavigationMongodbService implements NavigationService, MongodbOrder {
@@ -18,7 +18,7 @@ public class NavigationMongodbService implements NavigationService, MongodbOrder
 	private SequenceService sequenceService;
 	
 	@Override
-	public BaseRepository<Navigation, Long> getRepository() {
+	public BaseMongodbRepository<Navigation, Long> getRepository() {
 		return navigationMongodbRepository;
 	}
 	

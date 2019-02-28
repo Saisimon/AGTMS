@@ -4,10 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import net.saisimon.agtms.core.domain.Operation;
-import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.OperationService;
 import net.saisimon.agtms.mongodb.order.MongodbOrder;
 import net.saisimon.agtms.mongodb.repository.OperationMongodbRepository;
+import net.saisimon.agtms.mongodb.repository.base.BaseMongodbRepository;
 
 @Service
 public class OperationMongodbService implements OperationService, MongodbOrder {
@@ -18,7 +18,7 @@ public class OperationMongodbService implements OperationService, MongodbOrder {
 	private SequenceService sequenceService;
 	
 	@Override
-	public BaseRepository<Operation, Long> getRepository() {
+	public BaseMongodbRepository<Operation, Long> getRepository() {
 		return operationMongodbRepository;
 	}
 	
@@ -28,7 +28,7 @@ public class OperationMongodbService implements OperationService, MongodbOrder {
 			Long id = sequenceService.nextId(operationMongodbRepository.getCollectionName());
 			entity.setId(id);
 		}
-		return OperationService.super.saveOrUpdate(entity);
+		return operationMongodbRepository.saveOrUpdate(entity);
 	}
 
 }

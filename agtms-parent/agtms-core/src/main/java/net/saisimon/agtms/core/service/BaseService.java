@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -130,8 +131,7 @@ public interface BaseService<T, ID> {
 		Assert.notNull(id, "id can not be null");
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
-		FilterRequest filter = FilterRequest.build().and("id", id);
-		return repository.findOne(filter, null);
+		return repository.findById(id);
 	}
 	
 	/**
@@ -140,17 +140,11 @@ public interface BaseService<T, ID> {
 	 * @param id 实体ID
 	 * @return 被删除实体对象
 	 */
-	default T delete(ID id) {
-		Assert.notNull(id, "id can not be null");
+	default void delete(T entity) {
+		Assert.notNull(entity, "entity can not be null");
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
-		FilterRequest filter = FilterRequest.build().and("id", id);
-		Optional<T> optional = repository.findOne(filter, null);
-		if (optional.isPresent()) {
-			repository.delete(filter);
-			return optional.get();
-		}
-		return null;
+		repository.delete(entity);
 	}
 	
 	/**
@@ -167,13 +161,31 @@ public interface BaseService<T, ID> {
 	}
 	
 	/**
+	 * 根据 ID 更新指定属性值
+	 * 
+	 * @param id 实体ID
+	 * @param updateMap 需要更新的属性
+	 */
+	default void update(ID id, Map<String, Object> updateMap) {
+		Assert.notNull(id, "id can not be null");
+		if (CollectionUtils.isEmpty(updateMap)) {
+			return;
+		}
+		BaseRepository<T, ID> repository = getRepository();
+		Assert.notNull(repository, "need repository");
+		repository.update(id, updateMap);
+	}
+	
+	/**
 	 * 根据指定过滤条件批量更新指定属性值
 	 * 
 	 * @param filter 指定过滤条件
 	 * @param updateMap 需要更新的属性
 	 */
 	default void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
-		Assert.notNull(updateMap, "update map can not be null");
+		if (CollectionUtils.isEmpty(updateMap)) {
+			return;
+		}
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
 		repository.batchUpdate(filter, updateMap);

@@ -88,5 +88,6 @@ export default {
     total: 'Total ',
     upload_file_max_size_limit: 'Please do not upload file larger than 10M',
     title_not_blank: 'Title can not be blank',
-    column_not_blank: 'Column can not be blank'
+    column_not_blank: 'Column can not be blank',
+    refresh: 'Refresh'
 }

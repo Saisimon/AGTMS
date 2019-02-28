@@ -25,7 +25,7 @@ public class TemplateMongodbService implements TemplateService, MongodbOrder {
 	public BaseRepository<Template, Long> getRepository() {
 		return templateMongodbRepository;
 	}
-
+	
 	@Override
 	public Template saveOrUpdate(Template entity) {
 		if (entity.getId() == null) {

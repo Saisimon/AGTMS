@@ -121,7 +121,7 @@ public class TemplateMainController extends MainController {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
 		TemplateService templateService = TemplateServiceFactory.get();
-		templateService.delete(id);
+		templateService.delete(template);
 		templateService.dropTable(template);
 		return ResultUtils.simpleSuccess();
 	}
@@ -138,7 +138,7 @@ public class TemplateMainController extends MainController {
 		for (Long id : ids) {
 			Template template = TemplateUtils.getTemplate(id, userId);
 			if (template != null) {
-				templateService.delete(id);
+				templateService.delete(template);
 				templateService.dropTable(template);
 			}
 		}

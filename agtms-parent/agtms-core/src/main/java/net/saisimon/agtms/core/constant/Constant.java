@@ -2,6 +2,7 @@ package net.saisimon.agtms.core.constant;
 
 public class Constant {
 	
+	public static final String MONGODBID = "_id";
 	public static final String ID = "id";
 	public static final String OPERATORID = "operatorId";
 	public static final String CREATETIME = "createTime";

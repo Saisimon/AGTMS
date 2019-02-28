@@ -18,7 +18,10 @@ public class DataSourceSelection extends AbstractSelection {
 		List<Sign> signs = GenerateServiceFactory.getSigns();
 		LinkedHashMap<String, String> dataSourceMap = new LinkedHashMap<>();
 		for (Sign sign : signs) {
-			dataSourceMap.put(sign.getName(), getMessage(sign.getText() == null ? sign.getName() : sign.getText()));
+			if (sign.getName().equals("remote")) {
+				continue;
+			}
+			dataSourceMap.put(sign.getName(), sign.getText() == null ? sign.getName() : sign.getText());
 		}
 		return dataSourceMap;
 	}

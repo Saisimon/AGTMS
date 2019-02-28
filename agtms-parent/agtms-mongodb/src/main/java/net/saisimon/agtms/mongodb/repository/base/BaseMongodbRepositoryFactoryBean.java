@@ -11,10 +11,10 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
-public class BaseMongoRepositoryFactoryBean<T extends MongoRepository<S, ID>, S, ID extends Serializable> 
+public class BaseMongodbRepositoryFactoryBean<T extends MongoRepository<S, ID>, S, ID extends Serializable> 
 	extends MongoRepositoryFactoryBean<T, S, ID> {
 
-	public BaseMongoRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
+	public BaseMongodbRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
 		super(repositoryInterface);
 	}
 
@@ -34,13 +34,13 @@ public class BaseMongoRepositoryFactoryBean<T extends MongoRepository<S, ID>, S,
 
 		@Override
 		protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
-			return SimpleBaseMongoRepository.class;
+			return SimpleBaseMongodbRepository.class;
 		}
 
 		@Override
 		protected Object getTargetRepository(RepositoryInformation information) {
 			MongoEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
-			return new SimpleBaseMongoRepository<>(entityInformation, mongoOperations);
+			return new SimpleBaseMongodbRepository<>(entityInformation, mongoOperations);
 		}
 		
 	}

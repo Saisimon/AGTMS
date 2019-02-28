@@ -63,6 +63,10 @@
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-remote</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.saisimon</groupId>
+			<artifactId>agtms-redis</artifactId>
+		</dependency> 
 		-->
 	</dependencies>
 

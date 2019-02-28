@@ -90,19 +90,13 @@ public interface GenerateService {
 		return repository.findPage(filter, pageable);
 	}
 	
-	default Domain delete(Long id) {
-		if (id == null) {
-			return null;
+	default void delete(Domain entity) {
+		if (entity == null) {
+			return;
 		}
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		FilterRequest filter = FilterRequest.build().and("id", id);
-		Optional<Domain> optional = repository.findOne(filter, null);
-		if (optional.isPresent()) {
-			repository.delete(filter);
-			return optional.get();
-		}
-		return null;
+		repository.delete(entity);
 	}
 	
 	default Domain findById(Long id, Long operatorId) {
@@ -111,8 +105,7 @@ public interface GenerateService {
 		}
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		FilterRequest filter = FilterRequest.build().and("id", id);
-		Optional<Domain> optional = repository.findOne(filter, null);
+		Optional<Domain> optional = repository.findById(id);
 		if (optional.isPresent()) {
 			Domain domain = optional.get();
 			Object obj = domain.getField(Constant.OPERATORID);
@@ -148,8 +141,7 @@ public interface GenerateService {
 		}
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
-		repository.batchUpdate(filter, updateMap);
+		repository.update(id, updateMap);
 	}
 	
 }

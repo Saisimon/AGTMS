@@ -56,7 +56,7 @@ public class Template implements Cloneable {
 	/**
 	 * 模板下属的列信息
 	 */
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+	@OneToMany(targetEntity=TemplateColumn.class, fetch=FetchType.EAGER, orphanRemoval=true, cascade=CascadeType.ALL)
 	@JoinColumn(name="template_id")
 	private Set<TemplateColumn> columns;
 	
@@ -130,7 +130,7 @@ public class Template implements Cloneable {
 		/**
 		 * 列下属的属性信息
 		 */
-		@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+		@OneToMany(targetEntity=TemplateField.class, fetch=FetchType.EAGER, orphanRemoval=true, cascade=CascadeType.ALL)
 		@JoinColumn(name="template_column_id")
 		private Set<TemplateField> fields;
 		
@@ -145,7 +145,7 @@ public class Template implements Cloneable {
 		 */
 		@Column(columnDefinition="bigint(11)")
 		private Integer fieldIndex;
-
+		
 	}
 	
 	/**
@@ -239,7 +239,7 @@ public class Template implements Cloneable {
 		 */
 		@Column(columnDefinition="bigint(11)")
 		private Integer ordered;
-
+		
 	}
 	
 	public String sign() {

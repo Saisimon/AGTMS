@@ -95,6 +95,15 @@
                                 <i class="fa fa-fw" :class="batch.icon"></i>
                             </b-button>
                         </template>
+                        <b-button
+                            :size="'sm'" 
+                            :variant="'outline-primary'" 
+                            @click="searchByFilters"
+                            v-b-tooltip.hover 
+                            :title="$t('refresh')"
+                            class="ml-1">
+                            <i class="fa fa-fw fa-refresh"></i>
+                        </b-button>
                     </b-col>
                 </b-row>
             </div>
@@ -360,10 +369,6 @@ export default {
                     vm.$store.commit('setColumns', resp.data.data.columns);
                     vm.$store.commit('setActions', resp.data.data.actions);
                     vm.searchByFilters();
-                } else {
-                    vm.$store.commit('showAlert', {
-                        message: resp.data.message
-                    });
                 }
                 vm.$store.commit('clearProgress');
             });

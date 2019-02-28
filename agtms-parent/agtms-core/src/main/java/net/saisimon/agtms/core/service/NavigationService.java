@@ -89,13 +89,10 @@ public interface NavigationService extends BaseService<Navigation, Long>, Ordere
 	}
 	
 	@Override
-	default Navigation delete(Long id) {
-		Navigation navigation = BaseService.super.delete(id);
-		if (navigation != null) {
-			Cache cache = CacheFactory.get();
-			cache.delete(String.format(NAVIGATION_KEY, id));
-		}
-		return navigation;
+	default void delete(Navigation entity) {
+		BaseService.super.delete(entity);
+		Cache cache = CacheFactory.get();
+		cache.delete(String.format(NAVIGATION_KEY, entity.getId()));
 	}
 	
 	@Override

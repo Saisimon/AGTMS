@@ -3,6 +3,7 @@ package net.saisimon.agtms.core.repository;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
 
@@ -91,9 +92,11 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 					value = ((Float) value).doubleValue();
 				} else if (field.getType().isAssignableFrom(Date.class)) {
 					if (value instanceof Long) {
-						value = new Date((Long) value);
+						value = new Timestamp((Long) value);
 					} else if (value instanceof String) {
-						value = DateUtil.parseDate(value.toString()).toJdkDate();
+						value = DateUtil.parseDate(value.toString()).toTimestamp();
+					} else if (value instanceof Date) {
+						value = new Timestamp(((Date) value).getTime());
 					}
 				}
 				try {

@@ -3,9 +3,9 @@ package net.saisimon.agtms.mongodb.repository;
 import org.springframework.stereotype.Repository;
 
 import net.saisimon.agtms.core.domain.Task;
-import net.saisimon.agtms.mongodb.repository.base.BaseMongoRepository;
+import net.saisimon.agtms.mongodb.repository.base.BaseMongodbRepository;
 
 @Repository
-public interface TaskMongodbRepository extends BaseMongoRepository<Task, Long> {
+public interface TaskMongodbRepository extends BaseMongodbRepository<Task, Long> {
 
 }

@@ -171,6 +171,20 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			return Optional.empty();
 		}
 	}
+	
+	@Override
+	public void delete(Domain entity) {
+		if (entity == null) {
+			return;
+		}
+		String sql = buildDeleteSql();
+		Object[] args = {entity.getField(Constant.ID)};
+		sql += " WHERE `id` = ?";
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
+		}
+		jdbcTemplate.update(sql, args);
+	}
 
 	@Override
 	@Transactional
@@ -323,5 +337,5 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		}
 		return domains;
 	}
-	
+
 }

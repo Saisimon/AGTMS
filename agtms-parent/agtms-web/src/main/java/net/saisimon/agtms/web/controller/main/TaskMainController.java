@@ -191,7 +191,8 @@ public class TaskMainController extends MainController {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
-		taskService.delete(id);
+		cancelTask(task);
+		taskService.delete(task);
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -207,7 +208,7 @@ public class TaskMainController extends MainController {
 		for (Long id : ids) {
 			Task task = taskService.getTask(id, userId);
 			if (task != null) {
-				taskService.delete(id);
+				taskService.delete(task);
 			}
 		}
 		return ResultUtils.simpleSuccess();
@@ -301,10 +302,10 @@ public class TaskMainController extends MainController {
 		if (task.getHandleStatus() != HandleStatuses.PROCESSING.getStatus()) {
 			return;
 		}
+		TaskService taskService = TaskServiceFactory.get();
 		Future<?> future = SystemUtils.removeTaskFuture(task.getId());
 		if (future != null && !future.isDone() && !future.isCancelled()) {
 			future.cancel(true);
-			TaskService taskService = TaskServiceFactory.get();
 			try {
 				future.get();
 			} catch (CancellationException e) {
@@ -319,6 +320,11 @@ public class TaskMainController extends MainController {
 				taskService.saveOrUpdate(task);
 				log.error("任务执行异常", e);
 			}
+		} else {
+			task.setHandleStatus(HandleStatuses.CANCEL.getStatus());
+			task.setHandleTime(new Date());
+			task.setHandleResult("manually.cancel.task");
+			taskService.saveOrUpdate(task);
 		}
 	}
 

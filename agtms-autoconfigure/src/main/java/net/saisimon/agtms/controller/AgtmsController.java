@@ -188,8 +188,26 @@ public class AgtmsController {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@PostMapping("/{key}/deleteEntity")
+	public void delete(@PathVariable("key") String key, @RequestParam(name="body") String body) {
+		if (StringUtils.isBlank(key)) {
+			return;
+		}
+		TemplateResolver templateResolver = templateScanner.getResolver(key);
+		if (templateResolver == null) {
+			return;
+		}
+		BaseRepository repository = applicationContext.getBean(templateResolver.getRepositoryClass());
+		if (repository == null) {
+			return;
+		}
+		Object entity = SystemUtils.fromJson(body, templateResolver.getEntityClass());
+		repository.delete(entity);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@PostMapping("/{key}/saveOrUpdate")
-	public Map<String, Object> saveOrUpdate(@PathVariable("key") String key, @RequestParam String body) {
+	public Map<String, Object> saveOrUpdate(@PathVariable("key") String key, @RequestParam(name="body") String body) {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}

@@ -103,6 +103,7 @@
             </div>
             <select-form :field="navigationField"></select-form>
             <select-form :field="functionField"></select-form>
+            <select-form :field="dataSourceField" v-show="dataSourceField.options.length > 1 && !this.$route.query.id"></select-form>
             <!-- 尾部 -->
             <b-row slot="footer">
                 <b-col class="text-right">
@@ -281,6 +282,11 @@ export default {
                     }
                 }
             }
+            var dataSourceSelect = templateGrid.dataSourceSelect;
+            if (dataSourceSelect) {
+                this.dataSourceField['options'] = dataSourceSelect.options;
+                this.dataSourceField['value'] = dataSourceSelect.selected;
+            }
             return templateGrid;
         },
         columns: function() {
@@ -382,6 +388,12 @@ export default {
                 name: 'navigationId',
                 text: this.$t('navigation'),
                 required: true,
+                options: [],
+                value: {}
+            },dataSourceField: {
+                name: 'source',
+                text: this.$t('datasource'),
+                required: false,
                 options: [],
                 value: {}
             }
@@ -512,7 +524,7 @@ export default {
                     } else if (view == 'icon') {
                         exampleValue = 'list'
                     } else if (view == 'link') {
-                        exampleValue = 'https://www.google.com'
+                        exampleValue = 'https://www.saisimon.net'
                     } else if (view == 'image') {
                         exampleValue = '/img/preview.jpg'
                     } else {
@@ -537,6 +549,7 @@ export default {
             }
             template['title'] = title;
             template['navigationId'] = this.navigationField.value.value;
+            template['source'] = this.dataSourceField.value.value;
             var functions = this.functionField.value;
             var func = new Number(0);
             for (var i = 0; i < functions.length; i++) {

@@ -11,7 +11,7 @@ import net.saisimon.agtms.remote.repository.GenerateRemoteRepository;
 @Service
 public class GenerateRemoteService implements GenerateService {
 	
-	private static final Sign REMOTE_SIGN = Sign.builder().name("remote").text("remote").build();
+	private static final Sign REMOTE_SIGN = Sign.builder().name("remote").text("REMOTE").build();
 	
 	@Autowired
 	private GenerateRemoteRepository generateRemoteRepository;

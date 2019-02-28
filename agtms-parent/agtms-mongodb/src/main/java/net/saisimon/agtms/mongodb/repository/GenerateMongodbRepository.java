@@ -27,7 +27,7 @@ import net.saisimon.agtms.mongodb.util.MongodbFilterUtils;
 
 @Repository
 @Slf4j
-public class GenerateMongoRepository extends AbstractGenerateRepository {
+public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	
 	@Autowired
 	private MongoTemplate mongoTemplate;
@@ -139,6 +139,11 @@ public class GenerateMongoRepository extends AbstractGenerateRepository {
 		return mongoTemplate.remove(query, collectionName()).getDeletedCount();
 	}
 	
+	@Override
+	public void delete(Domain entity) {
+		mongoTemplate.remove(entity, collectionName());
+	}
+	
 	private String collectionName() {
 		return TemplateUtils.getTableName(template());
 	}
@@ -154,5 +159,5 @@ public class GenerateMongoRepository extends AbstractGenerateRepository {
 		}
 		return domains;
 	}
-	
+
 }

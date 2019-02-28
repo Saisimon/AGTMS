@@ -38,16 +38,13 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 	}
 	
 	@Override
-	default Template delete(Long id) {
-		Template template = BaseService.super.delete(id);
-		if (template != null) {
-			Cache cache = CacheFactory.get();
-			cache.delete(String.format(TEMPLATE_KEY, id));
-			if (template.getOperatorId() != null) {
-				DomainGenerater.removeDomainClass(template.getOperatorId().toString(), DomainGenerater.buildGenerateName(id.toString()));
-			}
+	default void delete(Template entity) {
+		Cache cache = CacheFactory.get();
+		cache.delete(String.format(TEMPLATE_KEY, entity.getId()));
+		if (entity.getOperatorId() != null) {
+			DomainGenerater.removeDomainClass(entity.getOperatorId().toString(), DomainGenerater.buildGenerateName(entity.sign()));
 		}
-		return template;
+		BaseService.super.delete(entity);
 	}
 
 	default boolean createTable(Template template) {

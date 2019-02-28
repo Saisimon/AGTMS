@@ -140,7 +140,10 @@ public class ManagementMainController extends MainController {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		GenerateService generateService = GenerateServiceFactory.build(template);
-		generateService.delete(id);
+		Domain domain = generateService.findById(id, userId);
+		if (domain != null) {
+			generateService.delete(domain);
+		}
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -215,7 +218,11 @@ public class ManagementMainController extends MainController {
 		}
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		for (Long id : ids) {
-			generateService.delete(id);
+			Domain domain = generateService.findById(id, userId);
+			if (domain == null) {
+				continue;
+			}
+			generateService.delete(domain);
 		}
 		return ResultUtils.simpleSuccess();
 	}
@@ -235,7 +242,7 @@ public class ManagementMainController extends MainController {
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
-		if (body.getExportFileType() == Constant.File.XLS) {
+		if (Constant.File.XLS.equalsIgnoreCase(body.getExportFileType())) {
 			GenerateService generateService = GenerateServiceFactory.build(template);
 			FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
 			filter.and(Constant.OPERATORID, template.getOperatorId());
@@ -258,7 +265,9 @@ public class ManagementMainController extends MainController {
 		TaskService taskService = TaskServiceFactory.get();
 		exportTask = taskService.saveOrUpdate(exportTask);
 		submitTask(exportTask);
-		return ResultUtils.simpleSuccess();
+		Result result = ResultUtils.simpleSuccess();
+		result.setMessage(getMessage("export.task.created"));
+		return result;
 	}
 	
 	@Operate(type=OperateTypes.IMPORT)
@@ -313,7 +322,9 @@ public class ManagementMainController extends MainController {
 		TaskService taskService = TaskServiceFactory.get();
 		exportTask = taskService.saveOrUpdate(exportTask);
 		submitTask(exportTask);
-		return ResultUtils.simpleSuccess();
+		Result result = ResultUtils.simpleSuccess();
+		result.setMessage(getMessage("import.task.created"));
+		return result;
 	}
 	
 	@Override
@@ -562,16 +573,19 @@ public class ManagementMainController extends MainController {
 			return;
 		}
 		Future<?> future = executorService.submit(() -> {
+			FilterRequest filter = FilterRequest.build().and("id", task.getId());
 			TaskService taskService = TaskServiceFactory.get();
-			task.setHandleStatus(HandleStatuses.PROCESSING.getStatus());
-			taskService.saveOrUpdate(task);
+			Map<String, Object> updateMap = new HashMap<>();
+			updateMap.put("handleStatus", HandleStatuses.PROCESSING.getStatus());
+			taskService.batchUpdate(filter, updateMap);
 			try {
 				@SuppressWarnings("unchecked")
 				Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
 				if (actuator == null) {
-					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
-					task.setHandleTime(new Date());
-					taskService.saveOrUpdate(task);
+					updateMap.clear();
+					updateMap.put("handleStatus", HandleStatuses.PROCESSING.getStatus());
+					updateMap.put("handleTime", new Date());
+					taskService.batchUpdate(filter, updateMap);
 					return;
 				}
 				Class<P> paramClass = actuator.getParamClass();
@@ -583,24 +597,26 @@ public class ManagementMainController extends MainController {
 				if (Thread.currentThread().isInterrupted()) {
 					return;
 				}
-				task.setHandleTime(new Date());
+				updateMap.clear();
+				updateMap.put("handleTime", new Date());
 				if (ResultUtils.isSuccess(result)) {
-					task.setHandleStatus(HandleStatuses.SUCCESS.getStatus());
-					task.setHandleResult(result.getMessage());
-					task.setTaskParam(SystemUtils.toJson(param));
+					updateMap.put("handleStatus", HandleStatuses.SUCCESS.getStatus());
+					updateMap.put("handleResult", result.getMessage());
+					updateMap.put("taskParam", SystemUtils.toJson(param));
 				} else {
-					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+					updateMap.put("handleStatus", HandleStatuses.FAILURE.getStatus());
 					if (result != null) {
-						task.setHandleResult(result.getMessage());
+						updateMap.put("handleResult", result.getMessage());
 					}
 				}
-				taskService.saveOrUpdate(task);
+				taskService.batchUpdate(filter, updateMap);
 			} catch (InterruptedException e) {
 				log.warn("任务被中断");
 			} catch (Throwable e) {
-				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
-				task.setHandleTime(new Date());
-				taskService.saveOrUpdate(task);
+				updateMap.clear();
+				updateMap.put("handleStatus", HandleStatuses.FAILURE.getStatus());
+				updateMap.put("handleTime", new Date());
+				taskService.batchUpdate(filter, updateMap);
 				log.error("任务执行异常", e);
 			} finally {
 				SystemUtils.removeTaskFuture(task.getId());

@@ -20,6 +20,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.util.CollectionUtils;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.util.DomainUtils;
@@ -69,6 +70,9 @@ public class MongodbFilterUtils {
 		}
 		Criteria criteria = null;
 		String key = param.getKey();
+		if (Constant.ID.equalsIgnoreCase(key)) {
+			key = Constant.MONGODBID;
+		}
 		Object value = param.getValue();
 		String operator = param.getOperator();
 		String type = param.getType();

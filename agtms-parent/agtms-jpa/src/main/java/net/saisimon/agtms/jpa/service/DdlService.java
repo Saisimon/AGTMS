@@ -182,7 +182,7 @@ public class DdlService {
 		} else if (Classes.DOUBLE.getName().equals(field.getFieldType())) {
 			column = " DECIMAL(15,2)";
 		} else if (Classes.DATE.getName().equals(field.getFieldType())) {
-			column = " TIMESTAMP";
+			column = " DATE";
 		} else {
 			column = " VARCHAR(500)";
 		}
@@ -190,7 +190,7 @@ public class DdlService {
 			column += " NOT NULL";
 		}
 		if (Classes.DATE.getName().equals(field.getFieldType())) {
-			column += " DEFAULT CURRENT_TIMESTAMP";
+			column += " DEFAULT NULL";
 		} else if (StringUtils.isNotEmpty(field.getDefaultValue())) {
 			column += " DEFAULT '" + field.getDefaultValue() + "'";
 		}

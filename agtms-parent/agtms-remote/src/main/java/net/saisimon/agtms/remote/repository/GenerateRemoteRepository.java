@@ -26,11 +26,13 @@ import net.saisimon.agtms.core.domain.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
+import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
+import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.remote.service.ApiService;
 
 @Import(FeignClientsConfiguration.class)
@@ -144,11 +146,14 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			return Optional.empty();
 		}
 	}
-
+	
 	@Override
 	public Long delete(FilterRequest filter) {
 		Template template = template();
 		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+			return null;
+		}
+		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
@@ -158,7 +163,20 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		}
 		return apiService.delete(template.getKey(), filterMap);
 	}
-
+	
+	@Override
+	public void delete(Domain entity) {
+		Template template = template();
+		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+			return;
+		}
+		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
+			return;
+		}
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
+		apiService.deleteEntity(template.getKey(), SystemUtils.toJson(entity));
+	}
+	
 	@Override
 	public Domain saveOrUpdate(Domain entity) {
 		if (entity == null) {
@@ -166,6 +184,9 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		}
 		Template template = template();
 		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+			return null;
+		}
+		if (!TemplateUtils.hasOneOfFunctions(template, Functions.CREATE, Functions.EDIT, Functions.BATCH_EDIT)) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
@@ -185,6 +206,9 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		}
 		Template template = template();
 		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+			return;
+		}
+		if (!TemplateUtils.hasOneOfFunctions(template, Functions.BATCH_EDIT)) {
 			return;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
@@ -208,5 +232,5 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		}
 		return domains;
 	}
-	
+
 }

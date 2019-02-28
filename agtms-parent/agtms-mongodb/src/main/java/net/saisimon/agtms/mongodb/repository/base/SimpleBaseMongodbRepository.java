@@ -24,14 +24,14 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.mongodb.util.MongodbFilterUtils;
 
-public class SimpleBaseMongoRepository<T, ID extends Serializable> extends SimpleMongoRepository<T, ID> 
-	implements MongoRepository<T, ID>, BaseMongoRepository<T, ID> {
+public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends SimpleMongoRepository<T, ID> 
+	implements MongoRepository<T, ID>, BaseMongodbRepository<T, ID> {
 	
 	private MongoOperations mongoOperations;
 	private String collectionName;
 	private Class<T> entityClass;
 
-	public SimpleBaseMongoRepository(MongoEntityInformation<T, ID> entityInformation,
+	public SimpleBaseMongodbRepository(MongoEntityInformation<T, ID> entityInformation,
 			MongoOperations mongoOperations) {
 		super(entityInformation, mongoOperations);
 		this.mongoOperations = mongoOperations;
@@ -94,7 +94,7 @@ public class SimpleBaseMongoRepository<T, ID extends Serializable> extends Simpl
 		mongoOperations.save(entity, collectionName);
 		return entity;
 	}
-
+	
 	@Override
 	public void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
 		if (!CollectionUtils.isEmpty(updateMap)) {

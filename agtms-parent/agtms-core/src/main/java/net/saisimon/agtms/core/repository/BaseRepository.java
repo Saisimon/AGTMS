@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.util.CollectionUtils;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -87,6 +89,21 @@ public interface BaseRepository<T, ID> {
 	Optional<T> findOne(FilterRequest filter, FilterSort sort);
 	
 	/**
+	 * 根据 ID 查询实体记录
+	 * 
+	 * @param id 实体ID
+	 * @param sort 指定排序条件
+	 * @return 实体对象
+	 */
+	default Optional<T> findById(ID id) {
+		if (id == null) {
+			return Optional.empty();
+		}
+		FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
+		return findOne(filter, null);
+	}
+	
+	/**
 	 * 根据指定条件删除记录
 	 * 
 	 * @param filter 指定过滤条件
@@ -95,12 +112,33 @@ public interface BaseRepository<T, ID> {
 	Long delete(FilterRequest filter);
 	
 	/**
+	 * 删除指定实体记录
+	 * 
+	 * @param entity 实体对象
+	 */
+	void delete(T entity);
+	
+	/**
 	 * 保存或更新指定实体对象
 	 * 
 	 * @param entity 实体对象
 	 * @return 实体对象
 	 */
 	T saveOrUpdate(T entity);
+	
+	/**
+	 * 根据 ID 更新指定属性值
+	 * 
+	 * @param id 实体ID
+	 * @param updateMap 需要更新的属性
+	 */
+	default void update(ID id, Map<String, Object> updateMap) {
+		if (id == null || CollectionUtils.isEmpty(updateMap)) {
+			return;
+		}
+		FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
+		batchUpdate(filter, updateMap);
+	}
 	
 	/**
 	 * 根据指定过滤条件批量更新指定属性值
