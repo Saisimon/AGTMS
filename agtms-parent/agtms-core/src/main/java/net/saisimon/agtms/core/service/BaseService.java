@@ -131,7 +131,7 @@ public interface BaseService<T, ID> {
 		Assert.notNull(id, "id can not be null");
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
-		return repository.findById(id);
+		return repository.find(id);
 	}
 	
 	/**

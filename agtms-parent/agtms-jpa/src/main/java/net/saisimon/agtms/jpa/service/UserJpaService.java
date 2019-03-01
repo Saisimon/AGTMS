@@ -4,13 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import net.saisimon.agtms.core.domain.User;
-import net.saisimon.agtms.core.order.BaseOrder;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.UserService;
+import net.saisimon.agtms.jpa.order.JpaOrder;
 import net.saisimon.agtms.jpa.repository.UserJpaRepository;
 
 @Service
-public class UserJpaService implements UserService, BaseOrder {
+public class UserJpaService implements UserService, JpaOrder {
 	
 	@Autowired
 	private UserJpaRepository userJpaRepository;

@@ -105,7 +105,7 @@ public interface GenerateService {
 		}
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		Optional<Domain> optional = repository.findById(id);
+		Optional<Domain> optional = repository.find(id);
 		if (optional.isPresent()) {
 			Domain domain = optional.get();
 			Object obj = domain.getField(Constant.OPERATORID);

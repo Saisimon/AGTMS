@@ -83,6 +83,11 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 		}
 		return Optional.ofNullable(mongoOperations.findOne(query, entityClass, collectionName));
 	}
+	
+	@Override
+	public Optional<T> find(ID id) {
+		return findById(id);
+	}
 
 	@Override
 	public Long delete(final FilterRequest filter) {

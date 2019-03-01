@@ -4,13 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import net.saisimon.agtms.core.domain.Template;
-import net.saisimon.agtms.core.order.BaseOrder;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.TemplateService;
+import net.saisimon.agtms.jpa.order.JpaOrder;
 import net.saisimon.agtms.jpa.repository.TemplateJapRepository;
 
 @Service
-public class TemplateJpaService implements TemplateService, BaseOrder {
+public class TemplateJpaService implements TemplateService, JpaOrder {
 	
 	@Autowired
 	private TemplateJapRepository templateJpaRepository;

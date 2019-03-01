@@ -95,7 +95,7 @@ public interface BaseRepository<T, ID> {
 	 * @param sort 指定排序条件
 	 * @return 实体对象
 	 */
-	default Optional<T> findById(ID id) {
+	default Optional<T> find(ID id) {
 		if (id == null) {
 			return Optional.empty();
 		}

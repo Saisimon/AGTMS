@@ -5,6 +5,10 @@ mkdir -p data/logs
 
 # Maven 打包
 bash mvnw clean package
+if [ $? -gt 0 ]; then
+    echo "maven 构建失败."
+    exit
+fi
 
 # 启动 agtms-eureka
 if [ -f data/eureka.pid ]; then
@@ -44,14 +48,7 @@ echo "agtms-zuul 已启动."
 
 # # 启动 agtms-vue
 cd agtms-vue
-if [ -f ../data/vue.pid ]; then
-    kill -9 `cat ../data/vue.pid`
-    rm ../data/vue.pid
-    echo "agtms-vue 已停止."
-fi
 echo "agtms-vue 启动中..."
 npm install
-npm run serve > ../data/logs/vue.log 2>&1 &
-echo $! > ../data/vue.pid
-echo "agtms-vue 已启动."
+npm run serve
 cd ../

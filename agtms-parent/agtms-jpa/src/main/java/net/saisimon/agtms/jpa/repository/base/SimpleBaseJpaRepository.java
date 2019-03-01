@@ -68,6 +68,11 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 			return Optional.empty();
 		}
 	}
+	
+	@Override
+	public Optional<T> find(ID id) {
+		return findById(id);
+	}
 
 	@Transactional
 	@Override
