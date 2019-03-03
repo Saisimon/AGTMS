@@ -46,7 +46,7 @@ echo "agtms-zuul 启动中..."
 sleep 10
 echo "agtms-zuul 已启动."
 
-# # 启动 agtms-vue
+# 启动 agtms-vue
 cd agtms-vue
 echo "agtms-vue 启动中..."
 npm install

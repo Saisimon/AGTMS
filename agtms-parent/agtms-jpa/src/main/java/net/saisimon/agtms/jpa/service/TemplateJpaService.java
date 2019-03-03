@@ -8,6 +8,7 @@ import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.jpa.order.JpaOrder;
 import net.saisimon.agtms.jpa.repository.TemplateJapRepository;
+import net.saisimon.agtms.jpa.service.ddl.DdlService;
 
 @Service
 public class TemplateJpaService implements TemplateService, JpaOrder {

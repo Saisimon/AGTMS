@@ -1,4 +1,4 @@
-package net.saisimon.agtms.jpa.service;
+package net.saisimon.agtms.jpa.service.ddl;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +9,6 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
@@ -19,24 +18,13 @@ import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
-/**
- * DDL 服务
- * 
- * @author saisimon
- *
- */
-@Service
 @Slf4j
-public class DdlService {
-	
+public class DefaultDdlService implements DdlService {
+
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-	
-	/**
-	 * 根据模板创建表结构
-	 * 
-	 * @param template 模板对象
-	 */
+
+	@Override
 	public boolean createTable(Template template) {
 		try {
 			String sql = buildCreateSql(template);
@@ -50,13 +38,8 @@ public class DdlService {
 			return false;
 		}
 	}
-	
-	/**
-	 * 根据模板的变化修改表结构
-	 * 
-	 * @param template 新模板对象
-	 * @param oldTemplate 老模板对象
-	 */
+
+	@Override
 	public boolean alterTable(Template template, Template oldTemplate) {
 		Map<String, String> rollbackMap = new HashMap<>();
 		Set<String> sqlSet = new HashSet<>();
@@ -121,12 +104,8 @@ public class DdlService {
 			return false;
 		}
 	}
-	
-	/**
-	 * 根据模板删除表结构
-	 * 
-	 * @param template 模板对象
-	 */
+
+	@Override
 	public boolean dropTable(Template template) {
 		try {
 			String sql = buildDropSql(template);
@@ -140,19 +119,19 @@ public class DdlService {
 			return false;
 		}
 	}
-	
+
 	private String buildAlterModifySql(String tableName, String name, TemplateField field) {
-		return "ALTER TABLE " + tableName + " MODIFY COLUMN " + name + columnType(field)  + ";";
+		return "ALTER TABLE " + tableName + " MODIFY COLUMN " + name + columnType(field) + ";";
 	}
-	
+
 	private String buildAlterAddSql(String tableName, String name, TemplateField field) {
-		return "ALTER TABLE " + tableName + " ADD COLUMN " + name + columnType(field)  + ";";
+		return "ALTER TABLE " + tableName + " ADD COLUMN " + name + columnType(field) + ";";
 	}
-	
+
 	private String buildAlterDropSql(String tableName, String name) {
 		return "ALTER TABLE " + tableName + " DROP COLUMN " + name + ";";
 	}
-	
+
 	private String buildDropSql(Template template) {
 		return "DROP TABLE IF EXISTS " + TemplateUtils.getTableName(template);
 	}
@@ -174,7 +153,7 @@ public class DdlService {
 		sql += ") DEFAULT CHARSET=utf8";
 		return sql;
 	}
-	
+
 	private String columnType(TemplateField field) {
 		String column = "";
 		if (Classes.LONG.getName().equals(field.getFieldType())) {
@@ -196,5 +175,5 @@ public class DdlService {
 		}
 		return column;
 	}
-	
+
 }

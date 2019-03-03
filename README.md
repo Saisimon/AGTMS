@@ -20,12 +20,14 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 ├── agtms-vue           前端页面 (默认端口：8080)
 ├── agtms-zuul          Zuul 网关服务 (默认端口：7891)
 ├── README.md           README 文件
+├── start.cmd           一键启动脚本 (Windows)
 └── start               一键启动脚本 (Unix)
 ```
 
 ## 要求
 1. [JRE(JDK) 8+](https://www.java.com)
 2. [Node.js](https://nodejs.org/)
+3. RAM 4G+
 
 ## 最小安装并启动
 > 默认使用 H2 内存数据库，每次重启数据会重制。要想保存数据，请自行配置数据库连接
