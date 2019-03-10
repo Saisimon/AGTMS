@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.core.Ordered;
 
 import net.saisimon.agtms.core.cache.Cache;
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.factory.CacheFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
@@ -27,6 +27,14 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		}
 		FilterRequest filter = FilterRequest.build().and("title", title).and("operatorId", operatorId);
 		return count(filter) > 0;
+	}
+	
+	default List<Template> getTemplates(Long operatorId) {
+		if (operatorId == null) {
+			return null;
+		}
+		FilterRequest filter = FilterRequest.build().and("operatorId", operatorId);
+		return findList(filter);
 	}
 	
 	default List<Template> getTemplates(Long navigationId, Long operatorId) {

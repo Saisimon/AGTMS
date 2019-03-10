@@ -41,6 +41,12 @@
 		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-api</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-webflux</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>net.saisimon</groupId>
@@ -66,7 +72,7 @@
 		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-redis</artifactId>
-		</dependency> 
+		</dependency>
 		-->
 	</dependencies>
 

@@ -5,18 +5,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -33,7 +37,7 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	private MongoTemplate mongoTemplate;
 	
 	@Override
-	public List<Domain> findList(FilterRequest filter, FilterSort sort) {
+	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
 		Query query = null;
 		if (filter != null) {
 			query = MongodbFilterUtils.query(filter);
@@ -43,8 +47,12 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 		if (sort != null) {
 			query.with(sort.getSort());
 		}
+		Template template = template();
+		Document fields = getFieldMap(template, properties);
+		BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), fields);
+		basicQuery.setSortObject(query.getSortObject());
 		try {
-			return conversions(mongoTemplate.find(query, Map.class, collectionName()));
+			return conversions(mongoTemplate.find(basicQuery, Map.class, collectionName(template)));
 		} catch (GenerateException e) {
 			log.error("find list error", e);
 			return new ArrayList<>(0);
@@ -52,31 +60,60 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	}
 	
 	@Override
-	public Page<Domain> findPage(FilterRequest filter, FilterPageable filterPageable) {
+	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
 		Query query = null;
 		if (filter != null) {
 			query = MongodbFilterUtils.query(filter);
 		} else {
 			query = new Query();
 		}
-		long total = mongoTemplate.count(query, collectionName());
-		if (filterPageable == null) {
-			filterPageable = FilterPageable.build(null);
+		if (pageable != null) {
+			Pageable springPageable = pageable.getPageable();
+			query.with(springPageable);
 		}
-		Pageable pageable = filterPageable.getPageable();
-		query.with(pageable);
+		Template template = template();
+		Document fields = getFieldMap(template, properties);
+		BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), fields);
+		basicQuery.setSortObject(query.getSortObject());
 		try {
-			List<Domain> domains = conversions(mongoTemplate.find(query, Map.class, collectionName()));
-			return new PageImpl<>(domains, pageable, total);
+			return conversions(mongoTemplate.find(basicQuery, Map.class, collectionName(template)));
+		} catch (GenerateException e) {
+			log.error("find list error", e);
+			return new ArrayList<>(0);
+		}
+	}
+	
+	@Override
+	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
+		Query query = null;
+		if (filter != null) {
+			query = MongodbFilterUtils.query(filter);
+		} else {
+			query = new Query();
+		}
+		Template template = template();
+		String collectionName = collectionName(template);
+		long total = mongoTemplate.count(query, collectionName);
+		if (pageable == null) {
+			pageable = FilterPageable.build(null);
+		}
+		Pageable springPageable = pageable.getPageable();
+		query.with(springPageable);
+		Document fields = getFieldMap(template, properties);
+		BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), fields);
+		basicQuery.setSortObject(query.getSortObject());
+		try {
+			List<Domain> domains = conversions(mongoTemplate.find(basicQuery, Map.class, collectionName));
+			return new PageImpl<>(domains, springPageable, total);
 		} catch (GenerateException e) {
 			log.error("find page error", e);
-			return new PageImpl<>(new ArrayList<>(0), pageable, 0L);
+			return new PageImpl<>(new ArrayList<>(0), springPageable, 0L);
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort) {
+	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
 		Query query = null;
 		if (filter != null) {
 			query = MongodbFilterUtils.query(filter);
@@ -86,8 +123,12 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 		if (sort != null) {
 			query.with(sort.getSort());
 		}
+		Template template = template();
+		Document fields = getFieldMap(template, properties);
+		BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), fields);
+		basicQuery.setSortObject(query.getSortObject());
 		try {
-			return Optional.ofNullable(conversion(mongoTemplate.findOne(query, Map.class, collectionName())));
+			return Optional.ofNullable(conversion(mongoTemplate.findOne(basicQuery, Map.class, collectionName(template))));
 		} catch (GenerateException e) {
 			log.error("find one error", e);
 			return Optional.empty();
@@ -96,7 +137,7 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	
 	@Override
 	public Domain saveOrUpdate(Domain entity) {
-		mongoTemplate.save(entity, collectionName());
+		mongoTemplate.save(entity, collectionName(template()));
 		return entity;
 	}
 	
@@ -113,7 +154,7 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 			} else {
 				query = new Query();
 			}
-			mongoTemplate.updateMulti(query, update, collectionName());
+			mongoTemplate.updateMulti(query, update, collectionName(template()));
 		}
 	}
 	
@@ -125,7 +166,7 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 		} else {
 			query = new Query();
 		}
-		return mongoTemplate.count(query, collectionName());
+		return mongoTemplate.count(query, collectionName(template()));
 	}
 
 	@Override
@@ -136,16 +177,16 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 		} else {
 			query = new Query();
 		}
-		return mongoTemplate.remove(query, collectionName()).getDeletedCount();
+		return mongoTemplate.remove(query, collectionName(template())).getDeletedCount();
 	}
 	
 	@Override
 	public void delete(Domain entity) {
-		mongoTemplate.remove(entity, collectionName());
+		mongoTemplate.remove(entity, collectionName(template()));
 	}
 	
-	private String collectionName() {
-		return TemplateUtils.getTableName(template());
+	private String collectionName(Template template) {
+		return TemplateUtils.getTableName(template);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -158,6 +199,25 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 			}
 		}
 		return domains;
+	}
+	
+	private Document getFieldMap(Template template, String... properties) {
+		Document fieldMap = new Document();
+		if (properties == null || properties.length == 0) {
+			List<String> columnNames = TemplateUtils.getTableColumnNames(template);
+			for (String columnName : columnNames) {
+				fieldMap.put(columnName, true);
+			}
+		} else {
+			for (String property : properties) {
+				fieldMap.put(property, true);
+			}
+		}
+		fieldMap.put(Constant.MONGODBID, true);
+		fieldMap.put(Constant.OPERATORID, true);
+		fieldMap.put(Constant.CREATETIME, true);
+		fieldMap.put(Constant.UPDATETIME, true);
+		return fieldMap;
 	}
 
 }

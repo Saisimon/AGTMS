@@ -12,6 +12,7 @@ const state = {
     classOptions: [],
     viewOptions: [],
     whetherOptions: [],
+    selectionOptions: []
 };
 
 const mutations = {
@@ -33,6 +34,11 @@ const mutations = {
     setWhetherOptions(state, whetherOptions) {
         if (whetherOptions) {
             state.whetherOptions = whetherOptions;
+        }
+    },
+    setSelectionOptions(state, selectionOptions) {
+        if (selectionOptions) {
+            state.selectionOptions = selectionOptions;
         }
     }
 };

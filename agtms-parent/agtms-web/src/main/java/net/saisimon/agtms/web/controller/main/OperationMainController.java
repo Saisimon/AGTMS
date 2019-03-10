@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.domain.Operation;
+import net.saisimon.agtms.core.domain.entity.Operation;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -76,12 +76,12 @@ public class OperationMainController extends MainController {
 		OperationService operationService = OperationServiceFactory.get();
 		Page<Operation> page = operationService.findPage(filter, pageable);
 		List<OperationInfo> results = new ArrayList<>(page.getContent().size());
-		Map<String, String> operateTypeMap = operateTypeSelection.select();
+		Map<Integer, String> operateTypeMap = operateTypeSelection.select();
 		for (Operation operation : page.getContent()) {
 			OperationInfo result = new OperationInfo();
 			result.setId(operation.getId());
 			result.setOperateTime(operation.getOperateTime());
-			result.setOperateType(operateTypeMap.get(operation.getOperateType().toString()));
+			result.setOperateType(operateTypeMap.get(operation.getOperateType()));
 			result.setOperateIp(operation.getOperateIp());
 			if (operation.getOperateContent() != null) {
 				result.setOperateContent(Arrays.stream(operation.getOperateContent().split(",")).map(msg -> { return getMessage(msg);}).collect(Collectors.joining(" / ")));
@@ -114,8 +114,8 @@ public class OperationMainController extends MainController {
 		List<String> keyValues = Arrays.asList("operateType", "operateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operate.type", "operate.time")));
 		Map<String, FieldFilter> value = new HashMap<>();
-		Map<String, String> operateTypeMap = operateTypeSelection.select();
-		List<String> values = new ArrayList<>(operateTypeMap.keySet());
+		Map<Integer, String> operateTypeMap = operateTypeSelection.select();
+		List<Integer> values = new ArrayList<>(operateTypeMap.keySet());
 		List<String> texts = new ArrayList<>(operateTypeMap.values());
 		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), values, texts));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));

@@ -11,7 +11,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import net.saisimon.agtms.core.annotation.Operate;
-import net.saisimon.agtms.core.domain.Operation;
+import net.saisimon.agtms.core.domain.entity.Operation;
 import net.saisimon.agtms.core.dto.SimpleResult;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.util.StringUtils;

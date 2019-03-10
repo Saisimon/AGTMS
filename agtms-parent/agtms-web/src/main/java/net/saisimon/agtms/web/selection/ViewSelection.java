@@ -4,13 +4,12 @@ import java.util.LinkedHashMap;
 
 import org.springframework.stereotype.Component;
 
-import net.saisimon.agtms.core.enums.Selections;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 @Component
-public class ViewSelection extends AbstractSelection {
+public class ViewSelection extends AbstractSelection<String> {
 
 	@Override
 	public LinkedHashMap<String, String> select() {
@@ -22,9 +21,4 @@ public class ViewSelection extends AbstractSelection {
 		return viewMap;
 	}
 	
-	@Override
-	public Selections key() {
-		return Selections.VIEW;
-	}
-
 }

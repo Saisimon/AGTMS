@@ -5,7 +5,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.saisimon.agtms.core.domain.Task;
+import net.saisimon.agtms.core.domain.entity.Task;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.util.SystemUtils;

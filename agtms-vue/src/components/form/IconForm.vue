@@ -7,7 +7,7 @@
             </label>
         </b-col>
         <b-col sm="10">
-            <b-form-input :id="field.name + '-input'" v-model.trim="field.value" :state="field.state" />
+            <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="field.name + '-input'" v-model.trim="field.value" :state="field.state" />
             <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required">
                 {{ $t('please_input_valid') }}{{ field.text }}
             </b-form-invalid-feedback>

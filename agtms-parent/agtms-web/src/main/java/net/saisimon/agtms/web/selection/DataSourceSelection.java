@@ -6,12 +6,11 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.domain.sign.Sign;
-import net.saisimon.agtms.core.enums.Selections;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 
 @Component
-public class DataSourceSelection extends AbstractSelection {
+public class DataSourceSelection extends AbstractSelection<String> {
 
 	@Override
 	public LinkedHashMap<String, String> select() {
@@ -26,9 +25,4 @@ public class DataSourceSelection extends AbstractSelection {
 		return dataSourceMap;
 	}
 
-	@Override
-	public Selections key() {
-		return Selections.DATA_SOURCE;
-	}
-	
 }

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.TemplateUtils;

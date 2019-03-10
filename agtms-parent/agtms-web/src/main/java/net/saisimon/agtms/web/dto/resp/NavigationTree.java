@@ -33,6 +33,7 @@ public class NavigationTree implements Serializable, Cloneable {
 		List<NavigationLink> links = new ArrayList<>();
 		links.add(NavigationLink.NAVIGATION_LINK);
 		links.add(NavigationLink.TEMPLATE_LINK);
+		links.add(NavigationLink.SELECTION_LINK);
 		links.add(NavigationLink.TASK_LINK);
 		links.add(NavigationLink.OPERATION_LINK);
 		systemModel.setLinks(links);
@@ -68,6 +69,7 @@ public class NavigationTree implements Serializable, Cloneable {
 		public static final NavigationLink TEMPLATE_LINK = new NavigationLink("/template/main", "template.management");
 		public static final NavigationLink TASK_LINK = new NavigationLink("/task/main", "task.management");
 		public static final NavigationLink OPERATION_LINK = new NavigationLink("/operation/main", "operation.management");
+		public static final NavigationLink SELECTION_LINK = new NavigationLink("/selection/main", "selection.management");
 
 		private String link;
 		

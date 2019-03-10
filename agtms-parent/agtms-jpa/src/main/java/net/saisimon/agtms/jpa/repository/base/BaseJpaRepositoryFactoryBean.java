@@ -30,10 +30,11 @@ public class BaseJpaRepositoryFactoryBean<T extends JpaRepository<S, ID>, S, ID 
 		public SimpleJpaRepositoryFactory(EntityManager entityManager) {
 			super(entityManager);
 		}
+		
+		
 
 		@Override
-		protected <T, ID extends Serializable> SimpleJpaRepository<?, ?> getTargetRepository(
-				RepositoryInformation information, EntityManager entityManager) {
+		protected SimpleJpaRepository<?, ?> getTargetRepository(RepositoryInformation information, EntityManager entityManager) {
 			JpaEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
 			return new SimpleBaseJpaRepository<>(entityInformation, entityManager);
 		}

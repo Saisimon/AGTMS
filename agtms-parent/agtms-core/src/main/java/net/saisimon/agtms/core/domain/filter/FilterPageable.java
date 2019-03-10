@@ -26,7 +26,7 @@ public class FilterPageable implements Serializable {
 	
 	private static final int DEFAULT_INDEX = 0;
 	private static final int DEFAULT_SIZE = 10;
-	private static final int DEFAULT_MAX_SIZE = 500;
+	private static final int DEFAULT_MAX_SIZE = 100;
 	
 	private int index = DEFAULT_INDEX;
 	private int size = DEFAULT_SIZE;
@@ -39,11 +39,7 @@ public class FilterPageable implements Serializable {
 		if (size < 1) {
 			throw new IllegalArgumentException("page size must not be less than one!");
 		}
-		if (size > DEFAULT_MAX_SIZE) {
-			this.size = DEFAULT_MAX_SIZE;
-		} else {
-			this.size = size;
-		}
+		this.size = size;
 		this.index = index;
 		if (sort != null) {
 			this.sort = sort;
@@ -87,6 +83,9 @@ public class FilterPageable implements Serializable {
 					size = Integer.parseInt(sizeObj.toString());
 				} catch (NumberFormatException e) {
 					size = DEFAULT_SIZE;
+				}
+				if (size > DEFAULT_MAX_SIZE) {
+					size = DEFAULT_MAX_SIZE;
 				}
 			}
 			Object sortObj = pageableMap.get(SORT);

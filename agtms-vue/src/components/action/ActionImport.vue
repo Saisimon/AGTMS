@@ -29,7 +29,10 @@
                                 :searchable="false"
                                 :multiple="true"
                                 :options="importFieldOptions"
-                                :placeholder="$t('select_import_fields')" />
+                                :placeholder="$t('select_import_fields')" >
+                            <template slot="noResult">{{ $t("no_result") }}</template>
+                            <template slot="noOptions">{{ $t("no_options") }}</template>
+                        </multiselect>
                         </b-col>
                     </b-row>
                     <b-row class="mb-3">
@@ -44,7 +47,10 @@
                                 :allow-empty="false"
                                 :searchable="false"
                                 :options="batchImport.importFileTypeOptions"
-                                :placeholder="$t('select_import_file_type')" />
+                                :placeholder="$t('select_import_file_type')" >
+                            <template slot="noResult">{{ $t("no_result") }}</template>
+                            <template slot="noOptions">{{ $t("no_options") }}</template>
+                        </multiselect>
                         </b-col>
                     </b-row>
                     <b-row class="mb-3" v-if="importFieldSelects.length > 0 && importFileType != null">

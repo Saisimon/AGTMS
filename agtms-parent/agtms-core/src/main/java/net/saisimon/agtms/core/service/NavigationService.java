@@ -9,8 +9,7 @@ import org.springframework.core.Ordered;
 import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.cache.Cache;
-import net.saisimon.agtms.core.constant.Constant.Operator;
-import net.saisimon.agtms.core.domain.Navigation;
+import net.saisimon.agtms.core.domain.entity.Navigation;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.factory.CacheFactory;
 
@@ -58,14 +57,6 @@ public interface NavigationService extends BaseService<Navigation, Long>, Ordere
 			return null;
 		}
 		FilterRequest filter = FilterRequest.build().and("operatorId", operatorId);
-		return findList(filter);
-	}
-	
-	default List<Navigation> getNavigations(List<Long> ids, Long operatorId) {
-		if (CollectionUtils.isEmpty(ids) || operatorId == null) {
-			return null;
-		}
-		FilterRequest filter = FilterRequest.build().and("id", ids, Operator.IN).and("operatorId", operatorId);
 		return findList(filter);
 	}
 	

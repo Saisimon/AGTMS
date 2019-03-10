@@ -15,7 +15,8 @@ public enum Views {
 	LINK("link"), 
 	EMAIL("email"), 
 	PHONE("phone"), 
-	PASSWORD("password");
+	PASSWORD("password"),
+	SELECTION("selection");
 	
 	private String view;
 	

@@ -12,8 +12,9 @@ import feign.Contract;
 import feign.Feign;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.service.RemoteService;
+import net.saisimon.agtms.core.util.StringUtils;
 
 @Import(FeignClientsConfiguration.class)
 @Service
@@ -30,6 +31,9 @@ public class RemoteTemplateService implements RemoteService {
 
 	@Override
 	public List<Template> templates(String serviceId) {
+		if (StringUtils.isBlank(serviceId)) {
+			return null;
+		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + serviceId);
 		return apiService.templates();
 	}

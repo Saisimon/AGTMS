@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -66,7 +66,7 @@ public class AgtmsController {
 	
 	@SuppressWarnings("unchecked")
 	@PostMapping("/{key}/findList")
-	public List<Map<String, Object>> findList(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
+	public List<Map<String, Object>> findListBySort(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}
@@ -82,12 +82,23 @@ public class AgtmsController {
 		Set<String> filters = TemplateUtils.getFilters(templateResolver.getTemplate());
 		filters.add(Constant.ID);
 		FilterRequest filter = FilterRequest.build(filterMap, filters);
-		FilterSort sort = null;
+		Object propertiesStr = body.get("properties");
+		String[] properties = null;
+		if (propertiesStr != null) {
+			properties = propertiesStr.toString().split(",");
+		}
+		List<?> entities = null;
+		Map<String, Object> pageableMap = (Map<String, Object>) body.get("pageable");
 		Object sortStr = body.get("sort");
 		if (sortStr != null) {
-			sort = FilterSort.build(sortStr.toString());
+			FilterSort sort = FilterSort.build(sortStr.toString());
+			entities = repository.findList(filter, sort, properties);
+		} else if (pageableMap != null) {
+			FilterPageable pageable = FilterPageable.build(pageableMap);
+			entities = repository.findList(filter, pageable, properties);
+		} else {
+			entities = repository.findList(filter, (FilterSort)null, properties);
 		}
-		List<?> entities = repository.findList(filter, sort);
 		List<Map<String, Object>> list = new ArrayList<>();
 		if (CollectionUtils.isEmpty(entities)) {
 			return list;
@@ -119,7 +130,12 @@ public class AgtmsController {
 		filters.add(Constant.ID);
 		FilterRequest filter = FilterRequest.build(filterMap, filters);
 		FilterPageable pageable = FilterPageable.build(pageableMap);
-		Page<?> page = repository.findPage(filter, pageable);
+		Object propertiesStr = body.get("properties");
+		String[] properties = null;
+		if (propertiesStr != null) {
+			properties = propertiesStr.toString().split(",");
+		}
+		Page<?> page = repository.findPage(filter, pageable, properties);
 		List<?> entities = page.getContent();
 		Map<String, Object> result = new HashMap<>();
 		if (CollectionUtils.isEmpty(entities)) {
@@ -160,7 +176,12 @@ public class AgtmsController {
 		if (sortStr != null) {
 			sort = FilterSort.build(sortStr.toString());
 		}
-		Optional<?> optional = repository.findOne(filter, sort);
+		Object propertiesStr = body.get("properties");
+		String[] properties = null;
+		if (propertiesStr != null) {
+			properties = propertiesStr.toString().split(",");
+		}
+		Optional<?> optional = repository.findOne(filter, sort, properties);
 		if (optional.isPresent()) {
 			Set<String> fieldNames = TemplateUtils.getFieldNames(templateResolver.getTemplate());
 			return toMap(optional.get(), templateResolver.getEntityClass(), fieldNames);

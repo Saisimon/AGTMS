@@ -15,7 +15,7 @@
                 format="yyyy-MM-dd" 
                 class="datepicker-container" />
             <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required" :class="feedbackClass">
-                {{ $t('please_input_valid') }}{{ field.text }}
+                {{ $t('please_select_valid') }}{{ field.text }}
             </b-form-invalid-feedback>
         </b-col>
     </b-row>

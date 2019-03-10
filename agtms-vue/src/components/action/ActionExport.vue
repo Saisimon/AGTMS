@@ -28,7 +28,10 @@
                             :searchable="false"
                             :multiple="true"
                             :options="exportFieldOptions"
-                            :placeholder="$t('select_export_fields')" />
+                            :placeholder="$t('select_export_fields')" >
+                            <template slot="noResult">{{ $t("no_result") }}</template>
+                            <template slot="noOptions">{{ $t("no_options") }}</template>
+                        </multiselect>
                     </b-col>
                 </b-row>
                 <b-row class="mb-3">
@@ -43,7 +46,10 @@
                             :allow-empty="false"
                             :searchable="false"
                             :options="batchExport.exportFileTypeOptions"
-                            :placeholder="$t('select_export_file_type')" />
+                            :placeholder="$t('select_export_file_type')" >
+                            <template slot="noResult">{{ $t("no_result") }}</template>
+                            <template slot="noOptions">{{ $t("no_options") }}</template>
+                        </multiselect>
                     </b-col>
                 </b-row>
                 <b-row class="mb-3" v-if="exportFieldSelects.length > 0 && exportFileType != null">

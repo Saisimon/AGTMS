@@ -16,10 +16,11 @@ import cn.hutool.core.util.NumberUtil;
 import net.saisimon.agtms.core.cache.Cache;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.Template;
-import net.saisimon.agtms.core.domain.Template.TemplateColumn;
-import net.saisimon.agtms.core.domain.Template.TemplateField;
+import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.CacheFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
@@ -109,6 +110,23 @@ public class TemplateUtils {
 			}
 		}
 		return fieldInfoMap;
+	}
+	
+	public static boolean hasSelection(Template template) {
+		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
+			return false;
+		}
+		for (TemplateColumn column : template.getColumns()) {
+			if (CollectionUtils.isEmpty(column.getFields())) {
+				continue;
+			}
+			for (TemplateField field : column.getFields()) {
+				if (Views.SELECTION.getView().equals(field.getView())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public static Set<String> getRequireds(Template template) {
@@ -208,6 +226,22 @@ public class TemplateUtils {
 		if (CollectionUtils.isEmpty(template.getColumns())) {
 			return false;
 		}
+		for (TemplateColumn templateColumn : template.getColumns()) {
+			if (StringUtils.isBlank(templateColumn.getTitle())) {
+				return false;
+			}
+			if (CollectionUtils.isEmpty(templateColumn.getFields())) {
+				return false;
+			}
+			for (TemplateField templateField : templateColumn.getFields()) {
+				if (StringUtils.isBlank(templateField.getFieldTitle())) {
+					return false;
+				}
+				if (Views.SELECTION.getView().equals(templateField.getView()) && templateField.getSelectionId() == null) {
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 	
@@ -243,15 +277,15 @@ public class TemplateUtils {
 		return headMap;
 	}
 	
-	public static List<String> getFunctionCodes(Template template) {
-		List<String> functions = new ArrayList<>();
+	public static List<Integer> getFunctionCodes(Template template) {
+		List<Integer> functions = new ArrayList<>();
 		if (template == null || template.getFunction() == null || template.getFunction() == 0) {
 			return functions;
 		}
 		Integer function = template.getFunction();
 		for (Functions func : Functions.values()) {
 			if (func.getCode().equals((function & func.getCode()))) {
-				functions.add(func.getCode().toString());
+				functions.add(func.getCode());
 			}
 		}
 		return functions;

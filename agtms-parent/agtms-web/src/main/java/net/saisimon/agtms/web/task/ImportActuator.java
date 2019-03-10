@@ -6,12 +6,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +26,14 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.Task;
-import net.saisimon.agtms.core.domain.Template;
-import net.saisimon.agtms.core.domain.Template.TemplateField;
+import net.saisimon.agtms.core.domain.entity.Task;
+import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
+import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.task.Actuator;
@@ -55,6 +60,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 	private MessageSource messageSource;
 	
 	@Override
+	@Transactional
 	public Result execute(ImportParam param) throws Exception {
 		Template template = TemplateUtils.getTemplate(param.getTemplateId(), param.getUserId());
 		if (template == null) {
@@ -66,17 +72,17 @@ public class ImportActuator implements Actuator<ImportParam> {
 		String path = Constant.File.IMPORT_PATH + File.separatorChar + param.getUserId();
 		File file = new File(path + File.separator + param.getImportFileUUID() + "." + param.getImportFileType());
 		if (!file.exists()) {
-			return ErrorMessage.Task.IMPORT.TASK_IMPORT_FAILED;
+			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
 		}
 		List<List<String>> datas = parseFile(file, param.getImportFileType());
 		if (datas.size() < 2) {
 			return ResultUtils.simpleSuccess();
 		}
-		List<String> heads = datas.get(0);
-		heads.add(getMessage("result"));
-		List<List<Object>> resultDatas = new ArrayList<>(datas.size() - 1);
+		List<List<Object>> resultDatas = new ArrayList<>(datas.size());
+		resultDatas.add(buildHead(datas));
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
+		Map<String, Map<String, String>> fieldTextMap = new HashMap<>();
 		for (int i = 1; i < datas.size(); i++) {
 			if (Thread.currentThread().isInterrupted()) {
 				return ErrorMessage.Task.TASK_CANCEL;
@@ -90,6 +96,22 @@ public class ImportActuator implements Actuator<ImportParam> {
 					String fieldName = param.getImportFields().get(j);
 					Object fieldValue = data.get(j);
 					TemplateField templateField = fieldInfoMap.get(fieldName);
+					if (fieldValue != null && Views.SELECTION.getView().equals(templateField.getView())) {
+						Map<String, String> textMap = fieldTextMap.get(fieldName);
+						if (textMap == null) {
+							textMap = new HashMap<>();
+							fieldTextMap.put(fieldName, textMap);
+						}
+						String value = textMap.get(fieldValue.toString());
+						if (value == null) {
+							Set<String> texts = new HashSet<>();
+							texts.add(fieldValue.toString());
+							Map<String, String> textValueMap = DomainUtils.getSelectionTextValueMap(templateField.getSelectionId(), param.getUserId(), texts);
+							textMap.putAll(textValueMap);
+							value = textValueMap.get(fieldValue.toString());
+						}
+						fieldValue = value;
+					}
 					if (fieldValue == null) {
 						fieldValue = templateField.getDefaultValue();
 					}
@@ -119,18 +141,28 @@ public class ImportActuator implements Actuator<ImportParam> {
 		}
 		switch (param.getImportFileType()) {
 			case Constant.File.XLS:
-				file = FileUtils.toXLS(path, param.getImportFileUUID(), heads, resultDatas, null);
+				FileUtils.toXLS(file, resultDatas, false);
 				break;
 			case Constant.File.CSV:
-				file = FileUtils.toCSV(path, param.getImportFileUUID(), heads, resultDatas, ",");
+				FileUtils.toCSV(file, resultDatas, ",", false);
 				break;
 			case Constant.File.XLSX:
-				file = FileUtils.toXLSX(path, param.getImportFileUUID(), heads, resultDatas, null);
+				FileUtils.toXLSX(file, resultDatas, false);
 				break;
 			default:
 				break;
 		}
 		return ResultUtils.simpleSuccess();
+	}
+
+	private List<Object> buildHead(List<List<String>> datas) {
+		List<String> heads = datas.get(0);
+		List<Object> headList = new ArrayList<>(heads.size() + 1);
+		for (String head : heads) {
+			headList.add(head);
+		}
+		headList.add(getMessage("result"));
+		return headList;
 	}
 	
 	@Override

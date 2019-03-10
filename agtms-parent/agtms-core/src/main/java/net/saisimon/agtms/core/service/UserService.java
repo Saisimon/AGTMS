@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.core.Ordered;
 
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.domain.User;
+import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.util.StringUtils;
 

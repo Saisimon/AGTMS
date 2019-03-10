@@ -9,8 +9,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 
+/**
+ * 远程 API 接口
+ * 
+ * @author saisimon
+ *
+ */
 public interface ApiService {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/agtms/templates")

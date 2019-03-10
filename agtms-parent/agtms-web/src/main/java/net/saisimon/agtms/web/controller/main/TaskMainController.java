@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.domain.Task;
+import net.saisimon.agtms.core.domain.entity.Task;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -110,7 +110,7 @@ public class TaskMainController extends MainController {
 		TaskService taskService = TaskServiceFactory.get();
 		Page<Task> page = taskService.findPage(filter, pageable);
 		List<TaskInfo> results = new ArrayList<>(page.getContent().size());
-		Map<String, String> handleStatusMap = handleStatusSelection.select();
+		Map<Integer, String> handleStatusMap = handleStatusSelection.select();
 		Map<String, String> taskTypeMap = taskTypeSelection.select();
 		for (Task task : page.getContent()) {
 			TaskInfo result = new TaskInfo();
@@ -119,7 +119,7 @@ public class TaskMainController extends MainController {
 			result.setTaskContent(actuator.taskContent(task));
 			result.setTaskType(taskTypeMap.get(task.getTaskType().toString()));
 			result.setTaskTime(task.getTaskTime());
-			result.setHandleStatus(handleStatusMap.get(task.getHandleStatus().toString()));
+			result.setHandleStatus(handleStatusMap.get(task.getHandleStatus()));
 			if (StringUtils.isNotBlank(task.getHandleResult())) {
 				result.setHandleResult(getMessage(task.getHandleResult()));
 			}
@@ -149,7 +149,7 @@ public class TaskMainController extends MainController {
 	public void download(@RequestParam(name = "id") Long id) {
 		try {
 			TaskService taskService = TaskServiceFactory.get();
-			long userId = AuthUtils.getUserInfo().getUserId();
+			Long userId = AuthUtils.getUserInfo().getUserId();
 			Task task = taskService.getTask(id, userId);
 			if (task == null) {
 				SystemUtils.sendObject(response, ErrorMessage.Task.TASK_NOT_EXIST);
@@ -169,8 +169,7 @@ public class TaskMainController extends MainController {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		TaskService taskService = TaskServiceFactory.get();
-		long userId = AuthUtils.getUserInfo().getUserId();
-		Task task = taskService.getTask(id, userId);
+		Task task = taskService.getTask(id, AuthUtils.getUserInfo().getUserId());
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
@@ -186,7 +185,7 @@ public class TaskMainController extends MainController {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		TaskService taskService = TaskServiceFactory.get();
-		long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		Task task = taskService.getTask(id, userId);
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
@@ -203,7 +202,7 @@ public class TaskMainController extends MainController {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		TaskService taskService = TaskServiceFactory.get();
 		for (Long id : ids) {
 			Task task = taskService.getTask(id, userId);
@@ -246,10 +245,8 @@ public class TaskMainController extends MainController {
 		keyValues = Arrays.asList("handleStatus", "handleTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("handle.status", "handle.time")));
 		value = new HashMap<>();
-		Map<String, String> handleStatusMap = handleStatusSelection.select();
-		values = new ArrayList<>(handleStatusMap.keySet());
-		texts = new ArrayList<>(handleStatusMap.values());
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), values, texts));
+		Map<Integer, String> handleStatusMap = handleStatusSelection.select();
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), new ArrayList<>(handleStatusMap.keySet()), new ArrayList<>(handleStatusMap.values())));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		filter.setValue(value);
 		filters.add(filter);

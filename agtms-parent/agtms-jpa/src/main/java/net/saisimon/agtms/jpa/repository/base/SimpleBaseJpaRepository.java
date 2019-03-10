@@ -38,24 +38,33 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 	}
 
 	@Override
-	public List<T> findList(final FilterRequest filter, FilterSort sort) {
+	public List<T> findList(final FilterRequest filter, FilterSort sort, String... properties) {
 		if (sort != null) {
-			return findAll(JpaFilterUtils.specification(filter), sort.getSort());
+			return findAll(JpaFilterUtils.specification(filter, properties), sort.getSort());
 		} else {
-			return findAll(JpaFilterUtils.specification(filter));
+			return findAll(JpaFilterUtils.specification(filter, properties));
+		}
+	}
+	
+	@Override
+	public List<T> findList(final FilterRequest filter, FilterPageable pageable, String... properties) {
+		if (pageable != null) {
+			return findAll(JpaFilterUtils.specification(filter, properties), pageable.getPageable()).getContent();
+		} else {
+			return findAll(JpaFilterUtils.specification(filter, properties));
 		}
 	}
 
 	@Override
-	public Page<T> findPage(final FilterRequest filter, FilterPageable filterPageable) {
-		if (filterPageable == null) {
-			filterPageable = FilterPageable.build(null);
+	public Page<T> findPage(final FilterRequest filter, FilterPageable pageable, String... properties) {
+		if (pageable == null) {
+			pageable = FilterPageable.build(null);
 		}
-		return findAll(JpaFilterUtils.specification(filter), filterPageable.getPageable());
+		return findAll(JpaFilterUtils.specification(filter, properties), pageable.getPageable());
 	}
 
 	@Override
-	public Optional<T> findOne(final FilterRequest filter, FilterSort sort) {
+	public Optional<T> findOne(final FilterRequest filter, FilterSort sort, String... properties) {
 		Sort s = null;
 		if (sort != null) {
 			s = sort.getSort();
@@ -63,7 +72,7 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 			s = Sort.unsorted();
 		}
 		try {
-			return Optional.of(getQuery(JpaFilterUtils.specification(filter), s).setMaxResults(1).getSingleResult());
+			return Optional.of(getQuery(JpaFilterUtils.specification(filter, properties), s).setMaxResults(1).getSingleResult());
 		} catch (NoResultException e) {
 			return Optional.empty();
 		}

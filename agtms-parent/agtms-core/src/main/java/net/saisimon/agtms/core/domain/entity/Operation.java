@@ -1,4 +1,4 @@
-package net.saisimon.agtms.core.domain;
+package net.saisimon.agtms.core.domain.entity;
 
 import java.util.Date;
 
@@ -32,29 +32,29 @@ public class Operation {
 	/**
 	 * 操作人ID
 	 */
-	@Column(columnDefinition="bigint(15) not null")
+	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '操作人ID'")
 	private Long operatorId;
 	
 	/**
 	 * 操作类型
 	 */
-	@Column(columnDefinition="int(11) not null")
+	@Column(columnDefinition="INT(11) NOT NULL COMMENT '操作类型'")
 	private Integer operateType;
 	
 	/**
 	 * 操作时间
 	 */
-	@Column(columnDefinition="timestamp default current_timestamp")
+	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间'")
 	private Date operateTime;
 	
 	/**
 	 * 操作链接
 	 */
-	@Column(length=50)
+	@Column(length=100)
 	private String operateUrl;
 	
 	/**
-	 * 操作内容
+	 * 操作IP
 	 */
 	@Column(length=50)
 	private String operateIp;
@@ -62,13 +62,13 @@ public class Operation {
 	/**
 	 * 操作状态
 	 */
-	@Column(columnDefinition="int(11) not null")
+	@Column(columnDefinition="INT(11) NOT NULL COMMENT '操作状态'")
 	private Integer operateStatus;
 	
 	/**
 	 * 操作内容
 	 */
-	@Column(length=50)
+	@Column(length=100)
 	private String operateContent;
 	
 }

@@ -4,7 +4,6 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
-      max-request-size: 10MB
   jpa:
     show-sql: true
     generate-ddl: true
@@ -33,6 +32,10 @@ spring:
 extra:
   class:
     path: /tmp/classes
+  max-size:
+    task: 5
+    export: 65535
+    import: 65535
 logging:
   level:
     net.saisimon: DEBUG

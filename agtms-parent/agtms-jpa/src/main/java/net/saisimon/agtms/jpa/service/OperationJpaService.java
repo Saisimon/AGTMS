@@ -3,7 +3,7 @@ package net.saisimon.agtms.jpa.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import net.saisimon.agtms.core.domain.Operation;
+import net.saisimon.agtms.core.domain.entity.Operation;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.OperationService;
 import net.saisimon.agtms.jpa.order.JpaOrder;

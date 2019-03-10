@@ -11,7 +11,7 @@ import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -78,16 +78,28 @@ public interface GenerateService {
 		return false;
 	}
 	
-	default List<Domain> findList(FilterRequest filter, FilterSort sort) {
+	default Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		return repository.findList(filter, sort);
+		return repository.findOne(filter, sort, properties);
 	}
 	
-	default Page<Domain> findPage(FilterRequest filter, FilterPageable pageable) {
+	default List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		return repository.findPage(filter, pageable);
+		return repository.findList(filter, sort, properties);
+	}
+	
+	default List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		return repository.findList(filter, pageable, properties);
+	}
+	
+	default Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		return repository.findPage(filter, pageable, properties);
 	}
 	
 	default void delete(Domain entity) {

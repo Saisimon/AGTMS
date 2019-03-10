@@ -6,6 +6,7 @@ import Register from './views/Register.vue'
 import List from './views/List.vue'
 import Edit from './views/Edit.vue'
 import Template from './views/Template.vue'
+import Selection from './views/Selection.vue'
 import NotFound from './views/NotFound.vue'
 import store from './store/store'
 
@@ -31,6 +32,10 @@ const router = new Router({
             path: '/template/edit',
             name: 'template-edit',
             component: Template
+        }, {
+            path: '/selection/edit',
+            name: 'selection-edit',
+            component: Selection
         }, {
             path: '/:module/main/:id?',
             name: 'list',

@@ -1,5 +1,6 @@
 package net.saisimon.agtms.core.domain.grid;
 
+import java.util.Comparator;
 import java.util.List;
 
 import lombok.Builder;
@@ -60,6 +61,16 @@ public class MainGrid {
 		private String view;
 		
 		private Integer ordered;
+		
+		public static final Comparator<Column> COMPARATOR = (c1, c2) -> {
+			if (c1.getOrdered() == null) {
+				return -1;
+			}
+			if (c2.getOrdered() == null) {
+				return 1;
+			}
+			return c1.getOrdered().compareTo(c2.getOrdered());
+		};
 		
 	}
 	

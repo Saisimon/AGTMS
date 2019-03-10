@@ -56,6 +56,7 @@ export default {
     navigation_management: 'Navigation Management',
     template_management: 'Template Management',
     please_input_valid: 'Please input a valid ',
+    please_select_valid: 'Please select a valid ',
     select_all: 'Select all',
     select_edit_fields: 'Please select edit field',
     select_export_fields: 'Please select export field',
@@ -89,5 +90,10 @@ export default {
     upload_file_max_size_limit: 'Please do not upload file larger than 10M',
     title_not_blank: 'Title can not be blank',
     column_not_blank: 'Column can not be blank',
-    refresh: 'Refresh'
+    refresh: 'Refresh',
+    option_value: 'Option Value',
+    option_text: 'Option Text',
+    more_functions: 'and {count} other functions',
+    no_result: 'No elements found',
+    no_options: 'No options'
 }

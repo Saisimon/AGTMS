@@ -1,4 +1,4 @@
-package net.saisimon.agtms.core.domain;
+package net.saisimon.agtms.core.domain.entity;
 
 import java.util.Date;
 
@@ -31,14 +31,15 @@ public class Task {
 	
 	/**
 	 * 任务类型
+	 * 
 	 */
-	@Column(length=32, nullable=false)
+	@Column(length=50)
 	private String taskType;
 	
 	/**
 	 * 任务创建时间
 	 */
-	@Column(columnDefinition="timestamp default current_timestamp")
+	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '任务创建时间'")
 	private Date taskTime;
 	
 	/**
@@ -49,27 +50,28 @@ public class Task {
 	
 	/**
 	 * 任务处理状态
+	 * 
 	 * @see net.saisimon.agtms.core.enums.HandleStatuses
 	 */
-	@Column(columnDefinition="int(11) not null")
+	@Column(columnDefinition="INT(11) NOT NULL COMMENT '任务处理状态'")
 	private Integer handleStatus;
 	
 	/**
 	 * 任务处理时间
 	 */
-	@Column(columnDefinition="timestamp default current_timestamp")
+	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '任务处理时间'")
 	private Date handleTime;
 	
 	/**
 	 * 任务处理结果
 	 */
-	@Column(length=512)
+	@Column(length=255)
 	private String handleResult;
 	
 	/**
 	 * 任务创建人员ID
 	 */
-	@Column(columnDefinition="bigint(15) not null")
+	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '任务创建人员ID'")
 	private Long operatorId;
 	
 }

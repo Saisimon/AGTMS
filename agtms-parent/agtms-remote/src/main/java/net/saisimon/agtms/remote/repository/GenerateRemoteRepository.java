@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -22,7 +24,7 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -52,10 +54,10 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public Long count(FilterRequest filter) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
 			return null;
 		}
-		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> filterMap = new HashMap<>();
 		if (filter != null) {
 			filterMap = filter.toMap();
@@ -64,12 +66,12 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	}
 
 	@Override
-	public List<Domain> findList(FilterRequest filter, FilterSort sort) {
+	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
 			return null;
 		}
-		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = new HashMap<>();
 		Map<String, Object> filterMap = new HashMap<>();
 		if (filter != null) {
@@ -78,6 +80,37 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		body.put("filter", filterMap);
 		if (sort != null) {
 			body.put("sort", sort.toString());
+		}
+		if (properties != null && properties.length > 0) {
+			body.put("properties", Stream.of(properties).collect(Collectors.joining(",")));
+		}
+		List<Map<String, Object>> list = apiService.findList(template.getKey(), body);
+		try {
+			return conversions(list);
+		} catch (GenerateException e) {
+			log.error("find list error", e);
+			return new ArrayList<>(0);
+		}
+	}
+	
+	@Override
+	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
+		Template template = template();
+		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
+			return null;
+		}
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
+		Map<String, Object> body = new HashMap<>();
+		Map<String, Object> filterMap = new HashMap<>();
+		if (filter != null) {
+			filterMap = filter.toMap();
+		}
+		body.put("filter", filterMap);
+		if (pageable != null) {
+			body.put("pageable", pageable.toMap());
+		}
+		if (properties != null && properties.length > 0) {
+			body.put("properties", Stream.of(properties).collect(Collectors.joining(",")));
 		}
 		List<Map<String, Object>> list = apiService.findList(template.getKey(), body);
 		try {
@@ -90,15 +123,15 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable) {
+	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
 			return null;
 		}
 		if (pageable == null) {
 			pageable = FilterPageable.build(null);
 		}
-		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = new HashMap<>();
 		Map<String, Object> filterMap = new HashMap<>();
 		if (filter != null) {
@@ -106,6 +139,9 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		}
 		body.put("filter", filterMap);
 		body.put("pageable", pageable.toMap());
+		if (properties != null && properties.length > 0) {
+			body.put("properties", Stream.of(properties).collect(Collectors.joining(",")));
+		}
 		Map<String, Object> map = apiService.findPage(template.getKey(), body);
 		if (CollectionUtils.isEmpty(map)) {
 			return null;
@@ -123,12 +159,12 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	}
 
 	@Override
-	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort) {
+	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
 			return null;
 		}
-		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = new HashMap<>();
 		Map<String, Object> filterMap = new HashMap<>();
 		if (filter != null) {
@@ -137,6 +173,9 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		body.put("filter", filterMap);
 		if (sort != null) {
 			body.put("sort", sort.toString());
+		}
+		if (properties != null && properties.length > 0) {
+			body.put("properties", Stream.of(properties).collect(Collectors.joining(",")));
 		}
 		Map<String, Object> map = apiService.findOne(template.getKey(), body);
 		try {
@@ -150,13 +189,13 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public Long delete(FilterRequest filter) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
 			return null;
 		}
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
 			return null;
 		}
-		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> filterMap = new HashMap<>();
 		if (filter != null) {
 			filterMap = filter.toMap();
@@ -167,13 +206,13 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public void delete(Domain entity) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
 			return;
 		}
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
 			return;
 		}
-		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		apiService.deleteEntity(template.getKey(), SystemUtils.toJson(entity));
 	}
 	
@@ -183,13 +222,13 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			return null;
 		}
 		Template template = template();
-		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
 			return null;
 		}
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.CREATE, Functions.EDIT, Functions.BATCH_EDIT)) {
 			return null;
 		}
-		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> map = apiService.saveOrUpdate(template.getKey(), SystemUtils.toJson(entity));
 		try {
 			return conversion(map);
@@ -205,13 +244,13 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			return;
 		}
 		Template template = template();
-		if (StringUtils.isBlank(template.getSourceUrl()) || StringUtils.isBlank(template.getKey())) {
+		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
 			return;
 		}
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.BATCH_EDIT)) {
 			return;
 		}
-		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getSourceUrl());
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = new HashMap<>();
 		Map<String, Object> filterMap = new HashMap<>();
 		if (filter != null) {

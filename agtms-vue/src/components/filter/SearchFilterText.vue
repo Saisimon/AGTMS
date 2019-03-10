@@ -14,7 +14,10 @@
                 selected-label=""
                 :allow-empty="false"
                 :searchable="false"
-                :placeholder="''" />
+                :placeholder="''" >
+                <template slot="noResult">{{ $t("no_result") }}</template>
+                <template slot="noOptions">{{ $t("no_options") }}</template>
+            </multiselect>
         </b-input-group-text>
     </div>
 </template>

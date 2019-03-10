@@ -7,38 +7,30 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import net.saisimon.agtms.core.domain.Navigation;
-import net.saisimon.agtms.core.enums.Selections;
+import net.saisimon.agtms.core.domain.entity.Navigation;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
 
 @Component
-public class NavigationSelection extends AbstractSelection {
+public class NavigationSelection extends AbstractSelection<Long> {
 	
 	@Override
-	public Selections key() {
-		return Selections.NAVIGATION;
-	}
-	
-	@Override
-	public LinkedHashMap<String, String> select() {
+	public LinkedHashMap<Long, String> select() {
 		NavigationService navigationService = NavigationServiceFactory.get();
-		long userId = AuthUtils.getUserInfo().getUserId();
-		List<Navigation> navigations = navigationService.getNavigations(userId);
-		LinkedHashMap<String, String> navigationMap = new LinkedHashMap<>(navigations.size() + 1);
-		navigationMap.put("-1", "/");
+		List<Navigation> navigations = navigationService.getNavigations(AuthUtils.getUserInfo().getUserId());
+		LinkedHashMap<Long, String> navigationMap = new LinkedHashMap<>(navigations.size() + 1);
+		navigationMap.put(-1L, "/");
 		for (Navigation navigation : navigations) {
-			navigationMap.put(navigation.getId().toString(), navigation.getTitle());
+			navigationMap.put(navigation.getId(), navigation.getTitle());
 		}
 		return navigationMap;
 	}
 	
 	public LinkedHashMap<Long, String> selectWithParent(Long excludeId) {
 		NavigationService navigationService = NavigationServiceFactory.get();
-		long userId = AuthUtils.getUserInfo().getUserId();
-		List<Navigation> navigations = navigationService.getNavigations(userId);
+		List<Navigation> navigations = navigationService.getNavigations(AuthUtils.getUserInfo().getUserId());
 		LinkedHashMap<Long, String> navigationMap = new LinkedHashMap<>(navigations.size());
 		parse(navigations, -1L, navigationMap, excludeId);
 		LinkedHashMap<Long, String> map = new LinkedHashMap<>(navigations.size() + 1);

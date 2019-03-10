@@ -7,16 +7,50 @@
             select-label=""
             deselect-label=""
             selected-label=""
+            :searchable="filter.searchable"
             :multiple="filter.multiple"
             :options="filter.select.options" 
-            :placeholder="''" />
+            :loading="isLoading"
+            :placeholder="''"
+            @search-change="search" >
+            <template slot="noResult">{{ $t("no_result") }}</template>
+            <template slot="noOptions">{{ $t("no_options") }}</template>
+        </multiselect>
     </div>
 </template>
 
 <script>
 export default {
     name: 'search-filter-select',
-    props: ['filter']
+    props: ['filter'],
+    mounted: function() {
+        if (this.filter.select.options == null || this.filter.select.options.length == 0) {
+            this.search();
+        }
+    },
+    data: function() {
+        return {
+            isLoading: false
+        }
+    },
+    methods: {
+        search: function(query) {
+            if (this.filter.selectionId == null) {
+                return;
+            }
+            this.isLoading = true;
+            this.$store.dispatch('searchSelection', {
+                id: this.filter.selectionId,
+                keyword: query
+            }).then(resp => {
+                if (resp.data.code === 0) {
+                    var options = resp.data.data;
+                    this.filter.select.options = options;
+                }
+                this.isLoading = false;
+            });
+        }
+    }
 }
 </script>
 

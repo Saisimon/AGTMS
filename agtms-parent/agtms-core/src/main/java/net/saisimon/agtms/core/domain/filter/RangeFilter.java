@@ -1,7 +1,7 @@
 package net.saisimon.agtms.core.domain.filter;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import net.saisimon.agtms.core.domain.tag.Input;
 
 /**
@@ -11,8 +11,8 @@ import net.saisimon.agtms.core.domain.tag.Input;
  *
  * @param <T> value 的类型
  */
-@Data
-@EqualsAndHashCode(callSuper=false)
+@Setter
+@Getter
 public class RangeFilter<T> extends FieldFilter {
 	
 	private Input<T> from;

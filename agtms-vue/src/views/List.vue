@@ -44,7 +44,10 @@
                                     :allow-empty="false"
                                     :searchable="false"
                                     :options="filter.key.options"
-                                    :placeholder="''" />
+                                    :placeholder="''" >
+                                <template slot="noResult">{{ $t("no_result") }}</template>
+                                <template slot="noOptions">{{ $t("no_options") }}</template>
+                            </multiselect>
                             </b-input-group-text>
                             <template v-for="option in filter.key.options">
                                 <search-filter-text v-if="filter.value[option.value].type == 'text' && filter.key.selected.value == option.value" 
@@ -132,7 +135,7 @@
                             <div class="rows-div">{{ $t("total") }} {{ total }} {{ $t("rows") }}</div>
                         </b-col>
                         <b-col cols="8">
-                            <b-pagination :total-rows="total" :per-page="10" align="right" @change="pageChange"></b-pagination>
+                            <b-pagination v-model="pageable.pageIndex" :total-rows="total" :per-page="10" align="right" @change="pageChange"></b-pagination>
                         </b-col>
                     </b-row>
                     <template slot="table-row" slot-scope="props">
@@ -677,14 +680,12 @@ table.vgt-table {
 }
 table.vgt-table .vgt-left-align {
     vertical-align: inherit!important;
-    padding: 0.5em!important;
 }
 table.vgt-table .sorting {
     padding-right: 1.5em!important;
 }
 table.vgt-table .vgt-right-align {
     vertical-align: inherit!important;
-    padding: 0.5em;
 }
 table.vgt-table th {
     height: 40px;

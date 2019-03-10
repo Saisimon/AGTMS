@@ -1,9 +1,10 @@
 package net.saisimon.agtms.core.domain.filter;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import net.saisimon.agtms.core.domain.tag.MultipleSelect;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
@@ -15,13 +16,17 @@ import net.saisimon.agtms.core.domain.tag.SingleSelect;
  *
  * @param <T> value 的类型
  */
-@Data
-@EqualsAndHashCode(callSuper=false)
+@Setter
+@Getter
 public class SelectFilter<T> extends FieldFilter {
 	
 	private Select<T> select;
 	
-	private Boolean multiple;
+	private boolean multiple;
+	
+	private boolean searchable;
+	
+	private Long selectionId;
 	
 	public SelectFilter(boolean multiple) {
 		super("select");
@@ -45,6 +50,16 @@ public class SelectFilter<T> extends FieldFilter {
 		Select<T> select = SingleSelect.select(selected, optionValues, optionTexts);
 		select.setType(type);
 		selectFilter.setSelect(select);
+		return selectFilter;
+	}
+	
+	public static <T> FieldFilter selectSearchableFilter(T selected, String type, Long selectionId) {
+		SelectFilter<T> selectFilter = new SelectFilter<>(false);
+		Select<T> select = SingleSelect.select(selected, new ArrayList<>(), new ArrayList<>());
+		select.setType(type);
+		selectFilter.setSelect(select);
+		selectFilter.setSearchable(true);
+		selectFilter.setSelectionId(selectionId);
 		return selectFilter;
 	}
 	

@@ -2,11 +2,14 @@ package net.saisimon.agtms.web.controller.edit;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,15 +20,17 @@ import org.springframework.web.bind.annotation.RestController;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.Navigation;
-import net.saisimon.agtms.core.domain.Template;
-import net.saisimon.agtms.core.domain.Template.TemplateColumn;
-import net.saisimon.agtms.core.domain.Template.TemplateField;
+import net.saisimon.agtms.core.domain.entity.Navigation;
+import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
+import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.OperateTypes;
+import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
@@ -48,15 +53,24 @@ import net.saisimon.agtms.web.controller.base.EditController;
 @RestController
 @RequestMapping("/management/edit/{key}")
 @ControllerInfo("management")
-public class ManagementEditController extends EditController {
+public class ManagementEditController extends EditController<Domain> {
 	
 	@PostMapping("/grid")
 	public Result grid(@PathVariable("key") String key, @RequestParam(name = "id", required = false) Long id) {
-		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		Long userId = AuthUtils.getUserInfo().getUserId();
+		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		return ResultUtils.simpleSuccess(getEditGrid(id, template));
+		Domain domain = null;
+		if (id != null) {
+			GenerateService generateService = GenerateServiceFactory.build(template);
+			domain = generateService.findById(id, userId);
+			if (domain == null) {
+				return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
+			}
+		}
+		return ResultUtils.simpleSuccess(getEditGrid(domain, template));
 	}
 	
 	@Operate(type=OperateTypes.EDIT)
@@ -116,7 +130,7 @@ public class ManagementEditController extends EditController {
 	}
 	
 	@Override
-	protected List<Breadcrumb> breadcrumbs(Long id, Object key) {
+	protected List<Breadcrumb> breadcrumbs(Domain domain, Object key) {
 		if (!(key instanceof Template)) {
 			return null;
 		}
@@ -133,7 +147,7 @@ public class ManagementEditController extends EditController {
 				nid = navigation.getParentId();
 			} while (nid != null && nid != -1);
 		}
-		if (id == null) {
+		if (domain == null) {
 			breadcrumbs.add(Breadcrumb.builder().text(getMessage("create")).active(true).build());
 		} else {
 			breadcrumbs.add(Breadcrumb.builder().text(getMessage("edit")).active(true).build());
@@ -142,18 +156,20 @@ public class ManagementEditController extends EditController {
 	}
 
 	@Override
-	protected List<Field<?>> fields(Long id, Object key) {
+	protected List<Field<?>> fields(Domain domain, Object key) {
 		if (!(key instanceof Template)) {
 			return null;
 		}
 		Template template = (Template) key;
-		Domain domain = null;
-		if (id != null) {
-			GenerateService generateService = GenerateServiceFactory.build(template);
-			domain = generateService.findById(id, AuthUtils.getUserInfo().getUserId());
-		}
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		List<Field<?>> fields = new ArrayList<>();
+		if (CollectionUtils.isEmpty(template.getColumns())) {
+			return null;
+		}
 		for (TemplateColumn templateColumn : template.getColumns()) {
+			if (CollectionUtils.isEmpty(templateColumn.getFields())) {
+				continue;
+			}
 			for (TemplateField templateField : templateColumn.getFields()) {
 				String fieldName = templateColumn.getColumnName() + templateField.getFieldName();
 				Field<Object> field = Field.builder()
@@ -162,28 +178,40 @@ public class ManagementEditController extends EditController {
 						.type(templateField.getFieldType())
 						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
 						.view(templateField.getView())
+						.selectionId(templateField.getSelectionId())
+						.searchable(true)
 						.build();
 				if (templateField.getRequired()) {
 					field.setRequired(true);
 				}
+				Object value = null;
 				if (domain != null) {
-					field.setValue(domain.getField(fieldName));
-				} else {
+					value = handleValue(domain.getField(fieldName), templateField, userId);
+				}
+				if (value == null) {
 					field.setValue(templateField.getDefaultValue());
+				} else {
+					field.setValue(value);
 				}
 				fields.add(field);
 			}
 		}
-		Collections.sort(fields, (f1, f2) -> {
-			if (f1.getOrdered() == null) {
-				return -1;
-			}
-			if (f2.getOrdered() == null) {
-				return 1;
-			}
-			return f1.getOrdered().compareTo(f2.getOrdered());
-		});
+		Collections.sort(fields, Field.COMPARATOR);
 		return fields;
 	}
-
+	
+	private Object handleValue(Object value, TemplateField templateField, Long userId) {
+		if (value == null || !Views.SELECTION.getView().equals(templateField.getView())) {
+			return value;
+		}
+		Set<String> values = new HashSet<>();
+		values.add(value.toString());
+		Map<String, String> textMap = DomainUtils.getSelectionValueTextMap(templateField.getSelectionId(), userId, values);
+		String text = textMap.get(value.toString());
+		if (text == null) {
+			return value;
+		}
+		return new Option<>(value, text);
+	}
+	
 }

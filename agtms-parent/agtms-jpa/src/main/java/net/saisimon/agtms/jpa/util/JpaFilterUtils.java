@@ -23,6 +23,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
@@ -38,6 +39,9 @@ import net.saisimon.agtms.jpa.domain.Statement;
 public class JpaFilterUtils {
 	
 	public static Statement where(FilterRequest filterRequest) {
+		if (filterRequest == null) {
+			return null;
+		}
 		Statement statement = new Statement();
 		String where = "";
 		if (!CollectionUtils.isEmpty(filterRequest.getAndFilters())) {
@@ -69,13 +73,25 @@ public class JpaFilterUtils {
 		return sort;
 	}
 	
-	public static <T> Specification<T> specification(FilterRequest filterRequest) {
+	public static <T> Specification<T> specification(FilterRequest filterRequest, String... properties) {
 		return new Specification<T>() {
 			
 			private static final long serialVersionUID = -2129612923958716561L;
 			
+			@SuppressWarnings({ "rawtypes", "unchecked" })
 			@Override
 			public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+				if (properties != null && properties.length > 0) {
+					Path path = null;
+					for (String property : properties) {
+						if (path == null) {
+							path = root.get(property);
+						} else {
+							path.get(property);
+						}
+					}
+					query.select(path);
+				}
 				List<Predicate> predicates = new ArrayList<>();
 				if (!CollectionUtils.isEmpty(filterRequest.getAndFilters())) {
 					List<Predicate> ps = parseFilters(root, query, criteriaBuilder, filterRequest.getAndFilters());

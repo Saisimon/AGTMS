@@ -1,6 +1,6 @@
 <template>
     <div class="select-editor" @click="show=true">
-        <multiselect class="filter-select" v-if="show" 
+        <multiselect v-if="show" 
             @blur.native.capture="show=false" 
             v-model="editor.value"
             label="text"
@@ -12,7 +12,10 @@
             :searchable="false"
             :options="editor.options"
             :placeholder="''"
-            @select="updateValue" />
+            @select="updateValue" >
+            <template slot="noResult">{{ $t("no_result") }}</template>
+            <template slot="noOptions">{{ $t("no_options") }}</template>
+        </multiselect>
         <span class="select-editor-text" v-else-if="editor.value != null" >{{ editor.value.text }}</span>
         <span class="select-editor-text" v-else >{{ placeholder }}</span>
     </div>
@@ -67,10 +70,3 @@ export default {
     }
 }
 </script>
-
-<style>
-.select-editor .select-editor-text {
-    cursor: pointer;
-    font-style: italic;
-}
-</style>

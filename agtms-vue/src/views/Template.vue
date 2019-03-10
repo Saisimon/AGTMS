@@ -26,8 +26,8 @@
                                         <transition-group class="d-flex" tag="div">
                                             <div class="draggable-column" v-for="column in field.columns" :key="column.id" :class="column.class">
                                                 <div class="draggable-field" v-for="field in column.fields" :key="field.id">
-                                                    <div v-if="field.type == 'select'" v-html="field.value.text"></div>
-                                                    <div v-else>
+                                                    <div class="draggable-cell" v-if="field.type == 'select'" v-html="field.value.text"></div>
+                                                    <div class="draggable-cell" v-else>
                                                         <span>{{ field.value }}</span>
                                                     </div>
                                                 </div>
@@ -38,14 +38,14 @@
                                 <div v-else-if="field.columns != null" class="draggable-table">
                                     <div class="draggable-column" v-for="column in field.columns" :key="column.id" :class="column.class">
                                         <div class="draggable-field" v-for="field in column.fields" :key="field.id">
-                                            <div>
-                                                <span>{{ field.value }}</span>
+                                            <div class="draggable-cell">
+                                                <span >{{ field.value }}</span>
                                                 <span class="text-danger" v-if="field.required">*</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div v-else>
+                                <div class="draggable-cell" v-else>
                                     <span>{{ field.value }}</span>
                                     <span class="text-danger" v-if="field.required">*</span>
                                 </div>
@@ -67,7 +67,7 @@
                                 :columns="fieldTitleColumns"
                                 :rows="fieldTitleRows" >
                                 <template slot="table-row" slot-scope="props">
-                                    <div class="text-center">
+                                    <div class="text-center title-text">
                                         <span>{{ props.formattedRow['title'] }}</span>
                                         <span class="text-danger" v-if="props.row.required">*</span>
                                     </div>
@@ -94,7 +94,7 @@
                                 <i class="fa fa-trash"></i>
                             </div>
                         </span>
-                        <div v-else class="text-center">
+                        <div v-else class="text-center title-text">
                             <span>{{props.formattedRow[props.column.field]}}</span>
                             <span class="text-danger" v-if="props.row.required">*</span>
                         </div>
@@ -151,7 +151,7 @@
                 centered 
                 :cancel-title="$t('cancel')"
                 :ok-title="$t('confirm_reset')"
-                @ok="reset()"
+                @ok="reset"
                 ok-variant="danger"
                 button-size="sm">
                 <div class="text-center font-weight-bold">
@@ -189,12 +189,6 @@
                         </span>
                         <span v-else-if="props.column.view == 'image'">
                             <image-cell 
-                                :rowData="props.formattedRow" 
-                                :field="props.column.field" 
-                                :index="props.row.originalIndex"  />
-                        </span>
-                        <span v-else-if="props.column.view == 'html'">
-                            <html-cell 
                                 :rowData="props.formattedRow" 
                                 :field="props.column.field" 
                                 :index="props.row.originalIndex"  />
@@ -238,6 +232,7 @@ export default {
                     vm.$store.commit('setClassOptions', templateGrid.classOptions);
                     vm.$store.commit('setViewOptions', templateGrid.viewOptions);
                     vm.$store.commit('setWhetherOptions', templateGrid.whetherOptions);
+                    vm.$store.commit('setSelectionOptions', templateGrid.selectionOptions);
                     vm.resetTemplateGrid = vm.cloneObject(templateGrid);
                 }
                 vm.$store.commit('clearProgress');
@@ -324,7 +319,7 @@ export default {
                 { 'title': this.$t('uniqued') },
                 { 'title': this.$t('hidden') },
                 { 'title': this.$t('default') },
-                { 'title': this.$t('width') },
+                // { 'title': this.$t('width') },
                 { 'title': '-' }
             ],
             resetTemplateGrid: {},
@@ -347,7 +342,7 @@ export default {
                                 {id: 6, value: this.$t('uniqued')}, 
                                 {id: 7, value: this.$t('hidden')}, 
                                 {id: 8, value: this.$t('default')}, 
-                                {id: 9, value: this.$t('width')}, 
+                                // {id: 9, value: this.$t('width')}, 
                                 {id: 10, value: '-'}
                             ], 
                             class: 'text-center w-100'
@@ -370,7 +365,7 @@ export default {
                     {id: 6, value: ' '},
                     {id: 7, value: ' '},
                     {id: 8, value: ' '},
-                    {id: 9, value: ' '},
+                    // {id: 9, value: ' '},
                     {id: 10, value: ' '},
                 ], 
                 class: 'add-field-td text-center',
@@ -432,14 +427,14 @@ export default {
                         rows: [
                             { editor: "input", field0: {value: ""}, key: "fieldName" },
                             { editor: "select", field0: {value: this.templateGrid.classOptions[0], options: this.templateGrid.classOptions}, key: "fieldType" },
-                            { editor: "select", field0: {value: this.templateGrid.viewOptions[0], options: this.templateGrid.viewOptions}, key: "showType" },
+                            { editor: "select", field0: {value: this.templateGrid.viewOptions[0], options: this.templateGrid.viewOptions}, 'selection-field0': {value: this.templateGrid.selectionOptions[0], options: this.templateGrid.selectionOptions}, key: "showType" },
                             { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions}, key: "filter" },
                             { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions}, key: "sorted" },
                             { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions}, key: "required" },
                             { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions}, key: "uniqued" },
                             { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions}, key: "hidden" },
                             { editor: "input", field0: {value: ""}, key: "default" },
-                            { editor: "input", field0: {value: ""}, key: "width" },
+                            // { editor: "input", field0: {value: ""}, key: "width" },
                             { editor: "remove", field0: "", key: "remove" }
                         ]
                     }
@@ -587,9 +582,12 @@ export default {
                         uniqued: fieldRows[6][fieldColumn.field].value.value == '1' ? true : false,
                         hidden: fieldRows[7][fieldColumn.field].value.value == '1' ? true : false,
                         defaultValue: fieldRows[8][fieldColumn.field].value,
-                        width: fieldRows[9][fieldColumn.field].value,
+                        // width: fieldRows[9][fieldColumn.field].value,
                         ordered: fieldColumn.ordered,
                     };
+                    if (templateField['view'] === 'selection') {
+                        templateField['selectionId'] = fieldRows[2]['selection-' + fieldColumn.field].value.value;
+                    }
                     templateFields[j] = templateField;
                 }
                 templateColumn['fields'] = templateFields;
@@ -654,7 +652,7 @@ export default {
                 var uniquedRow = subRows[6];
                 var hiddenRow = subRows[7];
                 var defaultRow = subRows[8];
-                var widthRow = subRows[9];
+                // var widthRow = subRows[9];
                 for (var j = 0; j < subColumns.length; j++) {
                     var subColumn = subColumns[j];
                     var subKey = subColumn.field;
@@ -672,7 +670,7 @@ export default {
                     subFields.push({value: this.getValue(uniquedRow, subKey, ' '), type: 'select'});
                     subFields.push({value: this.getValue(hiddenRow, subKey, ' '), type: 'select'});
                     subFields.push({value: this.getValue(defaultRow, subKey, ' ')});
-                    subFields.push({value: this.getValue(widthRow, subKey, ' ')});
+                    // subFields.push({value: this.getValue(widthRow, subKey, ' ')});
                     subFields.push({value: ' '});
                     subTemplateColumn['fields'] = subFields;
                     subTemplateColumns[subColumn.ordered] = subTemplateColumn;
@@ -710,15 +708,13 @@ export default {
             }
             this.$store.dispatch('saveTemplate', template).then(resp => {
                 var data = resp.data;
-                var variant = 'danger';
                 if (data.code === 0) {
                     this.$store.dispatch('getTree');
-                    variant = 'success';
+                    this.$store.commit('showAlert', {
+                        message: data.message,
+                        variant: 'success'
+                    });
                 }
-                this.$store.commit('showAlert', {
-                    message: data.message,
-                    variant: variant
-                });
             });
         }
     },
@@ -742,10 +738,6 @@ export default {
 </script>
 
 <style scoped>
-.remove-editor {
-    cursor: pointer;
-    text-align: center;
-}
 .form-container >>> .vgt-table thead {
     display: none!important;
 }
@@ -767,9 +759,13 @@ export default {
     cursor: move;
 }
 .draggable-field {
-    padding: 0.5em;
+    padding: 0.25em 0.5em;
     border-top: 1px solid #DCDFE6;
     white-space: pre;
+}
+.draggable-cell {
+    height: 31px;
+    line-height: 31px;
 }
 .draggable-switch {
     padding-right: 5px;
@@ -786,7 +782,64 @@ export default {
 .field-td {
     min-width: 150px;
 }
+.title-text {
+    height: 30px;
+    line-height: 30px;
+}
 .editor-text {
     color: #007bff;
+    height: 30px;
+    line-height: 30px;
+}
+.editor-input {
+    padding: 0.25em!important;
+    height: 30px!important;
+}
+.add-field-td {
+    width: 40px;
+    min-width: 40px;
+}
+.remove-editor {
+    cursor: pointer;
+    text-align: center;
+    height: 30px;
+    line-height: 30px;
+}
+.input-editor .input-editor-text {
+    cursor: pointer;
+    font-style: italic;
+}
+.select-editor .select-editor-text {
+    cursor: pointer;
+    font-style: italic;
+}
+.select-editor .multiselect {
+    height: 30px!important;
+    min-height: 30px!important;
+}
+.select-editor .multiselect__select {
+    height: 28px!important;
+    min-height: 28px!important;
+    padding: 0px!important;
+}
+.select-editor .multiselect__tags {
+    height: 30px!important;
+    min-height: 30px!important;
+    padding: 4px 40px 0px 4px!important;
+}
+.select-editor .multiselect__single {
+    font-size: 0.85rem!important;
+}
+.select-editor .multiselect__option {
+    padding: 5px!important;
+    min-height: 30px!important;
+    line-height: 20px!important;
+    height:30px!important;
+}
+.template-container table.vgt-table .vgt-left-align {
+    padding: 0.35em 0.5em!important;
+}
+.template-container table.vgt-table .vgt-right-align {
+    padding: 0.35em 0.5em!important;
 }
 </style>

@@ -4,11 +4,14 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
+
+import net.saisimon.agtms.core.util.PropertyUtils;
 
 /**
  * web 配置
@@ -18,6 +21,8 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+	
+	private static final int TASK_MAX_SIZE = NumberUtils.toInt(PropertyUtils.fetchYaml("extra.max-size.task", 3).toString(), 3);
 	
 	/**
 	 * 配置国际化
@@ -49,7 +54,7 @@ public class WebConfig implements WebMvcConfigurer {
 	
 	@Bean
 	public ExecutorService executorService() {
-		return Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+		return Executors.newFixedThreadPool(TASK_MAX_SIZE);
 	}
 
 }

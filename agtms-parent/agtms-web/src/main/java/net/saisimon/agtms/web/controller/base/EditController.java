@@ -12,7 +12,7 @@ import net.saisimon.agtms.core.domain.grid.Field;
  * @author saisimon
  *
  */
-public abstract class EditController extends BaseController {
+public abstract class EditController<T> extends BaseController {
 	
 	/**
 	 * 前端编辑相关信息的框架
@@ -21,10 +21,10 @@ public abstract class EditController extends BaseController {
 	 * @param key 关键词
 	 * @return 编辑相关信息
 	 */
-	protected EditGrid getEditGrid(Long id, Object key) {
+	protected EditGrid getEditGrid(T entity, Object key) {
 		EditGrid editGrid = new EditGrid();
-		editGrid.setBreadcrumbs(breadcrumbs(id, key));
-		editGrid.setFields(fields(id, key));
+		editGrid.setBreadcrumbs(breadcrumbs(entity, key));
+		editGrid.setFields(fields(entity, key));
 		return editGrid;
 	}
 	
@@ -34,7 +34,7 @@ public abstract class EditController extends BaseController {
 	 * @param key 关键词
 	 * @return 面包屑导航
 	 */
-	protected abstract List<Breadcrumb> breadcrumbs(Long id, Object key);
+	protected abstract List<Breadcrumb> breadcrumbs(T entity, Object key);
 	
 	/**
 	 * 前端编辑字段信息配置
@@ -43,6 +43,6 @@ public abstract class EditController extends BaseController {
 	 * @param key 关键词
 	 * @return 编辑字段信息
 	 */
-	protected abstract List<Field<?>> fields(Long id, Object key);
+	protected abstract List<Field<?>> fields(T entity, Object key);
 	
 }

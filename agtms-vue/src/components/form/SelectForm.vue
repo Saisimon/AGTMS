@@ -21,11 +21,17 @@
                 group-label="group" 
                 :group-select="true"
                 :allow-empty="!field.required"
-                :state="field.state"
-                :searchable="false"
+                :disabled="field.disabled"
+                :searchable="field.searchable"
+                :loading="isLoading"
                 :options="options"
+                :limit="3"
                 :multiple="true"
-                :placeholder="''" />
+                :placeholder="''"
+                @search-change="search" >
+                <template slot="noResult">{{ $t("no_result") }}</template>
+                <template slot="noOptions">{{ $t("no_options") }}</template>
+            </multiselect>
             <multiselect class="filter-select"
                 v-else
                 v-model="field.value"
@@ -35,12 +41,17 @@
                 deselect-label=""
                 selected-label=""
                 :allow-empty="!field.required"
-                :state="field.state"
-                :searchable="false"
+                :disabled="field.disabled"
+                :searchable="field.searchable"
+                :loading="isLoading"
                 :options="options"
-                :placeholder="''" />
-            <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required">
-                {{ $t('please_input_valid') }}{{ field.text }}
+                :placeholder="''"
+                @search-change="search" >
+                <template slot="noResult">{{ $t("no_result") }}</template>
+                <template slot="noOptions">{{ $t("no_options") }}</template>
+            </multiselect>
+            <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required" :class="{'d-block': field.state == false}">
+                {{ $t('please_select_valid') }}{{ field.text }}
             </b-form-invalid-feedback>
         </b-col>
     </b-row>
@@ -50,16 +61,48 @@
 export default {
     name: 'select-form',
     props: [ 'field' ],
+    created: function() {
+        if (this.field.options == null || this.field.options.length == 0) {
+            this.search();
+        }
+    },
+    data: function() {
+        return {
+            isLoading: false
+        }
+    },
     computed: {
         options: function() {
+            var options = this.field.options;
+            if (options == null) {
+                options = [];
+            }
             if (this.field.multiple) {
                 return [{
                     group: this.$t('select_all'),
-                    options: this.field.options
+                    options: options
                 }];
             } else {
-                return this.field.options;
+                return options;
             }
+        }
+    },
+    methods: {
+        search: function(query) {
+            if (this.field.selectionId == null) {
+                return;
+            }
+            this.isLoading = true;
+            this.$store.dispatch('searchSelection', {
+                id: this.field.selectionId,
+                keyword: query
+            }).then(resp => {
+                if (resp.data.code === 0) {
+                    var options = resp.data.data;
+                    this.field.options = options;
+                }
+                this.isLoading = false;
+            });
         }
     }
 }

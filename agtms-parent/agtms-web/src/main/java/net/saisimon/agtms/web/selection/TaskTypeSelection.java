@@ -6,12 +6,11 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.domain.sign.Sign;
-import net.saisimon.agtms.core.enums.Selections;
 import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 
 @Component
-public class TaskTypeSelection extends AbstractSelection {
+public class TaskTypeSelection extends AbstractSelection<String> {
 	
 	@Override
 	public LinkedHashMap<String, String> select() {
@@ -21,11 +20,6 @@ public class TaskTypeSelection extends AbstractSelection {
 			dataSourceMap.put(sign.getName(), getMessage(sign.getText() == null ? sign.getName() : sign.getText()));
 		}
 		return dataSourceMap;
-	}
-	
-	@Override
-	public Selections key() {
-		return Selections.TASK_TYPE;
 	}
 	
 }

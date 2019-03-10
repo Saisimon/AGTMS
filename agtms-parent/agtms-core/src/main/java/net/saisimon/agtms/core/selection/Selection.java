@@ -8,8 +8,8 @@ import java.util.LinkedHashMap;
  * @author saisimon
  *
  */
-public interface Selection {
+public interface Selection<T> {
 	
-	LinkedHashMap<String, String> select();
+	LinkedHashMap<T, String> select();
 	
 }

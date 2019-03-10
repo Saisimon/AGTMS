@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.domain.Template;
-import net.saisimon.agtms.core.domain.Template.TemplateColumn;
+import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -99,10 +99,10 @@ public class TemplateMainController extends MainController {
 		TemplateService templateService = TemplateServiceFactory.get();
 		Page<Template> page = templateService.findPage(filter, pageable);
 		List<TemplateInfo> results = new ArrayList<>(page.getContent().size());
-		Map<String, String> navigationMap = navigationSelection.select();
+		Map<Long, String> navigationMap = navigationSelection.select();
 		for (Template template : page.getContent()) {
 			TemplateInfo result = buildTemplateInfo(template);
-			result.setNavigationName(navigationMap.get(template.getNavigationId().toString()));
+			result.setNavigationName(navigationMap.get(template.getNavigationId()));
 			result.setAction(TEMPLATE);
 			results.add(result);
 		}
@@ -202,7 +202,7 @@ public class TemplateMainController extends MainController {
 		keyValues = Arrays.asList("title");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
 		value = new HashMap<>();
-		value.put("title", TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
+		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -210,8 +210,8 @@ public class TemplateMainController extends MainController {
 		keyValues = Arrays.asList("createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
 		value = new HashMap<>();
-		value.put("createTime", RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
-		value.put("updateTime", RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;

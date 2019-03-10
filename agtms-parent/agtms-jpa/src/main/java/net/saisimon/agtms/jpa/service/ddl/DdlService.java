@@ -1,6 +1,6 @@
 package net.saisimon.agtms.jpa.service.ddl;
 
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 
 /**
  * DDL 服务

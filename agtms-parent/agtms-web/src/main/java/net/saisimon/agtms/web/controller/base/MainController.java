@@ -341,7 +341,7 @@ public abstract class MainController extends BaseController {
 						}
 					} else if ("select".equals(fieldFilter.getType())) {
 						SelectFilter<Object> selectFilter = (SelectFilter<Object>) fieldFilter;
-						if (selectFilter.getMultiple()) {
+						if (selectFilter.isMultiple()) {
 							MultipleSelect<Object> filterMultipleSelect = (MultipleSelect<Object>) selectFilter.getSelect();
 							List<Object> list = (List<Object>) value;
 							List<Option<Object>> selected = new ArrayList<>();

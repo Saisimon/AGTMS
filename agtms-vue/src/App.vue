@@ -157,8 +157,8 @@ input:active, input:focus {
     opacity: 0;
 }
 .form-label {
-    height: 40px;
-    line-height: 40px;
+    height: 38px;
+    line-height: 38px;
     font-size: 14px;
     font-weight: 400;
 }

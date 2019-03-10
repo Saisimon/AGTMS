@@ -46,14 +46,21 @@ public class ErrorMessage {
 		public static final Result TASK_NOT_EXIST = ResultUtils.error(5001, "task.not.exist");
 		public static final Result TASK_CANCEL = ResultUtils.error(5002, "task.cancel");
 		
-		public static class EXPORT {
+		public static class Export {
 			public static final Result TASK_EXPORT_FAILED = ResultUtils.error(5101, "export.failed");
-			public static final Result TASK_XLS_FILE_MAX_SIZE_LIMIT = ResultUtils.error(5102, "xls.file.max.size.limit");
+			public static final Result TASK_EXPORT_MAX_SIZE_LIMIT = ResultUtils.error(5102, "export.max.size.limit");
 		}
 		
-		public static class IMPORT {
+		public static class Import {
 			public static final Result TASK_IMPORT_FAILED = ResultUtils.error(5201, "import.failed");
+			public static final Result TASK_IMPORT_MAX_SIZE_LIMIT = ResultUtils.error(5202, "import.max.size.limit");
+			public static final Result TASK_IMPORT_SIZE_EMPTY = ResultUtils.error(5203, "import.size.empty");
 		}
+	}
+	
+	public static class Selection {
+		public static final Result SELECTION_NOT_EXIST = ResultUtils.error(6001, "selection.not.exist");
+		public static final Result SELECTION_ALREADY_EXISTS = ResultUtils.error(6002, "selection.already.exists");
 	}
 	
 }

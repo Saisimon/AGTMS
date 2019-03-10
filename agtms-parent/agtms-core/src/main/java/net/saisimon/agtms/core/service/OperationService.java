@@ -2,7 +2,7 @@ package net.saisimon.agtms.core.service;
 
 import org.springframework.core.Ordered;
 
-import net.saisimon.agtms.core.domain.Operation;
+import net.saisimon.agtms.core.domain.entity.Operation;
 
 /**
  * 操作记录服务接口

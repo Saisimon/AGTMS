@@ -10,8 +10,7 @@ public enum FileTypes {
 	
 	XLS("xls"),
 	XLSX("xlsx"),
-	CSV("csv"),
-	JSON("json");
+	CSV("csv");
 	
 	private String type;
 	

@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.domain.Navigation;
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Navigation;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -180,7 +180,7 @@ public class NavigationMainController extends MainController {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
 		Navigation navigation = navigationService.getNavigation(id, userId);
 		if (navigation == null) {
@@ -205,10 +205,13 @@ public class NavigationMainController extends MainController {
 		}
 		String icon = (String) body.get("icon");
 		Object priorityObj = body.get("priority");
-		long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
-		List<Navigation> navigations = navigationService.getNavigations(ids, userId);
-		for (Navigation navigation : navigations) {
+		for (Long id : ids) {
+			Navigation navigation = navigationService.getNavigation(id, userId);
+			if (navigation == null) {
+				continue;
+			}
 			boolean update = false;
 			if (StringUtils.isNotBlank(icon) && !icon.equals(navigation.getIcon())) {
 				update = true;
@@ -233,10 +236,13 @@ public class NavigationMainController extends MainController {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
-		List<Navigation> navigations = navigationService.getNavigations(ids, userId);
-		for (Navigation navigation : navigations) {
+		for (Long id : ids) {
+			Navigation navigation = navigationService.getNavigation(id, userId);
+			if (navigation == null) {
+				continue;
+			}
 			recursiveRemove(navigation, userId);
 		}
 		return ResultUtils.simpleSuccess();
@@ -299,8 +305,8 @@ public class NavigationMainController extends MainController {
 		List<String> keyValues = Arrays.asList("title", "priority");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
 		Map<String, FieldFilter> value = new HashMap<>();
-		value.put("title", TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
-		value.put("priority", RangeFilter.rangeFilter("", Classes.LONG.getName(), "", Classes.LONG.getName()));
+		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
+		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.LONG.getName(), "", Classes.LONG.getName()));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -308,8 +314,8 @@ public class NavigationMainController extends MainController {
 		keyValues = Arrays.asList("createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
 		value = new HashMap<>();
-		value.put("createTime", RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
-		value.put("updateTime", RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;
@@ -399,7 +405,7 @@ public class NavigationMainController extends MainController {
 				continue;
 			}
 			for (Template template : remoteTemplates) {
-				template.setSourceUrl(service);
+				template.setService(service);
 				template.setOperatorId(operatorId);
 				templates.add(template);
 				String sign = template.sign();

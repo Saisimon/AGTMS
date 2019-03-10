@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
-import net.saisimon.agtms.core.domain.Operation;
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Operation;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.factory.OperationHandlerFactory;
 import net.saisimon.agtms.core.factory.OperationServiceFactory;
 import net.saisimon.agtms.core.handler.DefaultOperationHandler;

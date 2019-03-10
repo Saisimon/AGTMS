@@ -1,7 +1,7 @@
 <template>
     <div class="input-editor" @click="show=true">
         <b-form-input 
-            :class="'border-0'"
+            :class="'border-0 editor-input'"
             size="sm" 
             v-model="editor.value" 
             v-if="show" 
@@ -62,10 +62,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-.input-editor .input-editor-text {
-    cursor: pointer;
-    font-style: italic;
-}
-</style>

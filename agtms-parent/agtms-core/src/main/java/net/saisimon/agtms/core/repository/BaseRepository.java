@@ -47,8 +47,8 @@ public interface BaseRepository<T, ID> {
 	 * @param filter 指定过滤条件
 	 * @return 实体对象列表
 	 */
-	default List<T> findList(FilterRequest filter) {
-		return findList(filter, null);
+	default List<T> findList(FilterRequest filter, String... properties) {
+		return findList(filter, (FilterSort)null, properties);
 	}
 	
 	/**
@@ -58,7 +58,16 @@ public interface BaseRepository<T, ID> {
 	 * @param sort 指定排序条件
 	 * @return 实体对象列表
 	 */
-	List<T> findList(FilterRequest filter, FilterSort sort);
+	List<T> findList(FilterRequest filter, FilterSort sort, String... properties);
+	
+	/**
+	 * 根据指定条件查询列表
+	 * 
+	 * @param filter 指定过滤条件
+	 * @param pageable 指定分页条件
+	 * @return 实体对象列表
+	 */
+	List<T> findList(FilterRequest filter, FilterPageable pageable, String... properties);
 	
 	/**
 	 * 根据指定条件查询分页信息
@@ -67,7 +76,7 @@ public interface BaseRepository<T, ID> {
 	 * @param pageable 指定分页条件
 	 * @return 实体对象分页对象
 	 */
-	Page<T> findPage(FilterRequest filter, FilterPageable pageable);
+	Page<T> findPage(FilterRequest filter, FilterPageable pageable, String... properties);
 	
 	/**
 	 * 根据指定条件查询一条记录
@@ -75,8 +84,8 @@ public interface BaseRepository<T, ID> {
 	 * @param filter 指定过滤条件
 	 * @return 实体对象
 	 */
-	default Optional<T> findOne(FilterRequest filter) {
-		return findOne(filter, null);
+	default Optional<T> findOne(FilterRequest filter, String... properties) {
+		return findOne(filter, null, properties);
 	}
 	
 	/**
@@ -86,7 +95,7 @@ public interface BaseRepository<T, ID> {
 	 * @param sort 指定排序条件
 	 * @return 实体对象
 	 */
-	Optional<T> findOne(FilterRequest filter, FilterSort sort);
+	Optional<T> findOne(FilterRequest filter, FilterSort sort, String... properties);
 	
 	/**
 	 * 根据 ID 查询实体记录
@@ -100,7 +109,7 @@ public interface BaseRepository<T, ID> {
 			return Optional.empty();
 		}
 		FilterRequest filter = FilterRequest.build().and(Constant.ID, id);
-		return findOne(filter, null);
+		return findOne(filter, (FilterSort)null);
 	}
 	
 	/**

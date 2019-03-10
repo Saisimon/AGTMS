@@ -20,9 +20,9 @@ public class TemplateGrid {
 	
 	private Table table;
 	
-	private MultipleSelect<String> functionSelect;
+	private MultipleSelect<Integer> functionSelect;
 	
-	private SingleSelect<String> navigationSelect;
+	private SingleSelect<Long> navigationSelect;
 	
 	private SingleSelect<String> dataSourceSelect;
 	
@@ -30,9 +30,9 @@ public class TemplateGrid {
 	
 	private List<Option<String>> viewOptions;
 	
-	private List<Option<String>> whetherOptions;
+	private List<Option<Integer>> whetherOptions;
 	
-	private String sourceUrl;
+	private List<Option<Long>> selectionOptions;
 	
 	@Data
 	public static class Table {

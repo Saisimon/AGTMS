@@ -19,9 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
-import net.saisimon.agtms.core.domain.Template;
-import net.saisimon.agtms.core.domain.Template.TemplateColumn;
-import net.saisimon.agtms.core.domain.Template.TemplateField;
+import net.saisimon.agtms.core.domain.entity.Navigation;
+import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Editor;
 import net.saisimon.agtms.core.domain.grid.TemplateGrid;
@@ -36,7 +37,11 @@ import net.saisimon.agtms.core.enums.EditorTypes;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.factory.NavigationServiceFactory;
+import net.saisimon.agtms.core.factory.SelectionServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
+import net.saisimon.agtms.core.service.NavigationService;
+import net.saisimon.agtms.core.service.SelectionService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -77,28 +82,31 @@ public class TemplateEditController extends BaseController {
 	
 	@PostMapping("/grid")
 	public Result grid(@RequestParam(name = "id", required = false) Long id) {
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateGrid grid = new TemplateGrid();
 		grid.setBreadcrumbs(breadcrumbs(id));
 		grid.setClassOptions(Select.buildOptions(classSelection.select()));
 		grid.setViewOptions(Select.buildOptions(viewSelection.select()));
 		grid.setWhetherOptions(Select.buildOptions(whetherSelection.select()));
-		Template template = TemplateUtils.getTemplate(id, AuthUtils.getUserInfo().getUserId());
+		SelectionService selectionService = SelectionServiceFactory.get();
+		grid.setSelectionOptions(Select.buildOptions(selectionService.getSelectionMap(userId)));
+		Template template = TemplateUtils.getTemplate(id, userId);
 		grid.setTable(buildTable(grid, template));
-		MultipleSelect<String> functionSelect = new MultipleSelect<>();
+		MultipleSelect<Integer> functionSelect = new MultipleSelect<>();
 		functionSelect.setOptions(Select.buildOptions(functionSelection.select()));
-		SingleSelect<String> navigationSelect = new SingleSelect<>();
+		SingleSelect<Long> navigationSelect = new SingleSelect<>();
 		navigationSelect.setOptions(Select.buildOptions(navigationSelection.select()));
 		SingleSelect<String> dataSourceSelect = new SingleSelect<>();
 		dataSourceSelect.setOptions(Select.buildOptions(dataSourceSelection.select()));
 		if (template != null) {
 			grid.setTitle(new Editor<>(template.getTitle()));
-			List<String> functionCodes = TemplateUtils.getFunctionCodes(template);
+			List<Integer> functionCodes = TemplateUtils.getFunctionCodes(template);
 			if (CollectionUtils.isEmpty(functionCodes)) {
 				functionSelect.setSelected(new ArrayList<>());
 			} else {
 				functionSelect.setSelected(Select.getOption(functionSelect.getOptions(), functionCodes));
 			}
-			navigationSelect.setSelected(Select.getOption(navigationSelect.getOptions(), template.getNavigationId().toString()));
+			navigationSelect.setSelected(Select.getOption(navigationSelect.getOptions(), template.getNavigationId()));
 			dataSourceSelect.setSelected(Select.getOption(dataSourceSelect.getOptions(), template.getSource()));
 		} else {
 			grid.setTitle(new Editor<>(""));
@@ -116,22 +124,36 @@ public class TemplateEditController extends BaseController {
 	@Transactional
 	@PostMapping("/save")
 	public Result save(@RequestBody Template template) throws GenerateException {
+		List<Sign> signs = GenerateServiceFactory.getSigns();
+		if (CollectionUtils.isEmpty(signs)) {
+			return ErrorMessage.Common.SERVER_ERROR;
+		}
 		if (!TemplateUtils.checkRequired(template)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		if (!TemplateUtils.checkSize(template)) {
 			return ErrorMessage.Template.TEMPLATE_SIZE_ERROR;
 		}
-		List<Sign> signs = GenerateServiceFactory.getSigns();
-		if (CollectionUtils.isEmpty(signs)) {
-			return ErrorMessage.Common.SERVER_ERROR;
+		Long userId = AuthUtils.getUserInfo().getUserId();
+		if (template.getNavigationId() != null && template.getNavigationId() > 0) {
+			NavigationService navigationService = NavigationServiceFactory.get();
+			Navigation navigation = navigationService.getNavigation(template.getNavigationId(), userId);
+			if (navigation == null) {
+				return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
+			}
+		} else {
+			template.setNavigationId(-1L);
 		}
-		long userId = AuthUtils.getUserInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
 		if (template.getId() != null) {
 			Template oldTemplate = TemplateUtils.getTemplate(template.getId(), userId);
 			if (oldTemplate == null) {
 				return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
+			}
+			if (!template.getTitle().equals(oldTemplate.getTitle())) {
+				if (templateService.exists(template.getTitle(), userId)) {
+					return ErrorMessage.Template.TEMPLATE_ALREADY_EXISTS;
+				}
 			}
 			template.setSource(oldTemplate.getSource());
 			template.setCreateTime(oldTemplate.getCreateTime());
@@ -230,7 +252,7 @@ public class TemplateEditController extends BaseController {
 		Map<String, Object> uniquedRow = TemplateGrid.buildRow("uniqued", null, EditorTypes.SELECT);
 		Map<String, Object> hiddenRow = TemplateGrid.buildRow("hidden", null, EditorTypes.SELECT);
 		Map<String, Object> defaultRow = TemplateGrid.buildRow("default", null, EditorTypes.INPUT);
-		Map<String, Object> widthRow = TemplateGrid.buildRow("width", null, EditorTypes.INPUT);
+//		Map<String, Object> widthRow = TemplateGrid.buildRow("width", null, EditorTypes.INPUT);
 		Map<String, Object> subremoveRow = TemplateGrid.buildRow("remove", null, EditorTypes.REMOVE);
 		Integer idx = 1;
 		if (column != null) {
@@ -240,13 +262,14 @@ public class TemplateEditController extends BaseController {
 				fieldNameRow.put(field.getFieldName(), new Editor<>(field.getFieldTitle()));
 				fieldTypeRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getClassOptions(), field.getFieldType())));
 				showTypeRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getViewOptions(), field.getView())));
-				filterRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getFilter() ? "1" : "0")));
-				sortedRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getSorted() ? "1" : "0")));
-				requiredRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getRequired() ? "1" : "0")));
-				uniquedRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getUniqued() ? "1" : "0")));
-				hiddenRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getHidden() ? "1" : "0")));
+				showTypeRow.put("selection-" + field.getFieldName(), new Editor<>(Select.getOption(grid.getSelectionOptions(), field.getSelectionId())));
+				filterRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getFilter() ? 1 : 0)));
+				sortedRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getSorted() ? 1 : 0)));
+				requiredRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getRequired() ? 1 : 0)));
+				uniquedRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getUniqued() ? 1 : 0)));
+				hiddenRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getHidden() ? 1 : 0)));
 				defaultRow.put(field.getFieldName(), new Editor<>(StringUtils.isEmpty(field.getDefaultValue()) ? "" : field.getDefaultValue()));
-				widthRow.put(field.getFieldName(), new Editor<>(field.getWidth() == null ? "" : field.getWidth()));
+//				widthRow.put(field.getFieldName(), new Editor<>(field.getWidth() == null ? "" : field.getWidth()));
 				subremoveRow.put(field.getFieldName(), "");
 			}
 		} else {
@@ -255,13 +278,18 @@ public class TemplateEditController extends BaseController {
 			fieldNameRow.put(fieldName, new Editor<>(""));
 			fieldTypeRow.put(fieldName, new Editor<>(grid.getClassOptions().get(0)));
 			showTypeRow.put(fieldName, new Editor<>(grid.getViewOptions().get(0)));
+			if (CollectionUtils.isEmpty(grid.getSelectionOptions())) {
+				showTypeRow.put("selection-" + fieldName, new Editor<>(null));
+			} else {
+				showTypeRow.put("selection-" + fieldName, new Editor<>(grid.getSelectionOptions().get(0)));
+			}
 			filterRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0)));
 			sortedRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0)));
 			requiredRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0)));
 			uniquedRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0)));
 			hiddenRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0)));
 			defaultRow.put(fieldName, new Editor<>(""));
-			widthRow.put(fieldName, new Editor<>(""));
+//			widthRow.put(fieldName, new Editor<>(""));
 			subremoveRow.put(fieldName, "");
 		}
 		Collections.sort(subColumns, (c1, c2) -> {
@@ -283,7 +311,7 @@ public class TemplateEditController extends BaseController {
 		subRows.add(uniquedRow);
 		subRows.add(hiddenRow);
 		subRows.add(defaultRow);
-		subRows.add(widthRow);
+//		subRows.add(widthRow);
 		subRows.add(subremoveRow);
 		subTable.setIdx(idx);
 		subTable.setRows(subRows);

@@ -56,6 +56,7 @@ export default {
     navigation_management: '导航管理',
     template_management: '模板管理',
     please_input_valid: '请输入一个有效的',
+    please_select_valid: '请选择一个有效的',
     select_all: '全选',
     select_edit_fields: '请选择编辑字段',
     select_export_fields: '请选择导出字段',
@@ -89,5 +90,10 @@ export default {
     upload_file_max_size_limit: '请不要上传大于10M的文件',
     title_not_blank: '标题不能为空',
     column_not_blank: '列不能为空',
-    refresh: '刷新'
+    refresh: '刷新',
+    option_value: '选项值',
+    option_text: '选项文本',
+    more_functions: '与{count}个功能',
+    no_result: '暂无结果',
+    no_options: '暂无选项'
 }

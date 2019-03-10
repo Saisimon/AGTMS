@@ -1,4 +1,4 @@
-package net.saisimon.agtms.core.domain;
+package net.saisimon.agtms.core.domain.entity;
 
 import java.util.Date;
 import java.util.Set;
@@ -38,7 +38,7 @@ public class Template implements Cloneable {
 	/**
 	 * 导航ID
 	 */
-	@Column(columnDefinition="bigint(15)")
+	@Column(columnDefinition="BIGINT(15) DEFAULT -1 COMMENT '导航ID'")
 	private Long navigationId;
 	
 	/**
@@ -50,7 +50,7 @@ public class Template implements Cloneable {
 	/**
 	 * 模板支持的功能
 	 */
-	@Column(columnDefinition="bigint(11)")
+	@Column(columnDefinition="INT(11) COMMENT '模板支持的功能'")
 	private Integer function;
 	
 	/**
@@ -63,25 +63,25 @@ public class Template implements Cloneable {
 	/**
 	 * 模板下属的列下一个下标
 	 */
-	@Column(columnDefinition="bigint(11)")
+	@Column(columnDefinition="INT(11) COMMENT '模板下属的列下一个下标'")
 	private Integer columnIndex;
 	
 	/**
 	 * 模板创建时间
 	 */
-	@Column(columnDefinition="timestamp default current_timestamp")
+	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '模板创建时间'")
 	private Date createTime;
 	
 	/**
 	 * 模板更新时间
 	 */
-	@Column(columnDefinition="timestamp default current_timestamp")
+	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '模板更新时间'")
 	private Date updateTime;
 	
 	/**
 	 * 模板创建人员ID
 	 */
-	@Column(columnDefinition="bigint(15) not null")
+	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '模板创建人员ID'")
 	private Long operatorId;
 	
 	/**
@@ -91,10 +91,10 @@ public class Template implements Cloneable {
 	private String source;
 	
 	/**
-	 * 模板数据来源地址
+	 * 模板数据来源服务名
 	 */
-	@Column(length=500)
-	private String sourceUrl;
+	@Column(length=100)
+	private String service;
 	
 	@Transient
 	private String key;
@@ -108,7 +108,6 @@ public class Template implements Cloneable {
 	@Data
 	@Entity
 	@Table(name="agtms_template_column")
-	@Document
 	public static class TemplateColumn implements Cloneable {
 		
 		@Id
@@ -137,13 +136,13 @@ public class Template implements Cloneable {
 		/**
 		 * 列顺序值
 		 */
-		@Column(columnDefinition="bigint(11)")
+		@Column(columnDefinition="INT(11)")
 		private Integer ordered;
 		
 		/**
 		 * 列下属的属性下一个下标
 		 */
-		@Column(columnDefinition="bigint(11)")
+		@Column(columnDefinition="INT(11) COMMENT '列下属的属性下一个下标'")
 		private Integer fieldIndex;
 		
 	}
@@ -157,7 +156,6 @@ public class Template implements Cloneable {
 	@Data
 	@Entity
 	@Table(name="agtms_template_field")
-	@Document
 	public static class TemplateField implements Cloneable {
 		
 		@Id
@@ -193,33 +191,39 @@ public class Template implements Cloneable {
 		private String view;
 		
 		/**
+		 * 选择器ID
+		 */
+		@Column(columnDefinition="BIGINT(15) COMMENT '选择器ID'")
+		private Long selectionId;
+		
+		/**
 		 * 是否支持过滤
 		 */
-		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
+		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否支持过滤'")
 		private Boolean filter;
 		
 		/**
 		 * 是否支持排序
 		 */
-		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
+		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否支持排序'")
 		private Boolean sorted;
 		
 		/**
 		 * 是否必填
 		 */
-		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
+		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否必填'")
 		private Boolean required;
 		
 		/**
 		 * 是否唯一
 		 */
-		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
+		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否唯一'")
 		private Boolean uniqued;
 		
 		/**
 		 * 列表页是否隐藏
 		 */
-		@Column(columnDefinition="tinyint(1) not null DEFAULT '0'")
+		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '列表页是否隐藏'")
 		private Boolean hidden;
 		
 		/**
@@ -229,15 +233,15 @@ public class Template implements Cloneable {
 		private String defaultValue;
 		
 		/**
-		 * 展现宽度
+		 * 宽度
 		 */
-		@Column(columnDefinition="int(5)")
+		@Column(columnDefinition="INT(5) COMMENT '宽度'")
 		private Integer width;
 		
 		/**
 		 * 属性顺序值
 		 */
-		@Column(columnDefinition="bigint(11)")
+		@Column(columnDefinition="INT(11) COMMENT '属性顺序值'")
 		private Integer ordered;
 		
 	}
@@ -246,8 +250,8 @@ public class Template implements Cloneable {
 		if (id != null) {
 			return id.toString();
 		}
-		if (sourceUrl != null && key != null) {
-			return sourceUrl + "-" + key;
+		if (service != null && key != null) {
+			return service + "-" + key;
 		}
 		return null;
 	}

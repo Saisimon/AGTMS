@@ -18,12 +18,24 @@
                     @updateInputEditor="updateTableEditor" ></input-editor>
             </span>
             <span v-else-if="props.row.editor == 'select' && props.column.field != 'title' && props.column.field != 'add' ">
-                <select-editor 
-                    :editor="props.formattedRow[props.column.field]"
-                    :field="props.column.field" 
-                    :rowKey="props.row.key"
-                    :class="'editor-text'"
-                    @updateSelectEditor="updateTableEditor" ></select-editor>
+                <div class="d-flex">
+                    <div class="flex-fill">
+                        <select-editor 
+                            :editor="props.formattedRow[props.column.field]"
+                            :field="props.column.field" 
+                            :rowKey="props.row.key"
+                            :class="'editor-text'"
+                            @updateSelectEditor="updateTableEditor" ></select-editor>
+                    </div>
+                    <div class="flex-fill" v-if="props.row.key == 'showType' && props.formattedRow[props.column.field].value.value == 'selection'">
+                        <select-editor 
+                            :editor="props.row['selection-' + props.column.field]"
+                            :field="'selection-' + props.column.field" 
+                            :rowKey="props.row.key"
+                            :class="'editor-text'"
+                            @updateSelectEditor="updateTableEditor" ></select-editor>
+                    </div>
+                </div>
             </span>
             <span v-else-if="props.row.editor == 'remove' && props.column.field != 'title' && props.column.field != 'add' ">
                 <div class="remove-editor">
@@ -97,6 +109,7 @@ export default {
                             row[field]['options'] = this.$store.state.template.classOptions;
                         } else if (row.key == 'showType') {
                             row[field]['options'] = this.$store.state.template.viewOptions;
+                            row['selection-' + field]['options'] = this.$store.state.template.selectionOptions;
                         } else {
                             row[field]['options'] = this.$store.state.template.whetherOptions;
                         }
@@ -124,14 +137,16 @@ export default {
                         row[fieldKey] = {value: ""};
                     } else if (row.editor == 'select') {
                         if (row.key == 'fieldType') {
-                            var options = this.$store.state.template.classOptions;
-                            row[fieldKey] = {value: options[0], options: options};
+                            var classOptions = this.$store.state.template.classOptions;
+                            row[fieldKey] = {value: classOptions[0], options: classOptions};
                         } else if (row.key == 'showType') {
-                            var options = this.$store.state.template.viewOptions;
-                            row[fieldKey] = {value: options[0], options: options};
+                            var viewOptions = this.$store.state.template.viewOptions;
+                            row[fieldKey] = {value: viewOptions[0], options: viewOptions};
+                            var selectionOptions = this.$store.state.template.selectionOptions;
+                            row['selection-' + fieldKey] = {value: selectionOptions[0], options: selectionOptions};
                         } else {
-                            var options = this.$store.state.template.whetherOptions;
-                            row[fieldKey] = {value: options[0], options: options};
+                            var whetherOptions = this.$store.state.template.whetherOptions;
+                            row[fieldKey] = {value: whetherOptions[0], options: whetherOptions};
                         }
                     } else if (row.editor == 'remove') {
                         row[fieldKey] = "";
@@ -192,12 +207,5 @@ export default {
 .remove-editor {
     cursor: pointer;
     text-align: center;
-}
-</style>
-
-<style>
-.add-field-td {
-    width: 50px;
-    min-width: 50px;
 }
 </style>

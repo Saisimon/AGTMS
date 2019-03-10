@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +16,7 @@ import java.util.concurrent.Future;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,15 +36,16 @@ import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.Navigation;
-import net.saisimon.agtms.core.domain.Task;
-import net.saisimon.agtms.core.domain.Template;
-import net.saisimon.agtms.core.domain.Template.TemplateColumn;
-import net.saisimon.agtms.core.domain.Template.TemplateField;
+import net.saisimon.agtms.core.domain.entity.Navigation;
+import net.saisimon.agtms.core.domain.entity.Task;
+import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
+import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
 import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchEdit;
 import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchExport;
@@ -60,10 +61,10 @@ import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
-import net.saisimon.agtms.core.enums.FileTypes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.OperateTypes;
+import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
@@ -75,6 +76,7 @@ import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
+import net.saisimon.agtms.core.util.PropertyUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -97,6 +99,9 @@ import net.saisimon.agtms.web.selection.FileTypeSelection;
 @Slf4j
 public class ManagementMainController extends MainController {
 	
+	private static final int EXPORT_MAX_SIZE = NumberUtils.toInt(PropertyUtils.fetchYaml("extra.max-size.export", 65535).toString(), 65535);
+	private static final int IMPORT_MAX_SIZE = NumberUtils.toInt(PropertyUtils.fetchYaml("extra.max-size.import", 65535).toString(), 65535);
+	
 	@Autowired
 	private FileTypeSelection fileTypeSelection;
 	@Autowired
@@ -114,7 +119,8 @@ public class ManagementMainController extends MainController {
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
 	public Result list(@PathVariable("key") String key, @RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		Long userId = AuthUtils.getUserInfo().getUserId();
+		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -124,14 +130,20 @@ public class ManagementMainController extends MainController {
 		Page<Domain> page = generateService.findPage(filter, pageable);
 		request.getSession().setAttribute(key + "_filters", body);
 		request.getSession().setAttribute(key + "_pageable", param);
-		return ResultUtils.pageSuccess(page.getContent(), page.getTotalElements());
+		if (TemplateUtils.hasSelection(template)) {
+			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
+			List<Map<String, Object>> datas = DomainUtils.handleSelection(fieldInfoMap, page.getContent(), userId);
+			return ResultUtils.pageSuccess(datas, page.getTotalElements());
+		} else {
+			return ResultUtils.pageSuccess(page.getContent(), page.getTotalElements());
+		}
 	}
-	
+
 	@Operate(type=OperateTypes.REMOVE)
 	@Transactional
 	@PostMapping("/remove")
 	public Result remove(@PathVariable("key") String key, @RequestParam(name = "id") Long id) {
-		long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -208,7 +220,7 @@ public class ManagementMainController extends MainController {
 	@Transactional
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@PathVariable("key") String key, @RequestBody List<Long> ids) {
-		long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -234,7 +246,7 @@ public class ManagementMainController extends MainController {
 		if (bindingResult.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -242,14 +254,14 @@ public class ManagementMainController extends MainController {
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
-		if (Constant.File.XLS.equalsIgnoreCase(body.getExportFileType())) {
-			GenerateService generateService = GenerateServiceFactory.build(template);
-			FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
-			filter.and(Constant.OPERATORID, template.getOperatorId());
-			Long total = generateService.count(filter);
-			if (total > (2 << 16 - 1)) {
-				return ErrorMessage.Task.EXPORT.TASK_XLS_FILE_MAX_SIZE_LIMIT;
-			}
+		GenerateService generateService = GenerateServiceFactory.build(template);
+		FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
+		filter.and(Constant.OPERATORID, template.getOperatorId());
+		Long total = generateService.count(filter);
+		if (total > EXPORT_MAX_SIZE) {
+			Result result = ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
+			result.setMessageArgs(new Object[]{ EXPORT_MAX_SIZE });
+			return result;
 		}
 		body.setTemplateId(template.sign());
 		body.setUserId(userId);
@@ -278,7 +290,7 @@ public class ManagementMainController extends MainController {
 			@RequestParam("importFileType") String importFileType, 
 			@RequestParam("importFields") List<String> importFields, 
 			@RequestParam("importFile") MultipartFile importFile) {
-		long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -298,13 +310,35 @@ public class ManagementMainController extends MainController {
 		String name = UUID.randomUUID().toString();
 		File file = new File(path + File.separator + name + "." + importFileType);
 		try {
+			int size = 0;
+			switch (importFileType) {
+				case Constant.File.XLS:
+					size = FileUtils.sizeXLS(importFile.getInputStream());
+					break;
+				case Constant.File.CSV:
+					size = FileUtils.sizeCSV(importFile.getInputStream(), ",");
+					break;
+				case Constant.File.XLSX:
+					size = FileUtils.sizeXLSX(importFile.getInputStream());
+					break;
+				default:
+					break;
+			}
+			if (size == 0) {
+				return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
+			}
+			if (size > IMPORT_MAX_SIZE) {
+				Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
+				result.setMessageArgs(new Object[]{ IMPORT_MAX_SIZE });
+				return result;
+			}
 			FileUtils.createDir(file.getParentFile());
 			FileOutputStream output = new FileOutputStream(file);
 			IOUtils.copy(importFile.getInputStream(), output);
 			output.flush();
 		} catch (IOException e) {
 			log.error("导入异常", e);
-			return ErrorMessage.Task.IMPORT.TASK_IMPORT_FAILED;
+			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
 		}
 		ImportParam body = new ImportParam();
 		body.setImportFields(importFields);
@@ -386,7 +420,12 @@ public class ManagementMainController extends MainController {
 				String fieldName = column.getColumnName() + field.getFieldName();
 				keyValues.add(fieldName);
 				keyTexts.add(field.getFieldTitle());
-				if (Classes.LONG.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {
+				if (Views.SELECTION.getView().equals(field.getView())) {
+					if (field.getSelectionId() == null) {
+						continue;
+					}
+					value.put(fieldName, SelectFilter.selectSearchableFilter("", field.getFieldType(), field.getSelectionId()));
+				} else if (Classes.LONG.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {
 					value.put(fieldName, RangeFilter.rangeFilter("", field.getFieldType(), "", field.getFieldType()));
 				} else if (Classes.DATE.getName().equals(field.getFieldType())) {
 					value.put(fieldName, RangeFilter.rangeFilter("", field.getFieldType(), "", field.getFieldType()));
@@ -469,7 +508,14 @@ public class ManagementMainController extends MainController {
 			String fieldName = entry.getKey();
 			TemplateField templateField = entry.getValue();
 			editFieldOptions.add(new Option<>(fieldName, templateField.getFieldTitle(), templateField.getUniqued()));
-			Field<Object> field = Field.builder().name(fieldName).text(templateField.getFieldTitle()).view(templateField.getView()).type(templateField.getFieldType()).build();
+			Field<Object> field = Field.builder()
+					.name(fieldName)
+					.text(templateField.getFieldTitle())
+					.view(templateField.getView())
+					.type(templateField.getFieldType())
+					.selectionId(templateField.getSelectionId())
+					.searchable(true)
+					.build();
 			if (templateField.getRequired()) {
 				field.setRequired(true);
 			}
@@ -521,9 +567,7 @@ public class ManagementMainController extends MainController {
 		}
 		batchImport.setImportFileName(template.getTitle());
 		batchImport.setImportFieldOptions(importFieldOptions);
-		LinkedHashMap<String, String> select = fileTypeSelection.select();
-		select.remove(FileTypes.JSON.getType());
-		batchImport.setImportFileTypeOptions(Select.buildOptions(select));
+		batchImport.setImportFileTypeOptions(Select.buildOptions(fileTypeSelection.select()));
 		return batchImport;
 	}
 	
@@ -556,15 +600,7 @@ public class ManagementMainController extends MainController {
 				columns.add(column);
 			}
 		}
-		Collections.sort(columns, (c1, c2) -> {
-			if (c1.getOrdered() == null) {
-				return -1;
-			}
-			if (c2.getOrdered() == null) {
-				return 1;
-			}
-			return c1.getOrdered().compareTo(c2.getOrdered());
-		});
+		Collections.sort(columns, Column.COMPARATOR);
 		return columns;
 	}
 	

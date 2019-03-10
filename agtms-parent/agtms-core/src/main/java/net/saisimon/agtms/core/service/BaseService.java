@@ -55,8 +55,8 @@ public interface BaseService<T, ID> {
 	 * @param filter 指定过滤条件
 	 * @return 实体对象列表
 	 */
-	default List<T> findList(FilterRequest filter) {
-		return findList(filter, null);
+	default List<T> findList(FilterRequest filter, String... properties) {
+		return findList(filter, null, properties);
 	}
 	
 	/**
@@ -66,10 +66,10 @@ public interface BaseService<T, ID> {
 	 * @param sort 指定排序条件
 	 * @return 实体对象列表
 	 */
-	default List<T> findList(FilterRequest filter, FilterSort sort) {
+	default List<T> findList(FilterRequest filter, FilterSort sort, String... properties) {
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
-		return repository.findList(filter, sort);
+		return repository.findList(filter, sort, properties);
 	}
 	
 	/**
@@ -79,10 +79,10 @@ public interface BaseService<T, ID> {
 	 * @param pageable 指定分页条件
 	 * @return 实体对象分页对象
 	 */
-	default Page<T> findPage(FilterRequest filter, FilterPageable pageable) {
+	default Page<T> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
-		return repository.findPage(filter, pageable);
+		return repository.findPage(filter, pageable, properties);
 	}
 	
 	/**
@@ -91,8 +91,8 @@ public interface BaseService<T, ID> {
 	 * @param filter 指定过滤条件
 	 * @return 实体对象
 	 */
-	default Optional<T> findOne(FilterRequest filter) {
-		return findOne(filter, null);
+	default Optional<T> findOne(FilterRequest filter, String... properties) {
+		return findOne(filter, null, properties);
 	}
 	
 	/**
@@ -102,10 +102,10 @@ public interface BaseService<T, ID> {
 	 * @param sort 指定排序条件
 	 * @return 实体对象
 	 */
-	default Optional<T> findOne(FilterRequest filter, FilterSort sort) {
+	default Optional<T> findOne(FilterRequest filter, FilterSort sort, String... properties) {
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
-		return repository.findOne(filter, sort);
+		return repository.findOne(filter, sort, properties);
 	}
 	
 	/**

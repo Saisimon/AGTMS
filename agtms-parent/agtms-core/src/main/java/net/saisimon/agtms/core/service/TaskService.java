@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.springframework.core.Ordered;
 
-import net.saisimon.agtms.core.domain.Task;
+import net.saisimon.agtms.core.domain.entity.Task;
 
 /**
  * 任务服务接口

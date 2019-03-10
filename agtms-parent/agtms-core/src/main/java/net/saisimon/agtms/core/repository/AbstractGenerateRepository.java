@@ -16,7 +16,7 @@ import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
@@ -60,7 +60,7 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 		}
 	}
 	
-	public Domain conversion(Map<String, Object> map) throws GenerateException {
+	protected Domain conversion(Map<String, Object> map) throws GenerateException {
 		if (CollectionUtils.isEmpty(map)) {
 			return null;
 		}

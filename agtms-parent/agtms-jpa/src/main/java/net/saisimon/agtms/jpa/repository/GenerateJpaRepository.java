@@ -19,7 +19,7 @@ import org.springframework.stereotype.Repository;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -45,7 +45,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
 				sql += " WHERE " + where.getExpression();
-				args = where.getArgs().toArray();
+				if (where.getArgs() != null) {
+					args = where.getArgs().toArray();
+				}
 			}
 		}
 		if (log.isDebugEnabled()) {
@@ -55,20 +57,18 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 
 	@Override
-	public List<Domain> findList(FilterRequest filter, FilterSort sort) {
+	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(Constant.ID);
-		columnNames.add(Constant.OPERATORID);
-		columnNames.add(Constant.CREATETIME);
-		columnNames.add(Constant.UPDATETIME);
+		List<String> columnNames = getColumnNames(template, properties);
 		String sql = buildSql(template, columnNames);
 		Object[] args = null;
 		if (filter != null) {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
 				sql += " WHERE " + where.getExpression();
-				args = where.getArgs().toArray();
+				if (where.getArgs() != null) {
+					args = where.getArgs().toArray();
+				}
 			}
 		}
 		if (sort != null) {
@@ -88,31 +88,73 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			return new ArrayList<>(0);
 		}
 	}
-
+	
 	@Override
-	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable) {
-		if (pageable == null) {
-			pageable = FilterPageable.build(null);
-		}
-		Pageable springPageable = pageable.getPageable();
-		Long total = count(filter);
-		if (total == 0) {
-			return new PageImpl<>(new ArrayList<>(0), springPageable, total);
-		}
+	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
 		Template template = template();
-		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(Constant.ID);
-		columnNames.add(Constant.OPERATORID);
-		columnNames.add(Constant.CREATETIME);
-		columnNames.add(Constant.UPDATETIME);
+		List<String> columnNames = getColumnNames(template, properties);
 		String sql = buildSql(template, columnNames);
 		List<Object> args = new ArrayList<>();
 		if (filter != null) {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
 				sql += " WHERE " + where.getExpression();
+				if (where.getArgs() != null) {
+					args = where.getArgs();
+				}
+			}
+		}
+		if (pageable != null) {
+			if (pageable.getSort() != null) {
+				String orderby = JpaFilterUtils.orderby(pageable.getSort());
+				if (StringUtils.isNotBlank(orderby)) {
+					sql += " ORDER BY " + orderby;
+				}
+			}
+			Pageable springPageable = pageable.getPageable();
+			sql += " LIMIT ?, ?";
+			args.add(springPageable.getOffset());
+			args.add(springPageable.getPageSize());
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + sql);
+		}
+		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, args.toArray());
+		try {
+			return conversions(list);
+		} catch (GenerateException e) {
+			log.error("find list error", e);
+			return new ArrayList<>(0);
+		}
+	}
+
+	@Override
+	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
+		String countSql = buildCountSql();
+		List<Object> args = new ArrayList<>();
+		Statement where = JpaFilterUtils.where(filter);
+		if (where.isNotEmpty()) {
+			countSql += " WHERE " + where.getExpression();
+			if (where.getArgs() != null) {
 				args = where.getArgs();
 			}
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Generate SQL: " + countSql);
+		}
+		Long total = jdbcTemplate.queryForObject(countSql, args.toArray(), Long.class);
+		if (pageable == null) {
+			pageable = FilterPageable.build(null);
+		}
+		Pageable springPageable = pageable.getPageable();
+		if (total == 0) {
+			return new PageImpl<>(new ArrayList<>(0), springPageable, total);
+		}
+		Template template = template();
+		List<String> columnNames = getColumnNames(template, properties);
+		String sql = buildSql(template, columnNames);
+		if (where.isNotEmpty()) {
+			sql += " WHERE " + where.getExpression();
 		}
 		if (pageable.getSort() != null) {
 			String orderby = JpaFilterUtils.orderby(pageable.getSort());
@@ -128,8 +170,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		}
 		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, args.toArray());
 		try {
-			List<Domain> domains = conversions(list);
-			return new PageImpl<>(domains, springPageable, total);
+			return new PageImpl<>(conversions(list), springPageable, total);
 		} catch (GenerateException e) {
 			log.error("find page error", e);
 			return new PageImpl<>(new ArrayList<>(0), springPageable, 0L);
@@ -137,20 +178,18 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 
 	@Override
-	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort) {
+	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
-		columnNames.add(Constant.ID);
-		columnNames.add(Constant.OPERATORID);
-		columnNames.add(Constant.CREATETIME);
-		columnNames.add(Constant.UPDATETIME);
+		List<String> columnNames = getColumnNames(template, properties);
 		String sql = buildSql(template, columnNames);
 		Object[] args = null;
 		if (filter != null) {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
 				sql += " WHERE " + where.getExpression();
-				args = where.getArgs().toArray();
+				if (where.getArgs() != null) {
+					args = where.getArgs().toArray();
+				}
 			}
 		}
 		if (sort != null) {
@@ -173,6 +212,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 	
 	@Override
+	@Transactional
 	public void delete(Domain entity) {
 		if (entity == null) {
 			return;
@@ -195,7 +235,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
 				sql += " WHERE " + where.getExpression();
-				args = where.getArgs().toArray();
+				if (where.getArgs() != null) {
+					args = where.getArgs().toArray();
+				}
 			}
 		}
 		if (log.isDebugEnabled()) {
@@ -252,7 +294,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 	
 	private String buildCountSql() {
-		return "SELECT COUNT(1) FROM `" + TemplateUtils.getTableName(template()) + "` ";
+		return "SELECT COUNT(`" + Constant.ID + "`) FROM `" + TemplateUtils.getTableName(template()) + "` ";
 	}
 	
 	private String buildSql(Template template, List<String> columnNames) {
@@ -336,6 +378,25 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			}
 		}
 		return domains;
+	}
+	
+	private List<String> getColumnNames(Template template, String... properties) {
+		List<String> columnNames = null;
+		if (properties == null || properties.length == 0) {
+			columnNames = TemplateUtils.getTableColumnNames(template);
+		} else {
+			columnNames = new ArrayList<>(properties.length);
+			for (String property : properties) {
+				if (property != null) {
+					columnNames.add(property);
+				}
+			}
+		}
+		columnNames.add(Constant.ID);
+		columnNames.add(Constant.OPERATORID);
+		columnNames.add(Constant.CREATETIME);
+		columnNames.add(Constant.UPDATETIME);
+		return columnNames;
 	}
 
 }

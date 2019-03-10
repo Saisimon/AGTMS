@@ -1,4 +1,4 @@
-package net.saisimon.agtms.core.domain;
+package net.saisimon.agtms.core.domain.entity;
 
 import java.util.Date;
 
@@ -47,37 +47,37 @@ public class Navigation {
 	/**
 	 * 导航图标
 	 */
-	@Column(length=50)
+	@Column(length=10)
 	private String icon;
 	
 	/**
 	 * 导航优先级
 	 */
-	@Column(nullable=false, columnDefinition="bigint(15) default 0")
+	@Column(nullable=false, columnDefinition="BIGINT(15) DEFAULT 0 COMMENT '导航优先级'")
 	private Long priority;
 	
 	/**
 	 * 导航创建时间
 	 */
-	@Column(columnDefinition="timestamp default current_timestamp")
+	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '导航创建时间'")
 	private Date createTime;
 	
 	/**
 	 * 导航更新时间
 	 */
-	@Column(columnDefinition="timestamp default current_timestamp")
+	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '导航更新时间'")
 	private Date updateTime;
 	
 	/**
 	 * 导航创建人员ID
 	 */
-	@Column(nullable=false, columnDefinition="bigint(15)")
+	@Column(nullable=false, columnDefinition="BIGINT(15) COMMENT '导航创建人员ID'")
 	private Long operatorId;
 	
 	/**
 	 * 父导航ID
 	 */
-	@Column(columnDefinition="bigint(15) default -1")
+	@Column(columnDefinition="BIGINT(15) DEFAULT -1 COMMENT '父导航ID'")
 	private Long parentId;
 	
 }

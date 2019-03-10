@@ -16,7 +16,7 @@
             <!-- 表单 -->
             <div class="form-container">
                 <template v-for="(field, key) in fields">
-                    <select-form :field="field" :key="key" v-if="field.type == 'select'" />
+                    <select-form :field="field" :key="key" v-if="field.view == 'selection'" />
                     <date-form :field="field" :key="key" v-else-if="field.type == 'date'" />
                     <textarea-form :field="field" :key="key" v-else-if="field.view == 'textarea'" />
                     <icon-form :field="field" :key="key" v-else-if="field.view == 'icon'" />
@@ -63,7 +63,7 @@
                 centered 
                 :cancel-title="$t('cancel')"
                 :ok-title="$t('confirm_reset')"
-                @ok="reset()"
+                @ok="reset"
                 ok-variant="danger"
                 button-size="sm">
                 <div class="text-center font-weight-bold">
@@ -148,7 +148,7 @@ export default {
                 } else {
                     field.state = null;
                 }
-                if (field.type === 'select') {
+                if (field.view === 'selection') {
                     data[field.name] = field.value.value;
                 } else {
                     data[field.name] = field.value;
@@ -163,15 +163,15 @@ export default {
                     data: data
                 }).then(resp => {
                     var data = resp.data;
-                    var variant = 'danger';
                     if (data.code === 0) {
-                        this.$store.dispatch('getTree');
-                        variant = 'success';
+                        if (this.$route.params.module === 'navigation') {
+                            this.$store.dispatch('getTree');
+                        }
+                        this.$store.commit('showAlert', {
+                            message: data.message,
+                            variant: 'success'
+                        });
                     }
-                    this.$store.commit('showAlert', {
-                        message: data.message,
-                        variant: variant
-                    });
                 });
             }
         }

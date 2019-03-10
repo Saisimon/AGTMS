@@ -17,11 +17,14 @@
                             :searchable="false"
                             :multiple="true"
                             :options="batchEdit.editFieldOptions"
-                            :placeholder="$t('select_edit_fields')" />
+                            :placeholder="$t('select_edit_fields')" >
+                            <template slot="noResult">{{ $t("no_result") }}</template>
+                            <template slot="noOptions">{{ $t("no_options") }}</template>
+                        </multiselect>
                     </b-col>
                 </b-row>
                 <template v-for="(editFieldSelect, index) in editFieldSelects" >
-                    <select-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-if="batchEdit.editFields[editFieldSelect.value].type == 'select'" />
+                    <select-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-if="batchEdit.editFields[editFieldSelect.value].view == 'selection'" />
                     <date-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].type == 'date'" />
                     <textarea-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].view == 'textarea'" />
                     <icon-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].view == 'icon'" />
@@ -76,13 +79,18 @@ export default {
             for (var i in this.editFieldSelects) {
                 var editFieldSelect = this.editFieldSelects[i];
                 var key = editFieldSelect.value;
-                var value = this.batchEdit.editFields[key].value;
-                if (this.batchEdit.editFields[key].required && (value == undefined || value == "")) {
+                var field = this.batchEdit.editFields[key];
+                var value = field.value;
+                if (field.required && (value == undefined || value == "")) {
                     pass = false;
-                    this.batchEdit.editFields[key].state = false;
+                    field.state = false;
                 } else {
-                    this.batchEdit.editFields[key].state = null;
-                    data[key] = value;
+                    field.state = null;
+                    if (field.view === 'selection') {
+                        data[key] = value.value;
+                    } else {
+                        data[key] = value;
+                    }
                 }
             }
             if (pass) {

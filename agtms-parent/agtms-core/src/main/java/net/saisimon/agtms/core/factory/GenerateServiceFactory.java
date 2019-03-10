@@ -10,7 +10,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 
-import net.saisimon.agtms.core.domain.Template;
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.util.StringUtils;

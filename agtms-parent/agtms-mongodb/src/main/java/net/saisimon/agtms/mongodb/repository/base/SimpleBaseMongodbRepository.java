@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.index.IndexDefinition;
 import org.springframework.data.mongodb.core.index.IndexInfo;
 import org.springframework.data.mongodb.core.index.IndexOperations;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -50,36 +52,65 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 	}
 
 	@Override
-	public List<T> findList(final FilterRequest filter, FilterSort sort) {
+	public List<T> findList(final FilterRequest filter, FilterSort sort, String... properties) {
 		Query query = MongodbFilterUtils.query(filter);
 		if (sort != null) {
 			query.with(sort.getSort());
+		}
+		if (properties != null && properties.length > 0) {
+			BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), getFieldMap(properties));
+			basicQuery.setSortObject(query.getSortObject());
+			query = basicQuery;
+		}
+		return mongoOperations.find(query, entityClass, collectionName);
+	}
+	
+	@Override
+	public List<T> findList(final FilterRequest filter, FilterPageable pageable, String... properties) {
+		Query query = MongodbFilterUtils.query(filter);
+		if (pageable != null) {
+			query.with(pageable.getPageable());
+		}
+		if (properties != null && properties.length > 0) {
+			BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), getFieldMap(properties));
+			basicQuery.setSortObject(query.getSortObject());
+			query = basicQuery;
 		}
 		return mongoOperations.find(query, entityClass, collectionName);
 	}
 
 	@Override
-	public Page<T> findPage(final FilterRequest filter, FilterPageable filterPageable) {
+	public Page<T> findPage(final FilterRequest filter, FilterPageable pageable, String... properties) {
 		Query query = MongodbFilterUtils.query(filter);
 		long total = mongoOperations.count(query, entityClass, collectionName);
 		if (total > 0) {
-			if (filterPageable == null) {
-				filterPageable = FilterPageable.build(null);
+			if (pageable == null) {
+				pageable = FilterPageable.build(null);
 			}
-			Pageable pageable = filterPageable.getPageable();
-			query = query.with(pageable);
+			Pageable springPageable = pageable.getPageable();
+			query.with(springPageable);
+			if (properties != null && properties.length > 0) {
+				BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), getFieldMap(properties));
+				basicQuery.setSortObject(query.getSortObject());
+				query = basicQuery;
+			}
 			List<T> domains = mongoOperations.find(query, entityClass, collectionName);
-			return new PageImpl<>(domains, pageable, total);
+			return new PageImpl<>(domains, springPageable, total);
 		} else {
 			return Page.empty(Pageable.unpaged());
 		}
 	}
 
 	@Override
-	public Optional<T> findOne(final FilterRequest filter, FilterSort sort) {
+	public Optional<T> findOne(final FilterRequest filter, FilterSort sort, String... properties) {
 		Query query = MongodbFilterUtils.query(filter);
 		if (sort != null) {
 			query.with(sort.getSort());
+		}
+		if (properties != null && properties.length > 0) {
+			BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), getFieldMap(properties));
+			basicQuery.setSortObject(query.getSortObject());
+			query = basicQuery;
 		}
 		return Optional.ofNullable(mongoOperations.findOne(query, entityClass, collectionName));
 	}
@@ -148,6 +179,14 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 	public void dropIndex(String name) {
 		IndexOperations indexOperations = mongoOperations.indexOps(collectionName);
 		indexOperations.dropIndex(name);
+	}
+	
+	private Document getFieldMap(String... properties) {
+		Document fieldMap = new Document();
+		for (String property : properties) {
+			fieldMap.put(property, true);
+		}
+		return fieldMap;
 	}
 
 }

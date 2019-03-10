@@ -3,7 +3,7 @@ package net.saisimon.agtms.mongodb.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import net.saisimon.agtms.core.domain.Task;
+import net.saisimon.agtms.core.domain.entity.Task;
 import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.mongodb.order.MongodbOrder;
 import net.saisimon.agtms.mongodb.repository.TaskMongodbRepository;

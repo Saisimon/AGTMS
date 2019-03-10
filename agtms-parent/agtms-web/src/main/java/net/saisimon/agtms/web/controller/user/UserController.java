@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
-import net.saisimon.agtms.core.domain.User;
+import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.UserInfo;
 import net.saisimon.agtms.core.enums.OperateTypes;

@@ -1,4 +1,4 @@
-package net.saisimon.agtms.core.domain;
+package net.saisimon.agtms.core.domain.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -73,13 +73,13 @@ public class User {
 	/**
 	 * 创建时间
 	 */
-	@Column(nullable=false, columnDefinition="bigint(15)")
+	@Column(nullable=false, columnDefinition="BIGINT(15)")
 	private Long createTime;
 	
 	/**
 	 * 更新时间
 	 */
-	@Column(nullable=false, columnDefinition="bigint(15)")
+	@Column(nullable=false, columnDefinition="BIGINT(15)")
 	private Long updateTime;
 	
 	/**
@@ -98,7 +98,7 @@ public class User {
 	/**
 	 * 上次登陆时间
 	 */
-	@Column(nullable=false, columnDefinition="bigint(15)")
+	@Column(nullable=false, columnDefinition="BIGINT(15)")
 	private Long lastLoginTime;
 	
 }

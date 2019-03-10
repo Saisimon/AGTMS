@@ -14,7 +14,7 @@ import net.saisimon.agtms.jpa.service.ddl.DefaultDdlService;
 @Configuration
 @ConditionalOnClass(BaseJpaRepositoryFactoryBean.class)
 @EnableJpaRepositories(basePackages="net.saisimon.agtms.jpa.repository", repositoryFactoryBeanClass=BaseJpaRepositoryFactoryBean.class)
-@EntityScan(basePackages="net.saisimon.agtms.core.domain")
+@EntityScan(basePackages="net.saisimon.agtms.core.domain.entity")
 public class JpaConfig {
 	
 	@Bean
