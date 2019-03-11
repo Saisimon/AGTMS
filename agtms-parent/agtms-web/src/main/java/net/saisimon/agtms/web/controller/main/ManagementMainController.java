@@ -78,6 +78,7 @@ import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.PropertyUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
@@ -132,7 +133,7 @@ public class ManagementMainController extends MainController {
 		request.getSession().setAttribute(key + "_pageable", param);
 		if (TemplateUtils.hasSelection(template)) {
 			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-			List<Map<String, Object>> datas = DomainUtils.handleSelection(fieldInfoMap, page.getContent(), userId);
+			List<Map<String, Object>> datas = SelectionUtils.handleSelection(fieldInfoMap, page.getContent(), userId);
 			return ResultUtils.pageSuccess(datas, page.getTotalElements());
 		} else {
 			return ResultUtils.pageSuccess(page.getContent(), page.getTotalElements());
@@ -408,6 +409,7 @@ public class ManagementMainController extends MainController {
 		}
 		Template template = (Template) key;
 		List<Filter> filters = new ArrayList<>();
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		for (TemplateColumn column : template.getColumns()) {
 			Filter filter = new Filter();
 			List<String> keyValues = new ArrayList<>();
@@ -424,7 +426,7 @@ public class ManagementMainController extends MainController {
 					if (field.getSelectionId() == null) {
 						continue;
 					}
-					value.put(fieldName, SelectFilter.selectSearchableFilter("", field.getFieldType(), field.getSelectionId()));
+					value.put(fieldName, SelectFilter.selectSearchableFilter("", field.getFieldType(), field.getSelectionId(), userId));
 				} else if (Classes.LONG.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {
 					value.put(fieldName, RangeFilter.rangeFilter("", field.getFieldType(), "", field.getFieldType()));
 				} else if (Classes.DATE.getName().equals(field.getFieldType())) {

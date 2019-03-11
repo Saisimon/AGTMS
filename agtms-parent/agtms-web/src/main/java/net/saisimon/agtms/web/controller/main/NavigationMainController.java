@@ -45,7 +45,6 @@ import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
-import net.saisimon.agtms.core.dto.UserInfo;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.OperateTypes;
@@ -106,12 +105,9 @@ public class NavigationMainController extends MainController {
 	@Operate(type=OperateTypes.QUERY, value="side")
 	@PostMapping("/side")
 	public Result side() {
-		UserInfo userInfo = AuthUtils.getUserInfo();
-		if (userInfo == null) {
-			return ResultUtils.simpleSuccess();
-		}
+		Long userId = AuthUtils.getUserInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
-		List<NavigationTree> trees = getChildNavs(navigationService.getNavigations(userInfo.getUserId()), -1L);
+		List<NavigationTree> trees = getChildNavs(navigationService.getNavigations(userId), -1L, userId);
 		if (trees == null) {
 			trees = new ArrayList<>(1);
 		}
@@ -121,11 +117,11 @@ public class NavigationMainController extends MainController {
 		root.setChildrens(internationNavigationTrees(trees));
 		List<NavigationLink> links = new ArrayList<>();
 		TemplateService templateService = TemplateServiceFactory.get();
-		List<Template> templates = templateService.getTemplates(-1L, userInfo.getUserId());
+		List<Template> templates = templateService.getTemplates(-1L, userId);
 		if (templates == null) {
 			templates = new ArrayList<>();
 		}
-		List<Template> remoteTemplates = getRemoteTemplates(userInfo.getUserId());
+		List<Template> remoteTemplates = getRemoteTemplates(userId);
 		if (remoteTemplates != null) {
 			templates.addAll(remoteTemplates);
 		}
@@ -335,7 +331,7 @@ public class NavigationMainController extends MainController {
 		return result;
 	}
 	
-	private void recursiveRemove(Navigation navigation, long userId) {
+	private void recursiveRemove(Navigation navigation, Long userId) {
 		NavigationService navigationService = NavigationServiceFactory.get();
 		Long id = navigation.getId();
 		List<Navigation> list = navigationService.getChildrenNavigations(id, userId);
@@ -345,9 +341,17 @@ public class NavigationMainController extends MainController {
 			}
 		}
 		navigationService.delete(navigation);
+		TemplateService templateService = TemplateServiceFactory.get();
+		List<Template> templates = templateService.getTemplates(navigation.getId(), userId);
+		if (!CollectionUtils.isEmpty(templates)) {
+			for (Template template : templates) {
+				templateService.delete(template);
+				templateService.dropTable(template);
+			}
+		}
 	}
 	
-	private List<NavigationTree> getChildNavs(List<Navigation> navigations, Long parentId) {
+	private List<NavigationTree> getChildNavs(List<Navigation> navigations, Long parentId, Long operatorId) {
 		if (CollectionUtils.isEmpty(navigations)) {
 			return null;
 		}
@@ -368,7 +372,7 @@ public class NavigationMainController extends MainController {
 			tree.setTitle(current.getTitle());
 			tree.setIcon(current.getIcon());
 			tree.setPriority(current.getPriority());
-			List<Template> templates = templateService.getTemplates(current.getId(), current.getOperatorId());
+			List<Template> templates = templateService.getTemplates(current.getId(), operatorId);
 			if (!CollectionUtils.isEmpty(templates)) {
 				List<NavigationLink> links = new ArrayList<>(templates.size());
 				for (Template template : templates) {
@@ -376,16 +380,10 @@ public class NavigationMainController extends MainController {
 				}
 				tree.setLinks(links);
 			}
-			tree.setChildrens(getChildNavs(rests, current.getId()));
+			tree.setChildrens(getChildNavs(rests, current.getId(), operatorId));
 			trees.add(tree);
 		}
-		Collections.sort(trees, (n1, n2) -> {
-			int i = n1.getPriority().compareTo(n2.getPriority());
-			if (i != 0) {
-				return i;
-			}
-			return n1.getId().compareTo(n2.getId());
-		});
+		Collections.sort(trees, NavigationTree.COMPARATOR);
 		return trees;
 	}
 	

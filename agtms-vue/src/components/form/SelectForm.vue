@@ -61,11 +61,6 @@
 export default {
     name: 'select-form',
     props: [ 'field' ],
-    created: function() {
-        if (this.field.options == null || this.field.options.length == 0) {
-            this.search();
-        }
-    },
     data: function() {
         return {
             isLoading: false

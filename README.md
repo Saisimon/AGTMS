@@ -103,11 +103,3 @@ java -jar agtms-example/target/agtms-example.jar
 ```
 http://localhost:8080
 ```
-
-## TODO 
-* bug
-1. 下拉列表 value 和 text 唯一必填限制
-2. 修改操作添加唯一验证
-3. 模版选择下拉列表时自动获取类型
-4. 删除导航时，未删除下面的模板
-5. 优化下拉列表获取方式

@@ -31,9 +31,9 @@ import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.task.Actuator;
-import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
@@ -85,7 +85,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			}
 			FilterPageable pageable = new FilterPageable(page, PAGE_SIZE, null);
 			List<Domain> domains = generateService.findList(filter, pageable, fields.toArray(new String[fields.size()]));
-			List<Map<String, Object>> domainList = DomainUtils.handleSelection(fieldInfoMap, domains, param.getUserId());
+			List<Map<String, Object>> domainList = SelectionUtils.handleSelection(fieldInfoMap, domains, param.getUserId());
 			for (Map<String, Object> domainMap : domainList) {
 				List<Object> data = new ArrayList<>();
 				for (int i = 0; i < fields.size(); i++) {

@@ -2,13 +2,13 @@ package net.saisimon.agtms.web.controller.edit;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -21,14 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.constant.Constant.Operator;
-import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Selection;
 import net.saisimon.agtms.core.domain.entity.SelectionOption;
 import net.saisimon.agtms.core.domain.entity.SelectionTemplate;
 import net.saisimon.agtms.core.domain.entity.Template;
-import net.saisimon.agtms.core.domain.filter.FilterPageable;
-import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
 import net.saisimon.agtms.core.domain.grid.SelectionGrid;
@@ -38,17 +34,14 @@ import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.SelectTypes;
-import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.SelectionServiceFactory;
-import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.SelectionService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.BaseController;
-import net.saisimon.agtms.web.dto.req.SearchParam;
 import net.saisimon.agtms.web.dto.req.SelectionParam;
 import net.saisimon.agtms.web.dto.req.SelectionParam.SelectionOptionParam;
 import net.saisimon.agtms.web.selection.SelectTypeSelection;
@@ -113,7 +106,7 @@ public class SelectionEditController extends BaseController {
 					return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 				}
 				templateField.setValue(Select.getOption(templateOptions, selectionTemplate.getTemplateId()));
-				List<Option<String>> domainFieldOptions = Select.buildOptions(buildSelectionMap(template));
+				List<Option<String>> domainFieldOptions = buildSelectionOptions(template);
 				templateValue.setOptions(domainFieldOptions);
 				templateValue.setValue(Select.getOption(domainFieldOptions, selectionTemplate.getValueFieldName()));
 				templateText.setOptions(domainFieldOptions);
@@ -151,51 +144,13 @@ public class SelectionEditController extends BaseController {
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		List<Option<String>> options = Select.buildOptions(buildSelectionMap(template));
+		List<Option<String>> options = buildSelectionOptions(template);
 		return ResultUtils.simpleSuccess(options);
 	}
 	
 	@PostMapping("/search")
-	public Result search(@RequestParam(name = "id") Long id, @RequestBody SearchParam body) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
-		SelectionService selectionService = SelectionServiceFactory.get();
-		Selection selection = selectionService.getSelection(id, userId);
-		if (selection == null) {
-			return ErrorMessage.Selection.SELECTION_NOT_EXIST;
-		}
-		String keyword = body.getKeyword();
-		Integer size = 30;
-		if (body.getSize() != null && body.getSize() > 0 && body.getSize() <= 30) {
-			size = body.getSize();
-		}
-		List<Option<Object>> options = new ArrayList<>();
-		if (SelectTypes.OPTION.getType() == selection.getType()) {
-			List<SelectionOption> selectionOptions = selectionService.searchSelectionOptions(selection.getId(), keyword, size);
-			for (SelectionOption selectionOption : selectionOptions) {
-				Option<Object> option = new Option<>(selectionOption.getValue(), selectionOption.getText());
-				options.add(option);
-			}
-		} else if (SelectTypes.TEMPLATE.getType() == selection.getType()) {
-			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId());
-			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), userId);
-			if (template == null) {
-				return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
-			}
-			GenerateService generateService = GenerateServiceFactory.build(template);
-			FilterRequest filter = FilterRequest.build().and(selectionTemplate.getValueFieldName(), "", Operator.EXISTS);
-			if (StringUtils.isBlank(keyword)) {
-				filter.and(selectionTemplate.getTextFieldName(), "", Operator.EXISTS);
-			} else {
-				filter.and(selectionTemplate.getTextFieldName(), keyword, Operator.REGEX);
-			}
-			FilterPageable pageable = new FilterPageable(0, size, null);
-			Page<Domain> page = generateService.findPage(filter, pageable, selectionTemplate.getValueFieldName(), selectionTemplate.getTextFieldName());
-			for (Domain domain : page.getContent()) {
-				String text = domain.getField(selectionTemplate.getTextFieldName()).toString();
-				Option<Object> option = new Option<>(domain.getField(selectionTemplate.getValueFieldName()), text);
-				options.add(option);
-			}
-		}
+	public Result search(@RequestParam(name = "id") Long id, @RequestParam(name = "keyword", required = false) String keyword) {
+		List<Option<Object>> options = SelectionUtils.getSelectionOptions(id, keyword, AuthUtils.getUserInfo().getUserId());
 		return ResultUtils.simpleSuccess(options);
 	}
 	
@@ -250,7 +205,15 @@ public class SelectionEditController extends BaseController {
 			selectionService.saveOrUpdate(selection);
 			selectionService.removeSelectionOptions(selection.getId());
 			List<SelectionOption> options = new ArrayList<>(body.getOptions().size());
+			Set<String> values = new HashSet<>();
+			Set<String> texts = new HashSet<>();
 			for (SelectionOptionParam param : body.getOptions()) {
+				if (values.contains(param.getValue()) || texts.contains(param.getText())) {
+					continue;
+				} else {
+					values.add(param.getValue());
+					texts.add(param.getText());
+				}
 				SelectionOption option = new SelectionOption();
 				option.setText(param.getText());
 				option.setValue(param.getValue());
@@ -286,21 +249,23 @@ public class SelectionEditController extends BaseController {
 		return breadcrumbs;
 	}
 	
-	private LinkedHashMap<String, String> buildSelectionMap(Template template) {
-		LinkedHashMap<String, String> selectionMap = new LinkedHashMap<>();
-		selectionMap.put(Constant.ID, getMessage("id"));
+	private List<Option<String>> buildSelectionOptions(Template template) {
 		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
-			return selectionMap;
+			return null;
 		}
+		List<Option<String>> options = new ArrayList<>();
+		Option<String> idOption = new Option<String>(Constant.ID, getMessage("id"));
+		options.add(idOption);
 		for (Template.TemplateColumn column : template.getColumns()) {
 			if (CollectionUtils.isEmpty(column.getFields())) {
 				continue;
 			}
 			for (Template.TemplateField field : column.getFields()) {
-				selectionMap.put(column.getColumnName() + field.getFieldName(), field.getFieldTitle());
+				Option<String> option = new Option<String>(column.getColumnName() + field.getFieldName(), field.getFieldTitle(), !(field.getUniqued() && field.getRequired()));
+				options.add(option);
 			}
 		}
-		return selectionMap;
+		return options;
 	}
 
 }

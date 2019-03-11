@@ -25,12 +25,14 @@
                                 <label class="form-label">
                                     {{ $t('option_value') }}
                                     <span class="text-danger">*</span>
+                                    <i class="fa fa-fw fa-question-circle" v-b-tooltip :title="$t('options_value_desc')"></i>
                                 </label>
                             </b-col>
                             <b-col>
                                 <label class="form-label">
                                     {{ $t('option_text') }}
                                     <span class="text-danger">*</span>
+                                    <i class="fa fa-fw fa-question-circle" v-b-tooltip :title="$t('options_text_desc')"></i>
                                 </label>
                             </b-col>
                         </b-row>
@@ -88,12 +90,14 @@
                                 <label class="form-label">
                                     {{ $t('option_value') }}
                                     <span class="text-danger">*</span>
+                                    <i class="fa fa-fw fa-question-circle" v-b-tooltip :title="$t('template_value_desc')"></i>
                                 </label>
                             </b-col>
                             <b-col>
                                 <label class="form-label">
                                     {{ $t('option_text') }}
                                     <span class="text-danger">*</span>
+                                    <i class="fa fa-fw fa-question-circle" v-b-tooltip :title="$t('template_text_desc')"></i>
                                 </label>
                             </b-col>
                         </b-row>
@@ -200,6 +204,26 @@ export default {
             this.$store.dispatch('getSelectionGrid', this.$route.query.id).then(resp => {
                 if (resp.data.code === 0) {
                     var selectionGrid = resp.data.data;
+                    if (selectionGrid && selectionGrid.template) {
+                        var valueOptions = selectionGrid.template.value.options;
+                        if (valueOptions && valueOptions.length > 0) {
+                            for (var i = 0; i < valueOptions.length; i++) {
+                                var valueOption = valueOptions[i];
+                                if (valueOption.disable) {
+                                    valueOption["$isDisabled"] = true;
+                                }
+                            }
+                        }
+                        var textOptions = selectionGrid.template.text.options;
+                        if (textOptions && textOptions.length > 0) {
+                            for (var i = 0; i < textOptions.length; i++) {
+                                var textOption = textOptions[i];
+                                if (textOption.disable) {
+                                    textOption["$isDisabled"] = true;
+                                }
+                            }
+                        }
+                    }
                     vm.$store.commit('setSelectionGrid', selectionGrid);
                     vm.$store.commit('setBreadcrumbs', selectionGrid.breadcrumbs);
                     vm.resetSelectionGrid = vm.cloneObject(selectionGrid);
@@ -247,11 +271,20 @@ export default {
             } else {
                 this.$store.dispatch('getSelectionTemplate', selectedOption.value).then(resp => {
                     if (resp.data.code === 0) {
-                        this.selectionGrid.template.value.options = resp.data.data;
-                        this.selectionGrid.template.value.value = resp.data.data[0];
-                        this.selectionGrid.template.text.options = resp.data.data;
-                        this.selectionGrid.template.text.value = resp.data.data[0];
-                        this.templateMap[selectedOption.value] = resp.data.data;
+                        var options = resp.data.data;
+                        if (options && options.length > 0) {
+                            for (var i = 0; i < options.length; i++) {
+                                var option = options[i];
+                                if (option.disable) {
+                                    option["$isDisabled"] = true;
+                                }
+                            }
+                        }
+                        this.selectionGrid.template.value.options = options;
+                        this.selectionGrid.template.value.value = options[0];
+                        this.selectionGrid.template.text.options = options;
+                        this.selectionGrid.template.text.value = options[0];
+                        this.templateMap[selectedOption.value] = options;
                     }
                 });
             }
@@ -288,17 +321,31 @@ export default {
             selection['type'] = type;
             if (type === 0) {
                 var options = [];
+                var values = [];
+                var texts = [];
                 for (var i = 0; i < this.selectionGrid.options.length; i++) {
                     var option = this.selectionGrid.options[i];
                     var value = option.value.value;
                     if (value == null || value == '') {
                         pass = false;
                         option.value.state = false;
+                    } else if (values.includes(value)) {
+                        pass = false;
+                        option.value.state = false;
+                    } else {
+                        values.push(value);
+                        option.value.state = null;
                     }
                     var text = option.text.value;
                     if (text == null || text == '') {
                         pass = false;
                         option.text.state = false;
+                    } else if (texts.includes(text)) {
+                        pass = false;
+                        option.text.state = false;
+                    } else {
+                        texts.push(text);
+                        option.text.state = null;
                     }
                     options.push({
                         'value': value,

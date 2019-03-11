@@ -23,11 +23,6 @@
 export default {
     name: 'search-filter-select',
     props: ['filter'],
-    mounted: function() {
-        if (this.filter.select.options == null || this.filter.select.options.length == 0) {
-            this.search();
-        }
-    },
     data: function() {
         return {
             isLoading: false

@@ -8,6 +8,7 @@ import lombok.Setter;
 import net.saisimon.agtms.core.domain.tag.MultipleSelect;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
+import net.saisimon.agtms.core.util.SelectionUtils;
 
 /**
  * 前端下拉列表过滤条件的对象
@@ -53,10 +54,11 @@ public class SelectFilter<T> extends FieldFilter {
 		return selectFilter;
 	}
 	
-	public static <T> FieldFilter selectSearchableFilter(T selected, String type, Long selectionId) {
-		SelectFilter<T> selectFilter = new SelectFilter<>(false);
-		Select<T> select = SingleSelect.select(selected, new ArrayList<>(), new ArrayList<>());
+	public static FieldFilter selectSearchableFilter(Object selected, String type, Long selectionId, Long operatorId) {
+		SelectFilter<Object> selectFilter = new SelectFilter<>(false);
+		Select<Object> select = SingleSelect.select(selected, new ArrayList<>(), new ArrayList<>());
 		select.setType(type);
+		select.setOptions(SelectionUtils.getSelectionOptions(selectionId, null, operatorId));
 		selectFilter.setSelect(select);
 		selectFilter.setSearchable(true);
 		selectFilter.setSelectionId(selectionId);

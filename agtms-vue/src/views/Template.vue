@@ -9,6 +9,7 @@
                 <b-col sm="9" class="text-right">
                     <b-form-checkbox v-model="draggable" class="draggable-switch">
                         {{ $t("draggable_mode") }}
+                        <i class="fa fa-fw fa-question-circle" v-b-tooltip :title="$t('draggable_desc')"></i>
                     </b-form-checkbox>
                     <b-button variant="primary" size="sm" @click="addColumn" :disabled="draggable">
                         <i class="fa fa-fw fa-plus-circle"></i>
@@ -519,7 +520,7 @@ export default {
                     } else if (view == 'icon') {
                         exampleValue = 'list'
                     } else if (view == 'link') {
-                        exampleValue = 'https://www.saisimon.net'
+                        exampleValue = 'https://github.com/Saisimon/AGTMS'
                     } else if (view == 'image') {
                         exampleValue = '/img/preview.jpg'
                     } else {
@@ -769,7 +770,6 @@ export default {
 }
 .draggable-switch {
     padding-right: 5px;
-    font-size: 14px;
     color: #606266;
 }
 </style>

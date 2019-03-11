@@ -2,6 +2,7 @@ package net.saisimon.agtms.web.dto.resp;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import lombok.Data;
@@ -12,6 +13,13 @@ public class NavigationTree implements Serializable, Cloneable {
 	private static final long serialVersionUID = -3273153285193976032L;
 	
 	public static final NavigationTree SYSTEM_MODEL_TREE = getSystemModelTree();
+	public static final Comparator<NavigationTree> COMPARATOR = (n1, n2) -> {
+		int i = n1.getPriority().compareTo(n2.getPriority());
+		if (i != 0) {
+			return i;
+		}
+		return n1.getId().compareTo(n2.getId());
+	};
 	
 	private Long id;
 	

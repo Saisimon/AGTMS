@@ -10,6 +10,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
@@ -65,12 +66,21 @@ public interface GenerateService {
 		Set<String> uniques = TemplateUtils.getUniques(template);
 		if (!CollectionUtils.isEmpty(uniques)) {
 			FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, template.getOperatorId());
+			Object id = domain.getField(Constant.ID);
+			if (id != null) {
+				filter.and(Constant.ID, id, Operator.NE);
+			}
 			FilterRequest uniquesFilter = FilterRequest.build();
+			boolean check = false;
 			for (String fieldName : uniques) {
 				Object fieldValue = domain.getField(fieldName);
 				if (fieldValue != null) {
 					uniquesFilter.or(fieldName, fieldValue);
+					check = true;
 				}
+			}
+			if (!check) {
+				return false;
 			}
 			filter.and(uniquesFilter);
 			return repository.exists(filter);

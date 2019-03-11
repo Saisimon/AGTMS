@@ -95,5 +95,10 @@ export default {
     option_text: 'Option Text',
     more_functions: 'and {count} other functions',
     no_result: 'No elements found',
-    no_options: 'No options'
+    no_options: 'No options',
+    options_value_desc: 'The value of the drop-down list option does not allow duplicates',
+    options_text_desc: 'The text of the drop-down list option does not allow duplicates',
+    template_value_desc: 'The template field corresponding to the value of the drop-down list option must be unique and required',
+    template_text_desc: 'The template field corresponding to the text of the drop-down list option must be unique and required',
+    draggable_desc: 'Drag to change the position of the field'
 }

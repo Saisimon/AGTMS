@@ -31,7 +31,6 @@ public class ErrorMessage {
 		public static final Result TEMPLATE_NOT_EXIST = ResultUtils.error(3001, "template.not.exist");
 		public static final Result TEMPLATE_ALREADY_EXISTS = ResultUtils.error(3002, "template.already.exists");
 		public static final Result TEMPLATE_NO_FUNCTION = ResultUtils.error(3003, "template.no.function");
-		public static final Result TEMPLATE_SIZE_ERROR = ResultUtils.error(3004, "template.size.error");
 		public static final Result TEMPLATE_CREATE_FAILED = ResultUtils.error(3005, "template.create.failed");
 		public static final Result TEMPLATE_MODIFY_FAILED = ResultUtils.error(3006, "template.modify.failed");
 	}

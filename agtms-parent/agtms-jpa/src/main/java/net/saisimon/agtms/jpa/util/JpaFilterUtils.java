@@ -140,74 +140,76 @@ public class JpaFilterUtils {
 		String operator = param.getOperator();
 		String type = param.getType();
 		value = DomainUtils.parseFieldValue(value, type);
-		switch (operator) {
-		case LT:
-			if (value instanceof Date) {
-				predicate = criteriaBuilder.lessThan(buildExpression(root, key), (Date) value);
-			} else if (value instanceof Number) {
-				predicate = criteriaBuilder.lt(buildExpression(root, key), (Number)value);
-			} else {
-				predicate = criteriaBuilder.lessThan(buildExpression(root, key), value.toString());
+		if (value != null) {
+			switch (operator) {
+				case LT:
+					if (value instanceof Date) {
+						predicate = criteriaBuilder.lessThan(buildExpression(root, key), (Date) value);
+					} else if (value instanceof Number) {
+						predicate = criteriaBuilder.lt(buildExpression(root, key), (Number)value);
+					} else {
+						predicate = criteriaBuilder.lessThan(buildExpression(root, key), value.toString());
+					}
+					break;
+				case GT:
+					if (value instanceof Date) {
+						predicate = criteriaBuilder.greaterThan(buildExpression(root, key), (Date) value);
+					} else if (value instanceof Number) {
+						predicate = criteriaBuilder.gt(buildExpression(root, key), (Number)value);
+					} else {
+						predicate = criteriaBuilder.greaterThan(buildExpression(root, key), value.toString());
+					}
+					break;
+				case LTE:
+					if (value instanceof Date) {
+						predicate = criteriaBuilder.lessThanOrEqualTo(buildExpression(root, key), (Date) value);
+					} else if (value instanceof Number) {
+						predicate = criteriaBuilder.le(buildExpression(root, key), (Number)value);
+					} else {
+						predicate = criteriaBuilder.lessThanOrEqualTo(buildExpression(root, key), value.toString());
+					}
+					break;
+				case GTE:
+					if (value instanceof Date) {
+						predicate = criteriaBuilder.greaterThanOrEqualTo(buildExpression(root, key), (Date) value);
+					} else if (value instanceof Number) {
+						predicate = criteriaBuilder.ge(buildExpression(root, key), (Number)value);
+					} else {
+						predicate = criteriaBuilder.greaterThanOrEqualTo(buildExpression(root, key), value.toString());
+					}
+					break;
+				case REGEX:
+					predicate = criteriaBuilder.like(buildExpression(root, key), "%" + value.toString() + "%");
+					break;
+				case NE:
+					predicate = criteriaBuilder.notEqual(buildExpression(root, key), value);
+					break;
+				case EXISTS:
+					predicate = criteriaBuilder.isNotEmpty(buildExpression(root, key));
+					break;
+				case IN:
+				case ALL:
+					if (value.getClass().isArray()) {
+						predicate = buildExpression(root, key).in(Arrays.asList((Object[])value));
+					} else if (value instanceof Collection<?>) {
+						predicate = buildExpression(root, key).in((Collection<?>) value);
+					} else {
+						predicate = criteriaBuilder.equal(buildExpression(root, key), value);
+					}
+					break;
+				case NIN:
+					if (value.getClass().isArray()) {
+						predicate = criteriaBuilder.not(buildExpression(root, key).in(Arrays.asList((Object[])value)));
+					} else if (value instanceof Collection<?>) {
+						predicate = criteriaBuilder.not(buildExpression(root, key).in((Collection<?>) value));
+					} else {
+						predicate = criteriaBuilder.notEqual(buildExpression(root, key), value);
+					}
+					break;
+				default:
+					predicate = criteriaBuilder.equal(buildExpression(root, key), value);
+					break;
 			}
-			break;
-		case GT:
-			if (value instanceof Date) {
-				predicate = criteriaBuilder.greaterThan(buildExpression(root, key), (Date) value);
-			} else if (value instanceof Number) {
-				predicate = criteriaBuilder.gt(buildExpression(root, key), (Number)value);
-			} else {
-				predicate = criteriaBuilder.greaterThan(buildExpression(root, key), value.toString());
-			}
-			break;
-		case LTE:
-			if (value instanceof Date) {
-				predicate = criteriaBuilder.lessThanOrEqualTo(buildExpression(root, key), (Date) value);
-			} else if (value instanceof Number) {
-				predicate = criteriaBuilder.le(buildExpression(root, key), (Number)value);
-			} else {
-				predicate = criteriaBuilder.lessThanOrEqualTo(buildExpression(root, key), value.toString());
-			}
-			break;
-		case GTE:
-			if (value instanceof Date) {
-				predicate = criteriaBuilder.greaterThanOrEqualTo(buildExpression(root, key), (Date) value);
-			} else if (value instanceof Number) {
-				predicate = criteriaBuilder.ge(buildExpression(root, key), (Number)value);
-			} else {
-				predicate = criteriaBuilder.greaterThanOrEqualTo(buildExpression(root, key), value.toString());
-			}
-			break;
-		case REGEX:
-			predicate = criteriaBuilder.like(buildExpression(root, key), "%" + value.toString() + "%");
-			break;
-		case NE:
-			predicate = criteriaBuilder.notEqual(buildExpression(root, key), value);
-			break;
-		case EXISTS:
-			predicate = criteriaBuilder.isNotEmpty(buildExpression(root, key));
-			break;
-		case IN:
-		case ALL:
-			if (value.getClass().isArray()) {
-				predicate = buildExpression(root, key).in(Arrays.asList((Object[])value));
-			} else if (value instanceof Collection<?>) {
-				predicate = buildExpression(root, key).in((Collection<?>) value);
-			} else {
-				predicate = criteriaBuilder.equal(buildExpression(root, key), value);
-			}
-			break;
-		case NIN:
-			if (value.getClass().isArray()) {
-				predicate = criteriaBuilder.not(buildExpression(root, key).in(Arrays.asList((Object[])value)));
-			} else if (value instanceof Collection<?>) {
-				predicate = criteriaBuilder.not(buildExpression(root, key).in((Collection<?>) value));
-			} else {
-				predicate = criteriaBuilder.notEqual(buildExpression(root, key), value);
-			}
-			break;
-		default:
-			predicate = criteriaBuilder.equal(buildExpression(root, key), value);
-			break;
 		}
 		return predicate;
 	}
@@ -262,95 +264,97 @@ public class JpaFilterUtils {
 		String operator = param.getOperator();
 		String type = param.getType();
 		value = DomainUtils.parseFieldValue(value, type);
-		switch (operator) {
-		case LT:
-			expression = "`" + key + "` < ?";
-			statement.addArgs(value);
-			break;
-		case GT:
-			expression = "`" + key + "` > ?";
-			statement.addArgs(value);
-			break;
-		case LTE:
-			expression = "`" + key + "` <= ?";
-			statement.addArgs(value);
-			break;
-		case GTE:
-			expression = "`" + key + "` >= ?";
-			statement.addArgs(value);
-			break;
-		case REGEX:
-			expression = "`" + key + "` LIKE ?";
-			statement.addArgs("%" + value + "%");
-			break;
-		case NE:
-			expression = "`" + key + "` <> ?";
-			statement.addArgs(value);
-			break;
-		case EXISTS:
-			expression = "`" + key + "` IS NOT NULL";
-			break;
-		case IN:
-		case ALL:
-			if (value.getClass().isArray()) {
-				String in = "";
-				Object[] arr = (Object[]) value;
-				for (Object val : arr) {
-					statement.addArgs(val);
-					if (!"".equals(in)) {
-						in += ", ";
+		if (value != null) {
+			switch (operator) {
+				case LT:
+					expression = "`" + key + "` < ?";
+					statement.addArgs(value);
+					break;
+				case GT:
+					expression = "`" + key + "` > ?";
+					statement.addArgs(value);
+					break;
+				case LTE:
+					expression = "`" + key + "` <= ?";
+					statement.addArgs(value);
+					break;
+				case GTE:
+					expression = "`" + key + "` >= ?";
+					statement.addArgs(value);
+					break;
+				case REGEX:
+					expression = "`" + key + "` LIKE ?";
+					statement.addArgs("%" + value + "%");
+					break;
+				case NE:
+					expression = "`" + key + "` <> ?";
+					statement.addArgs(value);
+					break;
+				case EXISTS:
+					expression = "`" + key + "` IS NOT NULL";
+					break;
+				case IN:
+				case ALL:
+					if (value.getClass().isArray()) {
+						String in = "";
+						Object[] arr = (Object[]) value;
+						for (Object val : arr) {
+							statement.addArgs(val);
+							if (!"".equals(in)) {
+								in += ", ";
+							}
+							in += "?";
+						}
+						expression = "`" + key + "` IN (" + in + ")";
+					} else if (value instanceof Collection<?>) {
+						String in = "";
+						Collection<?> col = (Collection<?>) value;
+						for (Object val : col) {
+							statement.addArgs(val);
+							if (!"".equals(in)) {
+								in += ", ";
+							}
+							in += "?";
+						}
+						expression = "`" + key + "` IN (" + in + ")";
+					} else {
+						expression = "`" + key + "` = ?";
+						statement.addArgs(value);
 					}
-					in += "?";
-				}
-				expression = "`" + key + "` IN (" + in + ")";
-			} else if (value instanceof Collection<?>) {
-				String in = "";
-				Collection<?> col = (Collection<?>) value;
-				for (Object val : col) {
-					statement.addArgs(val);
-					if (!"".equals(in)) {
-						in += ", ";
+					break;
+				case NIN:
+					if (value.getClass().isArray()) {
+						String in = "";
+						Object[] arr = (Object[]) value;
+						for (Object val : arr) {
+							statement.addArgs(val);
+							if (!"".equals(in)) {
+								in += ", ";
+							}
+							in += "?";
+						}
+						expression = "`" + key + "` NOT IN (" + in + ")";
+					} else if (value instanceof Collection<?>) {
+						String in = "";
+						Collection<?> col = (Collection<?>) value;
+						for (Object val : col) {
+							statement.addArgs(val);
+							if (!"".equals(in)) {
+								in += ", ";
+							}
+							in += "?";
+						}
+						expression = "`" + key + "` NOT IN (" + in + ")";
+					} else {
+						expression = "`" + key + "` <> ?";
+						statement.addArgs(value);
 					}
-					in += "?";
-				}
-				expression = "`" + key + "` IN (" + in + ")";
-			} else {
-				expression = "`" + key + "` = ?";
-				statement.addArgs(value);
+					break;
+				default:
+					expression = "`" + key + "` = ?";
+					statement.addArgs(value);
+					break;
 			}
-			break;
-		case NIN:
-			if (value.getClass().isArray()) {
-				String in = "";
-				Object[] arr = (Object[]) value;
-				for (Object val : arr) {
-					statement.addArgs(val);
-					if (!"".equals(in)) {
-						in += ", ";
-					}
-					in += "?";
-				}
-				expression = "`" + key + "` NOT IN (" + in + ")";
-			} else if (value instanceof Collection<?>) {
-				String in = "";
-				Collection<?> col = (Collection<?>) value;
-				for (Object val : col) {
-					statement.addArgs(val);
-					if (!"".equals(in)) {
-						in += ", ";
-					}
-					in += "?";
-				}
-				expression = "`" + key + "` NOT IN (" + in + ")";
-			} else {
-				expression = "`" + key + "` <> ?";
-				statement.addArgs(value);
-			}
-			break;
-		default:
-			expression = "`" + key + "` = ?";
-			statement.addArgs(value);
-			break;
 		}
 		statement.setExpression(expression);
 		return statement;

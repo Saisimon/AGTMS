@@ -40,6 +40,7 @@ import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
@@ -106,7 +107,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 						if (value == null) {
 							Set<String> texts = new HashSet<>();
 							texts.add(fieldValue.toString());
-							Map<String, String> textValueMap = DomainUtils.getSelectionTextValueMap(templateField.getSelectionId(), param.getUserId(), texts);
+							Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap(templateField.getSelectionId(), param.getUserId(), texts);
 							textMap.putAll(textValueMap);
 							value = textValueMap.get(fieldValue.toString());
 						}

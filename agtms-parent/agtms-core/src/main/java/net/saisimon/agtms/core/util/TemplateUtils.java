@@ -223,14 +223,14 @@ public class TemplateUtils {
 		if (template == null || StringUtils.isBlank(template.getTitle())) {
 			return false;
 		}
-		if (CollectionUtils.isEmpty(template.getColumns())) {
+		if (CollectionUtils.isEmpty(template.getColumns()) || template.getColumns().size() > 10) {
 			return false;
 		}
 		for (TemplateColumn templateColumn : template.getColumns()) {
 			if (StringUtils.isBlank(templateColumn.getTitle())) {
 				return false;
 			}
-			if (CollectionUtils.isEmpty(templateColumn.getFields())) {
+			if (CollectionUtils.isEmpty(templateColumn.getFields()) || templateColumn.getFields().size() > 10) {
 				return false;
 			}
 			for (TemplateField templateField : templateColumn.getFields()) {
@@ -240,21 +240,6 @@ public class TemplateUtils {
 				if (Views.SELECTION.getView().equals(templateField.getView()) && templateField.getSelectionId() == null) {
 					return false;
 				}
-			}
-		}
-		return true;
-	}
-	
-	public static boolean checkSize(Template template) {
-		if (template == null) {
-			return false;
-		}
-		if (CollectionUtils.isEmpty(template.getColumns()) || template.getColumns().size() > 10) {
-			return false;
-		}
-		for (TemplateColumn templateColumn : template.getColumns()) {
-			if (CollectionUtils.isEmpty(templateColumn.getFields()) || templateColumn.getFields().size() > 10) {
-				return false;
 			}
 		}
 		return true;

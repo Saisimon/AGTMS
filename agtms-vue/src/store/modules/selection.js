@@ -25,8 +25,14 @@ const actions = {
         return request(context.rootState.base.user, url, null);
     },
     searchSelection(context, search) {
+        if (search == null || search.id == null) {
+            return;
+        }
         var url = "/selection/edit/search?id=" + search.id;
-        return request(context.rootState.base.user, url, {'keyword': search.keyword});
+        if (search.keyword) {
+            url += "&keyword=" + search.keyword;
+        }
+        return request(context.rootState.base.user, url);
     },
     saveSelection(context, selection) {
         return save(context.rootState.base.user, "/selection/edit", selection);

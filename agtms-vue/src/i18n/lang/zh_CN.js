@@ -95,5 +95,10 @@ export default {
     option_text: '选项文本',
     more_functions: '与{count}个功能',
     no_result: '暂无结果',
-    no_options: '暂无选项'
+    no_options: '暂无选项',
+    options_value_desc: '下拉列表选项的值不允许重复',
+    options_text_desc: '下拉列表选项的名称不允许重复',
+    template_value_desc: '下拉列表选项的值对应的模板字段必须唯一且必填',
+    template_text_desc: '下下拉列表选项的名称对应的模板字段必须唯一且必填',
+    draggable_desc: '拖动来改变字段位置'
 }

@@ -28,7 +28,11 @@ Vue.prototype.cloneObject = function (obj) {
 	}
 	for (var key in obj) {
 		var val = obj[key];
-		newObj[key] = typeof val === 'object' ? this.cloneObject(val) : val;
+		if (val != null) {
+			newObj[key] = typeof val === 'object' ? this.cloneObject(val) : val;
+		} else {
+			newObj[key] = null;
+		}
 	}
 	return newObj;
 }

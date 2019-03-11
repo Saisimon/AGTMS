@@ -39,6 +39,7 @@ import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
@@ -121,6 +122,9 @@ public class ManagementEditController extends EditController<Domain> {
 				if (oldDomain == null) {
 					return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
 				}
+				if (generateService.checkExist(domain)) {
+					return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
+				}
 				generateService.updateDomain(domain, oldDomain);
 			}
 			return ResultUtils.simpleSuccess();
@@ -172,21 +176,35 @@ public class ManagementEditController extends EditController<Domain> {
 			}
 			for (TemplateField templateField : templateColumn.getFields()) {
 				String fieldName = templateColumn.getColumnName() + templateField.getFieldName();
-				Field<Object> field = Field.builder()
+				Field<Object> field = Field.<Object>builder()
 						.name(fieldName)
 						.text(templateField.getFieldTitle())
 						.type(templateField.getFieldType())
 						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
 						.view(templateField.getView())
-						.selectionId(templateField.getSelectionId())
 						.searchable(true)
 						.build();
 				if (templateField.getRequired()) {
 					field.setRequired(true);
 				}
-				Object value = null;
-				if (domain != null) {
-					value = handleValue(domain.getField(fieldName), templateField, userId);
+				Object value = domain == null ? null : domain.getField(fieldName);
+				if (Views.SELECTION.getView().equals(templateField.getView())) {
+					field.setSelectionId(templateField.getSelectionId());
+					List<Option<Object>> selectionOptions = SelectionUtils.getSelectionOptions(templateField.getSelectionId(), null, userId);
+					List<Object> options = new ArrayList<>();
+					for (Option<Object> option : selectionOptions) {
+						options.add(option);
+					}
+					field.setOptions(options);
+					if (value != null) {
+						Set<String> values = new HashSet<>();
+						values.add(value.toString());
+						Map<String, String> textMap = SelectionUtils.getSelectionValueTextMap(templateField.getSelectionId(), userId, values);
+						String text = textMap.get(value.toString());
+						if (text != null) {
+							value = new Option<>(value, text);
+						}
+					}
 				}
 				if (value == null) {
 					field.setValue(templateField.getDefaultValue());
@@ -198,20 +216,6 @@ public class ManagementEditController extends EditController<Domain> {
 		}
 		Collections.sort(fields, Field.COMPARATOR);
 		return fields;
-	}
-	
-	private Object handleValue(Object value, TemplateField templateField, Long userId) {
-		if (value == null || !Views.SELECTION.getView().equals(templateField.getView())) {
-			return value;
-		}
-		Set<String> values = new HashSet<>();
-		values.add(value.toString());
-		Map<String, String> textMap = DomainUtils.getSelectionValueTextMap(templateField.getSelectionId(), userId, values);
-		String text = textMap.get(value.toString());
-		if (text == null) {
-			return value;
-		}
-		return new Option<>(value, text);
 	}
 	
 }
