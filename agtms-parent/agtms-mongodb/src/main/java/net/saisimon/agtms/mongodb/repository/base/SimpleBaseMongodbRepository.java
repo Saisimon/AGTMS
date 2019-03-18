@@ -127,7 +127,9 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 	
 	@Override
 	public T saveOrUpdate(T entity) {
-		mongoOperations.save(entity, collectionName);
+		if (entity != null) {
+			mongoOperations.save(entity, collectionName);
+		}
 		return entity;
 	}
 	

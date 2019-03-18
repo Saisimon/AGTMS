@@ -42,6 +42,7 @@ import net.saisimon.agtms.core.factory.SelectionServiceFactory;
 import net.saisimon.agtms.core.service.SelectionService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.MainController;
 import net.saisimon.agtms.web.dto.resp.SelectionInfo;
@@ -109,11 +110,11 @@ public class SelectionMainController extends MainController {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		Long userId = AuthUtils.getUserInfo().getUserId();
-		SelectionService selectionService = SelectionServiceFactory.get();
-		Selection selection = selectionService.getSelection(id, userId);
+		Selection selection = SelectionUtils.getSelection(id, userId);
 		if (selection == null) {
 			return ErrorMessage.Selection.SELECTION_NOT_EXIST;
 		}
+		SelectionService selectionService = SelectionServiceFactory.get();
 		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
 			selectionService.removeSelectionOptions(selection.getId());
 		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
@@ -133,7 +134,7 @@ public class SelectionMainController extends MainController {
 		Long userId = AuthUtils.getUserInfo().getUserId();
 		SelectionService selectionService = SelectionServiceFactory.get();
 		for (Long id : ids) {
-			Selection selection = selectionService.getSelection(id, userId);
+			Selection selection = SelectionUtils.getSelection(id, userId);
 			if (selection == null) {
 				continue;
 			}

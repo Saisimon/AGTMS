@@ -1,9 +1,10 @@
 <template>
     <div class="export-container" v-if="batchExport">
-        <b-modal v-model="model.show"
+        <b-modal v-model="modal.show"
             :title="$t('export')"
             size="lg"
             :hide-footer="true"
+            header-border-variant="light"
             button-size="sm">
             <div class="form-container">
                 <b-row class="mb-3">
@@ -72,7 +73,7 @@ export default {
     props: [
         "batchExport", 
         "selects",
-        "model",
+        "modal",
         "filter"
     ],
     computed: {
@@ -111,7 +112,7 @@ export default {
             }).then(resp => {
                 var data = resp.data;
                 if (data.code === 0) {
-                    this.model.show = false;
+                    this.modal.show = false;
                     this.$emit('showAlert', data.message, 'success');
                 } else {
                     this.$emit('showAlert', data.message, 'danger');

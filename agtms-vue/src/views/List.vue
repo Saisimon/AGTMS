@@ -13,8 +13,8 @@
                 <b-col v-if="functions.indexOf('create') !== -1">
                     <!-- 创建 -->
                     <b-button variant="primary" size="sm" 
-                        :to="header.createUrl" 
-                        class="base-btn float-right">
+                        :to="header.createUrl"
+                        class="base-btn float-right create-btn">
                         <i class="fa fa-fw fa-plus-circle"></i>
                         {{ $t("create") }}
                     </b-button>
@@ -23,14 +23,14 @@
             <!-- 筛选 -->
             <div class="filter-container" v-if="filters.length > 0">
                 <b-btn href="javascript:void(0);" 
-                    v-b-toggle.filterToggle
+                    v-b-toggle.filter-toggle
                     variant="outline-light"
                     size="sm"
                     class="filter-switch-btn">
                     {{ $t('filter') }}
                     <i class="fa fa-caret-down ml-1"></i>
                 </b-btn>
-                <b-collapse id="filterToggle" class="filter-toggle" :visible="showFilters">
+                <b-collapse id="filter-toggle" class="filter-toggle" :visible="showFilters">
                     <div class="mb-2 filter-div" v-for="(filter, key) in filters" :key="key">
                         <b-input-group>
                             <b-input-group-text slot="prepend" class="filter-select-container">
@@ -52,13 +52,16 @@
                             <template v-for="option in filter.key.options">
                                 <search-filter-text v-if="filter.value[option.value].type == 'text' && filter.key.selected.value == option.value" 
                                     :key="option.value" 
-                                    :filter="filter.value[option.value]" />
+                                    :filter="filter.value[option.value]"
+                                    :field="option.value" />
                                 <search-filter-select v-if="filter.value[option.value].type == 'select' && filter.key.selected.value == option.value" 
                                     :key="option.value" 
-                                    :filter="filter.value[option.value]" />
+                                    :filter="filter.value[option.value]"
+                                    :field="option.value" />
                                 <search-filter-range v-if="filter.value[option.value].type == 'range' && filter.key.selected.value == option.value" 
                                     :key="option.value" 
-                                    :filter="filter.value[option.value]" />
+                                    :filter="filter.value[option.value]"
+                                    :field="option.value" />
                             </template>
                         </b-input-group>
                     </div>
@@ -66,13 +69,13 @@
                         <!-- 搜索 -->
                         <b-button variant="primary" size="sm" 
                             @click="searchByFilters"
-                            class="base-btn float-right ml-1">
+                            class="base-btn float-right ml-1 search-btn">
                             {{ $t("search") }}
                         </b-button>
                         <!-- 清除 -->
                         <b-button variant="secondary" size="sm" 
                             @click="clearFilters"
-                            class="base-btn float-right ml-1">
+                            class="base-btn float-right ml-1 clear-btn">
                             {{ $t("clear") }}
                         </b-button>
                     </div>
@@ -94,6 +97,7 @@
                                 @click="batch.click"
                                 v-b-tooltip.hover 
                                 :title="batch.text"
+                                :class="batch.class"
                                 class="ml-1">
                                 <i class="fa fa-fw" :class="batch.icon"></i>
                             </b-button>
@@ -104,7 +108,7 @@
                             @click="searchByFilters"
                             v-b-tooltip.hover 
                             :title="$t('refresh')"
-                            class="ml-1">
+                            class="ml-1 refresh-btn">
                             <i class="fa fa-fw fa-refresh"></i>
                         </b-button>
                     </b-col>
@@ -135,7 +139,16 @@
                             <div class="rows-div">{{ $t("total") }} {{ total }} {{ $t("rows") }}</div>
                         </b-col>
                         <b-col cols="8">
-                            <b-pagination v-model="pageable.pageIndex" :total-rows="total" :per-page="10" align="right" @change="pageChange"></b-pagination>
+                            <b-pagination 
+                                v-model="pageable.pageIndex" 
+                                :total-rows="total" 
+                                :per-page="10" 
+                                :first-text="$t('first_page')"
+                                :prev-text="$t('previous_page')"
+                                :next-text="$t('next_page')"
+                                :last-text="$t('last_page')"
+                                align="right" 
+                                @change="pageChange" />
                         </b-col>
                     </b-row>
                     <template slot="table-row" slot-scope="props">
@@ -182,27 +195,27 @@
             </div>
             <action-batch-remove 
                 v-if="functions.indexOf('batchRemove') !== -1" 
-                :model="showBatchRemoveModel"
+                :modal="showBatchRemoveModal"
                 :selects="selects"
                 @succeed="searchByFilters"
                 @failed="showAlert" />
             <action-batch-edit 
                 v-if="functions.indexOf('batchEdit') !== -1"
-                :model="showBatchEditModel"
+                :modal="showBatchEditModal"
                 :batchEdit="batchEdit"
                 :selects="selects"
                 @succeed="searchByFilters"
                 @failed="showAlert" />
             <action-export 
                 v-if="functions.indexOf('export') !== -1" 
-                :model="showExportModel"
+                :modal="showExportModal"
                 :batchExport="batchExport"
                 :selects="selects"
                 :filter="searchFilters()"
                 @showAlert="showAlert" />
             <action-import 
                 v-if="functions.indexOf('import') !== -1" 
-                :model="showImportModel"
+                :modal="showImportModal"
                 :batchImport="batchImport"
                 :selects="selects"
                 @showAlert="showAlert" />
@@ -288,6 +301,7 @@ export default {
                             variant:'outline-primary',
                             text: this.$t('batch_edit'),
                             icon: 'fa-edit',
+                            class: 'batch-edit-btn',
                             click: this.batchEditClick
                         });
                         break;
@@ -296,6 +310,7 @@ export default {
                             variant:'outline-danger',
                             text: this.$t('batch_remove'),
                             icon: 'fa-trash',
+                            class: 'batch-remove-btn',
                             click: this.batchRemoveClick
                         });
                         break;
@@ -304,6 +319,7 @@ export default {
                             variant:'outline-secondary',
                             text: this.$t('export'),
                             icon: 'fa-download',
+                            class: 'batch-export-btn',
                             click: this.exportClick
                         });
                         break;
@@ -312,6 +328,7 @@ export default {
                             variant:'outline-secondary',
                             text: this.$t('import'),
                             icon: 'fa-upload',
+                            class: 'batch-import-btn',
                             click: this.importClick
                         });
                         break;
@@ -381,16 +398,16 @@ export default {
     },
     data: function() {
         return {
-            showBatchRemoveModel: {
+            showBatchRemoveModal: {
                 show: false
             },
-            showBatchEditModel: {
+            showBatchEditModal: {
                 show: false
             },
-            showExportModel: {
+            showExportModal: {
                 show: false
             },
-            showImportModel: {
+            showImportModal: {
                 show: false
             },
             sortOptions: {
@@ -407,22 +424,22 @@ export default {
     methods: {
         batchRemoveClick: function() {
             if (this.checkSelect()) {
-                this.showBatchRemoveModel.show = true;
+                this.showBatchRemoveModal.show = true;
             }
         },
         batchEditClick: function() {
             if (this.checkSelect()) {
                 this.$store.dispatch('getBatchGrid', this.$route.path);
-                this.showBatchEditModel.show = true;
+                this.showBatchEditModal.show = true;
             }
         },
         exportClick: function() {
             this.$store.dispatch('getBatchGrid', this.$route.path);
-            this.showExportModel.show = true;
+            this.showExportModal.show = true;
         },
         importClick: function() {
             this.$store.dispatch('getBatchGrid', this.$route.path);
-            this.showImportModel.show = true;
+            this.showImportModal.show = true;
         },
         checkSelect: function() {
             if (this.selects.length == 0) {
@@ -665,8 +682,11 @@ export default {
 }
 .rows-div {
     font-size: 14px;
-    line-height: 38px;
-    height: 38px;
+    line-height: 35px;
+    height: 35px;
+}
+.page-link {
+    font-size: 14px;
 }
 .vgt-selection-info-row {
     display: none!important;

@@ -23,7 +23,7 @@ import org.springframework.util.CollectionUtils;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
-import net.saisimon.agtms.core.util.DomainUtils;
+import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.util.StringUtils;
 
 public class MongodbFilterUtils {
@@ -78,7 +78,7 @@ public class MongodbFilterUtils {
 		String type = param.getType();
 		if (StringUtils.isNotBlank(key) && value != null) {
 			criteria = Criteria.where(key);
-			value = DomainUtils.parseFieldValue(value, type);
+			value = DomainGenerater.parseFieldValue(value, type);
 			switch (operator) {
 			case LT:
 				criteria.lt(value);

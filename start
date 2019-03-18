@@ -16,7 +16,7 @@ if [ -f data/eureka.pid ]; then
     rm data/eureka.pid
     echo "agtms-eureka 已停止."
 fi
-java -jar agtms-eureka/target/agtms-eureka.jar > data/logs/eureka.log 2>&1 &
+java -jar -Xms1g -Xms1g agtms-eureka/target/agtms-eureka.jar > data/logs/eureka.log 2>&1 &
 echo $! > data/eureka.pid
 echo "agtms-eureka 启动中..."
 sleep 10
@@ -28,7 +28,7 @@ if [ -f data/web.pid ]; then
     rm data/web.pid
     echo "agtms-web 已停止."
 fi
-java -jar agtms-parent/agtms-web/target/agtms-web.jar > data/logs/web.log 2>&1 &
+java -jar -Xms2g -Xms2g agtms-parent/agtms-web/target/agtms-web.jar > data/logs/web.log 2>&1 &
 echo $! > data/web.pid
 echo "agtms-web 启动中..."
 sleep 10
@@ -40,7 +40,7 @@ if [ -f data/zuul.pid ]; then
     rm data/zuul.pid
     echo "agtms-zuul 已停止."
 fi
-java -jar agtms-zuul/target/agtms-zuul.jar > data/logs/zuul.log 2>&1 &
+java -jar -Xms1g -Xms1g agtms-zuul/target/agtms-zuul.jar > data/logs/zuul.log 2>&1 &
 echo $! > data/zuul.pid
 echo "agtms-zuul 启动中..."
 sleep 10

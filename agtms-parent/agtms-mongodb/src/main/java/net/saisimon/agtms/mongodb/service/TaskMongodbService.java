@@ -24,6 +24,9 @@ public class TaskMongodbService implements TaskService, MongodbOrder {
 	
 	@Override
 	public Task saveOrUpdate(Task entity) {
+		if (entity == null) {
+			return entity;
+		}
 		if (entity.getId() == null) {
 			Long id = sequenceService.nextId(taskMongodbRepository.getCollectionName());
 			entity.setId(id);

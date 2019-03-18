@@ -6,6 +6,7 @@ export default {
     create_account: 'Create account',
     sign_out: 'Sign out',
     username: 'Username',
+    username_or_email: 'Username or Email',
     email: 'Email',
     password: 'Password',
     or: ' or ',
@@ -100,5 +101,9 @@ export default {
     options_text_desc: 'The text of the drop-down list option does not allow duplicates',
     template_value_desc: 'The template field corresponding to the value of the drop-down list option must be unique and required',
     template_text_desc: 'The template field corresponding to the text of the drop-down list option must be unique and required',
-    draggable_desc: 'Drag to change the position of the field'
+    draggable_desc: 'Drag to change the position of the field',
+    first_page: 'First',
+    previous_page: 'Prev',
+    next_page: 'Next',
+    last_page: 'Last',
 }

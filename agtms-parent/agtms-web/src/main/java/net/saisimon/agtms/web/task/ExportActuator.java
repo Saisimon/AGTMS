@@ -75,7 +75,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		File file = createExportFile(param, name);
 		fillHead(file, heads, param.getExportFileType(), false);
 		GenerateService generateService = GenerateServiceFactory.build(template);
-		FilterRequest filter = FilterRequest.build(param.getFilter(), TemplateUtils.getFilters(template)).and(Constant.OPERATORID, template.getOperatorId());
+		FilterRequest filter = FilterRequest.build(param.getFilter(), TemplateUtils.getFilters(template)).and(Constant.OPERATORID, param.getUserId());
 		Long count = generateService.count(filter);
 		long pageCount = (count - 1) / PAGE_SIZE + 1;
 		List<List<Object>> datas = new ArrayList<>();

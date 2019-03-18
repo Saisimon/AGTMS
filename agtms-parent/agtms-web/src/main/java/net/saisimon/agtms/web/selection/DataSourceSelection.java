@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
-import net.saisimon.agtms.core.selection.AbstractSelection;
 
 @Component
 public class DataSourceSelection extends AbstractSelection<String> {

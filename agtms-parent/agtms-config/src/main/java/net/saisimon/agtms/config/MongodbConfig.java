@@ -6,6 +6,12 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 import net.saisimon.agtms.mongodb.repository.base.BaseMongodbRepositoryFactoryBean;
 
+/**
+ * Mongodb 配置类
+ * 
+ * @author saisimon
+ *
+ */
 @Configuration
 @ConditionalOnClass(BaseMongodbRepositoryFactoryBean.class)
 @EnableMongoRepositories(basePackages="net.saisimon.agtms.mongodb.repository", repositoryFactoryBeanClass=BaseMongodbRepositoryFactoryBean.class)

@@ -113,26 +113,26 @@
                         :to="'/template/main'"
                         variant="secondary" 
                         size="sm" 
-                        class="ml-2">
+                        class="ml-2 back-btn">
                         <i class="fa fa-fw fa-undo"></i>
                         {{ $t("back") }}
                     </b-button>
                     <!-- 重置 -->
                     <b-button 
                         variant="danger" 
-                        v-b-modal="'reset-model'"
+                        v-b-modal="'reset-modal'"
                         size="sm" 
-                        class="ml-2">
+                        class="ml-2 reset-btn">
                         <i class="fa fa-fw fa-repeat"></i>
                         {{ $t("reset") }}
                     </b-button>
                     <!-- 预览 -->
                     <b-button 
                         variant="info" 
-                        v-b-modal="'preview-model'"
+                        v-b-modal="'preview-modal'"
                         @click="toExample"
                         size="sm" 
-                        class="ml-2">
+                        class="ml-2 preview-btn">
                         <i class="fa fa-fw fa-eye"></i>
                         {{ $t("preview") }}
                     </b-button>
@@ -141,25 +141,28 @@
                         variant="primary" 
                         @click="saveTemplate"
                         size="sm" 
-                        class="ml-2">
+                        class="ml-2 save-btn">
                         <i class="fa fa-fw fa-save"></i>
                         {{ $t("save") }}
                     </b-button>
                 </b-col>
             </b-row>
             <!-- 重置确认 -->
-            <b-modal id="reset-model"
+            <b-modal id="reset-modal"
                 centered 
                 :cancel-title="$t('cancel')"
                 :ok-title="$t('confirm_reset')"
                 @ok="reset"
-                ok-variant="danger"
+                cancel-variant="outline-info"
+                ok-variant="outline-danger"
+                header-border-variant="light"
+                footer-border-variant="light"
                 button-size="sm">
-                <div class="text-center font-weight-bold">
+                <div class="text-center">
                     {{ $t('are_you_confirm' )}}
                 </div>
             </b-modal>
-            <b-modal id="preview-model"
+            <b-modal id="preview-modal"
                 centered
                 size="lg" 
                 hide-footer 

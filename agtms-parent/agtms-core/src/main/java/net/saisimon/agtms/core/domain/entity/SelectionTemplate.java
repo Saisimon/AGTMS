@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import lombok.Data;
 
 /**
- * 选择器选项实体对象
+ * 下拉列表选项实体对象
  * 
  * @author saisimon
  *
@@ -25,27 +25,27 @@ public class SelectionTemplate {
 	private Long id;
 	
 	/**
-	 * 选择器对应模板ID
+	 * 下拉列表对应模板ID
 	 */
-	@Column(columnDefinition="BIGINT(15) COMMENT '选择器对应模板ID'")
+	@Column(columnDefinition="BIGINT(15) COMMENT '下拉列表对应模板ID'")
 	private Long templateId;
 	
 	/**
-	 * 选择器选项值对应模板的属性名
+	 * 下拉列表选项值对应模板的属性名
 	 */
 	@Column(length=50)
 	private String valueFieldName;
 	
 	/**
-	 * 选择器选项名称对应模板的属性名
+	 * 下拉列表选项名称对应模板的属性名
 	 */
 	@Column(length=50)
 	private String textFieldName;
 	
 	/**
-	 * 选择器ID
+	 * 下拉列表ID
 	 */
-	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '选择器ID'")
+	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '下拉列表ID'")
 	private Long selectionId;
 	
 }

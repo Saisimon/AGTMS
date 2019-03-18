@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.Domain;
@@ -34,10 +35,10 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
+import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
-import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.StringUtils;
@@ -54,6 +55,7 @@ import net.saisimon.agtms.web.controller.base.EditController;
 @RestController
 @RequestMapping("/management/edit/{key}")
 @ControllerInfo("management")
+@Slf4j
 public class ManagementEditController extends EditController<Domain> {
 	
 	@PostMapping("/grid")
@@ -97,14 +99,14 @@ public class ManagementEditController extends EditController<Domain> {
 				String fieldName = entry.getKey();
 				TemplateField field = entry.getValue();
 				Object fieldValue = body.get(fieldName);
-				fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
+				fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
 				if (StringUtils.isEmpty(fieldValue)) {
 					if (field.getRequired()) {
 						return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 					}
 					if (StringUtils.isNotBlank(field.getDefaultValue())) {
 						fieldValue = field.getDefaultValue();
-						fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
+						fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
 					}
 				}
 				if (fieldValue != null) {
@@ -112,7 +114,7 @@ public class ManagementEditController extends EditController<Domain> {
 				}
 			}
 			if (idObj == null) {
-				if (generateService.checkExist(domain)) {
+				if (generateService.checkExist(domain, userId)) {
 					return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
 				}
 				generateService.saveDomain(domain);
@@ -122,13 +124,14 @@ public class ManagementEditController extends EditController<Domain> {
 				if (oldDomain == null) {
 					return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
 				}
-				if (generateService.checkExist(domain)) {
+				if (generateService.checkExist(domain, userId)) {
 					return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
 				}
 				generateService.updateDomain(domain, oldDomain);
 			}
 			return ResultUtils.simpleSuccess();
 		} catch (GenerateException e) {
+			log.error("Domain save failed", e);
 			return ErrorMessage.Domain.DOMAIN_SAVE_FAILED;
 		}
 	}

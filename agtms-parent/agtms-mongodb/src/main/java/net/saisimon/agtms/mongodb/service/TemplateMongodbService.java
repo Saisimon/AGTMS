@@ -28,6 +28,9 @@ public class TemplateMongodbService implements TemplateService, MongodbOrder {
 	
 	@Override
 	public Template saveOrUpdate(Template entity) {
+		if (entity == null) {
+			return entity;
+		}
 		if (entity.getId() == null) {
 			Long id = sequenceService.nextId(templateMongodbRepository.getCollectionName());
 			entity.setId(id);
@@ -37,6 +40,9 @@ public class TemplateMongodbService implements TemplateService, MongodbOrder {
 
 	@Override
 	public boolean dropTable(Template template) {
+		if (template == null) {
+			return false;
+		}
 		mongoTemplate.dropCollection(TemplateUtils.getTableName(template));
 		return true;
 	}

@@ -23,6 +23,7 @@ import feign.Feign;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
@@ -77,12 +78,12 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		if (filter != null) {
 			filterMap = filter.toMap();
 		}
-		body.put("filter", filterMap);
+		body.put(Constant.Param.FILTER, filterMap);
 		if (sort != null) {
-			body.put("sort", sort.toString());
+			body.put(Constant.Param.SORT, sort.toString());
 		}
 		if (properties != null && properties.length > 0) {
-			body.put("properties", Stream.of(properties).collect(Collectors.joining(",")));
+			body.put(Constant.Param.PROPERTIES, Stream.of(properties).collect(Collectors.joining(",")));
 		}
 		List<Map<String, Object>> list = apiService.findList(template.getKey(), body);
 		try {
@@ -105,12 +106,12 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		if (filter != null) {
 			filterMap = filter.toMap();
 		}
-		body.put("filter", filterMap);
+		body.put(Constant.Param.FILTER, filterMap);
 		if (pageable != null) {
-			body.put("pageable", pageable.toMap());
+			body.put(Constant.Param.PAGEABLE, pageable.toMap());
 		}
 		if (properties != null && properties.length > 0) {
-			body.put("properties", Stream.of(properties).collect(Collectors.joining(",")));
+			body.put(Constant.Param.PROPERTIES, Stream.of(properties).collect(Collectors.joining(",")));
 		}
 		List<Map<String, Object>> list = apiService.findList(template.getKey(), body);
 		try {
@@ -137,18 +138,18 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		if (filter != null) {
 			filterMap = filter.toMap();
 		}
-		body.put("filter", filterMap);
-		body.put("pageable", pageable.toMap());
+		body.put(Constant.Param.FILTER, filterMap);
+		body.put(Constant.Param.PAGEABLE, pageable.toMap());
 		if (properties != null && properties.length > 0) {
-			body.put("properties", Stream.of(properties).collect(Collectors.joining(",")));
+			body.put(Constant.Param.PROPERTIES, Stream.of(properties).collect(Collectors.joining(",")));
 		}
 		Map<String, Object> map = apiService.findPage(template.getKey(), body);
 		if (CollectionUtils.isEmpty(map)) {
 			return null;
 		}
 		Pageable springPageable = pageable.getPageable();
-		List<Map<String, Object>> list = (List<Map<String, Object>>) map.get("rows");
-		Object total = map.get("total");
+		List<Map<String, Object>> list = (List<Map<String, Object>>) map.get(Constant.Param.ROWS);
+		Object total = map.get(Constant.Param.TOTAL);
 		try {
 			List<Domain> domains = conversions(list);
 			return new PageImpl<>(domains, springPageable, Long.parseLong(total.toString()));
@@ -170,12 +171,12 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		if (filter != null) {
 			filterMap = filter.toMap();
 		}
-		body.put("filter", filterMap);
+		body.put(Constant.Param.FILTER, filterMap);
 		if (sort != null) {
-			body.put("sort", sort.toString());
+			body.put(Constant.Param.SORT, sort.toString());
 		}
 		if (properties != null && properties.length > 0) {
-			body.put("properties", Stream.of(properties).collect(Collectors.joining(",")));
+			body.put(Constant.Param.PROPERTIES, Stream.of(properties).collect(Collectors.joining(",")));
 		}
 		Map<String, Object> map = apiService.findOne(template.getKey(), body);
 		try {
@@ -256,8 +257,8 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		if (filter != null) {
 			filterMap = filter.toMap();
 		}
-		body.put("filter", filterMap);
-		body.put("update", updateMap);
+		body.put(Constant.Param.FILTER, filterMap);
+		body.put(Constant.Param.UPDATE, updateMap);
 		apiService.batchUpdate(template.getKey(), body);
 	}
 

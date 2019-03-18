@@ -66,10 +66,9 @@ public class SelectionEditController extends BaseController {
 	@PostMapping("/grid")
 	public Result grid(@RequestParam(name = "id", required = false) Long id) {
 		Selection selection = null;
-		SelectionService selectionService = SelectionServiceFactory.get();
 		Long userId = AuthUtils.getUserInfo().getUserId();
 		if (id != null) {
-			selection = selectionService.getSelection(id, userId);
+			selection = SelectionUtils.getSelection(id, userId);
 			if (selection == null) {
 				return ErrorMessage.Selection.SELECTION_NOT_EXIST;
 			}
@@ -88,6 +87,7 @@ public class SelectionEditController extends BaseController {
 			typeField.setDisabled(true);
 			typeField.setValue(Select.getOption(selectTypeOptions, selection.getType()));
 			titleField.setValue(selection.getTitle());
+			SelectionService selectionService = SelectionServiceFactory.get();
 			if (SelectTypes.OPTION.getType() == selection.getType()) {
 				List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection.getId());
 				for (SelectionOption selectionOption : selectionOptions) {
@@ -167,7 +167,7 @@ public class SelectionEditController extends BaseController {
 		Date time = new Date();
 		Selection selection = null;
 		if (null != id && id > 0) {
-			selection = selectionService.getSelection(id, userId);
+			selection = SelectionUtils.getSelection(id, userId);
 			if (selection == null) {
 				return ErrorMessage.Selection.SELECTION_NOT_EXIST;
 			}

@@ -4,14 +4,14 @@
             <span>{{ $t("from") }}</span>
         </b-input-group-text>
         <search-filter-datepicker :input="filter.from" v-if="filter.from.type == 'date'" />
-        <b-form-input v-model="filter.from.value" v-else-if="filter.from.type == 'long' || filter.from.type == 'double'" :type="'number'" />
-        <b-form-input v-model="filter.from.value" v-else :type="'text'" />
+        <b-form-input :class="field + '-from-input'" v-model="filter.from.value" v-else-if="filter.from.type == 'long' || filter.from.type == 'double'" :type="'number'" />
+        <b-form-input :class="field + '-from-input'" v-model="filter.from.value" v-else :type="'text'" />
         <b-input-group-text>
             <span>{{ $t("to") }}</span>
         </b-input-group-text>
         <search-filter-datepicker :input="filter.to" v-if="filter.to.type == 'date'" :calendarClass="'filter-datepicker-calendar-right'" />
-        <b-form-input v-model="filter.to.value" v-else-if="filter.to.type == 'long' || filter.to.type == 'double'" :type="'number'" />
-        <b-form-input v-model="filter.to.value" v-else :type="'text'" />
+        <b-form-input :class="field + '-to-input'" v-model="filter.to.value" v-else-if="filter.to.type == 'long' || filter.to.type == 'double'" :type="'number'" />
+        <b-form-input :class="field + '-to-input'" v-model="filter.to.value" v-else :type="'text'" />
     </div>
 </template>
 
@@ -20,7 +20,7 @@ import SearchFilterDatepicker from '@/components/filter/SearchFilterDatepicker.v
 
 export default {
     name: 'search-filter-range',
-    props: ['filter'],
+    props: ['filter', 'field'],
     components: {
         'search-filter-datepicker': SearchFilterDatepicker,
     }

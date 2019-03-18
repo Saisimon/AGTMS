@@ -1,10 +1,11 @@
 <template>
     <div class="filter-input-group-container">
         <search-filter-datepicker :input="filter.input" v-if="filter.input.type == 'date'"/>
-        <b-form-input v-model="filter.input.value" v-else-if="filter.input.type == 'long' || filter.input.type == 'double'" :type="'number'" />
-        <b-form-input v-model="filter.input.value" v-else :type="'text'" />
+        <b-form-input :class="field + '-input'" v-model="filter.input.value" v-else-if="filter.input.type == 'long' || filter.input.type == 'double'" :type="'number'" />
+        <b-form-input :class="field + '-input'" v-model="filter.input.value" v-else :type="'text'" />
         <b-input-group-text slot="append" class="filter-select-container">
             <multiselect class="filter-select filter-select-right" 
+                :class="field + '-operator-select'"
                 v-model="filter.operator.selected" 
                 :options="filter.operator.options"
                 label="text"
@@ -27,7 +28,7 @@ import SearchFilterDatepicker from '@/components/filter/SearchFilterDatepicker.v
 
 export default {
     name: 'search-filter-text',
-    props: ['filter'],
+    props: ['filter', 'field'],
     components: {
         'search-filter-datepicker': SearchFilterDatepicker,
     }
@@ -35,10 +36,6 @@ export default {
 </script>
 
 <style scoped>
-.filter-select-container {
-    padding: 0;
-    border: 0;
-}
 .filter-input-group-container {
     display: -ms-flexbox;
     display: -webkit-box;

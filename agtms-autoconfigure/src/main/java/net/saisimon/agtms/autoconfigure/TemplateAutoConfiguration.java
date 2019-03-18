@@ -8,6 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import net.saisimon.agtms.controller.AgtmsController;
 import net.saisimon.agtms.scanner.TemplateScanner;
 
+/**
+ * 模板自动配置类
+ * 
+ * @author saisimon
+ *
+ */
 @Configuration
 public class TemplateAutoConfiguration {
 	

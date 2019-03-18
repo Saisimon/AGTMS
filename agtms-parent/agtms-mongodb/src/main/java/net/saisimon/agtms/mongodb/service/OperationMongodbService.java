@@ -24,6 +24,9 @@ public class OperationMongodbService implements OperationService, MongodbOrder {
 	
 	@Override
 	public Operation saveOrUpdate(Operation entity) {
+		if (entity == null) {
+			return entity;
+		}
 		if (entity.getId() == null) {
 			Long id = sequenceService.nextId(operationMongodbRepository.getCollectionName());
 			entity.setId(id);

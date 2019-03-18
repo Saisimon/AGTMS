@@ -1,13 +1,16 @@
 <template>
     <div class="batch-remove-container">
-        <b-modal v-model="model.show"
+        <b-modal v-model="modal.show"
             centered 
             :cancel-title="$t('cancel')"
             :ok-title="$t('confirm')"
             @ok="batchRemove()"
-            ok-variant="danger"
+            cancel-variant="outline-info"
+            ok-variant="outline-danger"
+            header-border-variant="light"
+            footer-border-variant="light"
             button-size="sm">
-            <div class="text-center font-weight-bold">
+            <div class="text-center">
                 {{ $t('are_you_confirm' )}}
             </div>
         </b-modal>
@@ -36,7 +39,7 @@ export default {
         }
     },
     props: [
-        'model',
+        'modal',
         "selects",
     ]
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,7 +138,9 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	
 	@Override
 	public Domain saveOrUpdate(Domain entity) {
-		mongoTemplate.save(entity, collectionName(template()));
+		if (entity != null) {
+			mongoTemplate.save(entity, collectionName(template()));
+		}
 		return entity;
 	}
 	
@@ -204,7 +207,7 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	private Document getFieldMap(Template template, String... properties) {
 		Document fieldMap = new Document();
 		if (properties == null || properties.length == 0) {
-			List<String> columnNames = TemplateUtils.getTableColumnNames(template);
+			Set<String> columnNames = TemplateUtils.getFieldNames(template);
 			for (String columnName : columnNames) {
 				fieldMap.put(columnName, true);
 			}

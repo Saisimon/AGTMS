@@ -22,7 +22,7 @@ import net.saisimon.agtms.core.util.PropertyUtils;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 	
-	private static final int TASK_MAX_SIZE = NumberUtils.toInt(PropertyUtils.fetchYaml("extra.max-size.task", 3).toString(), 3);
+	private static final int TASK_MAX_SIZE = NumberUtils.toInt(PropertyUtils.fetchYaml("extra.max-size.task", 5).toString(), 5);
 	
 	/**
 	 * 配置国际化

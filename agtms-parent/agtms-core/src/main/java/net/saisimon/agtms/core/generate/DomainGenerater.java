@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,12 +16,17 @@ import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
 import org.springframework.util.Assert;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.classloader.GenerateClassLoader;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.generate.Generate;
+import net.saisimon.agtms.core.dto.UserInfo;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.exception.GenerateException;
+import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 
@@ -33,19 +39,38 @@ import net.saisimon.agtms.core.util.StringUtils;
 @Slf4j
 public class DomainGenerater {
 	
+	/**
+	 * 默认包名
+	 */
 	private static final String DEFAULT_PACKAGE = Generate.class.getPackage().getName();
+	/**
+	 * 默认包路径
+	 */
 	private static final String DEFAULT_PACKAGE_PATH = DEFAULT_PACKAGE.replaceAll("\\.", "/");
+	/**
+	 * Domain 接口包路径
+	 */
 	private static final String DOMAIN_PACKAGE_PATH = Type.getInternalName(Domain.class);
+	/**
+	 * set 前缀
+	 */
 	private static final String SETTER_PREFIX = "set";
+	/**
+	 * get 前缀
+	 */
 	private static final String GETTER_PREFIX = "get";
-	
+	/**
+	 * 自定义对象的类加载器映射集合
+	 * key 为命名空间
+	 * value 为类加载器
+	 */
 	private static final Map<String, GenerateClassLoader> GENERATE_CLASSLOADER_MAP = new HashMap<>();
 	
 	/**
 	 * 构建自定义对象名称
 	 * 
-	 * @param id
-	 * @return
+	 * @param key 自定义对象的唯一标识
+	 * @return 自定义对象名称
 	 */
 	public static String buildGenerateName(String key) {
 		Assert.notNull(key, "key can not be null");
@@ -53,33 +78,50 @@ public class DomainGenerater {
 	}
 	
 	/**
-	 * 生成自定义对象 class 文件
+	 * 生成自定义对象 class 对象，模板对象为 Generate.class
 	 * 
-	 * @param namespace
-	 * @param fieldMap
-	 * @param domainName
-	 * @param force
-	 * @return
-	 * @throws GenerateException
+	 * @param namespace 命名空间
+	 * @param fieldMap 字段与类型的映射集合
+	 * @param domainName 自定义对象名
+	 * @return 自定义对象 class 对象
+	 * @throws GenerateException 生成自定义对象异常
+	 * 
+	 * @see net.saisimon.agtms.core.domain.generate.Generate
+	 */
+	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String domainName) throws GenerateException {
+		return generate(namespace, fieldMap, domainName, false, Generate.class);
+	}
+	
+	/**
+	 * 生成自定义对象 class 对象，模板对象为 Generate.class
+	 * 
+	 * @param namespace 命名空间
+	 * @param fieldMap 字段与类型的映射集合
+	 * @param domainName 自定义对象名
+	 * @param force 强制刷新生成
+	 * @return 自定义对象 class 对象
+	 * @throws GenerateException 生成自定义对象异常
+	 * 
+	 * @see net.saisimon.agtms.core.domain.generate.Generate
 	 */
 	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String domainName, boolean force) throws GenerateException {
 		return generate(namespace, fieldMap, domainName, force, Generate.class);
 	}
 	
 	/**
-	 * 生成自定义对象 class 文件
+	 * 生成自定义对象 class 对象
 	 * 
-	 * @param namespace
-	 * @param fieldMap
-	 * @param domainName
-	 * @param force
-	 * @param templateClass
-	 * @return
-	 * @throws GenerateException
+	 * @param namespace 命名空间
+	 * @param fieldMap 字段与类型的映射集合
+	 * @param domainName 自定义对象名
+	 * @param force 强制刷新生成
+	 * @param templateClass 自定义对象的模板对象
+	 * @return 自定义对象 class 对象
+	 * @throws GenerateException 生成自定义对象异常
 	 */
 	@SuppressWarnings("unchecked")
 	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String domainName, boolean force, Class<?> templateClass) throws GenerateException {
-		if (fieldMap == null || StringUtils.isBlank(domainName)) {
+		if (fieldMap == null || StringUtils.isBlank(namespace) || StringUtils.isBlank(domainName)) {
 			return null;
 		}
 		Map<String, String> map = new HashMap<>(fieldMap);
@@ -148,11 +190,14 @@ public class DomainGenerater {
 	/**
 	 * 删除自定义对象 class 文件
 	 * 
-	 * @param namespace
-	 * @param domainName
-	 * @return
+	 * @param namespace 命名空间
+	 * @param domainName 自定义对象名
+	 * @return 删除状态
 	 */
 	public static boolean removeDomainClass(String namespace, String domainName) {
+		if (StringUtils.isBlank(namespace) || StringUtils.isBlank(domainName)) {
+			return false;
+		}
 		String domainFullName = DEFAULT_PACKAGE + "." + domainName;
 		GenerateClassLoader oldClassloader = GENERATE_CLASSLOADER_MAP.get(namespace);
 		if (oldClassloader != null) {
@@ -166,6 +211,13 @@ public class DomainGenerater {
 		return true;
 	}
 	
+	/**
+	 * 获取属性值
+	 * 
+	 * @param domain 自定义对象
+	 * @param fieldName 属性名称
+	 * @return 属性值
+	 */
 	public static Object getField(Domain domain, String fieldName) {
 		if (domain == null) {
 			throw new IllegalArgumentException("domain can not be null");
@@ -180,6 +232,14 @@ public class DomainGenerater {
 		}
 	}
 	
+	/**
+	 * 设置属性值
+	 * 
+	 * @param domain 自定义对象
+	 * @param fieldName 属性名称
+	 * @param fieldValue 属性值
+	 * @param fieldClass 属性类型
+	 */
 	public static void setField(Domain domain, String fieldName, Object fieldValue, Class<?> fieldClass) {
 		if (domain == null) {
 			throw new IllegalArgumentException("domain can not be null");
@@ -191,6 +251,42 @@ public class DomainGenerater {
 		} catch (Exception e) {
 			log.error(domain.getClass().getName() + " set field("+ fieldName +") error, msg : " + e.getMessage());
 		}
+	}
+	
+	public static void fillCommonFields(Domain newDomain, Domain oldDomain) {
+		if (newDomain == null) {
+			return;
+		}
+		Date time = new Date();
+		if (oldDomain == null) {
+			newDomain.setField(Constant.CREATETIME, time, Date.class);
+			UserInfo userInfo = AuthUtils.getUserInfo();
+			if (userInfo != null) {
+				newDomain.setField(Constant.OPERATORID, userInfo.getUserId(), Long.class);
+			}
+		} else {
+			newDomain.setField(Constant.ID, oldDomain.getField(Constant.ID), Long.class);
+			newDomain.setField(Constant.CREATETIME, oldDomain.getField(Constant.CREATETIME), Date.class);
+			newDomain.setField(Constant.OPERATORID, oldDomain.getField(Constant.OPERATORID), Long.class);
+		}
+		newDomain.setField(Constant.UPDATETIME, time, Date.class);
+	}
+	
+	public static Object parseFieldValue(Object fieldValue, String fieldType) {
+		if (fieldValue != null && fieldType != null) {
+			try {
+				if (Classes.LONG.getName().equals(fieldType)) {
+					return Long.valueOf(fieldValue.toString());
+				} else if (Classes.DOUBLE.getName().equals(fieldType)) {
+					return Double.valueOf(fieldValue.toString());
+				} else if (Classes.DATE.getName().equals(fieldType)) {
+					return DateUtil.parseDate(fieldValue.toString()).toJdkDate();
+				}
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		return fieldValue;
 	}
 	
 	private static void buildConstructer(ClassWriter cw, String superFullPathName) {

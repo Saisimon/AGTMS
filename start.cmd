@@ -27,19 +27,19 @@ for /f "tokens=5" %%i in ('netstat -ano ^| findstr 7891') do (
 CALL mvnw.cmd clean install
 
 @REM 启动 agtms-eureka
-START /b java.exe -jar agtms-eureka/target/agtms-eureka.jar > data/logs/eureka.log 2>&1
+START /b java.exe -jar -Xms1g -Xms1g agtms-eureka/target/agtms-eureka.jar > data/logs/eureka.log 2>&1
 echo "agtms-eureka 启动中..."
 ping 192.0.2.2 -n 1 -w 10000 > nul
 echo "agtms-eureka 已启动."
 
 @REM 启动 agtms-web
-START /b java.exe -jar agtms-parent/agtms-web/target/agtms-web.jar > data/logs/web.log 2>&1
+START /b java.exe -jar -Xms2g -Xms2g agtms-parent/agtms-web/target/agtms-web.jar > data/logs/web.log 2>&1
 echo "agtms-web 启动中..."
 ping 192.0.2.2 -n 1 -w 10000 > nul
 echo "agtms-web 已启动."
 
 @REM 启动 agtms-zuul
-START /b java.exe -jar agtms-zuul/target/agtms-zuul.jar > data/logs/zuul.log 2>&1
+START /b java.exe -jar -Xms1g -Xms1g agtms-zuul/target/agtms-zuul.jar > data/logs/zuul.log 2>&1
 echo "agtms-zuul 启动中..."
 ping 192.0.2.2 -n 1 -w 10000 > nul
 echo "agtms-zuul 已启动."

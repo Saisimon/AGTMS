@@ -2,6 +2,7 @@ package net.saisimon.agtms.core.enums;
 
 public enum SelectTypes {
 	
+	REMOTE(-1, "remote"),
 	OPTION(0, "option"),
 	TEMPLATE(1, "template");
 	

@@ -1,6 +1,7 @@
 <template>
     <div class="filter-input-group-container">
-        <multiselect class="filter-select" 
+        <multiselect class="filter-select"
+            :class="field + '-select'" 
             v-model="filter.select.selected" 
             label="text"
             track-by="value"
@@ -22,7 +23,7 @@
 <script>
 export default {
     name: 'search-filter-select',
-    props: ['filter'],
+    props: ['filter', 'field'],
     data: function() {
         return {
             isLoading: false

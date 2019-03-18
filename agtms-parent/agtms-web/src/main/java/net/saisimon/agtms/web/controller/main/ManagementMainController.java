@@ -69,12 +69,12 @@ import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
+import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.AuthUtils;
-import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.PropertyUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -173,7 +173,7 @@ public class ManagementMainController extends MainController {
 	@Transactional
 	@PostMapping("/batch/save")
 	public Result batchSave(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		List<Integer> ids = SystemUtils.transformList(body.get("ids"), Integer.class);
+		List<Integer> ids = SystemUtils.transformList(body.get("ids"));
 		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
@@ -196,7 +196,7 @@ public class ManagementMainController extends MainController {
 			if (field == null || field.getUniqued()) {
 				continue;
 			}
-			fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
+			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
 			if (fieldValue != null) {
 				map.put(fieldName, fieldValue);
 			}
@@ -257,7 +257,7 @@ public class ManagementMainController extends MainController {
 		}
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
-		filter.and(Constant.OPERATORID, template.getOperatorId());
+		filter.and(Constant.OPERATORID, userId);
 		Long total = generateService.count(filter);
 		if (total > EXPORT_MAX_SIZE) {
 			Result result = ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;

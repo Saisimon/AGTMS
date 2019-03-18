@@ -4,8 +4,6 @@ import java.util.LinkedHashMap;
 
 import org.springframework.stereotype.Component;
 
-import net.saisimon.agtms.core.selection.AbstractSelection;
-
 @Component
 public class WhetherSelection extends AbstractSelection<Integer> {
 

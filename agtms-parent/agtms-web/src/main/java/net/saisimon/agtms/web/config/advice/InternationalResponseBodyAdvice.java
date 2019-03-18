@@ -50,7 +50,7 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Object international(Object obj) {
+	private Object international(Object obj) {
 		if (obj == null) {
 			return null;
 		}

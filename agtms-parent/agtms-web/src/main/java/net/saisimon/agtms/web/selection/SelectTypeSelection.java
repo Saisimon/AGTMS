@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.enums.SelectTypes;
-import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 @Component
@@ -16,6 +15,9 @@ public class SelectTypeSelection extends AbstractSelection<Integer> {
 		SelectTypes[] types = SelectTypes.values();
 		LinkedHashMap<Integer, String> typeMap = new LinkedHashMap<>(types.length);
 		for (SelectTypes type : types) {
+			if (type.getType() < 0) {
+				continue;
+			}
 			typeMap.put(type.getType(), getMessage(SystemUtils.humpToCode(type.getName(), ".")));
 		}
 		return typeMap;

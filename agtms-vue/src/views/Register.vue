@@ -24,7 +24,7 @@
             <div class="input-tip-container">
                 <span>{{error.message}}</span>
             </div>
-            <b-button @click.stop="register" class="input-filter input-btn mt-1">{{ $t("register") }}</b-button>
+            <b-button @click.stop="register" class="input-filter input-btn mt-1 register-btn">{{ $t("register") }}</b-button>
             <div class="signin-link">
                 {{ $t("have_account") }}<router-link to="/signin">{{ $t("sign_in") }}</router-link>
             </div>

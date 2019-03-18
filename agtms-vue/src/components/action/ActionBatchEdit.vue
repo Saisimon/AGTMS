@@ -1,9 +1,10 @@
 <template>
     <div class="batch-edit-container" v-if="batchEdit">
-        <b-modal v-model="model.show"
+        <b-modal v-model="modal.show"
             :title="$t('batch_edit')"
             size="lg"
             :hide-footer="true"
+            header-border-variant="light"
             button-size="sm">
             <div class="form-container">
                 <b-row class="mb-3">
@@ -33,6 +34,8 @@
                 <b-row class="mb-3" v-if="editFieldSelects.length > 0">
                     <b-col class="text-right">
                         <b-button variant="primary" 
+                            size="sm" 
+                            class="save-btn"
                             @click="save">
                             <i class="fa fa-fw fa-save"></i>
                             {{ $t("confirm_save") }}
@@ -63,7 +66,7 @@ export default {
     props: [
         "batchEdit", 
         "selects",
-        "model"
+        "modal"
     ],
     data: function() {
         return {
@@ -100,7 +103,7 @@ export default {
                 }).then(resp => {
                     var data = resp.data;
                     if (data.code === 0) {
-                        this.model.show = false;
+                        this.modal.show = false;
                         this.$emit('succeed');
                     } else {
                         this.$emit('failed');

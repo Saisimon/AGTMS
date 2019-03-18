@@ -5,6 +5,7 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 ```
 .
 ├── agtms-autoconfigure 自动配置支持类库
+├── agtms-autotest      自动化测试
 ├── agtms-eureka        Eureka 服务发现 (默认端口：7890)
 ├── agtms-example       远程调用示例服务 (默认端口：7899)
 ├── agtms-gateway       Spring-Gateway 网关服务 (默认端口：7891)
@@ -30,10 +31,10 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 3. RAM 4G+
 
 ## 最小安装并启动
-> 默认使用 H2 内存数据库，每次重启数据会重制。要想保存数据，请自行配置数据库连接
+* `默认使用 H2 内存数据库，每次重启数据会重制。要想保存数据，请自行配置数据库连接`
 ### 一键启动
 1. 执行启动脚本
-> **脚本默认会杀掉占用 7890、7891、7892端口的进程，请确认以后再执行操作**
+* **`start.cmd 默认会杀掉占用 7890、7891、7892端口的进程，请确认以后再执行操作`**
 ```sh
 # Unix
 ./start
@@ -42,8 +43,16 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 start.cmd
 ```
 2. 访问
-```
+```html
 http://localhost:8080
+```
+3. 日志
+```
+data
+└── logs 
+    ├── eureka.log  服务发现日志
+    ├── web.log     Web 服务日志
+    └── zuul.log    网关日志
 ```
 
 ### 分步启动
@@ -74,13 +83,13 @@ npm install
 npm run serve
 ```
 6. 访问
-```
+```html
 http://localhost:8080
 ```
 
 ## 远程调用示例
 1. 添加远程调用实现支持
-> agtms-parent/agtms-web/pom.xml
+* `agtms-parent/agtms-web/pom.xml`
 ```xml
 <dependency>
     <groupId>net.saisimon</groupId>
@@ -96,10 +105,32 @@ http://localhost:8080
 start.cmd
 ```
 3. 启动 agtms-example 服务
-```
+```sh
 java -jar agtms-example/target/agtms-example.jar
 ```
 4. 访问
-```
+```html
 http://localhost:8080
 ```
+
+## 自动化测试
+
+### Chrome
+1. 下载与 Chrome 浏览器对应版本的 [Chrome Driver](https://sites.google.com/a/chromium.org/chromedriver/downloads)，并解压缩
+2. 配置 Chrome Driver 路径
+* `agtms-autotest/src/main/resources/autotest.properties`
+```properties
+auto.test.chrome.driver=/Users/saisimon/Downloads/chromedriver
+```
+3. 运行测试用例
+* `agtms-autotest/src/test/java/net/saisimon/agtms/autotest/ChromeTest`
+
+### Firefox
+1. 下载最新版本的 [Gecko Driver](https://github.com/mozilla/geckodriver/releases)，并解压缩
+2. 配置 Gecko Driver 路径
+* `agtms-autotest/src/main/resources/autotest.properties`
+```properties
+auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
+```
+3. 运行测试用例
+* `agtms-autotest/src/test/java/net/saisimon/agtms/autotest/FirefoxTest`

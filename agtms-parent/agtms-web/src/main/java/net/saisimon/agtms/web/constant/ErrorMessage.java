@@ -20,6 +20,7 @@ public class ErrorMessage {
 	public static class User {
 		public static final Result USERNAME_OR_PASSWORD_NOT_CORRECT = ResultUtils.error(1001, "username.or.password.not.correct");
 		public static final Result ACCOUNT_ALREADY_EXISTS = ResultUtils.error(1002, "account.already.exists");
+		public static final Result EMAIL_FORMAT_ERROR = ResultUtils.error(1003, "email.format.error");
 	}
 	
 	public static class Navigation {

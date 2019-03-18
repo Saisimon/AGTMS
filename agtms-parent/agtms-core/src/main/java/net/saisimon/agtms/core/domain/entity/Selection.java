@@ -8,13 +8,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
 
 /**
- * 选择器实体对象
+ * 下拉列表实体对象
  * 
  * @author saisimon
  *
@@ -30,35 +31,56 @@ public class Selection {
 	private Long id;
 	
 	/**
-	 * 选择器名称
+	 * 下拉列表名称
 	 */
 	@Column(nullable=false, length=50)
 	private String title;
 	
 	/**
-	 * 选择器创建时间
+	 * 下拉列表创建时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '选择器创建时间'")
+	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '下拉列表创建时间'")
 	private Date createTime;
 	
 	/**
-	 * 选择器更新时间
+	 * 下拉列表更新时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '选择器更新时间'")
+	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '下拉列表更新时间'")
 	private Date updateTime;
 	
 	/**
-	 * 选择器创建人员ID
+	 * 下拉列表创建人员ID
 	 */
-	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '选择器创建人员ID'")
+	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '下拉列表创建人员ID'")
 	private Long operatorId;
 	
 	/**
-	 * 选择器类型
+	 * 下拉列表类型
 	 * 
 	 * @see net.saisimon.agtms.core.enums.SelectTypes
 	 */
-	@Column(columnDefinition="INT(11) NOT NULL COMMENT '选择器类型'")
+	@Column(columnDefinition="INT(11) NOT NULL COMMENT '下拉列表类型'")
 	private Integer type;
+	
+	@Transient
+	private String service;
+	
+	@Transient
+	private String key;
+	
+	/**
+	 * 下拉列表的唯一标识
+	 * 
+	 * @return 唯一标识
+	 */
+	public String sign() {
+		if (id != null) {
+			return id.toString();
+		}
+		if (service != null && key != null) {
+			return service + "-" + key;
+		}
+		return null;
+	}
 	
 }

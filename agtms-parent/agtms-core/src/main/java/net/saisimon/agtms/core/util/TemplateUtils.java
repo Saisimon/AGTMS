@@ -27,30 +27,47 @@ import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.service.TemplateService;
 
+/**
+ * 模板相关工具类
+ * 
+ * @author saisimon
+ *
+ */
 public class TemplateUtils {
 	
+	/**
+	 * 远程模板对象映射
+	 */
 	public static Map<String, Template> REMOTE_TEMPLATE_MAP = new ConcurrentHashMap<>();
 	
 	private TemplateUtils() {
 		throw new IllegalAccessError();
 	}
 	
-	public static Template getTemplate(Object id, Long operatorId) {
-		if (id == null || operatorId == null) {
+	/**
+	 * 获取模板对象
+	 * 
+	 * @param key 模板唯一标识
+	 * @param operatorId 用户ID
+	 * @return 模板对象
+	 */
+	public static Template getTemplate(Object key, Long operatorId) {
+		if (key == null || operatorId == null) {
 			return null;
 		}
-		if (!NumberUtil.isNumber(id.toString())) {
-			return REMOTE_TEMPLATE_MAP.get(id.toString());
+		String sign = key.toString();
+		if (!NumberUtil.isNumber(sign)) {
+			return REMOTE_TEMPLATE_MAP.get(sign);
 		}
-		String key = String.format(TemplateService.TEMPLATE_KEY, id);
+		String templateKey = String.format(TemplateService.TEMPLATE_KEY, sign);
 		Cache cache = CacheFactory.get();
-		Template template = cache.get(key, Template.class);
+		Template template = cache.get(templateKey, Template.class);
 		if (template == null) {
 			TemplateService templateService = TemplateServiceFactory.get();
-			Optional<Template> optional = templateService.findById(Long.valueOf(id.toString()));
+			Optional<Template> optional = templateService.findById(Long.valueOf(sign));
 			if (optional.isPresent()) {
 				template = optional.get();
-				cache.set(key, template, TemplateService.TEMPLATE_TIMEOUT);
+				cache.set(templateKey, template, TemplateService.TEMPLATE_TIMEOUT);
 			}
 		}
 		if (template != null && operatorId == template.getOperatorId()) {
@@ -59,12 +76,44 @@ public class TemplateUtils {
 		return null;
 	}
 	
+	/**
+	 * 获取自定义对象对应的表名
+	 * 
+	 * @param template 模板对象
+	 * @return 表名
+	 */
 	public static String getTableName(Template template) {
+		if (template == null || template.getId() == null) {
+			return null;
+		}
 		return "agtms_generate_" + template.getId();
 	}
 	
-	public static List<String> getTableColumnNames(Template template) {
-		List<String> columnNames = new ArrayList<>();
+	/**
+	 * 获取自定义对象的命名空间
+	 * 
+	 * @param template 模板对象
+	 * @return 命名空间
+	 */
+	public static String getNamespace(Template template) {
+		if (template == null) {
+			return null;
+		}
+		String namespace = "remote";
+		if (template.getOperatorId() != null) {
+			namespace = template.getOperatorId().toString();
+		}
+		return namespace;
+	}
+	
+	/**
+	 * 获取自定义对象对应的属性名集合
+	 * 
+	 * @param template 模板对象
+	 * @return 属性名集合
+	 */
+	public static Set<String> getFieldNames(Template template) {
+		Set<String> columnNames = new HashSet<>();
 		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
 			return columnNames;
 		}
@@ -79,23 +128,12 @@ public class TemplateUtils {
 		return columnNames;
 	}
 	
-	public static Set<String> getFieldNames(Template template) {
-		Set<String> fieldNames = new HashSet<>();
-		fieldNames.add(Constant.ID);
-		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
-			return fieldNames;
-		}
-		for (TemplateColumn column : template.getColumns()) {
-			if (CollectionUtils.isEmpty(column.getFields())) {
-				continue;
-			}
-			for (TemplateField field : column.getFields()) {
-				fieldNames.add(column.getColumnName() + field.getFieldName());
-			}
-		}
-		return fieldNames;
-	}
-	
+	/**
+	 * 获取自定义对象属性名与模板属性的映射
+	 * 
+	 * @param template 模板对象
+	 * @return 自定义对象属性名与模板属性的映射
+	 */
 	public static Map<String, TemplateField> getFieldInfoMap(Template template) {
 		Map<String, TemplateField> fieldInfoMap = new LinkedHashMap<>();
 		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
@@ -112,6 +150,12 @@ public class TemplateUtils {
 		return fieldInfoMap;
 	}
 	
+	/**
+	 * 获取模板中是否包含下拉列表
+	 * 
+	 * @param template 模板对象
+	 * @return 是否包含下拉列表
+	 */
 	public static boolean hasSelection(Template template) {
 		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
 			return false;
@@ -129,6 +173,12 @@ public class TemplateUtils {
 		return false;
 	}
 	
+	/**
+	 * 获取模板中的必填属性集合
+	 * 
+	 * @param template 模板对象
+	 * @return 必填属性集合
+	 */
 	public static Set<String> getRequireds(Template template) {
 		Set<String> requireds = new HashSet<>();
 		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
@@ -153,6 +203,12 @@ public class TemplateUtils {
 		return requireds;
 	}
 	
+	/**
+	 * 获取模板中的唯一属性集合
+	 * 
+	 * @param template 模板对象
+	 * @return 唯一属性集合
+	 */
 	public static Set<String> getUniques(Template template) {
 		Set<String> uniques = new HashSet<>();
 		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
@@ -171,6 +227,12 @@ public class TemplateUtils {
 		return uniques;
 	}
 	
+	/**
+	 * 获取模板中的有筛选条件的属性集合
+	 * 
+	 * @param template 模板对象
+	 * @return 有筛选条件的属性集合
+	 */
 	public static Set<String> getFilters(Template template) {
 		Set<String> filters = new HashSet<>();
 		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
@@ -189,6 +251,13 @@ public class TemplateUtils {
 		return filters;
 	}
 	
+	/**
+	 * 根据指定模板获取自定义对象类型
+	 * 
+	 * @param template模板对象
+	 * @return 自定义对象类型
+	 * @throws GenerateException 生成自定义对象类型异常
+	 */
 	public static Class<Domain> getDomainClass(Template template) throws GenerateException {
 		if (template == null) {
 			return null;
@@ -198,9 +267,15 @@ public class TemplateUtils {
 			return null;
 		}
 		String generateClassName = DomainGenerater.buildGenerateName(sign);
-		return DomainGenerater.generate(template.getOperatorId().toString(), buildFieldMap(template), generateClassName, false);
+		return DomainGenerater.generate(getNamespace(template), buildFieldMap(template), generateClassName);
 	}
 	
+	/**
+	 * 获取自定义对象属性名称与类型名称的映射
+	 * 
+	 * @param template 模板对象
+	 * @return 自定义对象属性名称与类型名称的映射
+	 */
 	public static Map<String, String> buildFieldMap(Template template) {
 		Map<String, String> fieldMap = new LinkedHashMap<>();
 		fieldMap.put(Constant.ID, Long.class.getName());
@@ -219,6 +294,12 @@ public class TemplateUtils {
 		return fieldMap;
 	}
 	
+	/**
+	 * 检查模板中的必填项
+	 * 
+	 * @param template 模板对象
+	 * @return 是否检查通过
+	 */
 	public static boolean checkRequired(Template template) {
 		if (template == null || StringUtils.isBlank(template.getTitle())) {
 			return false;
@@ -245,23 +326,12 @@ public class TemplateUtils {
 		return true;
 	}
 	
-	public static Map<String, String> getHeadMap(Template template) {
-		Map<String, String> headMap = new LinkedHashMap<>();
-		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
-			return headMap;
-		}
-		for (TemplateColumn column : template.getColumns()) {
-			if (CollectionUtils.isEmpty(column.getFields())) {
-				continue;
-			}
-			for (TemplateField field : column.getFields()) {
-				String head = getHead(headMap, field.getFieldTitle());
-				headMap.put(head, column.getColumnName() + field.getFieldName());
-			}
-		}
-		return headMap;
-	}
-	
+	/**
+	 * 获取模板所包含的功能值集合
+	 * 
+	 * @param template 模板对象
+	 * @return 功能值集合
+	 */
 	public static List<Integer> getFunctionCodes(Template template) {
 		List<Integer> functions = new ArrayList<>();
 		if (template == null || template.getFunction() == null || template.getFunction() == 0) {
@@ -276,6 +346,12 @@ public class TemplateUtils {
 		return functions;
 	}
 	
+	/**
+	 * 获取模板所包含的功能名称集合
+	 * 
+	 * @param template 模板对象
+	 * @return 功能名称集合
+	 */
 	public static List<String> getFunctions(Template template) {
 		List<String> functions = new ArrayList<>();
 		if (template == null || template.getFunction() == null || template.getFunction() == 0) {
@@ -289,6 +365,13 @@ public class TemplateUtils {
 		return functions;
 	}
 	
+	/**
+	 * 指定模板中是否包含指定的功能
+	 * 
+	 * @param template 模板对象
+	 * @param func 待判断的功能
+	 * @return 是否包含指定的功能
+	 */
 	public static boolean hasFunction(Template template, Functions func) {
 		if (template == null || template.getFunction() == null || template.getFunction() == 0 || func == null) {
 			return false;
@@ -296,6 +379,13 @@ public class TemplateUtils {
 		return hasFunction(template.getFunction(), func);
 	}
 	
+	/**
+	 * 指定模板中是否包含指定的功能集合中的某一个
+	 * 
+	 * @param template 模板对象
+	 * @param funcs 待判断的功能集合
+	 * @return 是否包含指定的功能集合中的某一个
+	 */
 	public static boolean hasOneOfFunctions(Template template, Functions... funcs) {
 		if (template == null || template.getFunction() == null || template.getFunction() == 0 || funcs == null) {
 			return false;
@@ -310,15 +400,6 @@ public class TemplateUtils {
 	
 	private static boolean hasFunction(Integer function, Functions func) {
 		return func.getCode().equals((function & func.getCode()));
-	}
-	
-	private static String getHead(Map<String, String> headMap, String head) {
-		int idx = 1;
-		String str = head;
-		while (headMap.containsKey(str)) {
-			str = head + "(" + idx++ + ")";
-		}
-		return str;
 	}
 	
 	private static Class<?> parseClass(String className) {

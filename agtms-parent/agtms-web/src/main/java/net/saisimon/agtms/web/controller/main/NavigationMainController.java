@@ -10,13 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,7 +50,6 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.NavigationService;
-import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -97,10 +94,6 @@ public class NavigationMainController extends MainController {
 	
 	@Autowired
 	private NavigationSelection navigationSelection;
-	@Autowired
-	private DiscoveryClient discoveryClient;
-	@Autowired(required = false)
-	private RemoteService remoteService;
 	
 	@Operate(type=OperateTypes.QUERY, value="side")
 	@PostMapping("/side")
@@ -121,9 +114,8 @@ public class NavigationMainController extends MainController {
 		if (templates == null) {
 			templates = new ArrayList<>();
 		}
-		List<Template> remoteTemplates = getRemoteTemplates(userId);
-		if (remoteTemplates != null) {
-			templates.addAll(remoteTemplates);
+		if (!CollectionUtils.isEmpty(TemplateUtils.REMOTE_TEMPLATE_MAP)) {
+			templates.addAll(TemplateUtils.REMOTE_TEMPLATE_MAP.values());
 		}
 		for (Template template : templates) {
 			links.add(new NavigationLink("/management/main/" + template.sign(), template.getTitle()));
@@ -195,7 +187,7 @@ public class NavigationMainController extends MainController {
 	@Transactional
 	@PostMapping("/batch/save")
 	public Result batchSave(@RequestBody Map<String, Object> body) {
-		List<Long> ids = SystemUtils.transformList(body.get("ids"), Long.class);
+		List<Integer> ids = SystemUtils.transformList(body.get("ids"));
 		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
@@ -203,8 +195,8 @@ public class NavigationMainController extends MainController {
 		Object priorityObj = body.get("priority");
 		Long userId = AuthUtils.getUserInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
-		for (Long id : ids) {
-			Navigation navigation = navigationService.getNavigation(id, userId);
+		for (Integer id : ids) {
+			Navigation navigation = navigationService.getNavigation(id.longValue(), userId);
 			if (navigation == null) {
 				continue;
 			}
@@ -385,35 +377,6 @@ public class NavigationMainController extends MainController {
 		}
 		Collections.sort(trees, NavigationTree.COMPARATOR);
 		return trees;
-	}
-	
-	private List<Template> getRemoteTemplates(Long operatorId) {
-		if (remoteService == null) {
-			return null;
-		}
-		Map<String, Template> remoteTemplateMap = new ConcurrentHashMap<>();
-		List<Template> templates = new ArrayList<>();
-		List<String> services = discoveryClient.getServices();
-		for (String service : services) {
-			if (service.toLowerCase().startsWith("agtms-")) {
-				continue;
-			}
-			List<Template> remoteTemplates = remoteService.templates(service);
-			if (CollectionUtils.isEmpty(remoteTemplates)) {
-				continue;
-			}
-			for (Template template : remoteTemplates) {
-				template.setService(service);
-				template.setOperatorId(operatorId);
-				templates.add(template);
-				String sign = template.sign();
-				if (sign != null) {
-					remoteTemplateMap.put(sign, template);
-				}
-			}
-		}
-		TemplateUtils.REMOTE_TEMPLATE_MAP = remoteTemplateMap;
-		return templates;
 	}
 	
 }

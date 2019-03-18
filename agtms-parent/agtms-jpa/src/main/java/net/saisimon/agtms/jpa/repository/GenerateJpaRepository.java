@@ -1,10 +1,12 @@
 package net.saisimon.agtms.jpa.repository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -59,7 +61,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	@Override
 	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		List<String> columnNames = getColumnNames(template, properties);
+		Set<String> columnNames = getColumnNames(template, properties);
 		String sql = buildSql(template, columnNames);
 		Object[] args = null;
 		if (filter != null) {
@@ -92,7 +94,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	@Override
 	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
 		Template template = template();
-		List<String> columnNames = getColumnNames(template, properties);
+		Set<String> columnNames = getColumnNames(template, properties);
 		String sql = buildSql(template, columnNames);
 		List<Object> args = new ArrayList<>();
 		if (filter != null) {
@@ -151,7 +153,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			return new PageImpl<>(new ArrayList<>(0), springPageable, total);
 		}
 		Template template = template();
-		List<String> columnNames = getColumnNames(template, properties);
+		Set<String> columnNames = getColumnNames(template, properties);
 		String sql = buildSql(template, columnNames);
 		if (where.isNotEmpty()) {
 			sql += " WHERE " + where.getExpression();
@@ -180,7 +182,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	@Override
 	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		List<String> columnNames = getColumnNames(template, properties);
+		Set<String> columnNames = getColumnNames(template, properties);
 		String sql = buildSql(template, columnNames);
 		Object[] args = null;
 		if (filter != null) {
@@ -249,6 +251,9 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	@Override
 	@Transactional
 	public Domain saveOrUpdate(Domain entity) {
+		if (entity == null) {
+			return entity;
+		}
 		Object id = entity.getField(Constant.ID);
 		if (id == null) {
 			insert(entity);
@@ -297,7 +302,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		return "SELECT COUNT(`" + Constant.ID + "`) FROM `" + TemplateUtils.getTableName(template()) + "` ";
 	}
 	
-	private String buildSql(Template template, List<String> columnNames) {
+	private String buildSql(Template template, Set<String> columnNames) {
 		String sql = "SELECT ";
 		sql += columnNames.stream().map(field -> "`" + field + "`").collect(Collectors.joining(","));
 		sql += " FROM `" + TemplateUtils.getTableName(template) + "` ";
@@ -310,7 +315,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	
 	private boolean insert(Domain domain) {
 		Template template = template();
-		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
+		Set<String> columnNames = TemplateUtils.getFieldNames(template);
 		columnNames.add(Constant.OPERATORID);
 		columnNames.add(Constant.CREATETIME);
 		columnNames.add(Constant.UPDATETIME);
@@ -344,7 +349,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	
 	private boolean update(Object id, Domain domain) {
 		Template template = template();
-		List<String> columnNames = TemplateUtils.getTableColumnNames(template);
+		Set<String> columnNames = TemplateUtils.getFieldNames(template);
 		columnNames.add(Constant.OPERATORID);
 		columnNames.add(Constant.CREATETIME);
 		columnNames.add(Constant.UPDATETIME);
@@ -380,12 +385,12 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		return domains;
 	}
 	
-	private List<String> getColumnNames(Template template, String... properties) {
-		List<String> columnNames = null;
+	private Set<String> getColumnNames(Template template, String... properties) {
+		Set<String> columnNames = null;
 		if (properties == null || properties.length == 0) {
-			columnNames = TemplateUtils.getTableColumnNames(template);
+			columnNames = TemplateUtils.getFieldNames(template);
 		} else {
-			columnNames = new ArrayList<>(properties.length);
+			columnNames = new HashSet<>(properties.length);
 			for (String property : properties) {
 				if (property != null) {
 					columnNames.add(property);

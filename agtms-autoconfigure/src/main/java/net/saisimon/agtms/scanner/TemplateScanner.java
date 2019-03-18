@@ -25,6 +25,12 @@ import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.util.StringUtils;
 
+/**
+ * 模板注解扫描类
+ * 
+ * @author saisimon
+ *
+ */
 public class TemplateScanner {
 	
 	private final Map<String, TemplateResolver> templateResolverMap;
@@ -61,7 +67,7 @@ public class TemplateScanner {
 			function += func.getCode();
 		}
 		template.setKey(templateInfo.key());
-		template.setNavigationId(templateInfo.navigation());
+		template.setNavigationId(-1L);
 		template.setFunction(function);
 		template.setTitle(templateInfo.title());
 		template.setSource("remote");
@@ -111,7 +117,7 @@ public class TemplateScanner {
 			templateField.setSorted(fieldInfo.sorted());
 			templateField.setUniqued(fieldInfo.uniqued());
 			templateField.setView(fieldInfo.view().getView());
-			templateField.setWidth(fieldInfo.width());
+//			templateField.setWidth(fieldInfo.width());
 			templateFields.add(templateField);
 		}
 		template.setColumns(templateColumns);

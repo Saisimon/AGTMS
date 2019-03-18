@@ -55,11 +55,18 @@ const mutations = {
         if (alert) {
             if (alert.message != null) {
                 state.alert.text = alert.message;
+            } else {
+                state.alert.text = 'Error';
             }
             if (alert.variant) {
                 state.alert.variant = alert.variant;
             } else {
                 state.alert.variant = 'danger';
+            }
+            if (alert.dismissSecs) {
+                state.alert.dismissSecs = alert.dismissSecs
+            } else {
+                state.alert.dismissSecs = 3
             }
             state.alert.dismissCountDown = state.alert.dismissSecs;
         }

@@ -1,5 +1,5 @@
 <template>
-    <div class="action-container text-right d-flex justify-content-end " v-if="actions">
+    <div class="action-container text-right d-flex justify-content-end" v-if="actions">
         <template v-for="(action, idx) in actions">
             <template v-if="action.type == 'link' && (!rowData.disableActions || !rowData.disableActions[idx])">
                 <b-button :key="idx"
@@ -41,9 +41,12 @@
                     :cancel-title="$t('cancel')"
                     :ok-title="$t('confirm')"
                     @ok="modal(action.to)"
-                    ok-variant="danger"
+                    cancel-variant="outline-info"
+                    ok-variant="outline-danger"
+                    header-border-variant="light"
+                    footer-border-variant="light"
                     button-size="sm">
-                    <div class="text-center font-weight-bold">
+                    <div class="text-center">
                         {{ $t('are_you_confirm' )}}
                     </div>
                 </b-modal>

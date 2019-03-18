@@ -26,6 +26,9 @@ public class DefaultDdlService implements DdlService {
 
 	@Override
 	public boolean createTable(Template template) {
+		if (template == null) {
+			return false;
+		}
 		try {
 			String sql = buildCreateSql(template);
 			if (log.isDebugEnabled()) {
@@ -41,6 +44,9 @@ public class DefaultDdlService implements DdlService {
 
 	@Override
 	public boolean alterTable(Template template, Template oldTemplate) {
+		if (template == null || oldTemplate == null) {
+			return false;
+		}
 		Map<String, String> rollbackMap = new HashMap<>();
 		Set<String> sqlSet = new HashSet<>();
 		try {
@@ -107,6 +113,9 @@ public class DefaultDdlService implements DdlService {
 
 	@Override
 	public boolean dropTable(Template template) {
+		if (template == null) {
+			return false;
+		}
 		try {
 			String sql = buildDropSql(template);
 			if (log.isDebugEnabled()) {

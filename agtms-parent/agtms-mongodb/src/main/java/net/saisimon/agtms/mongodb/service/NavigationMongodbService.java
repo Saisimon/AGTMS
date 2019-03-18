@@ -24,6 +24,9 @@ public class NavigationMongodbService implements NavigationService, MongodbOrder
 	
 	@Override
 	public Navigation saveOrUpdate(Navigation entity) {
+		if (entity == null) {
+			return entity;
+		}
 		if (entity.getId() == null) {
 			Long id = sequenceService.nextId(navigationMongodbRepository.getCollectionName());
 			entity.setId(id);

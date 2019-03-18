@@ -7,6 +7,12 @@ import org.springframework.context.annotation.Configuration;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.remote.service.RemoteTemplateService;
 
+/**
+ * 远程调用配置类
+ * 
+ * @author saisimon
+ *
+ */
 @Configuration
 @ConditionalOnClass(RemoteTemplateService.class)
 public class RemoteConfig {

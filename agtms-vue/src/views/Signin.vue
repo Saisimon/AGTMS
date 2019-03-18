@@ -7,7 +7,7 @@
                 type="text" 
                 class="input-filter"
                 :class="{'input-error': error.username}"
-                :placeholder="$t('username')" />
+                :placeholder="$t('username_or_email')" />
             <b-form-input id="password" 
                 v-model.trim="form.password" 
                 type="password" 
@@ -18,7 +18,7 @@
             <div class="input-tip-container">
                 <span>{{error.message}}</span>
             </div>
-            <b-button @click.stop="signIn" class="input-filter input-btn mt-1">{{ $t("sign_in") }}</b-button>
+            <b-button @click.stop="signIn" class="input-filter input-btn mt-1 signin-btn">{{ $t("sign_in") }}</b-button>
             <div class="register-link">
                 {{$t("no_account")}}<router-link to="/register">{{ $t("create_account") }}</router-link>
             </div>

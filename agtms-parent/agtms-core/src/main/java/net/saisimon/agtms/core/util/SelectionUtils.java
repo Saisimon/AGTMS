@@ -5,11 +5,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 
+import cn.hutool.core.util.NumberUtil;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.Domain;
@@ -29,15 +32,52 @@ import net.saisimon.agtms.core.factory.SelectionServiceFactory;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.SelectionService;
 
+/**
+ * 下拉列表相关工具类
+ * 
+ * @author saisimon
+ *
+ */
 public class SelectionUtils {
 	
-	public static final int OPTION_SIZE = 30;
+	private static final int OPTION_SIZE = 30;
+	/**
+	 * 远程下拉列表对象映射
+	 */
+	public static Map<String, Selection> REMOTE_SELECTION_MAP = new ConcurrentHashMap<>();
 	
 	private SelectionUtils() {
 		throw new IllegalAccessError();
 	}
 	
-	public static List<Map<String, Object>> handleSelection(Map<String, TemplateField> fieldInfoMap, List<Domain> domains, Long userId) {
+	public static Selection getSelection(Object key, Long operatorId) {
+		if (key == null || operatorId == null) {
+			return null;
+		}
+		String sign = key.toString();
+		if (!NumberUtil.isNumber(sign)) {
+			return REMOTE_SELECTION_MAP.get(sign);
+		}
+		SelectionService selectionService = SelectionServiceFactory.get();
+		Optional<Selection> optional = selectionService.findById(Long.valueOf(sign));
+		if (optional.isPresent()) {
+			Selection selection = optional.get();
+			if (selection != null && operatorId == selection.getOperatorId()) {
+				return selection;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 处理自定义对象集合中的下拉列表属性
+	 * 
+	 * @param fieldInfoMap 自定义属性与模板的映射
+	 * @param domains 自定义对象集合
+	 * @param operatorId 用户ID
+	 * @return 处理后的自定义对象集合
+	 */
+	public static List<Map<String, Object>> handleSelection(Map<String, TemplateField> fieldInfoMap, List<Domain> domains, Long operatorId) {
 		List<Map<String, Object>> datas = new ArrayList<>(domains.size());
 		Map<String, Set<String>> valueMap = new HashMap<>();
 		for (Domain domain : domains) {
@@ -66,7 +106,7 @@ public class SelectionUtils {
 		for (Map.Entry<String, Set<String>> entry : valueMap.entrySet()) {
 			String fieldName = entry.getKey();
 			TemplateField templateField = fieldInfoMap.get(fieldName);
-			Map<String, String> textMap = getSelectionValueTextMap(templateField.getSelectionId(), userId, entry.getValue());
+			Map<String, String> textMap = getSelectionValueTextMap(templateField.getSelectionId(), operatorId, entry.getValue());
 			map.put(fieldName, textMap);
 		}
 		for (Map<String, Object> data : datas) {
@@ -84,12 +124,76 @@ public class SelectionUtils {
 		return datas;
 	}
 	
+	/**
+	 * 根据下拉列表ID与下拉列表选项值集合，查询下拉列表的选项映射
+	 * 
+	 * @param selectionId 下拉列表ID
+	 * @param operatorId 用户ID
+	 * @param values 下拉列表选项值集合
+	 * @return 下拉列表的选项映射，key为选项值，value为选项名称
+	 */
 	public static Map<String, String> getSelectionValueTextMap(Long selectionId, Long operatorId, Set<String> values) {
 		return getSelectionMap(selectionId, operatorId, values, true);
 	}
 	
+	/**
+	 * 根据下拉列表ID与下拉列表选项名称集合，查询下拉列表的选项映射
+	 * 
+	 * @param selectionId 下拉列表ID
+	 * @param operatorId 用户ID
+	 * @param texts 下拉列表选项名称集合
+	 * @return 下拉列表的选项映射，key为选项名称，value为选项值
+	 */
 	public static Map<String, String> getSelectionTextValueMap(Long selectionId, Long operatorId, Set<String> texts) {
 		return getSelectionMap(selectionId, operatorId, texts, false);
+	}
+	
+	/**
+	 * 根据下拉列表ID与下拉列表选项名称关键词，查询下拉列表的选项列表
+	 * 
+	 * @param selectionId 下拉列表ID
+	 * @param keyword 下拉列表选项名称关键词
+	 * @param operatorId 用户ID
+	 * @return
+	 */
+	public static List<Option<Object>> getSelectionOptions(Long selectionId, String keyword, Long operatorId) {
+		List<Option<Object>> options = new ArrayList<>();
+		Selection selection = getSelection(selectionId, operatorId);
+		if (selection == null) {
+			return options;
+		}
+		SelectionService selectionService = SelectionServiceFactory.get();
+		if (SelectTypes.OPTION.getType() == selection.getType()) {
+			List<SelectionOption> selectionOptions = selectionService.searchSelectionOptions(selection.getId(), keyword, OPTION_SIZE);
+			for (SelectionOption selectionOption : selectionOptions) {
+				Option<Object> option = new Option<>(selectionOption.getValue(), selectionOption.getText());
+				options.add(option);
+			}
+		} else if (SelectTypes.TEMPLATE.getType() == selection.getType()) {
+			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId());
+			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorId);
+			if (template == null) {
+				return options;
+			}
+			GenerateService generateService = GenerateServiceFactory.build(template);
+			FilterRequest filter = FilterRequest.build().and(selectionTemplate.getValueFieldName(), "", Operator.EXISTS);
+			if (StringUtils.isBlank(keyword)) {
+				filter.and(selectionTemplate.getTextFieldName(), "", Operator.EXISTS);
+			} else {
+				filter.and(selectionTemplate.getTextFieldName(), keyword, Operator.REGEX);
+			}
+			FilterPageable pageable = new FilterPageable(0, OPTION_SIZE, null);
+			Page<Domain> page = generateService.findPage(filter, pageable, selectionTemplate.getValueFieldName(), selectionTemplate.getTextFieldName());
+			for (Domain domain : page.getContent()) {
+				String text = domain.getField(selectionTemplate.getTextFieldName()).toString();
+				Option<Object> option = new Option<>(domain.getField(selectionTemplate.getValueFieldName()), text);
+				options.add(option);
+			}
+		} else if (SelectTypes.REMOTE.getType() == selection.getType()) {
+			// TODO
+			
+		}
+		return options;
 	}
 	
 	private static Map<String, String> getSelectionMap(Long selectionId, Long operatorId, Set<String> values, boolean valueKey) {
@@ -97,18 +201,13 @@ public class SelectionUtils {
 		if (CollectionUtils.isEmpty(values)) {
 			return selectionMap;
 		}
-		SelectionService selectionService = SelectionServiceFactory.get();
-		Selection selection = selectionService.getSelection(selectionId, operatorId);
+		Selection selection = getSelection(selectionId, operatorId);
 		if (selection == null) {
 			return selectionMap;
 		}
+		SelectionService selectionService = SelectionServiceFactory.get();
 		if (SelectTypes.OPTION.getType() == selection.getType()) {
-			List<SelectionOption> selectionOptions = null;
-			if (valueKey) {
-				selectionOptions = selectionService.getSelectionOptions(selectionId, values, null);
-			} else {
-				selectionOptions = selectionService.getSelectionOptions(selectionId, null, values);
-			}
+			List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selectionId, values, valueKey);
 			if (selectionOptions == null) {
 				return selectionMap;
 			}
@@ -150,45 +249,11 @@ public class SelectionUtils {
 					selectionMap.put(domainText.toString(), domainValue.toString());
 				}
 			}
+		} else if (SelectTypes.REMOTE.getType() == selection.getType()) {
+			// TODO
+			
 		}
 		return selectionMap;
-	}
-	
-	public static List<Option<Object>> getSelectionOptions(Long selectionId, String keyword, Long operatorId) {
-		List<Option<Object>> options = new ArrayList<>();
-		SelectionService selectionService = SelectionServiceFactory.get();
-		Selection selection = selectionService.getSelection(selectionId, operatorId);
-		if (selection == null) {
-			return options;
-		}
-		if (SelectTypes.OPTION.getType() == selection.getType()) {
-			List<SelectionOption> selectionOptions = selectionService.searchSelectionOptions(selection.getId(), keyword, OPTION_SIZE);
-			for (SelectionOption selectionOption : selectionOptions) {
-				Option<Object> option = new Option<>(selectionOption.getValue(), selectionOption.getText());
-				options.add(option);
-			}
-		} else if (SelectTypes.TEMPLATE.getType() == selection.getType()) {
-			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId());
-			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorId);
-			if (template == null) {
-				return options;
-			}
-			GenerateService generateService = GenerateServiceFactory.build(template);
-			FilterRequest filter = FilterRequest.build().and(selectionTemplate.getValueFieldName(), "", Operator.EXISTS);
-			if (StringUtils.isBlank(keyword)) {
-				filter.and(selectionTemplate.getTextFieldName(), "", Operator.EXISTS);
-			} else {
-				filter.and(selectionTemplate.getTextFieldName(), keyword, Operator.REGEX);
-			}
-			FilterPageable pageable = new FilterPageable(0, OPTION_SIZE, null);
-			Page<Domain> page = generateService.findPage(filter, pageable, selectionTemplate.getValueFieldName(), selectionTemplate.getTextFieldName());
-			for (Domain domain : page.getContent()) {
-				String text = domain.getField(selectionTemplate.getTextFieldName()).toString();
-				Option<Object> option = new Option<>(domain.getField(selectionTemplate.getValueFieldName()), text);
-				options.add(option);
-			}
-		}
-		return options;
 	}
 	
 }

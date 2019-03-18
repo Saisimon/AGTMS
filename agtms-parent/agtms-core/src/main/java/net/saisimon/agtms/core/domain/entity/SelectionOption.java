@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import lombok.Data;
 
 /**
- * 选择器选项实体对象
+ * 下拉列表选项实体对象
  * 
  * @author saisimon
  *
@@ -25,21 +25,21 @@ public class SelectionOption {
 	private Long id;
 	
 	/**
-	 * 选择器选项值
+	 * 下拉列表选项值
 	 */
 	@Column(length=50)
 	private String value;
 	
 	/**
-	 * 选择器选项名称
+	 * 下拉列表选项名称
 	 */
 	@Column(length=50)
 	private String text;
 	
 	/**
-	 * 选择器ID
+	 * 下拉列表ID
 	 */
-	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '选择器ID'")
+	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '下拉列表ID'")
 	private Long selectionId;
 	
 }

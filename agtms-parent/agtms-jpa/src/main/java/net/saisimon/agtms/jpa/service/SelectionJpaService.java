@@ -43,13 +43,12 @@ public class SelectionJpaService implements SelectionService, JpaOrder {
 	}
 	
 	@Override
-	public List<SelectionOption> getSelectionOptions(Long selectionId, Set<String> values, Set<String> texts) {
-		if (values != null) {
+	public List<SelectionOption> getSelectionOptions(Long selectionId, Set<String> values, boolean isValue) {
+		if (isValue) {
 			return selectionOptionJpaRepository.findBySelectionIdAndValueIn(selectionId, values);
-		} else if (texts != null) {
-			return selectionOptionJpaRepository.findBySelectionIdAndTextIn(selectionId, texts);
+		} else {
+			return selectionOptionJpaRepository.findBySelectionIdAndTextIn(selectionId, values);
 		}
-		return null;
 	}
 	
 	@Override

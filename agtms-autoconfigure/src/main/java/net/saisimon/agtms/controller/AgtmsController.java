@@ -31,6 +31,12 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.scanner.TemplateScanner;
 import net.saisimon.agtms.scanner.TemplateScanner.TemplateResolver;
 
+/**
+ * API 调用控制器
+ * 
+ * @author saisimon
+ *
+ */
 @RestController
 @RequestMapping("/agtms")
 public class AgtmsController {
@@ -78,18 +84,18 @@ public class AgtmsController {
 		if (repository == null) {
 			return null;
 		}
-		Map<String, Object> filterMap = (Map<String, Object>) body.get("filter");
+		Map<String, Object> filterMap = (Map<String, Object>) body.get(Constant.Param.FILTER);
 		Set<String> filters = TemplateUtils.getFilters(templateResolver.getTemplate());
 		filters.add(Constant.ID);
 		FilterRequest filter = FilterRequest.build(filterMap, filters);
-		Object propertiesStr = body.get("properties");
+		Object propertiesStr = body.get(Constant.Param.PROPERTIES);
 		String[] properties = null;
 		if (propertiesStr != null) {
 			properties = propertiesStr.toString().split(",");
 		}
 		List<?> entities = null;
-		Map<String, Object> pageableMap = (Map<String, Object>) body.get("pageable");
-		Object sortStr = body.get("sort");
+		Map<String, Object> pageableMap = (Map<String, Object>) body.get(Constant.Param.PAGEABLE);
+		Object sortStr = body.get(Constant.Param.SORT);
 		if (sortStr != null) {
 			FilterSort sort = FilterSort.build(sortStr.toString());
 			entities = repository.findList(filter, sort, properties);
@@ -104,6 +110,7 @@ public class AgtmsController {
 			return list;
 		}
 		Set<String> fieldNames = TemplateUtils.getFieldNames(templateResolver.getTemplate());
+		fieldNames.add(Constant.ID);
 		for (Object entity : entities) {
 			list.add(toMap(entity, templateResolver.getEntityClass(), fieldNames));
 		}
@@ -124,13 +131,13 @@ public class AgtmsController {
 		if (repository == null) {
 			return null;
 		}
-		Map<String, Object> filterMap = (Map<String, Object>) body.get("filter");
-		Map<String, Object> pageableMap = (Map<String, Object>) body.get("pageable");
+		Map<String, Object> filterMap = (Map<String, Object>) body.get(Constant.Param.FILTER);
+		Map<String, Object> pageableMap = (Map<String, Object>) body.get(Constant.Param.PAGEABLE);
 		Set<String> filters = TemplateUtils.getFilters(templateResolver.getTemplate());
 		filters.add(Constant.ID);
 		FilterRequest filter = FilterRequest.build(filterMap, filters);
 		FilterPageable pageable = FilterPageable.build(pageableMap);
-		Object propertiesStr = body.get("properties");
+		Object propertiesStr = body.get(Constant.Param.PROPERTIES);
 		String[] properties = null;
 		if (propertiesStr != null) {
 			properties = propertiesStr.toString().split(",");
@@ -145,6 +152,7 @@ public class AgtmsController {
 		}
 		List<Map<String, Object>> list = new ArrayList<>();
 		Set<String> fieldNames = TemplateUtils.getFieldNames(templateResolver.getTemplate());
+		fieldNames.add(Constant.ID);
 		for (Object entity : entities) {
 			list.add(toMap(entity, templateResolver.getEntityClass(), fieldNames));
 		}
@@ -167,16 +175,16 @@ public class AgtmsController {
 		if (repository == null) {
 			return null;
 		}
-		Map<String, Object> filterMap = (Map<String, Object>) body.get("filter");
+		Map<String, Object> filterMap = (Map<String, Object>) body.get(Constant.Param.FILTER);
 		Set<String> filters = TemplateUtils.getFilters(templateResolver.getTemplate());
 		filters.add(Constant.ID);
 		FilterRequest filter = FilterRequest.build(filterMap, filters);
 		FilterSort sort = null;
-		Object sortStr = body.get("sort");
+		Object sortStr = body.get(Constant.Param.SORT);
 		if (sortStr != null) {
 			sort = FilterSort.build(sortStr.toString());
 		}
-		Object propertiesStr = body.get("properties");
+		Object propertiesStr = body.get(Constant.Param.PROPERTIES);
 		String[] properties = null;
 		if (propertiesStr != null) {
 			properties = propertiesStr.toString().split(",");
@@ -184,6 +192,7 @@ public class AgtmsController {
 		Optional<?> optional = repository.findOne(filter, sort, properties);
 		if (optional.isPresent()) {
 			Set<String> fieldNames = TemplateUtils.getFieldNames(templateResolver.getTemplate());
+			fieldNames.add(Constant.ID);
 			return toMap(optional.get(), templateResolver.getEntityClass(), fieldNames);
 		}
 		return null;
@@ -246,6 +255,7 @@ public class AgtmsController {
 			return null;
 		}
 		Set<String> fieldNames = TemplateUtils.getFieldNames(templateResolver.getTemplate());
+		fieldNames.add(Constant.ID);
 		return toMap(entity, templateResolver.getEntityClass(), fieldNames);
 	}
 	
@@ -263,11 +273,11 @@ public class AgtmsController {
 		if (repository == null) {
 			return;
 		}
-		Map<String, Object> filterMap = (Map<String, Object>) body.get("filter");
+		Map<String, Object> filterMap = (Map<String, Object>) body.get(Constant.Param.FILTER);
 		Set<String> filters = TemplateUtils.getFilters(templateResolver.getTemplate());
 		filters.add(Constant.ID);
 		FilterRequest filter = FilterRequest.build(filterMap, filters);
-		Map<String, Object> updateMap = (Map<String, Object>) body.get("update");
+		Map<String, Object> updateMap = (Map<String, Object>) body.get(Constant.Param.UPDATE);
 		repository.batchUpdate(filter, updateMap);
 	}
 	

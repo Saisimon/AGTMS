@@ -9,7 +9,6 @@ import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.domain.entity.Navigation;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
-import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
 

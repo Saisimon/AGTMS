@@ -29,12 +29,26 @@ import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.date.DateUtil;
 
+/**
+ * 文件相关工具类
+ * 
+ * @author saisimon
+ *
+ */
 public final class FileUtils {
 	
 	private FileUtils() {
 		throw new IllegalAccessError();
 	}
 	
+	/**
+	 * 将指定数据写入指定XLS文件
+	 * 
+	 * @param file XLS文件
+	 * @param datas 数据集合
+	 * @param append 是否追加
+	 * @throws IOException 写入异常
+	 */
 	public static void toXLS(File file, List<List<Object>> datas, boolean append) throws IOException {
 		if (file == null) {
 			return;
@@ -46,6 +60,14 @@ public final class FileUtils {
 		}
 	}
 
+	/**
+	 * 将指定数据写入指定XLSX文件
+	 * 
+	 * @param file XLSX文件
+	 * @param datas 数据集合
+	 * @param append 是否追加
+	 * @throws IOException 写入异常
+	 */
 	public static void toXLSX(File file, List<List<Object>> datas, boolean append) throws IOException {
 		if (file == null) {
 			return;
@@ -57,6 +79,15 @@ public final class FileUtils {
 		}
 	}
 	
+	/**
+	 * 将指定数据写入指定CSV文件
+	 * 
+	 * @param file CSV文件
+	 * @param datas 数据集合
+	 * @param separator 分隔符，默认为逗号
+	 * @param append 是否追加
+	 * @throws IOException 写入异常
+	 */
 	public static void toCSV(File file, List<List<Object>> datas, String separator, boolean append) throws IOException {
 		if (file == null) {
 			return;
@@ -85,6 +116,13 @@ public final class FileUtils {
 		}
 	}
 	
+	/**
+	 * 解析输入XLS文件流，获取数据集合大小
+	 * 
+	 * @param in XLS文件流
+	 * @return 数据集合大小
+	 * @throws IOException 解析读取异常
+	 */
 	public static int sizeXLS(InputStream in) throws IOException {
 		int size = 0;
 		try (Workbook workbook = new HSSFWorkbook(in)) {
@@ -99,6 +137,13 @@ public final class FileUtils {
 		return size;
 	}
 	
+	/**
+	 * 解析输入XLSX文件流，获取数据集合大小
+	 * 
+	 * @param in XLSX文件流
+	 * @return 数据集合大小
+	 * @throws IOException 解析读取异常
+	 */
 	public static int sizeXLSX(InputStream in) throws IOException {
 		int size = 0;
 		try (Workbook workbook = new XSSFWorkbook(in)) {
@@ -113,6 +158,14 @@ public final class FileUtils {
 		return size;
 	}
 	
+	/**
+	 * 解析输入CSV文件流，获取数据集合大小
+	 * 
+	 * @param in CSV文件流
+	 * @param separator 分隔符
+	 * @return 数据集合大小
+	 * @throws IOException 解析读取异常
+	 */
 	public static int sizeCSV(InputStream in, String separator) throws IOException {
 		int size = 0;
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
@@ -127,6 +180,13 @@ public final class FileUtils {
 		return size;
 	}
 	
+	/**
+	 * 解析输入XLS文件流，获取数据集合
+	 * 
+	 * @param in XLS文件流
+	 * @return 数据集合，key为工作表名称
+	 * @throws IOException 解析读取异常
+	 */
 	public static Map<String, List<List<String>>> fromXLS(FileInputStream in) throws IOException {
 		Map<String, List<List<String>>> result = new LinkedHashMap<>();
 		try (Workbook workbook = new HSSFWorkbook(in)) {
@@ -135,6 +195,13 @@ public final class FileUtils {
 		return result;
 	}
 
+	/**
+	 * 解析输入XLSX文件流，获取数据集合
+	 * 
+	 * @param in XLSX文件流
+	 * @return 数据集合，key为工作表名称
+	 * @throws IOException 解析读取异常
+	 */
 	public static Map<String, List<List<String>>> fromXLSX(FileInputStream in) throws IOException {
 		Map<String, List<List<String>>> result = new LinkedHashMap<>();
 		try (Workbook workbook = new XSSFWorkbook(in)) {
@@ -143,9 +210,20 @@ public final class FileUtils {
 		return result;
 	}
 	
+	/**
+	 * 解析输入CSV文件流，获取数据集合
+	 * 
+	 * @param in CSV文件流
+	 * @param separator 分隔符，默认为逗号
+	 * @return 数据集合
+	 * @throws IOException 解析读取异常
+	 */
 	public static List<List<String>> fromCSV(FileInputStream in, String separator) throws IOException {
 		List<List<String>> result = new ArrayList<>();
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+			if (separator == null) {
+				separator = ",";
+			}
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				if (StringUtils.isBlank(line)) {
@@ -162,6 +240,12 @@ public final class FileUtils {
 		return result;
 	}
 	
+	/**
+	 * 创建指定文件夹
+	 * 
+	 * @param dir 文件夹
+	 * @throws IOException 创建文件夹异常
+	 */
 	public static void createDir(File dir) throws IOException {
 		if (dir != null && !dir.exists()) {
 			createDir(dir.getParentFile());
@@ -169,8 +253,24 @@ public final class FileUtils {
 		}
 	}
 	
+	/**
+	 * 创建指定文件
+	 * 
+	 * @param path 文件所在路径
+	 * @param name 文件名称
+	 * @param suffix 文件后缀名
+	 * @return 文件
+	 * @throws IOException 创建文件异常
+	 */
 	public static File createFile(String path, String name, String suffix) throws IOException {
-		File file = new File(path + File.separator + name + suffix);
+		if (StringUtils.isBlank(path) || StringUtils.isBlank(name)) {
+			return null;
+		}
+		String filePath = path + File.separator + name;
+		if (StringUtils.isNotBlank(suffix)) {
+			filePath += suffix;
+		}
+		File file = new File(filePath);
 		createDir(file.getParentFile());
 		return file;
 	}
@@ -207,7 +307,7 @@ public final class FileUtils {
 	}
 	
 	private static void setValue(Cell cell, Object obj) {
-		List<Object> list = SystemUtils.transformList(obj, Object.class);
+		List<Object> list = SystemUtils.transformList(obj);
 		if (list != null) {
 			String value = list.stream().map(Object::toString).collect(Collectors.joining(";"));
 			cell.setCellValue(value);
@@ -250,7 +350,7 @@ public final class FileUtils {
 	
 	private static String cellString(Object obj) {
 		String value = "";
-		List<Object> list = SystemUtils.transformList(obj, Object.class);
+		List<Object> list = SystemUtils.transformList(obj);
 		if (list != null) {
 			value = list.stream().map(Object::toString).collect(Collectors.joining(";"));
 		} else if (obj instanceof RichTextString) {

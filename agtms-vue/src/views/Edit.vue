@@ -33,16 +33,16 @@
                         :to="backUrl"
                         variant="secondary" 
                         size="sm" 
-                        class="ml-2">
+                        class="ml-2 back-btn">
                         <i class="fa fa-fw fa-undo"></i>
                         {{ $t("back") }}
                     </b-button>
                     <!-- 重置 -->
                     <b-button 
                         variant="danger" 
-                        v-b-modal="'reset-model'"
+                        v-b-modal="'reset-modal'"
                         size="sm" 
-                        class="ml-2">
+                        class="ml-2 reset-btn">
                         <i class="fa fa-fw fa-repeat"></i>
                         {{ $t("reset") }}
                     </b-button>
@@ -51,7 +51,7 @@
                         variant="primary" 
                         @click="save"
                         size="sm" 
-                        class="ml-2">
+                        class="ml-2 save-btn">
                         <i class="fa fa-fw fa-save"></i>
                         {{ $t("save") }}
                     </b-button>
@@ -59,15 +59,18 @@
             </b-row>
             <!-- 重置确认 -->
             <b-modal
-                id="reset-model"
+                id="reset-modal"
                 centered 
                 :cancel-title="$t('cancel')"
                 :ok-title="$t('confirm_reset')"
                 @ok="reset"
-                ok-variant="danger"
+                cancel-variant="outline-info"
+                ok-variant="outline-danger"
+                header-border-variant="light"
+                footer-border-variant="light"
                 button-size="sm">
-                <div class="text-center font-weight-bold">
-                    {{ $t('confirm' )}}
+                <div class="text-center">
+                    {{ $t('are_you_confirm' )}}
                 </div>
             </b-modal>
         </b-card>

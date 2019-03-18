@@ -1,9 +1,10 @@
 <template>
     <div class="import-container" v-if="batchImport">
-        <b-modal v-model="model.show"
+        <b-modal v-model="modal.show"
             :title="$t('import')"
             size="lg"
             :hide-footer="true"
+            header-border-variant="light"
             button-size="sm">
             <div class="form-container">
                 <form id="importFile" name="importFile" method="POST">
@@ -79,7 +80,7 @@ export default {
     props: [
         "batchImport", 
         "selects",
-        "model"
+        "modal"
     ],
     computed: {
         importFieldOptions: function() {
@@ -121,7 +122,7 @@ export default {
             }).then(resp => {
                 var data = resp.data;
                 if (data.code === 0) {
-                    this.model.show = false;
+                    this.modal.show = false;
                     this.$emit('showAlert', data.message, 'success');
                 } else {
                     this.$emit('showAlert', data.message, 'danger');

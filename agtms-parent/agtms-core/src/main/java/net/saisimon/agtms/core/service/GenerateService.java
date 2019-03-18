@@ -18,8 +18,8 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.exception.GenerateException;
+import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
-import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
 /**
@@ -58,14 +58,15 @@ public interface GenerateService {
 		return repository.count(filter);
 	}
 	
-	default Boolean checkExist(Domain domain) {
+	default Boolean checkExist(Domain domain, Long operatorId) {
 		Assert.notNull(domain, "domain can not be null");
+		Assert.notNull(operatorId, "operatorId can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		Template template = template();
 		Set<String> uniques = TemplateUtils.getUniques(template);
 		if (!CollectionUtils.isEmpty(uniques)) {
-			FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, template.getOperatorId());
+			FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, operatorId);
 			Object id = domain.getField(Constant.ID);
 			if (id != null) {
 				filter.and(Constant.ID, id, Operator.NE);
@@ -145,7 +146,7 @@ public interface GenerateService {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		DomainUtils.fillCommonFields(domain, null);
+		DomainGenerater.fillCommonFields(domain, null);
 		return repository.saveOrUpdate(domain);
 	}
 	
@@ -153,7 +154,7 @@ public interface GenerateService {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		DomainUtils.fillCommonFields(domain, oldDomain);
+		DomainGenerater.fillCommonFields(domain, oldDomain);
 		return repository.saveOrUpdate(domain);
 	}
 	

@@ -25,6 +25,7 @@
 
 	<modules>
 		<module>agtms-autoconfigure</module>
+		<module>agtms-autotest</module>
 		<module>agtms-eureka</module>
 		<module>agtms-example</module>
 		<module>agtms-gateway</module>

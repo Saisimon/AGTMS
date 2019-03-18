@@ -7,6 +7,8 @@ import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.util.Assert;
+
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.URLUtil;
 import net.saisimon.agtms.core.util.FileUtils;
@@ -29,6 +31,7 @@ public class GenerateClassLoader extends URLClassLoader {
 	
 	public GenerateClassLoader(String namespace) {
 		super(new URL[]{});
+		Assert.notNull(namespace, "need namespace");
 		File generateClassDir = FileUtil.file(GENERATE_CLASS_PATH + "/" + namespace);
 		try {
 			FileUtils.createDir(generateClassDir);

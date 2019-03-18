@@ -90,10 +90,7 @@ public class Template implements Cloneable {
 	@Column(length=50, nullable=false)
 	private String source;
 	
-	/**
-	 * 模板数据来源服务名
-	 */
-	@Column(length=100)
+	@Transient
 	private String service;
 	
 	@Transient
@@ -191,9 +188,9 @@ public class Template implements Cloneable {
 		private String view;
 		
 		/**
-		 * 选择器ID
+		 * 下拉列表ID
 		 */
-		@Column(columnDefinition="BIGINT(15) COMMENT '选择器ID'")
+		@Column(columnDefinition="BIGINT(15) COMMENT '下拉列表ID'")
 		private Long selectionId;
 		
 		/**
@@ -246,6 +243,11 @@ public class Template implements Cloneable {
 		
 	}
 	
+	/**
+	 * 模板的唯一标识
+	 * 
+	 * @return 唯一标识
+	 */
 	public String sign() {
 		if (id != null) {
 			return id.toString();

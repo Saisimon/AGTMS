@@ -7,7 +7,7 @@
             </label>
         </b-col>
         <b-col sm="10" :class="'invalid'">
-            <multiselect class="filter-select"
+            <multiselect
                 v-if="field.multiple"
                 v-model="field.value"
                 label="text"
@@ -32,7 +32,7 @@
                 <template slot="noResult">{{ $t("no_result") }}</template>
                 <template slot="noOptions">{{ $t("no_options") }}</template>
             </multiselect>
-            <multiselect class="filter-select"
+            <multiselect
                 v-else
                 v-model="field.value"
                 label="text"

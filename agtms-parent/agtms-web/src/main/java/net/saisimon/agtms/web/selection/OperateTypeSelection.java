@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.enums.OperateTypes;
-import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 @Component

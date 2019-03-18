@@ -90,7 +90,9 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 		if (CollectionUtils.isEmpty(list)) {
 			return 0L;
 		} else {
-			deleteInBatch(list);
+			for (T entity : list) {
+				delete(entity);
+			}
 			return new Long(list.size());
 		}
 	}
@@ -98,6 +100,9 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 	@Transactional
 	@Override
 	public T saveOrUpdate(T entity) {
+		if (entity == null) {
+			return entity;
+		}
 		return saveAndFlush(entity);
 	}
 

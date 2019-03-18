@@ -29,6 +29,8 @@ public class SelectionMongodbService implements SelectionService, MongodbOrder {
 	private SelectionTemplateMongodbRepository selectionTemplateMongodbRepository;
 	@Autowired
 	private SelectionOptionMongodbRepository selectionOptionMongodbRepository;
+	@Autowired
+	private SequenceService sequenceService;
 
 	@Override
 	public BaseRepository<Selection, Long> getRepository() {
@@ -41,13 +43,12 @@ public class SelectionMongodbService implements SelectionService, MongodbOrder {
 	}
 	
 	@Override
-	public List<SelectionOption> getSelectionOptions(Long selectionId, Set<String> values, Set<String> texts) {
-		if (values != null) {
+	public List<SelectionOption> getSelectionOptions(Long selectionId, Set<String> values, boolean isValue) {
+		if (isValue) {
 			return selectionOptionMongodbRepository.findBySelectionIdAndValueIn(selectionId, values);
-		} else if (texts != null) {
-			return selectionOptionMongodbRepository.findBySelectionIdAndTextIn(selectionId, texts);
+		} else {
+			return selectionOptionMongodbRepository.findBySelectionIdAndTextIn(selectionId, values);
 		}
-		return null;
 	}
 	
 	@Override
@@ -71,6 +72,10 @@ public class SelectionMongodbService implements SelectionService, MongodbOrder {
 			return;
 		}
 		for (SelectionOption option : options) {
+			if (option.getId() == null) {
+				Long id = sequenceService.nextId(selectionOptionMongodbRepository.getCollectionName());
+				option.setId(id);
+			}
 			selectionOptionMongodbRepository.save(option);
 		}
 	}
@@ -90,7 +95,23 @@ public class SelectionMongodbService implements SelectionService, MongodbOrder {
 		if (template == null) {
 			return;
 		}
+		if (template.getId() == null) {
+			Long id = sequenceService.nextId(selectionTemplateMongodbRepository.getCollectionName());
+			template.setId(id);
+		}
 		selectionTemplateMongodbRepository.save(template);
+	}
+	
+	@Override
+	public Selection saveOrUpdate(Selection entity) {
+		if (entity == null) {
+			return entity;
+		}
+		if (entity.getId() == null) {
+			Long id = sequenceService.nextId(selectionMongodbRepository.getCollectionName());
+			entity.setId(id);
+		}
+		return selectionMongodbRepository.saveOrUpdate(entity);
 	}
 
 }

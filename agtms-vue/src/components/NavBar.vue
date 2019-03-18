@@ -53,7 +53,7 @@
                 <b-nav-item v-if="signIn" 
                     href="javascript:void(0);"
                     @click.stop="signOut" 
-                    class="nav-bar-item" 
+                    class="nav-bar-item signout-link" 
                     :title="$t('sign_out')">
                     <i class="fa fa-fw fa-sign-out text-light"></i>
                     <span class="nav-bar-content text-light ml-1">{{ $t('sign_out') }}</span>
@@ -61,7 +61,7 @@
                 <b-nav-item v-else 
                     class="nav-bar-item" 
                     :title="$t('sign_in')">
-                    <router-link to="/signin">
+                    <router-link to="/signin" class="signin-link">
                         <i class="fa fa-fw fa-sign-in text-light"></i>
                         <span class="nav-bar-content text-light ml-1">{{ $t('sign_in') }}</span>
                     </router-link>

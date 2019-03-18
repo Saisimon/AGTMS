@@ -1,5 +1,11 @@
 package net.saisimon.agtms.core.constant;
 
+/**
+ * 常量类
+ * 
+ * @author saisimon
+ *
+ */
 public class Constant {
 	
 	public static final String MONGODBID = "_id";
@@ -10,12 +16,11 @@ public class Constant {
 	
 	public static class Param {
 		public static final String TOTAL = "total";
-		public static final String CONTENT = "content";
-		public static final String DOMAIN = "domain";
-		public static final String FIELDS = "fields";
+		public static final String ROWS = "rows";
 		public static final String UPDATE = "update";
 		public static final String FILTER = "filter";
 		public static final String PAGEABLE = "pageable";
+		public static final String PROPERTIES = "properties";
 		public static final String INDEX = "index";
 		public static final String SIZE = "size";
 		public static final String SORT = "sort";

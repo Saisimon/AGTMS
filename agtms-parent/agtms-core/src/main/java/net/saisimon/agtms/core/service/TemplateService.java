@@ -9,6 +9,7 @@ import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.factory.CacheFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.util.TemplateUtils;
 
 /**
  * 模板服务接口
@@ -47,23 +48,33 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 	
 	@Override
 	default void delete(Template entity) {
+		if (entity == null) {
+			return;
+		}
 		Cache cache = CacheFactory.get();
 		cache.delete(String.format(TEMPLATE_KEY, entity.getId()));
-		if (entity.getOperatorId() != null) {
-			DomainGenerater.removeDomainClass(entity.getOperatorId().toString(), DomainGenerater.buildGenerateName(entity.sign()));
-		}
+		DomainGenerater.removeDomainClass(TemplateUtils.getNamespace(entity), DomainGenerater.buildGenerateName(entity.sign()));
 		BaseService.super.delete(entity);
 	}
 
 	default boolean createTable(Template template) {
+		if (template == null) {
+			return false;
+		}
 		return true;
 	}
 	
 	default boolean alterTable(Template template, Template oldTemplate) {
+		if (template == null || oldTemplate == null) {
+			return false;
+		}
 		return true;
 	}
 	
 	default boolean dropTable(Template template) {
+		if (template == null) {
+			return false;
+		}
 		return true;
 	}
 	

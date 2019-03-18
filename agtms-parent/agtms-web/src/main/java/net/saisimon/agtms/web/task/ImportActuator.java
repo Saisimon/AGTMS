@@ -35,9 +35,9 @@ import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.task.Actuator;
-import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
@@ -116,7 +116,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 					if (fieldValue == null) {
 						fieldValue = templateField.getDefaultValue();
 					}
-					fieldValue = DomainUtils.parseFieldValue(fieldValue, templateField.getFieldType());
+					fieldValue = DomainGenerater.parseFieldValue(fieldValue, templateField.getFieldType());
 					if (templateField.getRequired() && fieldValue == null) {
 						missRequireds.add(templateField.getFieldTitle());
 						continue;
@@ -129,10 +129,10 @@ public class ImportActuator implements Actuator<ImportParam> {
 					resultData.add("");
 				}
 			}
-			domain.setField(Constant.OPERATORID, template.getOperatorId(), Long.class);
+			domain.setField(Constant.OPERATORID, param.getUserId(), Long.class);
 			if (missRequireds.size() > 0) {
 				resultData.add(getMessage("missing.required.field") + ": " + missRequireds.stream().collect(Collectors.joining(", ")));
-			} else if (generateService.checkExist(domain)) {
+			} else if (generateService.checkExist(domain, param.getUserId())) {
 				resultData.add(getMessage("domain.already.exists"));
 			} else {
 				generateService.saveDomain(domain);

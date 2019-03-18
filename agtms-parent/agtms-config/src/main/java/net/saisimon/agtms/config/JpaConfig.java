@@ -11,6 +11,12 @@ import net.saisimon.agtms.jpa.repository.base.BaseJpaRepositoryFactoryBean;
 import net.saisimon.agtms.jpa.service.ddl.DdlService;
 import net.saisimon.agtms.jpa.service.ddl.DefaultDdlService;
 
+/**
+ * JPA 配置类
+ * 
+ * @author saisimon
+ *
+ */
 @Configuration
 @ConditionalOnClass(BaseJpaRepositoryFactoryBean.class)
 @EnableJpaRepositories(basePackages="net.saisimon.agtms.jpa.repository", repositoryFactoryBeanClass=BaseJpaRepositoryFactoryBean.class)

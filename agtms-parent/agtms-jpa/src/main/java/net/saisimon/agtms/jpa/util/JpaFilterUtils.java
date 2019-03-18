@@ -33,7 +33,7 @@ import org.springframework.util.CollectionUtils;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
-import net.saisimon.agtms.core.util.DomainUtils;
+import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.jpa.domain.Statement;
 
 public class JpaFilterUtils {
@@ -63,12 +63,14 @@ public class JpaFilterUtils {
 	
 	public static String orderby(FilterSort filterSort) {
 		String sort = "";
-		Map<String, String> sortMap = filterSort.getSortMap();
-		for (Entry<String, String> entry : sortMap.entrySet()) {
-			if (!"".equals(sort)) {
-				sort += ", ";
+		if (filterSort != null) {
+			Map<String, String> sortMap = filterSort.getSortMap();
+			for (Entry<String, String> entry : sortMap.entrySet()) {
+				if (!"".equals(sort)) {
+					sort += ", ";
+				}
+				sort += "`" + entry.getKey() + "` " + entry.getValue().toUpperCase();
 			}
-			sort += "`" + entry.getKey() + "` " + entry.getValue().toUpperCase();
 		}
 		return sort;
 	}
@@ -78,19 +80,18 @@ public class JpaFilterUtils {
 			
 			private static final long serialVersionUID = -2129612923958716561L;
 			
-			@SuppressWarnings({ "rawtypes", "unchecked" })
+			@SuppressWarnings({ "rawtypes"})
 			@Override
 			public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
 				if (properties != null && properties.length > 0) {
-					Path path = null;
-					for (String property : properties) {
-						if (path == null) {
-							path = root.get(property);
-						} else {
-							path.get(property);
-						}
+					Path[] paths = new Path[properties.length];
+					for (int i = 0; i < properties.length; i++) {
+						paths[i] = root.get(properties[i]);
 					}
-					query.select(path);
+					query.multiselect(paths);
+				}
+				if (filterRequest == null) {
+					return query.getRestriction();
 				}
 				List<Predicate> predicates = new ArrayList<>();
 				if (!CollectionUtils.isEmpty(filterRequest.getAndFilters())) {
@@ -139,7 +140,7 @@ public class JpaFilterUtils {
 		Object value = param.getValue();
 		String operator = param.getOperator();
 		String type = param.getType();
-		value = DomainUtils.parseFieldValue(value, type);
+		value = DomainGenerater.parseFieldValue(value, type);
 		if (value != null) {
 			switch (operator) {
 				case LT:
@@ -263,7 +264,7 @@ public class JpaFilterUtils {
 		Object value = param.getValue();
 		String operator = param.getOperator();
 		String type = param.getType();
-		value = DomainUtils.parseFieldValue(value, type);
+		value = DomainGenerater.parseFieldValue(value, type);
 		if (value != null) {
 			switch (operator) {
 				case LT:

@@ -6,6 +6,7 @@ export default {
     create_account: '创建账户',
     sign_out: '退出',
     username: '用户名',
+    username_or_email: '用户名或电子邮箱',
     email: '电子邮箱',
     password: '密码',
     or: '或',
@@ -100,5 +101,9 @@ export default {
     options_text_desc: '下拉列表选项的名称不允许重复',
     template_value_desc: '下拉列表选项的值对应的模板字段必须唯一且必填',
     template_text_desc: '下下拉列表选项的名称对应的模板字段必须唯一且必填',
-    draggable_desc: '拖动来改变字段位置'
+    draggable_desc: '拖动来改变字段位置',
+    first_page: '首页',
+    previous_page: '上页',
+    next_page: '下页',
+    last_page: '末页',
 }
