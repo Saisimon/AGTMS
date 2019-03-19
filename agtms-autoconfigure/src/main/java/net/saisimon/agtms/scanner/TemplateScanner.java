@@ -22,6 +22,7 @@ import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.util.StringUtils;
 
@@ -34,9 +35,11 @@ import net.saisimon.agtms.core.util.StringUtils;
 public class TemplateScanner {
 	
 	private final Map<String, TemplateResolver> templateResolverMap;
+	private final Map<String, SelectionResolver> selectionResolverMap;
 	
 	public TemplateScanner() {
 		templateResolverMap = new HashMap<>();
+		selectionResolverMap = new HashMap<>();
 	}
 	
 	public void scan(ApplicationContext applicationContext) {
@@ -117,6 +120,11 @@ public class TemplateScanner {
 			templateField.setSorted(fieldInfo.sorted());
 			templateField.setUniqued(fieldInfo.uniqued());
 			templateField.setView(fieldInfo.view().getView());
+			if (Views.SELECTION == fieldInfo.view()) {
+				SelectionResolver selectionResolver = new SelectionResolver(fieldInfo.selection());
+				selectionResolverMap.put(fieldInfo.selection().getSimpleName(), selectionResolver);
+				templateField.setSelection(fieldInfo.selection().getSimpleName());
+			}
 //			templateField.setWidth(fieldInfo.width());
 			templateFields.add(templateField);
 		}
@@ -134,8 +142,12 @@ public class TemplateScanner {
 		return templates;
 	}
 	
-	public TemplateResolver getResolver(String key) {
+	public TemplateResolver getTemplateResolver(String key) {
 		return templateResolverMap.get(key);
+	}
+	
+	public SelectionResolver getSelectionResolver(String key) {
+		return selectionResolverMap.get(key);
 	}
 	
 	@Data
@@ -151,6 +163,17 @@ public class TemplateScanner {
 			this.template = template;
 			this.repositoryClass = repositoryClass;
 			this.entityClass = entityClass;
+		}
+		
+	}
+	
+	@Data
+	public static class SelectionResolver {
+		
+		private final Class<? extends net.saisimon.agtms.core.selection.Selection<?>> selectionClass;
+		
+		public SelectionResolver(Class<? extends net.saisimon.agtms.core.selection.Selection<?>> selectionClass) {
+			this.selectionClass = selectionClass;
 		}
 		
 	}

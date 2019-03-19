@@ -211,14 +211,14 @@ public class TemplateEditController extends BaseController {
 			for (TemplateColumn column : template.getColumns()) {
 				columns.add(Column.builder().field(column.getColumnName()).ordered(column.getOrdered()).build());
 				columnNameRow.put(column.getColumnName(), new Editor<>(column.getTitle()));
-				fieldRow.put(column.getColumnName(), buildSubTable(grid, column));
+				fieldRow.put(column.getColumnName(), buildSubTable(grid, column, template.getService()));
 				removeRow.put(column.getColumnName(), "");
 			}
 		} else {
 			String columnName = "column0";
 			columns.add(Column.builder().field(columnName).ordered(0).build());
 			columnNameRow.put(columnName, new Editor<>(""));
-			fieldRow.put(columnName, buildSubTable(grid, null));
+			fieldRow.put(columnName, buildSubTable(grid, null, null));
 			removeRow.put(columnName, "");
 		}
 		table.setIdx(idx);
@@ -236,7 +236,7 @@ public class TemplateEditController extends BaseController {
 		return table;
 	}
 	
-	private Table buildSubTable(TemplateGrid grid, TemplateColumn column) {
+	private Table buildSubTable(TemplateGrid grid, TemplateColumn column, String service) {
 		Table subTable = new Table();
 		List<Column> subColumns = new ArrayList<>();
 		List<Map<String, Object>> subRows = new ArrayList<>();
@@ -259,7 +259,7 @@ public class TemplateEditController extends BaseController {
 				fieldNameRow.put(field.getFieldName(), new Editor<>(field.getFieldTitle()));
 				fieldTypeRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getClassOptions(), field.getFieldType())));
 				showTypeRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getViewOptions(), field.getView())));
-				showTypeRow.put("selection-" + field.getFieldName(), new Editor<>(Select.getOption(grid.getSelectionOptions(), field.getSelectionId())));
+				showTypeRow.put("selection-" + field.getFieldName(), new Editor<>(Select.getOption(grid.getSelectionOptions(), field.selectionSign(service))));
 				filterRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getFilter() ? 1 : 0)));
 				sortedRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getSorted() ? 1 : 0)));
 				requiredRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getRequired() ? 1 : 0)));

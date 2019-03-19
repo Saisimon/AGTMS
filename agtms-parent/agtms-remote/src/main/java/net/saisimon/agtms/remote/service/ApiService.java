@@ -1,5 +1,6 @@
 package net.saisimon.agtms.remote.service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,9 @@ public interface ApiService {
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/agtms/templates")
 	List<Template> templates();
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/agtms/{key}/selection")
+	LinkedHashMap<?, String> selection(@PathVariable("key") String key, @RequestBody Map<String, Object> body);
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/agtms/{key}/count")
 	Long count(@PathVariable("key") String key, @RequestBody Map<String, Object> body);

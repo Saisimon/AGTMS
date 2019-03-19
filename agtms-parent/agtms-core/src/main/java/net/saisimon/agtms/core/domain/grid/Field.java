@@ -26,7 +26,7 @@ public class Field<T> {
 	
 	private String view;
 	
-	private Long selectionId;
+	private String sign;
 	
 	private boolean searchable;
 	

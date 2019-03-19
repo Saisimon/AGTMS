@@ -84,12 +84,12 @@ export default {
     },
     methods: {
         search: function(query) {
-            if (this.field.selectionId == null) {
+            if (this.field.sign == null) {
                 return;
             }
             this.isLoading = true;
             this.$store.dispatch('searchSelection', {
-                id: this.field.selectionId,
+                sign: this.field.sign,
                 keyword: query
             }).then(resp => {
                 if (resp.data.code === 0) {

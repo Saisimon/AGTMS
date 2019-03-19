@@ -19,16 +19,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
+import net.saisimon.agtms.core.domain.entity.Selection;
 import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.UserInfo;
 import net.saisimon.agtms.core.enums.OperateTypes;
+import net.saisimon.agtms.core.enums.SelectTypes;
+import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
@@ -134,6 +140,7 @@ public class UserController {
 			return;
 		}
 		Map<String, Template> remoteTemplateMap = new ConcurrentHashMap<>();
+		Map<String, Selection> remoteSelectionMap = new ConcurrentHashMap<>();
 		List<Template> templates = new ArrayList<>();
 		List<String> services = discoveryClient.getServices();
 		for (String service : services) {
@@ -151,9 +158,22 @@ public class UserController {
 				if (sign != null) {
 					remoteTemplateMap.put(sign, template);
 				}
+				for (TemplateColumn templateColumn : template.getColumns()) {
+					for (TemplateField templateField : templateColumn.getFields()) {
+						if (Views.SELECTION.getView().equals(templateField.getView())) {
+							String selectionSign = templateField.selectionSign(service);
+							Selection selection = new Selection();
+							selection.setService(service);
+							selection.setKey(templateField.getSelection());
+							selection.setType(SelectTypes.REMOTE.getType());
+							remoteSelectionMap.put(selectionSign, selection);
+						}
+					}
+				}
 			}
 		}
 		TemplateUtils.REMOTE_TEMPLATE_MAP = remoteTemplateMap;
+		SelectionUtils.REMOTE_SELECTION_MAP = remoteSelectionMap;
 	}
 	
 }

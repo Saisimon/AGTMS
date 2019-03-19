@@ -25,10 +25,10 @@ const actions = {
         return request(context.rootState.base.user, url, null);
     },
     searchSelection(context, search) {
-        if (search == null || search.id == null) {
+        if (search == null || search.sign == null) {
             return;
         }
-        var url = "/selection/edit/search?id=" + search.id;
+        var url = "/selection/edit/search?sign=" + search.sign;
         if (search.keyword) {
             url += "&keyword=" + search.keyword;
         }

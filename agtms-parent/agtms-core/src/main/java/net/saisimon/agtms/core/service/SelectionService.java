@@ -36,12 +36,12 @@ public interface SelectionService extends BaseService<Selection, Long>, Ordered 
 		return findList(filter);
 	}
 	
-	default LinkedHashMap<Long, String> getSelectionMap(Long operatorId) {
+	default LinkedHashMap<String, String> getSelectionMap(Long operatorId) {
 		List<Selection> selections = getSelections(operatorId);
-		LinkedHashMap<Long, String> selectionMap = new LinkedHashMap<>();
+		LinkedHashMap<String, String> selectionMap = new LinkedHashMap<>();
 		if (!CollectionUtils.isEmpty(selections)) {
 			for (Selection selection : selections) {
-				selectionMap.put(selection.getId(), selection.getTitle());
+				selectionMap.put(selection.getId().toString(), selection.getTitle());
 			}
 		}
 		return selectionMap;

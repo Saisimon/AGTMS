@@ -590,7 +590,7 @@ export default {
                         ordered: fieldColumn.ordered,
                     };
                     if (templateField['view'] === 'selection') {
-                        templateField['selectionId'] = fieldRows[2]['selection-' + fieldColumn.field].value.value;
+                        templateField['selection'] = fieldRows[2]['selection-' + fieldColumn.field].value.value;
                     }
                     templateFields[j] = templateField;
                 }

@@ -7,9 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +27,7 @@ import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
+import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Filter;
@@ -46,6 +49,7 @@ import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.MainController;
 import net.saisimon.agtms.web.dto.resp.SelectionInfo;
+import net.saisimon.agtms.web.selection.SelectTypeSelection;
 
 /**
  * 下拉列表主控制器
@@ -70,9 +74,13 @@ public class SelectionMainController extends MainController {
 	private static final Set<String> SELECTION_FILTER_FIELDS = new HashSet<>();
 	static {
 		SELECTION_FILTER_FIELDS.add("title");
+		SELECTION_FILTER_FIELDS.add("type");
 		SELECTION_FILTER_FIELDS.add("createTime");
 		SELECTION_FILTER_FIELDS.add("updateTime");
 	}
+	
+	@Autowired
+	private SelectTypeSelection selectTypeSelection;
 	
 	@PostMapping("/grid")
 	public Result grid() {
@@ -88,11 +96,13 @@ public class SelectionMainController extends MainController {
 		SelectionService selectionService = SelectionServiceFactory.get();
 		Page<Selection> page = selectionService.findPage(filter, pageable);
 		List<SelectionInfo> results = new ArrayList<>(page.getContent().size());
+		Map<Integer, String> selectTypeMap = selectTypeSelection.select();
 		for (Selection selection : page.getContent()) {
 			SelectionInfo result = new SelectionInfo();
 			result.setId(selection.getId());
 			result.setCreateTime(selection.getCreateTime());
 			result.setTitle(selection.getTitle());
+			result.setType(selectTypeMap.get(selection.getType()));
 			result.setUpdateTime(selection.getUpdateTime());
 			result.setAction(SELECTION);
 			results.add(result);
@@ -165,9 +175,24 @@ public class SelectionMainController extends MainController {
 	protected List<Filter> filters(Object key) {
 		List<Filter> filters = new ArrayList<>();
 		Filter filter = new Filter();
-		List<String> keyValues = Arrays.asList("title");
-		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
+		List<String> keyValues = Arrays.asList("type");
+		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("type")));
 		Map<String, FieldFilter> value = new HashMap<>();
+		Map<Integer, String> selectTypeMap = selectTypeSelection.select();
+		List<Integer> selectTypeValues = new ArrayList<>(selectTypeMap.size());
+		List<String> selectTypeTexts = new ArrayList<>(selectTypeMap.size());
+		for (Entry<Integer, String> entry : selectTypeMap.entrySet()) {
+			selectTypeValues.add(entry.getKey());
+			selectTypeTexts.add(entry.getValue());
+		}
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), selectTypeValues, selectTypeTexts));
+		filter.setValue(value);
+		filters.add(filter);
+		
+		filter = new Filter();
+		keyValues = Arrays.asList("title");
+		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
+		value = new HashMap<>();
 		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
 		filter.setValue(value);
 		filters.add(filter);
@@ -187,6 +212,7 @@ public class SelectionMainController extends MainController {
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("title").label(getMessage("title")).width(200).view(Views.TEXT.getView()).build());
+		columns.add(Column.builder().field("type").label(getMessage("type")).width(200).view(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());

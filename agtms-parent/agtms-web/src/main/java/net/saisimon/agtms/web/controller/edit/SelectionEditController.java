@@ -149,8 +149,8 @@ public class SelectionEditController extends BaseController {
 	}
 	
 	@PostMapping("/search")
-	public Result search(@RequestParam(name = "id") Long id, @RequestParam(name = "keyword", required = false) String keyword) {
-		List<Option<Object>> options = SelectionUtils.getSelectionOptions(id, keyword, AuthUtils.getUserInfo().getUserId());
+	public Result search(@RequestParam(name = "sign") String sign, @RequestParam(name = "keyword", required = false) String keyword) {
+		List<Option<Object>> options = SelectionUtils.getSelectionOptions(sign, keyword, AuthUtils.getUserInfo().getUserId());
 		return ResultUtils.simpleSuccess(options);
 	}
 	

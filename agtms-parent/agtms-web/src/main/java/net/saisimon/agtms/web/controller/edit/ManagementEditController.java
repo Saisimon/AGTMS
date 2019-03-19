@@ -192,8 +192,9 @@ public class ManagementEditController extends EditController<Domain> {
 				}
 				Object value = domain == null ? null : domain.getField(fieldName);
 				if (Views.SELECTION.getView().equals(templateField.getView())) {
-					field.setSelectionId(templateField.getSelectionId());
-					List<Option<Object>> selectionOptions = SelectionUtils.getSelectionOptions(templateField.getSelectionId(), null, userId);
+					String selectionSign = templateField.selectionSign(template.getService());
+					field.setSign(selectionSign);
+					List<Option<Object>> selectionOptions = SelectionUtils.getSelectionOptions(selectionSign, null, userId);
 					List<Object> options = new ArrayList<>();
 					for (Option<Object> option : selectionOptions) {
 						options.add(option);
@@ -202,7 +203,7 @@ public class ManagementEditController extends EditController<Domain> {
 					if (value != null) {
 						Set<String> values = new HashSet<>();
 						values.add(value.toString());
-						Map<String, String> textMap = SelectionUtils.getSelectionValueTextMap(templateField.getSelectionId(), userId, values);
+						Map<String, String> textMap = SelectionUtils.getSelectionValueTextMap(selectionSign, userId, values);
 						String text = textMap.get(value.toString());
 						if (text != null) {
 							value = new Option<>(value, text);

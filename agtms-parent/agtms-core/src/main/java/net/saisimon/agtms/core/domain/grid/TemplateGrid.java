@@ -32,7 +32,7 @@ public class TemplateGrid {
 	
 	private List<Option<Integer>> whetherOptions;
 	
-	private List<Option<Long>> selectionOptions;
+	private List<Option<String>> selectionOptions;
 	
 	@Data
 	public static class Table {

@@ -107,7 +107,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 						if (value == null) {
 							Set<String> texts = new HashSet<>();
 							texts.add(fieldValue.toString());
-							Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap(templateField.getSelectionId(), param.getUserId(), texts);
+							Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap(templateField.selectionSign(template.getService()), param.getUserId(), texts);
 							textMap.putAll(textValueMap);
 							value = textValueMap.get(fieldValue.toString());
 						}

@@ -2,6 +2,7 @@ package net.saisimon.agtms.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,10 +26,12 @@ import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.repository.BaseRepository;
+import net.saisimon.agtms.core.selection.Selection;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.scanner.TemplateScanner;
+import net.saisimon.agtms.scanner.TemplateScanner.SelectionResolver;
 import net.saisimon.agtms.scanner.TemplateScanner.TemplateResolver;
 
 /**
@@ -51,12 +54,39 @@ public class AgtmsController {
 		return templateScanner.getAllTemplates();
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@PostMapping("/{key}/selection")
+	public LinkedHashMap<?, String> selection(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
+		if (StringUtils.isBlank(key)) {
+			return null;
+		}
+		SelectionResolver selectionResolver = templateScanner.getSelectionResolver(key);
+		if (selectionResolver == null) {
+			return null;
+		}
+		Selection<?> selection = applicationContext.getBean(selectionResolver.getSelectionClass());
+		List values = (ArrayList) body.get("values");
+		if (!CollectionUtils.isEmpty(values)) {
+			return selection.selectValue(values);
+		}
+		List<String> texts = (ArrayList<String>) body.get("text");
+		if (!CollectionUtils.isEmpty(texts)) {
+			return selection.selectText(texts);
+		}
+		String text = (String) body.get("text");
+		if (StringUtils.isBlank(text)) {
+			return selection.select();
+		} else {
+			return selection.selectFuzzyText(text);
+		}
+	}
+	
 	@PostMapping("/{key}/count")
 	public Long count(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}
-		TemplateResolver templateResolver = templateScanner.getResolver(key);
+		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
 		if (templateResolver == null) {
 			return null;
 		}
@@ -76,7 +106,7 @@ public class AgtmsController {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}
-		TemplateResolver templateResolver = templateScanner.getResolver(key);
+		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
 		if (templateResolver == null) {
 			return null;
 		}
@@ -123,7 +153,7 @@ public class AgtmsController {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}
-		TemplateResolver templateResolver = templateScanner.getResolver(key);
+		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
 		if (templateResolver == null) {
 			return null;
 		}
@@ -167,7 +197,7 @@ public class AgtmsController {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}
-		TemplateResolver templateResolver = templateScanner.getResolver(key);
+		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
 		if (templateResolver == null) {
 			return null;
 		}
@@ -203,7 +233,7 @@ public class AgtmsController {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}
-		TemplateResolver templateResolver = templateScanner.getResolver(key);
+		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
 		if (templateResolver == null) {
 			return null;
 		}
@@ -223,7 +253,7 @@ public class AgtmsController {
 		if (StringUtils.isBlank(key)) {
 			return;
 		}
-		TemplateResolver templateResolver = templateScanner.getResolver(key);
+		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
 		if (templateResolver == null) {
 			return;
 		}
@@ -241,7 +271,7 @@ public class AgtmsController {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}
-		TemplateResolver templateResolver = templateScanner.getResolver(key);
+		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
 		if (templateResolver == null) {
 			return null;
 		}
@@ -265,7 +295,7 @@ public class AgtmsController {
 		if (StringUtils.isBlank(key)) {
 			return;
 		}
-		TemplateResolver templateResolver = templateScanner.getResolver(key);
+		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
 		if (templateResolver == null) {
 			return;
 		}

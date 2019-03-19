@@ -85,7 +85,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			}
 			FilterPageable pageable = new FilterPageable(page, PAGE_SIZE, null);
 			List<Domain> domains = generateService.findList(filter, pageable, fields.toArray(new String[fields.size()]));
-			List<Map<String, Object>> domainList = SelectionUtils.handleSelection(fieldInfoMap, domains, param.getUserId());
+			List<Map<String, Object>> domainList = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), domains, param.getUserId());
 			for (Map<String, Object> domainMap : domainList) {
 				List<Object> data = new ArrayList<>();
 				for (int i = 0; i < fields.size(); i++) {

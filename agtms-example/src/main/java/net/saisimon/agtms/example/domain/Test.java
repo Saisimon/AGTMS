@@ -16,6 +16,7 @@ import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.example.repository.TestRepository;
+import net.saisimon.agtms.example.selection.GenderSelection;
 
 @Entity
 @Data
@@ -36,7 +37,11 @@ public class Test {
 	private String name;
 	
 	@Column
-	@FieldInfo(columnOrdered = 0, fieldOrdered = 2, fieldTitle = "生日", fieldType = Classes.DATE, filter = true, sorted = true, required = true)
+	@FieldInfo(columnOrdered = 0, fieldOrdered = 2, fieldTitle = "性别", fieldType = Classes.LONG, view = Views.SELECTION, selection = GenderSelection.class, filter = true)
+	private Integer gender;
+	
+	@Column
+	@FieldInfo(columnOrdered = 0, fieldOrdered = 3, fieldTitle = "生日", fieldType = Classes.DATE, filter = true, sorted = true, required = true)
 	private Date birthday;
 	
 	@Column

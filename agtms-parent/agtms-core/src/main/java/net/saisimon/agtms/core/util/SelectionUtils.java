@@ -3,6 +3,7 @@ package net.saisimon.agtms.core.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +31,9 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.SelectionServiceFactory;
 import net.saisimon.agtms.core.service.GenerateService;
+import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.SelectionService;
+import net.saisimon.agtms.core.spring.SpringContext;
 
 /**
  * 下拉列表相关工具类
@@ -77,7 +80,7 @@ public class SelectionUtils {
 	 * @param operatorId 用户ID
 	 * @return 处理后的自定义对象集合
 	 */
-	public static List<Map<String, Object>> handleSelection(Map<String, TemplateField> fieldInfoMap, List<Domain> domains, Long operatorId) {
+	public static List<Map<String, Object>> handleSelection(Map<String, TemplateField> fieldInfoMap, String service, List<Domain> domains, Long operatorId) {
 		List<Map<String, Object>> datas = new ArrayList<>(domains.size());
 		Map<String, Set<String>> valueMap = new HashMap<>();
 		for (Domain domain : domains) {
@@ -106,7 +109,7 @@ public class SelectionUtils {
 		for (Map.Entry<String, Set<String>> entry : valueMap.entrySet()) {
 			String fieldName = entry.getKey();
 			TemplateField templateField = fieldInfoMap.get(fieldName);
-			Map<String, String> textMap = getSelectionValueTextMap(templateField.getSelectionId(), operatorId, entry.getValue());
+			Map<String, String> textMap = getSelectionValueTextMap(templateField.selectionSign(service), operatorId, entry.getValue());
 			map.put(fieldName, textMap);
 		}
 		for (Map<String, Object> data : datas) {
@@ -125,40 +128,40 @@ public class SelectionUtils {
 	}
 	
 	/**
-	 * 根据下拉列表ID与下拉列表选项值集合，查询下拉列表的选项映射
+	 * 根据下拉列表标识与下拉列表选项值集合，查询下拉列表的选项映射
 	 * 
-	 * @param selectionId 下拉列表ID
+	 * @param sign 下拉列表标识
 	 * @param operatorId 用户ID
 	 * @param values 下拉列表选项值集合
 	 * @return 下拉列表的选项映射，key为选项值，value为选项名称
 	 */
-	public static Map<String, String> getSelectionValueTextMap(Long selectionId, Long operatorId, Set<String> values) {
-		return getSelectionMap(selectionId, operatorId, values, true);
+	public static Map<String, String> getSelectionValueTextMap(String sign, Long operatorId, Set<String> values) {
+		return getSelectionMap(sign, operatorId, values, true);
 	}
 	
 	/**
-	 * 根据下拉列表ID与下拉列表选项名称集合，查询下拉列表的选项映射
+	 * 根据下拉列表标识与下拉列表选项名称集合，查询下拉列表的选项映射
 	 * 
-	 * @param selectionId 下拉列表ID
+	 * @param sign 下拉列表标识
 	 * @param operatorId 用户ID
 	 * @param texts 下拉列表选项名称集合
 	 * @return 下拉列表的选项映射，key为选项名称，value为选项值
 	 */
-	public static Map<String, String> getSelectionTextValueMap(Long selectionId, Long operatorId, Set<String> texts) {
-		return getSelectionMap(selectionId, operatorId, texts, false);
+	public static Map<String, String> getSelectionTextValueMap(String sign, Long operatorId, Set<String> texts) {
+		return getSelectionMap(sign, operatorId, texts, false);
 	}
 	
 	/**
-	 * 根据下拉列表ID与下拉列表选项名称关键词，查询下拉列表的选项列表
+	 * 根据下拉列表标识与下拉列表选项名称关键词，查询下拉列表的选项列表
 	 * 
-	 * @param selectionId 下拉列表ID
+	 * @param sign 下拉列表标识
 	 * @param keyword 下拉列表选项名称关键词
 	 * @param operatorId 用户ID
 	 * @return
 	 */
-	public static List<Option<Object>> getSelectionOptions(Long selectionId, String keyword, Long operatorId) {
+	public static List<Option<Object>> getSelectionOptions(String sign, String keyword, Long operatorId) {
 		List<Option<Object>> options = new ArrayList<>();
-		Selection selection = getSelection(selectionId, operatorId);
+		Selection selection = getSelection(sign, operatorId);
 		if (selection == null) {
 			return options;
 		}
@@ -190,24 +193,33 @@ public class SelectionUtils {
 				options.add(option);
 			}
 		} else if (SelectTypes.REMOTE.getType() == selection.getType()) {
-			// TODO
-			
+			RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
+			if (remoteService == null) {
+				return options;
+			}
+			Map<String, Object> body = new HashMap<>();
+			body.put("text", keyword);
+			LinkedHashMap<?, String> selectionMap = remoteService.selection(selection.getService(), selection.getKey(), body);
+			for (Map.Entry<?, String> entry : selectionMap.entrySet()) {
+				Option<Object> option = new Option<>(entry.getKey(), entry.getValue());
+				options.add(option);
+			}
 		}
 		return options;
 	}
 	
-	private static Map<String, String> getSelectionMap(Long selectionId, Long operatorId, Set<String> values, boolean valueKey) {
+	private static Map<String, String> getSelectionMap(String sign, Long operatorId, Set<String> values, boolean valueKey) {
 		Map<String, String> selectionMap = new HashMap<>();
 		if (CollectionUtils.isEmpty(values)) {
 			return selectionMap;
 		}
-		Selection selection = getSelection(selectionId, operatorId);
+		Selection selection = getSelection(sign, operatorId);
 		if (selection == null) {
 			return selectionMap;
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		if (SelectTypes.OPTION.getType() == selection.getType()) {
-			List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selectionId, values, valueKey);
+			List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection.getId(), values, valueKey);
 			if (selectionOptions == null) {
 				return selectionMap;
 			}
@@ -250,8 +262,20 @@ public class SelectionUtils {
 				}
 			}
 		} else if (SelectTypes.REMOTE.getType() == selection.getType()) {
-			// TODO
-			
+			RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
+			if (remoteService == null) {
+				return selectionMap;
+			}
+			Map<String, Object> body = new HashMap<>();
+			if (valueKey) {
+				body.put("values", values);
+			} else {
+				body.put("texts", values);
+			}
+			LinkedHashMap<?, String> map = remoteService.selection(selection.getService(), selection.getKey(), body);
+			for (Map.Entry<?, String> entry : map.entrySet()) {
+				selectionMap.put(entry.getKey().toString(), entry.getValue());
+			}
 		}
 		return selectionMap;
 	}

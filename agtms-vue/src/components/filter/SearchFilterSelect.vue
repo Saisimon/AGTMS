@@ -31,12 +31,12 @@ export default {
     },
     methods: {
         search: function(query) {
-            if (this.filter.selectionId == null) {
+            if (this.filter.sign == null) {
                 return;
             }
             this.isLoading = true;
             this.$store.dispatch('searchSelection', {
-                id: this.filter.selectionId,
+                sign: this.filter.sign,
                 keyword: query
             }).then(resp => {
                 if (resp.data.code === 0) {

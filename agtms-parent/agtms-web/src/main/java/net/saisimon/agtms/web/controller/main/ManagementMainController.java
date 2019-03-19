@@ -16,9 +16,9 @@ import java.util.concurrent.Future;
 
 import javax.transaction.Transactional;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
@@ -76,7 +76,6 @@ import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.FileUtils;
-import net.saisimon.agtms.core.util.PropertyUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.StringUtils;
@@ -100,8 +99,10 @@ import net.saisimon.agtms.web.selection.FileTypeSelection;
 @Slf4j
 public class ManagementMainController extends MainController {
 	
-	private static final int EXPORT_MAX_SIZE = NumberUtils.toInt(PropertyUtils.fetchYaml("extra.max-size.export", 65535).toString(), 65535);
-	private static final int IMPORT_MAX_SIZE = NumberUtils.toInt(PropertyUtils.fetchYaml("extra.max-size.import", 65535).toString(), 65535);
+	@Value("${extra.max-size.export:65535}")
+	private int exportMaxSize;
+	@Value("${extra.max-size.import:65535}")
+	private int importMaxSize;
 	
 	@Autowired
 	private FileTypeSelection fileTypeSelection;
@@ -133,7 +134,7 @@ public class ManagementMainController extends MainController {
 		request.getSession().setAttribute(key + "_pageable", param);
 		if (TemplateUtils.hasSelection(template)) {
 			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-			List<Map<String, Object>> datas = SelectionUtils.handleSelection(fieldInfoMap, page.getContent(), userId);
+			List<Map<String, Object>> datas = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), page.getContent(), userId);
 			return ResultUtils.pageSuccess(datas, page.getTotalElements());
 		} else {
 			return ResultUtils.pageSuccess(page.getContent(), page.getTotalElements());
@@ -259,9 +260,9 @@ public class ManagementMainController extends MainController {
 		FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
 		filter.and(Constant.OPERATORID, userId);
 		Long total = generateService.count(filter);
-		if (total > EXPORT_MAX_SIZE) {
+		if (total > exportMaxSize) {
 			Result result = ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
-			result.setMessageArgs(new Object[]{ EXPORT_MAX_SIZE });
+			result.setMessageArgs(new Object[]{ exportMaxSize });
 			return result;
 		}
 		body.setTemplateId(template.sign());
@@ -328,9 +329,9 @@ public class ManagementMainController extends MainController {
 			if (size == 0) {
 				return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
 			}
-			if (size > IMPORT_MAX_SIZE) {
+			if (size > importMaxSize) {
 				Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
-				result.setMessageArgs(new Object[]{ IMPORT_MAX_SIZE });
+				result.setMessageArgs(new Object[]{ importMaxSize });
 				return result;
 			}
 			FileUtils.createDir(file.getParentFile());
@@ -423,10 +424,11 @@ public class ManagementMainController extends MainController {
 				keyValues.add(fieldName);
 				keyTexts.add(field.getFieldTitle());
 				if (Views.SELECTION.getView().equals(field.getView())) {
-					if (field.getSelectionId() == null) {
+					String selectionSign = field.selectionSign(template.getService());
+					if (selectionSign == null) {
 						continue;
 					}
-					value.put(fieldName, SelectFilter.selectSearchableFilter("", field.getFieldType(), field.getSelectionId(), userId));
+					value.put(fieldName, SelectFilter.selectSearchableFilter("", field.getFieldType(), selectionSign, userId));
 				} else if (Classes.LONG.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {
 					value.put(fieldName, RangeFilter.rangeFilter("", field.getFieldType(), "", field.getFieldType()));
 				} else if (Classes.DATE.getName().equals(field.getFieldType())) {
@@ -515,7 +517,7 @@ public class ManagementMainController extends MainController {
 					.text(templateField.getFieldTitle())
 					.view(templateField.getView())
 					.type(templateField.getFieldType())
-					.selectionId(templateField.getSelectionId())
+					.sign(templateField.selectionSign(template.getService()))
 					.searchable(true)
 					.build();
 			if (templateField.getRequired()) {

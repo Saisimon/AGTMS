@@ -13,6 +13,8 @@ public class SelectionInfo extends BaseInfo {
 	private static final long serialVersionUID = 2169109875986378350L;
 	
 	private String title;
+	
+	private String type;
 
 	private Date createTime;
 	

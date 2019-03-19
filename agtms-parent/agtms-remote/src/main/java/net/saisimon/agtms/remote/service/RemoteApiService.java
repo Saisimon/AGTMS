@@ -1,6 +1,8 @@
 package net.saisimon.agtms.remote.service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -18,7 +20,7 @@ import net.saisimon.agtms.core.util.StringUtils;
 
 @Import(FeignClientsConfiguration.class)
 @Service
-public class RemoteTemplateService implements RemoteService {
+public class RemoteApiService implements RemoteService {
 	
 	@Autowired
 	private Decoder decoder;
@@ -36,6 +38,15 @@ public class RemoteTemplateService implements RemoteService {
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + serviceId);
 		return apiService.templates();
+	}
+
+	@Override
+	public LinkedHashMap<?, String> selection(String serviceId, String key, Map<String, Object> body) {
+		if (StringUtils.isBlank(serviceId)) {
+			return null;
+		}
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + serviceId);
+		return apiService.selection(key, body);
 	}
 	
 }

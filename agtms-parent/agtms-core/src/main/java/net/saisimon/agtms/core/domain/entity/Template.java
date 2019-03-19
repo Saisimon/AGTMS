@@ -188,10 +188,10 @@ public class Template implements Cloneable {
 		private String view;
 		
 		/**
-		 * 下拉列表ID
+		 * 下拉列表标识
 		 */
-		@Column(columnDefinition="BIGINT(15) COMMENT '下拉列表ID'")
-		private Long selectionId;
+		@Column(length=50)
+		private String selection;
 		
 		/**
 		 * 是否支持过滤
@@ -240,6 +240,22 @@ public class Template implements Cloneable {
 		 */
 		@Column(columnDefinition="INT(11) COMMENT '属性顺序值'")
 		private Integer ordered;
+		
+		/**
+		 * 模板属性下拉列表的唯一标识
+		 * 
+		 * @return 唯一标识
+		 */
+		public String selectionSign(String service) {
+			if (selection == null) {
+				return null;
+			}
+			if (service != null) {
+				return service + "-" + selection;
+			} else {
+				return selection;
+			}
+		}
 		
 	}
 	

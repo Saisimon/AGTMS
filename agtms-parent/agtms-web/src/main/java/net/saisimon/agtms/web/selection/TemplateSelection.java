@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
+import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 

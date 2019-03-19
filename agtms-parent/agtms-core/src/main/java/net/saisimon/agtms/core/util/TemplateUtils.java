@@ -318,7 +318,7 @@ public class TemplateUtils {
 				if (StringUtils.isBlank(templateField.getFieldTitle())) {
 					return false;
 				}
-				if (Views.SELECTION.getView().equals(templateField.getView()) && templateField.getSelectionId() == null) {
+				if (Views.SELECTION.getView().equals(templateField.getView()) && templateField.selectionSign(template.getService()) == null) {
 					return false;
 				}
 			}

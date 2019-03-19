@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import net.saisimon.agtms.core.service.RemoteService;
-import net.saisimon.agtms.remote.service.RemoteTemplateService;
+import net.saisimon.agtms.remote.service.RemoteApiService;
 
 /**
  * 远程调用配置类
@@ -14,12 +14,12 @@ import net.saisimon.agtms.remote.service.RemoteTemplateService;
  *
  */
 @Configuration
-@ConditionalOnClass(RemoteTemplateService.class)
+@ConditionalOnClass(RemoteApiService.class)
 public class RemoteConfig {
 	
 	@Bean
 	public RemoteService remoteService() {
-		return new RemoteTemplateService();
+		return new RemoteApiService();
 	}
 	
 }

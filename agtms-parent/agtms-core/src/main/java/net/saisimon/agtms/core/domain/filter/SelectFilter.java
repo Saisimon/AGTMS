@@ -27,7 +27,7 @@ public class SelectFilter<T> extends FieldFilter {
 	
 	private boolean searchable;
 	
-	private Long selectionId;
+	private String sign;
 	
 	public SelectFilter(boolean multiple) {
 		super("select");
@@ -54,14 +54,14 @@ public class SelectFilter<T> extends FieldFilter {
 		return selectFilter;
 	}
 	
-	public static FieldFilter selectSearchableFilter(Object selected, String type, Long selectionId, Long operatorId) {
+	public static FieldFilter selectSearchableFilter(Object selected, String type, String sign, Long operatorId) {
 		SelectFilter<Object> selectFilter = new SelectFilter<>(false);
 		Select<Object> select = SingleSelect.select(selected, new ArrayList<>(), new ArrayList<>());
 		select.setType(type);
-		select.setOptions(SelectionUtils.getSelectionOptions(selectionId, null, operatorId));
+		select.setOptions(SelectionUtils.getSelectionOptions(sign, null, operatorId));
 		selectFilter.setSelect(select);
 		selectFilter.setSearchable(true);
-		selectFilter.setSelectionId(selectionId);
+		selectFilter.setSign(sign);
 		return selectFilter;
 	}
 	
