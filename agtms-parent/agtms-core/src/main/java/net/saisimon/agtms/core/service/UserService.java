@@ -1,5 +1,6 @@
 package net.saisimon.agtms.core.service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -49,9 +50,7 @@ public interface UserService extends BaseService<User, Long>, Ordered {
 			return null;
 		}
 		Map<String, Object> updateMap = new HashMap<>();
-		Long time = System.currentTimeMillis();
-		updateMap.put("updateTime", time);
-		updateMap.put("lastLoginTime", time);
+		updateMap.put("lastLoginTime", new Date());
 		batchUpdate(FilterRequest.build().and(Constant.ID, user.getId()), updateMap);
 		return user;
 	}
@@ -69,7 +68,7 @@ public interface UserService extends BaseService<User, Long>, Ordered {
 		user.setEmail(email);
 		String salt = AuthUtils.createSalt();
 		String hmacPwd = AuthUtils.hmac(password, salt);
-		Long time = System.currentTimeMillis();
+		Date time = new Date();
 		user.setCreateTime(time);
 		user.setUpdateTime(time);
 		user.setLastLoginTime(time);

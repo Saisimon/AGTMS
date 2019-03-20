@@ -38,7 +38,7 @@ public class Template implements Cloneable {
 	/**
 	 * 导航ID
 	 */
-	@Column(columnDefinition="BIGINT(15) DEFAULT -1 COMMENT '导航ID'")
+	@Column
 	private Long navigationId;
 	
 	/**
@@ -50,7 +50,7 @@ public class Template implements Cloneable {
 	/**
 	 * 模板支持的功能
 	 */
-	@Column(columnDefinition="INT(11) COMMENT '模板支持的功能'")
+	@Column
 	private Integer function;
 	
 	/**
@@ -63,25 +63,25 @@ public class Template implements Cloneable {
 	/**
 	 * 模板下属的列下一个下标
 	 */
-	@Column(columnDefinition="INT(11) COMMENT '模板下属的列下一个下标'")
+	@Column
 	private Integer columnIndex;
 	
 	/**
 	 * 模板创建时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '模板创建时间'")
+	@Column
 	private Date createTime;
 	
 	/**
 	 * 模板更新时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '模板更新时间'")
+	@Column
 	private Date updateTime;
 	
 	/**
 	 * 模板创建人员ID
 	 */
-	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '模板创建人员ID'")
+	@Column
 	private Long operatorId;
 	
 	/**
@@ -133,13 +133,13 @@ public class Template implements Cloneable {
 		/**
 		 * 列顺序值
 		 */
-		@Column(columnDefinition="INT(11)")
+		@Column
 		private Integer ordered;
 		
 		/**
 		 * 列下属的属性下一个下标
 		 */
-		@Column(columnDefinition="INT(11) COMMENT '列下属的属性下一个下标'")
+		@Column
 		private Integer fieldIndex;
 		
 	}
@@ -196,31 +196,31 @@ public class Template implements Cloneable {
 		/**
 		 * 是否支持过滤
 		 */
-		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否支持过滤'")
+		@Column
 		private Boolean filter;
 		
 		/**
 		 * 是否支持排序
 		 */
-		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否支持排序'")
+		@Column
 		private Boolean sorted;
 		
 		/**
 		 * 是否必填
 		 */
-		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否必填'")
+		@Column
 		private Boolean required;
 		
 		/**
 		 * 是否唯一
 		 */
-		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否唯一'")
+		@Column
 		private Boolean uniqued;
 		
 		/**
 		 * 列表页是否隐藏
 		 */
-		@Column(columnDefinition="TINYINT(1) NOT NULL DEFAULT 0 COMMENT '列表页是否隐藏'")
+		@Column
 		private Boolean hidden;
 		
 		/**
@@ -232,13 +232,13 @@ public class Template implements Cloneable {
 		/**
 		 * 宽度
 		 */
-		@Column(columnDefinition="INT(5) COMMENT '宽度'")
-		private Integer width;
+//		@Column
+//		private Integer width;
 		
 		/**
 		 * 属性顺序值
 		 */
-		@Column(columnDefinition="INT(11) COMMENT '属性顺序值'")
+		@Column
 		private Integer ordered;
 		
 		/**

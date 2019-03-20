@@ -39,7 +39,7 @@ public class Task {
 	/**
 	 * 任务创建时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '任务创建时间'")
+	@Column
 	private Date taskTime;
 	
 	/**
@@ -53,13 +53,13 @@ public class Task {
 	 * 
 	 * @see net.saisimon.agtms.core.enums.HandleStatuses
 	 */
-	@Column(columnDefinition="INT(11) NOT NULL COMMENT '任务处理状态'")
+	@Column
 	private Integer handleStatus;
 	
 	/**
 	 * 任务处理时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '任务处理时间'")
+	@Column
 	private Date handleTime;
 	
 	/**
@@ -71,7 +71,7 @@ public class Task {
 	/**
 	 * 任务创建人员ID
 	 */
-	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '任务创建人员ID'")
+	@Column
 	private Long operatorId;
 	
 }

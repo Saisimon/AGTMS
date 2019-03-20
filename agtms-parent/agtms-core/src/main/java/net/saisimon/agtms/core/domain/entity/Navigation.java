@@ -53,31 +53,31 @@ public class Navigation {
 	/**
 	 * 导航优先级
 	 */
-	@Column(nullable=false, columnDefinition="BIGINT(15) DEFAULT 0 COMMENT '导航优先级'")
+	@Column(nullable=false)
 	private Long priority;
 	
 	/**
 	 * 导航创建时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '导航创建时间'")
+	@Column
 	private Date createTime;
 	
 	/**
 	 * 导航更新时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '导航更新时间'")
+	@Column
 	private Date updateTime;
 	
 	/**
 	 * 导航创建人员ID
 	 */
-	@Column(nullable=false, columnDefinition="BIGINT(15) COMMENT '导航创建人员ID'")
+	@Column(nullable=false)
 	private Long operatorId;
 	
 	/**
 	 * 父导航ID
 	 */
-	@Column(columnDefinition="BIGINT(15) DEFAULT -1 COMMENT '父导航ID'")
+	@Column
 	private Long parentId;
 	
 }

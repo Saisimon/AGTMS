@@ -584,7 +584,7 @@ public class ManagementMainController extends MainController {
 				}
 				Column column = Column.builder().field(templateColumn.getColumnName() + templateField.getFieldName())
 						.label(templateField.getFieldTitle())
-						.width(templateField.getWidth())
+//						.width(templateField.getWidth())
 						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
 						.view(templateField.getView())
 						.build();

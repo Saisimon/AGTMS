@@ -39,19 +39,19 @@ public class Selection {
 	/**
 	 * 下拉列表创建时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '下拉列表创建时间'")
+	@Column
 	private Date createTime;
 	
 	/**
 	 * 下拉列表更新时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '下拉列表更新时间'")
+	@Column
 	private Date updateTime;
 	
 	/**
 	 * 下拉列表创建人员ID
 	 */
-	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '下拉列表创建人员ID'")
+	@Column
 	private Long operatorId;
 	
 	/**
@@ -59,7 +59,7 @@ public class Selection {
 	 * 
 	 * @see net.saisimon.agtms.core.enums.SelectTypes
 	 */
-	@Column(columnDefinition="INT(11) NOT NULL COMMENT '下拉列表类型'")
+	@Column
 	private Integer type;
 	
 	@Transient

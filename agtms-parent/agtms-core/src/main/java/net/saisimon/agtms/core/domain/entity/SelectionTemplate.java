@@ -27,7 +27,7 @@ public class SelectionTemplate {
 	/**
 	 * 下拉列表对应模板ID
 	 */
-	@Column(columnDefinition="BIGINT(15) COMMENT '下拉列表对应模板ID'")
+	@Column
 	private Long templateId;
 	
 	/**
@@ -45,7 +45,7 @@ public class SelectionTemplate {
 	/**
 	 * 下拉列表ID
 	 */
-	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '下拉列表ID'")
+	@Column
 	private Long selectionId;
 	
 }

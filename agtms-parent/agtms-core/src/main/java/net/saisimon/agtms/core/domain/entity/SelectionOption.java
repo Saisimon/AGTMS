@@ -39,7 +39,7 @@ public class SelectionOption {
 	/**
 	 * 下拉列表ID
 	 */
-	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '下拉列表ID'")
+	@Column
 	private Long selectionId;
 	
 }

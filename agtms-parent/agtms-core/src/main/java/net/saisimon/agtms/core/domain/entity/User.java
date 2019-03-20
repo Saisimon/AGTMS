@@ -1,5 +1,7 @@
 package net.saisimon.agtms.core.domain.entity;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -71,21 +73,20 @@ public class User {
 	private String email;
 	
 	/**
-	 * 创建时间
+	 * 用户创建时间
 	 */
-	@Column(nullable=false, columnDefinition="BIGINT(15)")
-	private Long createTime;
+	@Column
+	private Date createTime;
 	
 	/**
-	 * 更新时间
+	 * 用户更新时间
 	 */
-	@Column(nullable=false, columnDefinition="BIGINT(15)")
-	private Long updateTime;
+	@Column
+	private Date updateTime;
 	
 	/**
 	 * 备注
 	 */
-	@JsonIgnore
 	@Column(length=500)
 	private String remark;
 	
@@ -98,7 +99,7 @@ public class User {
 	/**
 	 * 上次登陆时间
 	 */
-	@Column(nullable=false, columnDefinition="BIGINT(15)")
-	private Long lastLoginTime;
+	@Column
+	private Date lastLoginTime;
 	
 }

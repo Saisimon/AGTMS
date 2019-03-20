@@ -32,19 +32,19 @@ public class Operation {
 	/**
 	 * 操作人ID
 	 */
-	@Column(columnDefinition="BIGINT(15) NOT NULL COMMENT '操作人ID'")
+	@Column
 	private Long operatorId;
 	
 	/**
 	 * 操作类型
 	 */
-	@Column(columnDefinition="INT(11) NOT NULL COMMENT '操作类型'")
+	@Column
 	private Integer operateType;
 	
 	/**
 	 * 操作时间
 	 */
-	@Column(columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间'")
+	@Column
 	private Date operateTime;
 	
 	/**
@@ -62,7 +62,7 @@ public class Operation {
 	/**
 	 * 操作状态
 	 */
-	@Column(columnDefinition="INT(11) NOT NULL COMMENT '操作状态'")
+	@Column
 	private Integer operateStatus;
 	
 	/**
