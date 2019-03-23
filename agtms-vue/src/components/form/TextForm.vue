@@ -24,9 +24,9 @@ export default {
         if (this.field) {
             if (this.field.type == 'long' || this.field.type == 'double') {
                 type = 'number';
-            } else if (this.field.view == 'link') {
+            } else if (this.field.views == 'link') {
                 type = 'url';
-            } else if (this.field.view == 'email') {
+            } else if (this.field.views == 'email') {
                 type = 'email';
             }
         }

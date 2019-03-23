@@ -165,7 +165,7 @@ public class TemplateUtils {
 				continue;
 			}
 			for (TemplateField field : column.getFields()) {
-				if (Views.SELECTION.getView().equals(field.getView())) {
+				if (Views.SELECTION.getView().equals(field.getViews())) {
 					return true;
 				}
 			}
@@ -318,7 +318,7 @@ public class TemplateUtils {
 				if (StringUtils.isBlank(templateField.getFieldTitle())) {
 					return false;
 				}
-				if (Views.SELECTION.getView().equals(templateField.getView()) && templateField.selectionSign(template.getService()) == null) {
+				if (Views.SELECTION.getView().equals(templateField.getViews()) && templateField.selectionSign(template.getService()) == null) {
 					return false;
 				}
 			}
@@ -334,10 +334,10 @@ public class TemplateUtils {
 	 */
 	public static List<Integer> getFunctionCodes(Template template) {
 		List<Integer> functions = new ArrayList<>();
-		if (template == null || template.getFunction() == null || template.getFunction() == 0) {
+		if (template == null || template.getFunctions() == null || template.getFunctions() == 0) {
 			return functions;
 		}
-		Integer function = template.getFunction();
+		Integer function = template.getFunctions();
 		for (Functions func : Functions.values()) {
 			if (func.getCode().equals((function & func.getCode()))) {
 				functions.add(func.getCode());
@@ -354,11 +354,11 @@ public class TemplateUtils {
 	 */
 	public static List<String> getFunctions(Template template) {
 		List<String> functions = new ArrayList<>();
-		if (template == null || template.getFunction() == null || template.getFunction() == 0) {
+		if (template == null || template.getFunctions() == null || template.getFunctions() == 0) {
 			return functions;
 		}
 		for (Functions func : Functions.values()) {
-			if (hasFunction(template.getFunction(), func)) {
+			if (hasFunction(template.getFunctions(), func)) {
 				functions.add(func.getFunction());
 			}
 		}
@@ -373,10 +373,10 @@ public class TemplateUtils {
 	 * @return 是否包含指定的功能
 	 */
 	public static boolean hasFunction(Template template, Functions func) {
-		if (template == null || template.getFunction() == null || template.getFunction() == 0 || func == null) {
+		if (template == null || template.getFunctions() == null || template.getFunctions() == 0 || func == null) {
 			return false;
 		}
-		return hasFunction(template.getFunction(), func);
+		return hasFunction(template.getFunctions(), func);
 	}
 	
 	/**
@@ -387,11 +387,11 @@ public class TemplateUtils {
 	 * @return 是否包含指定的功能集合中的某一个
 	 */
 	public static boolean hasOneOfFunctions(Template template, Functions... funcs) {
-		if (template == null || template.getFunction() == null || template.getFunction() == 0 || funcs == null) {
+		if (template == null || template.getFunctions() == null || template.getFunctions() == 0 || funcs == null) {
 			return false;
 		}
 		for (Functions func : funcs) {
-			if (hasFunction(template.getFunction(), func)) {
+			if (hasFunction(template.getFunctions(), func)) {
 				return true;
 			}
 		}

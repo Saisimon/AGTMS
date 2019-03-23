@@ -1,5 +1,6 @@
 package net.saisimon.agtms.jpa.repository;
 
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,8 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapperResultSetExtractor;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
@@ -29,6 +36,7 @@ import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
+import net.saisimon.agtms.jpa.dialect.Dialect;
 import net.saisimon.agtms.jpa.domain.Statement;
 import net.saisimon.agtms.jpa.util.JpaFilterUtils;
 
@@ -38,36 +46,38 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
+	@Autowired
+	private Dialect dialect;
 	
 	@Override
 	public Long count(FilterRequest filter) {
-		String sql = buildCountSql();
+		StringBuilder sql = buildCountSql();
 		Object[] args = null;
 		if (filter != null) {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
-				sql += " WHERE " + where.getExpression();
+				sql.append(" WHERE ").append(where.getExpression());
 				if (where.getArgs() != null) {
 					args = where.getArgs().toArray();
 				}
 			}
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		return jdbcTemplate.queryForObject(sql, args, Long.class);
+		return jdbcTemplate.queryForObject(sql.toString(), args, Long.class);
 	}
 
 	@Override
 	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
 		Set<String> columnNames = getColumnNames(template, properties);
-		String sql = buildSql(template, columnNames);
+		StringBuilder sql = buildSql(template, columnNames);
 		Object[] args = null;
 		if (filter != null) {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
-				sql += " WHERE " + where.getExpression();
+				sql.append(" WHERE ").append(where.getExpression());
 				if (where.getArgs() != null) {
 					args = where.getArgs().toArray();
 				}
@@ -76,13 +86,13 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		if (sort != null) {
 			String orderby = JpaFilterUtils.orderby(sort);
 			if (StringUtils.isNotBlank(orderby)) {
-				sql += " ORDER BY " + orderby;
+				sql.append(" ORDER BY ").append(orderby);
 			}
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, args);
+		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql.toString(), args);
 		try {
 			return conversions(list);
 		} catch (GenerateException e) {
@@ -95,33 +105,25 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
 		Template template = template();
 		Set<String> columnNames = getColumnNames(template, properties);
-		String sql = buildSql(template, columnNames);
+		StringBuilder sql = buildSql(template, columnNames);
 		List<Object> args = new ArrayList<>();
 		if (filter != null) {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
-				sql += " WHERE " + where.getExpression();
+				sql.append(" WHERE ").append(where.getExpression());
 				if (where.getArgs() != null) {
 					args = where.getArgs();
 				}
 			}
 		}
 		if (pageable != null) {
-			if (pageable.getSort() != null) {
-				String orderby = JpaFilterUtils.orderby(pageable.getSort());
-				if (StringUtils.isNotBlank(orderby)) {
-					sql += " ORDER BY " + orderby;
-				}
-			}
-			Pageable springPageable = pageable.getPageable();
-			sql += " LIMIT ?, ?";
-			args.add(springPageable.getOffset());
-			args.add(springPageable.getPageSize());
+			sql.append(" ORDER BY ").append(JpaFilterUtils.orderby(pageable.getSort()));
+			dialect.wrapPageSql(sql, pageable.getPageable());
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, args.toArray());
+		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql.toString(), args.toArray());
 		try {
 			return conversions(list);
 		} catch (GenerateException e) {
@@ -132,19 +134,19 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 
 	@Override
 	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
-		String countSql = buildCountSql();
+		StringBuilder countSql = buildCountSql();
 		List<Object> args = new ArrayList<>();
 		Statement where = JpaFilterUtils.where(filter);
 		if (where.isNotEmpty()) {
-			countSql += " WHERE " + where.getExpression();
+			countSql.append(" WHERE ").append(where.getExpression());
 			if (where.getArgs() != null) {
 				args = where.getArgs();
 			}
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + countSql);
+			log.debug("Generate SQL: " + countSql.toString());
 		}
-		Long total = jdbcTemplate.queryForObject(countSql, args.toArray(), Long.class);
+		Long total = jdbcTemplate.queryForObject(countSql.toString(), args.toArray(), Long.class);
 		if (pageable == null) {
 			pageable = FilterPageable.build(null);
 		}
@@ -154,23 +156,16 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		}
 		Template template = template();
 		Set<String> columnNames = getColumnNames(template, properties);
-		String sql = buildSql(template, columnNames);
+		StringBuilder sql = buildSql(template, columnNames);
 		if (where.isNotEmpty()) {
-			sql += " WHERE " + where.getExpression();
+			sql.append(" WHERE ").append(where.getExpression());
 		}
-		if (pageable.getSort() != null) {
-			String orderby = JpaFilterUtils.orderby(pageable.getSort());
-			if (StringUtils.isNotBlank(orderby)) {
-				sql += " ORDER BY " + orderby;
-			}
-		}
-		sql += " LIMIT ?, ?";
-		args.add(springPageable.getOffset());
-		args.add(springPageable.getPageSize());
+		sql.append(" ORDER BY ").append(JpaFilterUtils.orderby(pageable.getSort()));
+		dialect.wrapPageSql(sql, springPageable);
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql, args.toArray());
+		List<Map<String, Object>> list = jdbcTemplate.queryForList(sql.toString(), args.toArray());
 		try {
 			return new PageImpl<>(conversions(list), springPageable, total);
 		} catch (GenerateException e) {
@@ -183,30 +178,36 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
 		Set<String> columnNames = getColumnNames(template, properties);
-		String sql = buildSql(template, columnNames);
+		StringBuilder sql = buildSql(template, columnNames);
 		Object[] args = null;
 		if (filter != null) {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
-				sql += " WHERE " + where.getExpression();
+				sql.append(" WHERE ").append(where.getExpression());
 				if (where.getArgs() != null) {
 					args = where.getArgs().toArray();
 				}
 			}
 		}
 		if (sort != null) {
-			String orderby = JpaFilterUtils.orderby(sort);
-			if (StringUtils.isNotBlank(orderby)) {
-				sql += " ORDER BY " + orderby;
-			}
+			sql.append(" ORDER BY ").append(JpaFilterUtils.orderby(sort));
 		}
-		sql += " LIMIT 0, 1";
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		Map<String, Object> map = jdbcTemplate.queryForMap(sql, args);
+		ArgumentPreparedStatementSetter pss = new ArgumentPreparedStatementSetter(args);
+		List<Map<String, Object>> maps = jdbcTemplate.query(conn -> {
+			PreparedStatement ps = conn.prepareStatement(sql.toString());
+			pss.setValues(ps);
+			ps.setMaxRows(1);
+			return ps;
+		}, new RowMapperResultSetExtractor<Map<String, Object>>(new ColumnMapRowMapper()));
+		pss.cleanupParameters();
+		if (CollectionUtils.isEmpty(maps)) {
+			return Optional.empty();
+		}
 		try {
-			return Optional.ofNullable(conversion(map));
+			return Optional.ofNullable(conversion(maps.get(0)));
 		} catch (GenerateException e) {
 			log.error("find one error", e);
 			return Optional.empty();
@@ -216,36 +217,36 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	@Override
 	@Transactional
 	public void delete(Domain entity) {
-		if (entity == null) {
+		if (entity == null) { 
 			return;
 		}
-		String sql = buildDeleteSql();
+		StringBuilder sql = buildDeleteSql();
 		Object[] args = {entity.getField(Constant.ID)};
-		sql += " WHERE `id` = ?";
+		sql.append(" WHERE id = ?");
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		jdbcTemplate.update(sql, args);
+		jdbcTemplate.update(sql.toString(), args);
 	}
 
 	@Override
 	@Transactional
 	public Long delete(FilterRequest filter) {
-		String sql = buildDeleteSql();
+		StringBuilder sql = buildDeleteSql();
 		Object[] args = null;
 		if (filter != null) {
 			Statement where = JpaFilterUtils.where(filter);
 			if (where.isNotEmpty()) {
-				sql += " WHERE " + where.getExpression();
+				sql.append(" WHERE ").append(where.getExpression());
 				if (where.getArgs() != null) {
 					args = where.getArgs().toArray();
 				}
 			}
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		return (long) jdbcTemplate.update(sql, args);
+		return (long) jdbcTemplate.update(sql.toString(), args);
 	}
 
 	@Override
@@ -270,47 +271,50 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			return;
 		}
 		Template template = template();
-		String sql = "UPDATE `" + TemplateUtils.getTableName(template) + "` SET ";
+		StringBuilder sql = new StringBuilder();
+		sql.append("UPDATE ").append(TemplateUtils.getTableName(template)).append(" SET ");
 		List<Object> args = new ArrayList<>();
-		String set = "";
+		int size = sql.length();
 		for (Entry<String, Object> entry : updateMap.entrySet()) {
 			String field = entry.getKey();
 			Object value = entry.getValue();
 			if (value != null) {
-				if (!"".equals(set)) {
-					set += ", ";
+				if (sql.length() != size) {
+					sql.append(", ");
 				}
-				set += "`" + field + "` = ?";
+				sql.append(field).append(" = ?");
 				args.add(value);
 			}
 		}
-		sql += set;
 		Statement where = JpaFilterUtils.where(filter);
 		if (where.isNotEmpty()) {
-			sql += " WHERE " + where.getExpression();
+			sql.append(" WHERE ").append(where.getExpression());
 			if (where.getArgs() != null) {
 				args.addAll(where.getArgs());
 			}
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		jdbcTemplate.update(sql, args.toArray());
+		jdbcTemplate.update(sql.toString(), args.toArray());
 	}
 	
-	private String buildCountSql() {
-		return "SELECT COUNT(`" + Constant.ID + "`) FROM `" + TemplateUtils.getTableName(template()) + "` ";
+	private StringBuilder buildCountSql() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT COUNT(").append(Constant.ID).append(") FROM ").append(TemplateUtils.getTableName(template()));
+		return sb;
 	}
 	
-	private String buildSql(Template template, Set<String> columnNames) {
-		String sql = "SELECT ";
-		sql += columnNames.stream().map(field -> "`" + field + "`").collect(Collectors.joining(","));
-		sql += " FROM `" + TemplateUtils.getTableName(template) + "` ";
-		return sql;
+	private StringBuilder buildSql(Template template, Set<String> columnNames) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT ").append(columnNames.stream().collect(Collectors.joining(", "))).append(" FROM ").append(TemplateUtils.getTableName(template));
+		return sb;
 	}
 	
-	private String buildDeleteSql() {
-		return "DELETE FROM `" + TemplateUtils.getTableName(template()) + "` ";
+	private StringBuilder buildDeleteSql() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("DELETE FROM ").append(TemplateUtils.getTableName(template()));
+		return sb;
 	}
 	
 	private boolean insert(Domain domain) {
@@ -320,31 +324,35 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		columnNames.add(Constant.CREATETIME);
 		columnNames.add(Constant.UPDATETIME);
 		List<Object> args = new ArrayList<>();
-		String columns = "`id`";
-		String values = "NULL";
+		StringBuilder columns = new StringBuilder();
+		StringBuilder values = new StringBuilder();
 		for (String field : columnNames) {
-			columns += ", `" + field + "`";
-			values += ", ?";
+			if (columns.length() != 0) {
+				columns.append(", ");
+				values.append(", ");
+			}
+			columns.append(field);
+			values.append("?");
 			args.add(domain.getField(field));
 		}
-		String sql = "INSERT INTO `" + TemplateUtils.getTableName(template) + "` (" + columns + ") VALUES (" + values + ") ";
+		StringBuilder sql = new StringBuilder();
+		sql.append("INSERT INTO ").append(TemplateUtils.getTableName(template)).append(" (").append(columns).append(") VALUES (").append(values).append(") ");
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		boolean result = jdbcTemplate.update(sql, args.toArray()) > 0;
-		if (result) {
-			Long id = getLastInsertId();
-			domain.setField(Constant.ID, id, Long.class);
+		KeyHolder holder = new GeneratedKeyHolder();
+		ArgumentPreparedStatementSetter pss = new ArgumentPreparedStatementSetter(args.toArray());
+		int result = jdbcTemplate.update(conn -> {
+//			PreparedStatement ps = conn.prepareStatement(sql.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement ps = conn.prepareStatement(sql.toString(), new String[] { Constant.ID });
+			pss.setValues(ps);
+			return ps;
+		}, holder);
+		if (result > 0) {
+			domain.setField(Constant.ID, holder.getKey().longValue(), Long.class);
 		}
-		return result;
-	}
-	
-	private Long getLastInsertId() {
-		String sql = "SELECT LAST_INSERT_ID()";
-		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
-		}
-		return jdbcTemplate.queryForObject(sql, Long.class);
+		pss.cleanupParameters();
+		return result > 0;
 	}
 	
 	private boolean update(Object id, Domain domain) {
@@ -354,24 +362,25 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		columnNames.add(Constant.CREATETIME);
 		columnNames.add(Constant.UPDATETIME);
 		List<Object> args = new ArrayList<>();
-		String sql = "UPDATE `" + TemplateUtils.getTableName(template) + "` SET ";
-		String set = "";
+		StringBuilder sql = new StringBuilder();
+		sql.append("UPDATE ").append(TemplateUtils.getTableName(template)).append(" SET ");
+		int size = sql.length();
 		for (String field : columnNames) {
 			Object value = domain.getField(field);
 			if (value != null) {
-				if (!"".equals(set)) {
-					set += ", ";
+				if (sql.length() != size) {
+					sql.append(", ");
 				}
-				set += "`" + field + "` = ?";
+				sql.append(field).append(" = ?");
 				args.add(value);
 			}
 		}
-		sql += set + " WHERE `id` = ?";
+		sql.append(" WHERE id = ?");
 		args.add(id);
 		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + sql);
+			log.debug("Generate SQL: " + sql.toString());
 		}
-		return jdbcTemplate.update(sql, args.toArray()) > 0;
+		return jdbcTemplate.update(sql.toString(), args.toArray()) > 0;
 	}
 	
 	private List<Domain> conversions(List<Map<String, Object>> list) throws GenerateException {

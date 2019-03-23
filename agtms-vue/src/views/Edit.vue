@@ -16,12 +16,12 @@
             <!-- 表单 -->
             <div class="form-container">
                 <template v-for="(field, key) in fields">
-                    <select-form :field="field" :key="key" v-if="field.view == 'selection'" />
+                    <select-form :field="field" :key="key" v-if="field.views == 'selection'" />
                     <date-form :field="field" :key="key" v-else-if="field.type == 'date'" />
-                    <textarea-form :field="field" :key="key" v-else-if="field.view == 'textarea'" />
-                    <icon-form :field="field" :key="key" v-else-if="field.view == 'icon'" />
-                    <image-form :field="field" :key="key" v-else-if="field.view == 'image'" />
-                    <password-form :field="field" :key="key" v-else-if="field.view == 'password'" />
+                    <textarea-form :field="field" :key="key" v-else-if="field.views == 'textarea'" />
+                    <icon-form :field="field" :key="key" v-else-if="field.views == 'icon'" />
+                    <image-form :field="field" :key="key" v-else-if="field.views == 'image'" />
+                    <password-form :field="field" :key="key" v-else-if="field.views == 'password'" />
                     <text-form :field="field" :key="key" v-else />
                 </template>
             </div>
@@ -151,7 +151,7 @@ export default {
                 } else {
                     field.state = null;
                 }
-                if (field.view === 'selection') {
+                if (field.views === 'selection') {
                     data[field.name] = field.value.value;
                 } else {
                     data[field.name] = field.value;

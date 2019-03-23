@@ -30,6 +30,7 @@ import javax.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -43,18 +44,18 @@ public class JpaFilterUtils {
 			return null;
 		}
 		Statement statement = new Statement();
-		String where = "";
+		StringBuilder where = new StringBuilder();
 		if (!CollectionUtils.isEmpty(filterRequest.getAndFilters())) {
 			Statement filter = filter(filterRequest.getAndFilters(), true);
-			where += filter.getExpression();
+			where.append(filter.getExpression());
 			statement.addArgs(filter.getArgs());
 		}
 		if (!CollectionUtils.isEmpty(filterRequest.getOrFilters())) {
-			if (!"".equals(where)) {
-				where += " OR ";
+			if (where.length() != 0) {
+				where.append(" OR ");
 			}
 			Statement filter = filter(filterRequest.getOrFilters(), false);
-			where += filter.getExpression();
+			where.append(filter.getExpression());
 			statement.addArgs(filter.getArgs());
 		}
 		statement.setExpression(where);
@@ -62,17 +63,23 @@ public class JpaFilterUtils {
 	}
 	
 	public static String orderby(FilterSort filterSort) {
-		String sort = "";
+		StringBuilder sort = new StringBuilder();
 		if (filterSort != null) {
 			Map<String, String> sortMap = filterSort.getSortMap();
-			for (Entry<String, String> entry : sortMap.entrySet()) {
-				if (!"".equals(sort)) {
-					sort += ", ";
+			if (CollectionUtils.isEmpty(sortMap)) {
+				sort.append(Constant.ID);
+			} else {
+				for (Entry<String, String> entry : sortMap.entrySet()) {
+					if (sort.length() != 0) {
+						sort.append(", ");
+					}
+					sort.append(entry.getKey()).append(" ").append(entry.getValue().toUpperCase());
 				}
-				sort += "`" + entry.getKey() + "` " + entry.getValue().toUpperCase();
 			}
+		} else {
+			sort.append(Constant.ID);
 		}
-		return sort;
+		return sort.toString();
 	}
 	
 	public static <T> Specification<T> specification(FilterRequest filterRequest, String... properties) {
@@ -230,26 +237,27 @@ public class JpaFilterUtils {
 	
 	private static Statement filter(List<FilterRequest> filters, boolean and) {
 		Statement statement = new Statement();
-		String sql = "( ";
+		StringBuilder sql = new StringBuilder();
+		sql.append("( ");
 		for (FilterRequest filter : filters) {
-			if (!"( ".equals(sql)) {
+			if (sql.length() != 2) {
 				if (and) {
-					sql += " AND ";
+					sql.append(" AND ");
 				} else {
-					sql += " OR ";
+					sql.append(" OR ");
 				}
 			}
 			if (filter.getClass() == FilterParam.class) {
 				Statement expression = expression((FilterParam)filter);
-				sql += expression.getExpression();
+				sql.append(expression.getExpression());
 				statement.addArgs(expression.getArgs());
 			} else {
 				Statement where = where(filter);
-				sql += where.getExpression();
+				sql.append(where.getExpression());
 				statement.addArgs(where.getArgs());
 			}
 		}
-		sql += " )";
+		sql.append(" )");
 		statement.setExpression(sql);
 		return statement;
 	}
@@ -259,7 +267,7 @@ public class JpaFilterUtils {
 		if (param == null) {
 			return statement;
 		}
-		String expression = "";
+		StringBuilder expression = new StringBuilder();
 		String key = param.getKey();
 		Object value = param.getValue();
 		String operator = param.getOperator();
@@ -268,91 +276,91 @@ public class JpaFilterUtils {
 		if (value != null) {
 			switch (operator) {
 				case LT:
-					expression = "`" + key + "` < ?";
+					expression.append(key).append(" < ?");
 					statement.addArgs(value);
 					break;
 				case GT:
-					expression = "`" + key + "` > ?";
+					expression.append(key).append(" > ?");
 					statement.addArgs(value);
 					break;
 				case LTE:
-					expression = "`" + key + "` <= ?";
+					expression.append(key).append(" <= ?");
 					statement.addArgs(value);
 					break;
 				case GTE:
-					expression = "`" + key + "` >= ?";
+					expression.append(key).append(" >= ?");
 					statement.addArgs(value);
 					break;
 				case REGEX:
-					expression = "`" + key + "` LIKE ?";
+					expression.append(key).append(" LIKE ?");
 					statement.addArgs("%" + value + "%");
 					break;
 				case NE:
-					expression = "`" + key + "` <> ?";
+					expression.append(key).append(" <> ?");
 					statement.addArgs(value);
 					break;
 				case EXISTS:
-					expression = "`" + key + "` IS NOT NULL";
+					expression.append(key).append(" IS NOT NULL");
 					break;
 				case IN:
 				case ALL:
 					if (value.getClass().isArray()) {
-						String in = "";
+						StringBuilder in = new StringBuilder();
 						Object[] arr = (Object[]) value;
 						for (Object val : arr) {
 							statement.addArgs(val);
-							if (!"".equals(in)) {
-								in += ", ";
+							if (in.length() != 0) {
+								in.append(", ");
 							}
-							in += "?";
+							in.append("?");
 						}
-						expression = "`" + key + "` IN (" + in + ")";
+						expression.append(key).append(key).append(" IN (").append(in).append(")");
 					} else if (value instanceof Collection<?>) {
-						String in = "";
+						StringBuilder in = new StringBuilder();
 						Collection<?> col = (Collection<?>) value;
 						for (Object val : col) {
 							statement.addArgs(val);
-							if (!"".equals(in)) {
-								in += ", ";
+							if (in.length() != 0) {
+								in.append(", ");
 							}
-							in += "?";
+							in.append("?");
 						}
-						expression = "`" + key + "` IN (" + in + ")";
+						expression.append(key).append(" IN (").append(in).append(")");
 					} else {
-						expression = "`" + key + "` = ?";
+						expression.append(key).append(" = ?");
 						statement.addArgs(value);
 					}
 					break;
 				case NIN:
 					if (value.getClass().isArray()) {
-						String in = "";
+						StringBuilder in = new StringBuilder();
 						Object[] arr = (Object[]) value;
 						for (Object val : arr) {
 							statement.addArgs(val);
-							if (!"".equals(in)) {
-								in += ", ";
+							if (in.length() != 0) {
+								in.append(", ");
 							}
-							in += "?";
+							in.append("?");
 						}
-						expression = "`" + key + "` NOT IN (" + in + ")";
+						expression.append(key).append(" NOT IN (").append(in).append(")");
 					} else if (value instanceof Collection<?>) {
-						String in = "";
+						StringBuilder in = new StringBuilder();
 						Collection<?> col = (Collection<?>) value;
 						for (Object val : col) {
 							statement.addArgs(val);
-							if (!"".equals(in)) {
-								in += ", ";
+							if (in.length() != 0) {
+								in.append(", ");
 							}
-							in += "?";
+							in.append("?");
 						}
-						expression = "`" + key + "` NOT IN (" + in + ")";
+						expression.append(key).append(" NOT IN (").append(in).append(")");
 					} else {
-						expression = "`" + key + "` <> ?";
+						expression.append(key).append(" <> ?");
 						statement.addArgs(value);
 					}
 					break;
 				default:
-					expression = "`" + key + "` = ?";
+					expression.append(key).append(" = ?");
 					statement.addArgs(value);
 					break;
 			}

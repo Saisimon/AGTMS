@@ -130,7 +130,7 @@ public class ServiceTest {
 		
 		// update
 		Map<String, Object> updateMap = new HashMap<>();
-		updateMap.put("function", 63);
+		updateMap.put("functions", 63);
 		updateMap.put("title", "ccc");
 		templateService.update(newTemplate.getId(), updateMap);
 		
@@ -138,7 +138,7 @@ public class ServiceTest {
 		optional = templateService.findById(newTemplate.getId());
 		Assert.assertTrue(optional.isPresent());
 		newTemplate = optional.get();
-		Assert.assertEquals(63, newTemplate.getFunction().intValue());
+		Assert.assertEquals(63, newTemplate.getFunctions().intValue());
 		Assert.assertEquals("ccc", newTemplate.getTitle());
 		
 		// saveOrUpdate
@@ -430,7 +430,7 @@ public class ServiceTest {
 		Date time = new Date();
 		Template template = new Template();
 		template.setCreateTime(time);
-		template.setFunction(127);
+		template.setFunctions(127);
 		template.setKey("test");
 		template.setNavigationId(-1L);
 		template.setOperatorId(1L);
@@ -456,7 +456,7 @@ public class ServiceTest {
 				field.setRequired(Boolean.FALSE);
 				field.setSorted(Boolean.FALSE);
 				field.setUniqued(Boolean.FALSE);
-				field.setView(Views.TEXT.getView());
+				field.setViews(Views.TEXT.getView());
 				fields.add(field);
 			}
 			column.setFields(fields);
@@ -488,7 +488,7 @@ public class ServiceTest {
 			field.setRequired(Boolean.FALSE);
 			field.setSorted(Boolean.FALSE);
 			field.setUniqued(Boolean.FALSE);
-			field.setView(Views.TEXT.getView());
+			field.setViews(Views.TEXT.getView());
 			fields.add(field);
 			column.setFields(fields);
 			column.setFieldIndex(fields.size());

@@ -24,7 +24,7 @@ public class Field<T> {
 	
 	private String state;
 	
-	private String view;
+	private String views;
 	
 	private String sign;
 	

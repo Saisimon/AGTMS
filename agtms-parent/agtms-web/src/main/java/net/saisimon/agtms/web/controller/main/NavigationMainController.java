@@ -252,11 +252,11 @@ public class NavigationMainController extends MainController {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("icon").label(getMessage("icon")).width(100).view(Views.ICON.getView()).build());
-		columns.add(Column.builder().field("title").label(getMessage("title")).width(200).view(Views.TEXT.getView()).build());
-		columns.add(Column.builder().field("priority").label(getMessage("priority")).type("number").width(100).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("icon").label(getMessage("icon")).width(100).views(Views.ICON.getView()).build());
+		columns.add(Column.builder().field("title").label(getMessage("title")).width(200).views(Views.TEXT.getView()).build());
+		columns.add(Column.builder().field("priority").label(getMessage("priority")).type("number").width(100).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
@@ -280,7 +280,7 @@ public class NavigationMainController extends MainController {
 		List<Option<String>> editFieldOptions = Arrays.asList(parentIdOption, titleOption, iconOption, priorityOption);
 		batchEdit.setEditFieldOptions(editFieldOptions);
 		Map<String, Field<?>> editFields = new HashMap<>();
-		editFields.put("icon", Field.<String>builder().value(Navigation.DEFAULT_ICON).name("icon").required(true).text(getMessage("icon")).type(Classes.STRING.getName()).view("icon").build());
+		editFields.put("icon", Field.<String>builder().value(Navigation.DEFAULT_ICON).name("icon").required(true).text(getMessage("icon")).type(Classes.STRING.getName()).views("icon").build());
 		editFields.put("priority", Field.<Long>builder().value(Navigation.DEFAULT_PRIORITY).name("priority").text(getMessage("priority")).type(Classes.LONG.getName()).build());
 		batchEdit.setEditFields(editFields);
 		return batchEdit;

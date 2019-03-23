@@ -1,5 +1,5 @@
 # 自动生成模板管理系统 (Auto-Generate Template Management System)
-AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系统。
+AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系统，支持 Oracle、Mysql、Sqlserver、Postgresql、Mongodb、REST 等方式获取数据。
 
 ## 项目结构
 ```
@@ -13,7 +13,7 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 │   ├── agtms-api       内部接口类库
 │   ├── agtms-config    配置类库
 │   ├── agtms-core      核心类库
-│   ├── agtms-jpa       JPA 实现支持类库 (默认)
+│   ├── agtms-jpa       JPA 实现支持类库 (默认为 H2，支持 Oracle、Mysql、Sqlserver、Postgresql 数据库)
 │   ├── agtms-mongodb   MongoDB 实现支持类库 (可选)
 │   ├── agtms-redis     Redis 支持类库 (可选)
 │   ├── agtms-remote    远程调用实现支持类库 (可选)

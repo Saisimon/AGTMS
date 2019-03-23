@@ -71,7 +71,7 @@ public class TemplateScanner {
 		}
 		template.setKey(templateInfo.key());
 		template.setNavigationId(-1L);
-		template.setFunction(function);
+		template.setFunctions(function);
 		template.setTitle(templateInfo.title());
 		template.setSource("remote");
 		Map<FieldInfo, Field> fieldInfoMap = new TreeMap<>((f1, f2) -> {
@@ -119,7 +119,7 @@ public class TemplateScanner {
 			templateField.setRequired(fieldInfo.required());
 			templateField.setSorted(fieldInfo.sorted());
 			templateField.setUniqued(fieldInfo.uniqued());
-			templateField.setView(fieldInfo.view().getView());
+			templateField.setViews(fieldInfo.view().getView());
 			if (Views.SELECTION == fieldInfo.view()) {
 				SelectionResolver selectionResolver = new SelectionResolver(fieldInfo.selection());
 				selectionResolverMap.put(fieldInfo.selection().getSimpleName(), selectionResolver);

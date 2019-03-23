@@ -160,25 +160,25 @@
                                 :actions="actions" 
                                 @succeed="searchByFilters" />
                         </span>
-                        <span v-else-if="props.column.view == 'icon'">
+                        <span v-else-if="props.column.views == 'icon'">
                             <icon-cell 
                                 :rowData="props.formattedRow" 
                                 :field="props.column.field" 
                                 :index="props.row.originalIndex"  />
                         </span>
-                        <span v-else-if="props.column.view == 'link'">
+                        <span v-else-if="props.column.views == 'link'">
                             <link-cell 
                                 :rowData="props.formattedRow" 
                                 :field="props.column.field" 
                                 :index="props.row.originalIndex"  />
                         </span>
-                        <span v-else-if="props.column.view == 'image'">
+                        <span v-else-if="props.column.views == 'image'">
                             <image-cell 
                                 :rowData="props.formattedRow" 
                                 :field="props.column.field" 
                                 :index="props.row.originalIndex"  />
                         </span>
-                        <span v-else-if="props.column.view == 'html'">
+                        <span v-else-if="props.column.views == 'html'">
                             <html-cell 
                                 :rowData="props.formattedRow" 
                                 :field="props.column.field" 

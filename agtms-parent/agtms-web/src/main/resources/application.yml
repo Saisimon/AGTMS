@@ -7,6 +7,11 @@ spring:
   jpa:
     show-sql: true
     generate-ddl: true
+  datasource:
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 100
+      max-lifetime: 1800000
 extra:
   class:
     path: /tmp/classes
@@ -14,3 +19,6 @@ extra:
     task: 5
     export: 65535
     import: 65535
+logging:
+  level:
+    net.saisimon: DEBUG

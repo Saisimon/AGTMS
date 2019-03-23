@@ -161,12 +161,12 @@ public class TemplateMainController extends MainController {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("navigationName").label(getMessage("navigation")).view(Views.TEXT.getView()).width(100).build());
-		columns.add(Column.builder().field("title").label(getMessage("title")).view(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("columns").label(getMessage("column.name")).view(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("functions").label(getMessage("functions")).view(Views.TEXT.getView()).width(300).build());
-		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").view(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").view(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("navigationName").label(getMessage("navigation")).views(Views.TEXT.getView()).width(100).build());
+		columns.add(Column.builder().field("title").label(getMessage("title")).views(Views.TEXT.getView()).width(200).build());
+		columns.add(Column.builder().field("columns").label(getMessage("column.name")).views(Views.TEXT.getView()).width(200).build());
+		columns.add(Column.builder().field("functions").label(getMessage("functions")).views(Views.TEXT.getView()).width(300).build());
+		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
@@ -229,7 +229,7 @@ public class TemplateMainController extends MainController {
 		templateInfo.setColumns(template.getColumns().stream().sorted((c1, c2) -> {
 			return c1.getOrdered().compareTo(c2.getOrdered());
 		}).map(TemplateColumn::getTitle).collect(Collectors.joining(", ")));
-		if (template.getFunction() != null && template.getFunction() != 0) {
+		if (template.getFunctions() != null && template.getFunctions() != 0) {
 			List<String> funcs = TemplateUtils.getFunctions(template);
 			String functions = funcs.stream().map(func -> {
 				return getMessage(SystemUtils.humpToCode(func, "."));

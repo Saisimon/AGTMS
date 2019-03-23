@@ -134,8 +134,8 @@ public class NavigationEditController extends EditController<Navigation> {
 	protected List<Field<?>> fields(Navigation navigation, Object key) {
 		List<Field<?>> fields = new ArrayList<>();
 		List<Option<Long>> options = Select.buildOptions(navigationSelection.selectWithParent(navigation == null ? null : navigation.getId()));
-		Field<Option<Long>> parentIdField = Field.<Option<Long>>builder().name("parentId").text(getMessage("parent.navigation")).required(true).view(Views.SELECTION.getView()).options(options).build();
-		Field<String> iconField = Field.<String>builder().name("icon").text(getMessage("icon")).type(Classes.STRING.getName()).required(true).view(Views.ICON.getView()).build();
+		Field<Option<Long>> parentIdField = Field.<Option<Long>>builder().name("parentId").text(getMessage("parent.navigation")).required(true).views(Views.SELECTION.getView()).options(options).build();
+		Field<String> iconField = Field.<String>builder().name("icon").text(getMessage("icon")).type(Classes.STRING.getName()).required(true).views(Views.ICON.getView()).build();
 		Field<String> titleField = Field.<String>builder().name("title").text(getMessage("title")).type(Classes.STRING.getName()).required(true).build();
 		Field<Long> priorityField = Field.<Long>builder().name("priority").text(getMessage("priority")).type(Classes.LONG.getName()).build();
 		if (navigation != null) {

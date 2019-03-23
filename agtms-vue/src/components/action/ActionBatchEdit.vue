@@ -25,10 +25,10 @@
                     </b-col>
                 </b-row>
                 <template v-for="(editFieldSelect, index) in editFieldSelects" >
-                    <select-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-if="batchEdit.editFields[editFieldSelect.value].view == 'selection'" />
+                    <select-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-if="batchEdit.editFields[editFieldSelect.value].views == 'selection'" />
                     <date-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].type == 'date'" />
-                    <textarea-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].view == 'textarea'" />
-                    <icon-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].view == 'icon'" />
+                    <textarea-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'textarea'" />
+                    <icon-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'icon'" />
                     <text-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else />
                 </template>
                 <b-row class="mb-3" v-if="editFieldSelects.length > 0">
@@ -89,7 +89,7 @@ export default {
                     field.state = false;
                 } else {
                     field.state = null;
-                    if (field.view === 'selection') {
+                    if (field.views === 'selection') {
                         data[key] = value.value;
                     } else {
                         data[key] = value;

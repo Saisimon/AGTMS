@@ -5,9 +5,9 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+import net.saisimon.agtms.jpa.dialect.Dialect;
+import net.saisimon.agtms.jpa.dialect.H2Dialect;
 import net.saisimon.agtms.jpa.repository.base.BaseJpaRepositoryFactoryBean;
-import net.saisimon.agtms.jpa.service.ddl.DdlService;
-import net.saisimon.agtms.jpa.service.ddl.H2DdlService;
 
 @TestConfiguration
 @EnableJpaRepositories(basePackages="net.saisimon.agtms.jpa.repository", repositoryFactoryBeanClass=BaseJpaRepositoryFactoryBean.class)
@@ -15,8 +15,8 @@ import net.saisimon.agtms.jpa.service.ddl.H2DdlService;
 public class JpaTestConfig {
 	
 	@Bean
-	public DdlService h2DdlService() {
-		return new H2DdlService();
+	public Dialect h2DdlService() {
+		return new H2Dialect();
 	}
 	
 }

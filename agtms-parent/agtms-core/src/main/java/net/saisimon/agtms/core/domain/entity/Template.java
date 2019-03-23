@@ -51,7 +51,7 @@ public class Template implements Cloneable {
 	 * 模板支持的功能
 	 */
 	@Column
-	private Integer function;
+	private Integer functions;
 	
 	/**
 	 * 模板下属的列信息
@@ -185,7 +185,7 @@ public class Template implements Cloneable {
 		 * @see net.saisimon.agtms.core.enums.Views
 		 */
 		@Column(length=20)
-		private String view;
+		private String views;
 		
 		/**
 		 * 下拉列表标识

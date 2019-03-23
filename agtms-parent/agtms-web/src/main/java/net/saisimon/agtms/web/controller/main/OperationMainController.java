@@ -127,10 +127,10 @@ public class OperationMainController extends MainController {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("operateContent").label(getMessage("operate.content")).view(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("operateType").label(getMessage("operate.type")).view(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("operateTime").label(getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).view(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("operateIp").label(getMessage("operate.ip")).view(Views.TEXT.getView()).width(200).build());
+		columns.add(Column.builder().field("operateContent").label(getMessage("operate.content")).views(Views.TEXT.getView()).width(200).build());
+		columns.add(Column.builder().field("operateType").label(getMessage("operate.type")).views(Views.TEXT.getView()).width(200).build());
+		columns.add(Column.builder().field("operateTime").label(getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operateIp").label(getMessage("operate.ip")).views(Views.TEXT.getView()).width(200).build());
 		return columns;
 	}
 

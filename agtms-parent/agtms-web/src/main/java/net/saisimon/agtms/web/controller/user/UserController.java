@@ -160,7 +160,7 @@ public class UserController {
 				}
 				for (TemplateColumn templateColumn : template.getColumns()) {
 					for (TemplateField templateField : templateColumn.getFields()) {
-						if (Views.SELECTION.getView().equals(templateField.getView())) {
+						if (Views.SELECTION.getView().equals(templateField.getViews())) {
 							String selectionSign = templateField.selectionSign(service);
 							Selection selection = new Selection();
 							selection.setService(service);

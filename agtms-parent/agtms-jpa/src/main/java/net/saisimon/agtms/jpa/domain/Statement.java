@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
-import net.saisimon.agtms.core.util.StringUtils;
 
 @Data
 public class Statement {
 	
-	private String expression;
+	private StringBuilder expression;
 	
 	private List<Object> args;
 	
@@ -40,7 +39,7 @@ public class Statement {
 	}
 	
 	public boolean isNotEmpty() {
-		return StringUtils.isNotEmpty(expression);
+		return expression != null && expression.length() > 0;
 	}
 	
 }

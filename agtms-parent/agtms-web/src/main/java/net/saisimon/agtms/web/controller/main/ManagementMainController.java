@@ -373,7 +373,7 @@ public class ManagementMainController extends MainController {
 		if (template.getId() != null) {
 			header.setEditUrl("/template/edit?id=" + template.getId());
 		}
-		if (Functions.CREATE.getCode().equals(template.getFunction() & Functions.CREATE.getCode())) {
+		if (Functions.CREATE.getCode().equals(template.getFunctions() & Functions.CREATE.getCode())) {
 			String sign = template.sign();
 			if (sign != null) {
 				header.setCreateUrl("/management/edit/" + sign);
@@ -423,7 +423,7 @@ public class ManagementMainController extends MainController {
 				String fieldName = column.getColumnName() + field.getFieldName();
 				keyValues.add(fieldName);
 				keyTexts.add(field.getFieldTitle());
-				if (Views.SELECTION.getView().equals(field.getView())) {
+				if (Views.SELECTION.getView().equals(field.getViews())) {
 					String selectionSign = field.selectionSign(template.getService());
 					if (selectionSign == null) {
 						continue;
@@ -515,7 +515,7 @@ public class ManagementMainController extends MainController {
 			Field<Object> field = Field.builder()
 					.name(fieldName)
 					.text(templateField.getFieldTitle())
-					.view(templateField.getView())
+					.views(templateField.getViews())
 					.type(templateField.getFieldType())
 					.sign(templateField.selectionSign(template.getService()))
 					.searchable(true)
@@ -586,7 +586,7 @@ public class ManagementMainController extends MainController {
 						.label(templateField.getFieldTitle())
 //						.width(templateField.getWidth())
 						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
-						.view(templateField.getView())
+						.views(templateField.getViews())
 						.build();
 				if (Classes.LONG.getName().equals(templateField.getFieldType())) {
 					column.setType("number");

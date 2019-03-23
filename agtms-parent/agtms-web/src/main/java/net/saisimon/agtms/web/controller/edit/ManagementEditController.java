@@ -184,14 +184,14 @@ public class ManagementEditController extends EditController<Domain> {
 						.text(templateField.getFieldTitle())
 						.type(templateField.getFieldType())
 						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
-						.view(templateField.getView())
+						.views(templateField.getViews())
 						.searchable(true)
 						.build();
 				if (templateField.getRequired()) {
 					field.setRequired(true);
 				}
 				Object value = domain == null ? null : domain.getField(fieldName);
-				if (Views.SELECTION.getView().equals(templateField.getView())) {
+				if (Views.SELECTION.getView().equals(templateField.getViews())) {
 					String selectionSign = templateField.selectionSign(template.getService());
 					field.setSign(selectionSign);
 					List<Option<Object>> selectionOptions = SelectionUtils.getSelectionOptions(selectionSign, null, userId);

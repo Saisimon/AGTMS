@@ -258,7 +258,7 @@ public class TemplateEditController extends BaseController {
 				subColumns.add(Column.builder().field(field.getFieldName()).ordered(field.getOrdered()).build());
 				fieldNameRow.put(field.getFieldName(), new Editor<>(field.getFieldTitle()));
 				fieldTypeRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getClassOptions(), field.getFieldType())));
-				showTypeRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getViewOptions(), field.getView())));
+				showTypeRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getViewOptions(), field.getViews())));
 				showTypeRow.put("selection-" + field.getFieldName(), new Editor<>(Select.getOption(grid.getSelectionOptions(), field.selectionSign(service))));
 				filterRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getFilter() ? 1 : 0)));
 				sortedRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getSorted() ? 1 : 0)));

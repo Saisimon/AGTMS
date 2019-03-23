@@ -179,19 +179,19 @@
                                 :actions="actions" 
                                 @succeed="searchByFilters" />
                         </span>
-                        <span v-else-if="props.column.view == 'icon'">
+                        <span v-else-if="props.column.views == 'icon'">
                             <icon-cell 
                                 :rowData="props.formattedRow" 
                                 :field="props.column.field" 
                                 :index="props.row.originalIndex"  />
                         </span>
-                        <span v-else-if="props.column.view == 'link'">
+                        <span v-else-if="props.column.views == 'link'">
                             <link-cell 
                                 :rowData="props.formattedRow" 
                                 :field="props.column.field" 
                                 :index="props.row.originalIndex"  />
                         </span>
-                        <span v-else-if="props.column.view == 'image'">
+                        <span v-else-if="props.column.views == 'image'">
                             <image-cell 
                                 :rowData="props.formattedRow" 
                                 :field="props.column.field" 
@@ -505,12 +505,12 @@ export default {
                     var fieldColumn = fieldColumns[j];
                     var fieldName = column.field + fieldColumn.field
                     var fieldTitle = fieldRows[0][fieldColumn.field].value;
-                    var view = fieldRows[2][fieldColumn.field].value.value;
+                    var views = fieldRows[2][fieldColumn.field].value.value;
                     var fieldType = fieldRows[1][fieldColumn.field].value.value;
                     var exampleColumn = {
                         field: fieldName,
                         label: fieldTitle,
-                        view: view,
+                        views: views,
                         sortable: false
                     };
                     var exampleValue = '';
@@ -520,11 +520,11 @@ export default {
                         exampleValue = 999
                     } else if (fieldType == 'double') {
                         exampleValue = 999.99
-                    } else if (view == 'icon') {
+                    } else if (views == 'icon') {
                         exampleValue = 'list'
-                    } else if (view == 'link') {
+                    } else if (views == 'link') {
                         exampleValue = 'https://github.com/Saisimon/AGTMS'
-                    } else if (view == 'image') {
+                    } else if (views == 'image') {
                         exampleValue = '/img/preview.jpg'
                     } else {
                         exampleValue = this.$t('preview');
@@ -554,7 +554,7 @@ export default {
             for (var i = 0; i < functions.length; i++) {
                 func += new Number(functions[i].value);
             }
-            template['function'] = func;
+            template['functions'] = func;
             template['columnIndex'] = this.templateGrid.table.idx;
             var templateColumns = new Array(this.columns.length - 1);
             var columnNameRow = this.rows[0];
@@ -579,7 +579,7 @@ export default {
                         fieldName: fieldColumn.field,
                         fieldTitle: fieldRows[0][fieldColumn.field].value,
                         fieldType: fieldRows[1][fieldColumn.field].value.value,
-                        view: fieldRows[2][fieldColumn.field].value.value,
+                        views: fieldRows[2][fieldColumn.field].value.value,
                         filter: fieldRows[3][fieldColumn.field].value.value == '1' ? true : false,
                         sorted: fieldRows[4][fieldColumn.field].value.value == '1' ? true : false,
                         required: fieldRows[5][fieldColumn.field].value.value == '1' ? true : false,
@@ -589,7 +589,7 @@ export default {
                         // width: fieldRows[9][fieldColumn.field].value,
                         ordered: fieldColumn.ordered,
                     };
-                    if (templateField['view'] === 'selection') {
+                    if (templateField['views'] === 'selection') {
                         templateField['selection'] = fieldRows[2]['selection-' + fieldColumn.field].value.value;
                     }
                     templateFields[j] = templateField;

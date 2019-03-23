@@ -92,7 +92,7 @@ public class SelectionUtils {
 				if (value == null) {
 					continue;
 				}
-				if (Views.SELECTION.getView().equals(templateField.getView())) {
+				if (Views.SELECTION.getView().equals(templateField.getViews())) {
 					Set<String> values = valueMap.get(fieldName);
 					if (values == null) {
 						values = new HashSet<>();

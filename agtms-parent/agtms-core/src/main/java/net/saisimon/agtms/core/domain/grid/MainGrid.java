@@ -58,7 +58,7 @@ public class MainGrid {
 		
 		private Integer width;
 		
-		private String view;
+		private String views;
 		
 		private Integer ordered;
 		
