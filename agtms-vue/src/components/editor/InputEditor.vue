@@ -1,7 +1,7 @@
 <template>
-    <div class="input-editor" @click="show=true">
+    <div class="input-editor" :class="editor.className" @click="show=true">
         <b-form-input 
-            :class="'border-0 editor-input'"
+            :class="'border-0 editor-input ' + editor.className + '-input'"
             size="sm" 
             v-model="editor.value" 
             v-if="show" 

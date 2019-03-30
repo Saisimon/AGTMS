@@ -6,13 +6,13 @@ import static net.saisimon.agtms.core.constant.Constant.Operator.OR;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.util.CollectionUtils;
 
+import cn.hutool.core.map.MapUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -92,9 +92,9 @@ public class FilterRequest implements Serializable {
 	}
 	
 	public Map<String, Object> toMap() {
-		Map<String, Object> filterMap = new HashMap<>();
+		Map<String, Object> filterMap = MapUtil.newHashMap(2);
 		if (andFilters != null) {
-			List<Map<String, Object>> andFilterList = new ArrayList<>();
+			List<Map<String, Object>> andFilterList = new ArrayList<>(andFilters.size());
 			for (FilterRequest filterRequest : andFilters) {
 				if (filterRequest instanceof FilterParam) {
 					andFilterList.add(((FilterParam) filterRequest).toMap());
@@ -105,7 +105,7 @@ public class FilterRequest implements Serializable {
 			filterMap.put("andFilters", andFilterList);
 		}
 		if (orFilters != null) {
-			List<Map<String, Object>> orFilterList = new ArrayList<>();
+			List<Map<String, Object>> orFilterList = new ArrayList<>(orFilters.size());
 			for (FilterRequest filterRequest : orFilters) {
 				if (filterRequest instanceof FilterParam) {
 					orFilterList.add(((FilterParam) filterRequest).toMap());

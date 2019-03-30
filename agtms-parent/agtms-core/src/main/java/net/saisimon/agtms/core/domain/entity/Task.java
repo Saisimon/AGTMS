@@ -1,5 +1,6 @@
 package net.saisimon.agtms.core.domain.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -23,8 +24,10 @@ import lombok.Data;
 @Entity
 @Table(name="agtms_task")
 @Document(collection="agtms_task")
-public class Task {
+public class Task implements Serializable {
 	
+	private static final long serialVersionUID = 3283171487096285213L;
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
@@ -73,5 +76,11 @@ public class Task {
 	 */
 	@Column
 	private Long operatorId;
+	
+	@Column(length=50)
+	private String ip;
+	
+	@Column
+	private Integer port;
 	
 }

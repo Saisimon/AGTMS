@@ -12,7 +12,7 @@ import net.saisimon.agtms.core.domain.grid.Field;
  * @author saisimon
  *
  */
-public abstract class EditController<T> extends BaseController {
+public abstract class AbstractEditController<T> extends BaseController {
 	
 	/**
 	 * 前端编辑相关信息的框架

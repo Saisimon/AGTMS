@@ -1,6 +1,8 @@
 package net.saisimon.agtms.core.domain.entity;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -11,13 +13,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 模板实体对象
@@ -25,12 +31,15 @@ import lombok.Data;
  * @author saisimon
  *
  */
-@Data
+@Setter
+@Getter
 @Entity
 @Table(name="agtms_template")
 @Document(collection="agtms_template")
-public class Template implements Cloneable {
+public class Template implements Cloneable, Serializable {
 	
+	private static final long serialVersionUID = 2550898797755828181L;
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
@@ -56,9 +65,8 @@ public class Template implements Cloneable {
 	/**
 	 * 模板下属的列信息
 	 */
-	@OneToMany(targetEntity=TemplateColumn.class, fetch=FetchType.EAGER, orphanRemoval=true, cascade=CascadeType.ALL)
-	@JoinColumn(name="template_id")
-	private Set<TemplateColumn> columns;
+	@OneToMany(targetEntity=TemplateColumn.class, cascade=CascadeType.ALL, mappedBy="template", orphanRemoval=true)
+	private Set<TemplateColumn> columns = new HashSet<>();
 	
 	/**
 	 * 模板下属的列下一个下标
@@ -91,10 +99,40 @@ public class Template implements Cloneable {
 	private String source;
 	
 	@Transient
+	@javax.persistence.Transient
 	private String service;
 	
 	@Transient
+	@javax.persistence.Transient
 	private String key;
+	
+	public void addColumn(TemplateColumn column) {
+		if (column == null) {
+			return;
+		}
+		this.columns.add(column);
+		column.setTemplate(this);
+	}
+	
+	public void removeColumn(TemplateColumn column) {
+		if (column == null) {
+			return;
+		}
+		this.columns.remove(column);
+		column.setTemplate(null);
+	}
+	
+	public void setColumns(Set<TemplateColumn> columns) {
+		if (columns == null) {
+			return;
+		}
+		if (this.columns == null) {
+			this.columns = new HashSet<>();
+		} else {
+			this.columns.clear();
+		}
+		this.columns.addAll(columns);
+	}
 	
 	/**
 	 * 模板列实体对象
@@ -102,11 +140,14 @@ public class Template implements Cloneable {
 	 * @author saisimon
 	 *
 	 */
-	@Data
+	@Setter
+	@Getter
 	@Entity
 	@Table(name="agtms_template_column")
-	public static class TemplateColumn implements Cloneable {
+	public static class TemplateColumn implements Cloneable, Serializable {
 		
+		private static final long serialVersionUID = 2196263141511063585L;
+
 		@Id
 		@GeneratedValue(strategy=GenerationType.IDENTITY)
 		private Long id;
@@ -126,9 +167,8 @@ public class Template implements Cloneable {
 		/**
 		 * 列下属的属性信息
 		 */
-		@OneToMany(targetEntity=TemplateField.class, fetch=FetchType.EAGER, orphanRemoval=true, cascade=CascadeType.ALL)
-		@JoinColumn(name="template_column_id")
-		private Set<TemplateField> fields;
+		@OneToMany(targetEntity=TemplateField.class, cascade=CascadeType.ALL, mappedBy="templateColumn", orphanRemoval=true)
+		private Set<TemplateField> fields = new HashSet<>();
 		
 		/**
 		 * 列顺序值
@@ -142,6 +182,70 @@ public class Template implements Cloneable {
 		@Column
 		private Integer fieldIndex;
 		
+		@Transient
+		@JsonIgnore
+		@ManyToOne(fetch = FetchType.LAZY)
+		@JoinColumn(name = "template_id", nullable=false)
+		private Template template;
+		
+		public void setFields(Set<TemplateField> fields) {
+			if (fields == null) {
+				return;
+			}
+			if (this.fields == null) {
+				this.fields = new HashSet<>();
+			} else {
+				this.fields.clear();
+			}
+			this.fields.addAll(fields);
+		}
+		
+		public void addField(TemplateField field) {
+			if (field == null) {
+				return;
+			}
+			this.fields.add(field);
+			field.setTemplateColumn(this);
+		}
+
+		public void removeField(TemplateField field) {
+			if (field == null) {
+				return;
+			}
+			fields.remove(field);
+			field.setTemplateColumn(null);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			TemplateColumn other = (TemplateColumn) obj;
+			if (columnName == null) {
+				if (other.columnName != null) {
+					return false;
+				}
+			} else if (!columnName.equals(other.columnName)) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((columnName == null) ? 0 : columnName.hashCode());
+			return result;
+		}
+		
 	}
 	
 	/**
@@ -150,11 +254,14 @@ public class Template implements Cloneable {
 	 * @author saisimon
 	 *
 	 */
-	@Data
+	@Setter
+	@Getter
 	@Entity
 	@Table(name="agtms_template_field")
-	public static class TemplateField implements Cloneable {
+	public static class TemplateField implements Cloneable, Serializable {
 		
+		private static final long serialVersionUID = 2985059236957444563L;
+
 		@Id
 		@GeneratedValue(strategy=GenerationType.IDENTITY)
 		private Long id;
@@ -230,16 +337,16 @@ public class Template implements Cloneable {
 		private String defaultValue;
 		
 		/**
-		 * 宽度
-		 */
-//		@Column
-//		private Integer width;
-		
-		/**
 		 * 属性顺序值
 		 */
 		@Column
 		private Integer ordered;
+		
+		@Transient
+		@JsonIgnore
+		@ManyToOne(fetch = FetchType.LAZY)
+		@JoinColumn(name = "template_column_id", nullable=false)
+		private TemplateColumn templateColumn;
 		
 		/**
 		 * 模板属性下拉列表的唯一标识
@@ -255,6 +362,36 @@ public class Template implements Cloneable {
 			} else {
 				return selection;
 			}
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			TemplateField other = (TemplateField) obj;
+			if (fieldName == null) {
+				if (other.fieldName != null) {
+					return false;
+				}
+			} else if (!fieldName.equals(other.fieldName)) {
+				return false;
+			}
+			return true;
+		}
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());
+			return result;
 		}
 		
 	}

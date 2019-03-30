@@ -41,7 +41,8 @@ public final class SystemUtils {
 	private static final Pattern EMAIL_PATTERN = Pattern.compile("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?");
 	private static final Pattern URL_PATTERN = Pattern.compile("^((https|http|ftp|rtsp|mms)?://)?(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?(([0-9]{1,3}\\.){3}[0-9]{1,3}|([0-9a-z_!~*'()-]+\\.)*([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\.[a-z]{2,6})(:[0-9]{1,4})?((/?)|(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$");
 	private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
-	private static final Map<Long, Future<?>> taskFutureMap = new ConcurrentHashMap<>();
+	
+	private static final Map<Long, Future<?>> TASK_FUTURE_MAP = new ConcurrentHashMap<>();
 	
 	private SystemUtils() {
 		throw new IllegalAccessError();
@@ -277,11 +278,11 @@ public final class SystemUtils {
 	}
 	
 	public static void putTaskFuture(Long taskId, Future<?> future) {
-		taskFutureMap.put(taskId, future);
+		TASK_FUTURE_MAP.put(taskId, future);
 	}
 	
 	public static Future<?> removeTaskFuture(Long taskId) {
-		return taskFutureMap.remove(taskId);
+		return TASK_FUTURE_MAP.remove(taskId);
 	}
 	
 	private static JavaType parse(Class<?> targetClass, Class<?>... genericClasses) {

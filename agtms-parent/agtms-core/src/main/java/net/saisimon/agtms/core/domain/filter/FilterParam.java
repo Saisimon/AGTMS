@@ -3,12 +3,12 @@ package net.saisimon.agtms.core.domain.filter;
 import static net.saisimon.agtms.core.constant.Constant.Operator.EQ;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.beanutils.BeanUtils;
 
+import cn.hutool.core.map.MapUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -85,7 +85,7 @@ public class FilterParam extends FilterRequest {
 	}
 	
 	public Map<String, Object> toMap() {
-		Map<String, Object> filterMap = new HashMap<>();
+		Map<String, Object> filterMap = MapUtil.newHashMap(4);
 		filterMap.put("key", key);
 		filterMap.put("type", type);
 		filterMap.put("operator", operator);

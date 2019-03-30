@@ -14,7 +14,7 @@ public class ClassSelection extends AbstractSelection<String> {
 	@Override
 	public LinkedHashMap<String, String> select() {
 		Classes[] cs = Classes.values();
-		LinkedHashMap<String, String> classMap = new LinkedHashMap<>(cs.length);
+		LinkedHashMap<String, String> classMap = new LinkedHashMap<>(cs.length, 1.0F);
 		for (Classes c : cs) {
 			classMap.put(c.getName(), getMessage(StringUtils.uncapitalize(c.name().toLowerCase())));
 		}

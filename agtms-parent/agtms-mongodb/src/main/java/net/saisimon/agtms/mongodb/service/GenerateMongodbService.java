@@ -33,11 +33,11 @@ public class GenerateMongodbService implements GenerateService {
 	}
 	
 	@Override
-	public Domain saveDomain(Domain domain) {
+	public Domain saveDomain(Domain domain, Long operatorId) {
 		Assert.notNull(domain, "domain can not be null");
 		Long id = sequenceService.nextId(TemplateUtils.getTableName(template()));
 		domain.setField(Constant.ID, id, Long.class);
-		return GenerateService.super.saveDomain(domain);
+		return GenerateService.super.saveDomain(domain, operatorId);
 	}
 
 }

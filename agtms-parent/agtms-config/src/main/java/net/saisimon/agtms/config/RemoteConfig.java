@@ -17,6 +17,11 @@ import net.saisimon.agtms.remote.service.RemoteApiService;
 @ConditionalOnClass(RemoteApiService.class)
 public class RemoteConfig {
 	
+	/**
+	 * 远程服务接口
+	 * 
+	 * @return 远程服务接口
+	 */
 	@Bean
 	public RemoteService remoteService() {
 		return new RemoteApiService();

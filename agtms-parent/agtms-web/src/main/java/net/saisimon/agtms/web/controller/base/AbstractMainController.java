@@ -41,7 +41,7 @@ import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
  *
  */
 @Slf4j
-public abstract class MainController extends BaseController {
+public abstract class AbstractMainController extends BaseController {
 	
 	/**
 	 * 前端头信息配置

@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -24,7 +24,6 @@ import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Template;
-import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -44,12 +43,12 @@ import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.TemplateService;
-import net.saisimon.agtms.core.util.SystemUtils;
-import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
+import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
-import net.saisimon.agtms.web.controller.base.MainController;
+import net.saisimon.agtms.web.controller.base.AbstractMainController;
 import net.saisimon.agtms.web.dto.resp.TemplateInfo;
 import net.saisimon.agtms.web.selection.NavigationSelection;
 
@@ -62,7 +61,7 @@ import net.saisimon.agtms.web.selection.NavigationSelection;
 @RestController
 @RequestMapping("/template/main")
 @ControllerInfo("template.management")
-public class TemplateMainController extends MainController {
+public class TemplateMainController extends AbstractMainController {
 	
 	public static final String TEMPLATE = "template";
 	private static final String TEMPLATE_FILTERS = TEMPLATE + "_filters";
@@ -94,7 +93,7 @@ public class TemplateMainController extends MainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, TEMPLATE_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getUserInfo().getUserId());
+		filter.and(Constant.OPERATORID, AuthUtils.getTokenInfo().getUserId());
 		FilterPageable pageable = FilterPageable.build(param);
 		TemplateService templateService = TemplateServiceFactory.get();
 		Page<Template> page = templateService.findPage(filter, pageable);
@@ -112,10 +111,10 @@ public class TemplateMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(id, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -127,13 +126,13 @@ public class TemplateMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.BATCH_REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody List<Long> ids) {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		TemplateService templateService = TemplateServiceFactory.get();
 		for (Long id : ids) {
 			Template template = TemplateUtils.getTemplate(id, userId);
@@ -163,7 +162,6 @@ public class TemplateMainController extends MainController {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("navigationName").label(getMessage("navigation")).views(Views.TEXT.getView()).width(100).build());
 		columns.add(Column.builder().field("title").label(getMessage("title")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("columns").label(getMessage("column.name")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("functions").label(getMessage("functions")).views(Views.TEXT.getView()).width(300).build());
 		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
@@ -226,9 +224,6 @@ public class TemplateMainController extends MainController {
 		TemplateInfo templateInfo = new TemplateInfo();
 		templateInfo.setId(template.getId());
 		templateInfo.setTitle(template.getTitle());
-		templateInfo.setColumns(template.getColumns().stream().sorted((c1, c2) -> {
-			return c1.getOrdered().compareTo(c2.getOrdered());
-		}).map(TemplateColumn::getTitle).collect(Collectors.joining(", ")));
 		if (template.getFunctions() != null && template.getFunctions() != 0) {
 			List<String> funcs = TemplateUtils.getFunctions(template);
 			String functions = funcs.stream().map(func -> {

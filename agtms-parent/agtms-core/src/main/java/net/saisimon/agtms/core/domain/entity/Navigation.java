@@ -1,5 +1,6 @@
 package net.saisimon.agtms.core.domain.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -23,8 +24,9 @@ import lombok.Data;
 @Entity
 @Table(name="agtms_navigation")
 @Document(collection="agtms_navigation")
-public class Navigation {
+public class Navigation implements Serializable {
 	
+	private static final long serialVersionUID = 67267818886928615L;
 	/**
 	 * 导航默认图标
 	 */

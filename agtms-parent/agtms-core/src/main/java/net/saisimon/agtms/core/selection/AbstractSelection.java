@@ -2,6 +2,7 @@ package net.saisimon.agtms.core.selection;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -24,11 +25,11 @@ public abstract class AbstractSelection<T> implements Selection<T> {
 	}
 
 	@Override
-	public LinkedHashMap<T, String> selectValue(List<T> values) {
+	public Map<T, String> selectValue(List<T> values) {
 		if (CollectionUtils.isEmpty(values)) {
 			return new LinkedHashMap<>();
 		}
-		LinkedHashMap<T, String> selectMap = select();
+		Map<T, String> selectMap = select();
 		selectMap.entrySet().removeIf(e -> {
 			for (T key : values) {
 				if (key == null) {
@@ -44,11 +45,11 @@ public abstract class AbstractSelection<T> implements Selection<T> {
 	}
 
 	@Override
-	public LinkedHashMap<T, String> selectText(List<String> texts) {
+	public Map<T, String> selectText(List<String> texts) {
 		if (CollectionUtils.isEmpty(texts)) {
 			return new LinkedHashMap<>();
 		}
-		LinkedHashMap<T, String> selectMap = select();
+		Map<T, String> selectMap = select();
 		selectMap.entrySet().removeIf(e -> {
 			return !texts.contains(e.getValue());
 		});
@@ -56,8 +57,8 @@ public abstract class AbstractSelection<T> implements Selection<T> {
 	}
 
 	@Override
-	public LinkedHashMap<T, String> selectFuzzyText(String text) {
-		LinkedHashMap<T, String> selectMap = select();
+	public Map<T, String> selectFuzzyText(String text) {
+		Map<T, String> selectMap = select();
 		selectMap.entrySet().removeIf(e -> {
 			return !e.getValue().contains(text);
 		});

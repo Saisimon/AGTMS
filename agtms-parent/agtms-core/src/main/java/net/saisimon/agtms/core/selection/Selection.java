@@ -1,7 +1,7 @@
 package net.saisimon.agtms.core.selection;
 
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 下拉选择接口
@@ -11,12 +11,12 @@ import java.util.List;
  */
 public interface Selection<T> {
 	
-	LinkedHashMap<T, String> select();
+	Map<T, String> select();
 	
-	LinkedHashMap<T, String> selectValue(List<T> values);
+	Map<T, String> selectValue(List<T> values);
 	
-	LinkedHashMap<T, String> selectText(List<String> texts);
+	Map<T, String> selectText(List<String> texts);
 	
-	LinkedHashMap<T, String> selectFuzzyText(String text);
+	Map<T, String> selectFuzzyText(String text);
 	
 }

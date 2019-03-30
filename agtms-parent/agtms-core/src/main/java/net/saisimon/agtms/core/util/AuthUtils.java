@@ -10,10 +10,11 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
-import net.saisimon.agtms.core.cache.Cache;
-import net.saisimon.agtms.core.dto.UserInfo;
-import net.saisimon.agtms.core.factory.CacheFactory;
+import net.saisimon.agtms.core.domain.entity.User;
+import net.saisimon.agtms.core.dto.TokenInfo;
+import net.saisimon.agtms.core.factory.TokenFactory;
 
 /**
  * 用户相关工具类
@@ -39,6 +40,16 @@ public class AuthUtils {
 	public static String createToken() {
 		String uuid = UUID.randomUUID().toString();
 		return uuid.replaceAll("\\-", "");
+	}
+	
+	/**
+	 * 获取过期时间（当前时间 + 30分钟）
+	 * 单位：ms
+	 * 
+	 * @return
+	 */
+	public static long getExpireTime() {
+		return System.currentTimeMillis() + MAX_TOKEN_TIMEOUT;
 	}
 	
 	/**
@@ -73,46 +84,41 @@ public class AuthUtils {
 	}
 	
 	/**
-	 * 获取用户信息
+	 * 获取 Token 信息
 	 * 
 	 * @return 用户信息
-	 * @see net.saisimon.agtms.core.dto.UserInfo
+	 * @see net.saisimon.agtms.core.dto.TokenInfo
 	 */
-	public static UserInfo getUserInfo() {
-		return getUserInfo(getUid());
+	public static TokenInfo getTokenInfo() {
+		return getTokenInfo(getUid());
 	}
 	
 	/**
-	 * 根据指定用户ID的用户信息
+	 * 根据指定用户ID的 Token 信息
 	 * 
 	 * @param uid 用户ID
-	 * @return 用户信息
-	 * @see net.saisimon.agtms.core.dto.UserInfo
+	 * @return Token 信息
+	 * @see net.saisimon.agtms.core.dto.TokenInfo
 	 */
-	public static UserInfo getUserInfo(String uid) {
-		if (uid == null) {
+	public static TokenInfo getTokenInfo(String uid) {
+		if (uid == null || !NumberUtil.isLong(uid)) {
 			return null;
 		}
-		return CacheFactory.get().get(uid.toString(), UserInfo.class);
+		return TokenFactory.get().getTokenInfo(Long.valueOf(uid));
 	}
 	
 	/**
-	 * 设置指定用户ID的用户信息
+	 * 设置指定用户ID的 Token 信息
 	 * 
 	 * @param uid 用户ID
-	 * @param userInfo 用户信息
-	 * @see net.saisimon.agtms.core.dto.UserInfo
+	 * @param tokenInfo Token信息
+	 * @see net.saisimon.agtms.core.dto.TokenInfo
 	 */
-	public static void setUserInfo(String uid, UserInfo userInfo) {
-		if (uid == null) {
+	public static void setTokenInfo(String uid, TokenInfo tokenInfo) {
+		if (uid == null || !NumberUtil.isLong(uid)) {
 			return;
 		}
-		Cache cache = CacheFactory.get();
-		if (userInfo == null) {
-			cache.delete(uid);
-		} else {
-			cache.set(uid, userInfo, MAX_TOKEN_TIMEOUT);
-		}
+		TokenFactory.get().setTokenInfo(Long.valueOf(uid), tokenInfo);
 	}
 	
 	/**
@@ -133,6 +139,17 @@ public class AuthUtils {
 	 */
 	public static String hmac(String password, String salt) {
 		return new HmacUtils(HmacAlgorithms.HMAC_SHA_256, salt).hmacHex(password).toUpperCase();
+	}
+	
+	public static TokenInfo buildTokenInfo(User user) {
+		if (user == null) {
+			return null;
+		}
+		TokenInfo userInfo = new TokenInfo();
+		userInfo.setUserId(user.getId());
+		userInfo.setExpireTime(user.getExpireTime());
+		userInfo.setToken(user.getToken());
+		return userInfo;
 	}
 	
 }

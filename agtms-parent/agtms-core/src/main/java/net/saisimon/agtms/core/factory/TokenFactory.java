@@ -8,34 +8,34 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.OrderComparator;
 import org.springframework.stereotype.Component;
 
-import net.saisimon.agtms.core.cache.Cache;
+import net.saisimon.agtms.core.token.Token;
 
 /**
- * 缓存构建工厂
+ * 令牌构建工厂
  * 
  * @author saisimon
  *
  */
 @Component
-public class CacheFactory implements BeanPostProcessor {
+public class TokenFactory implements BeanPostProcessor {
 	
-	private static final List<Cache> CACHES = new ArrayList<>();
+	private static final List<Token> TOKENS = new ArrayList<>();
 	
-	public static Cache get() {
-		if (CACHES.size() > 0) {
-			return CACHES.get(0);
+	public static Token get() {
+		if (TOKENS.size() > 0) {
+			return TOKENS.get(0);
 		}
-		throw new IllegalArgumentException("获取 Cache 失败");
+		throw new IllegalArgumentException("获取 Token 失败");
 	}
 	
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-		if (! (bean instanceof Cache)) {
+		if (! (bean instanceof Token)) {
 			return bean;
 		}
-		Cache cache = (Cache) bean;
-		CACHES.add(cache);
-		CACHES.sort(OrderComparator.INSTANCE);
+		Token token = (Token) bean;
+		TOKENS.add(token);
+		TOKENS.sort(OrderComparator.INSTANCE);
 		return bean;
 	}
 	

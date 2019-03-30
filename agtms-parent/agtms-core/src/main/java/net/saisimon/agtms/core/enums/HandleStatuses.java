@@ -9,9 +9,9 @@ package net.saisimon.agtms.core.enums;
 public enum HandleStatuses {
 	
 	/**
-	 * 创建
+	 * 已创建
 	 */
-	CREATE(10, "create"), 
+	CREATED(10, "created"), 
 	/**
 	 * 处理中
 	 */
@@ -25,9 +25,17 @@ public enum HandleStatuses {
 	 */
 	FAILURE(40, "failure"),
 	/**
-	 * 取消
+	 * 已取消
 	 */
-	CANCEL(50, "cancel");
+	CANCELED(50, "canceled"),
+	/**
+	 * 取消中
+	 */
+	CANCELING(60, "canceling"),
+	/**
+	 * 已丢弃
+	 */
+	REJECTED(70, "rejected");
 	
 	/**
 	 * 状态值

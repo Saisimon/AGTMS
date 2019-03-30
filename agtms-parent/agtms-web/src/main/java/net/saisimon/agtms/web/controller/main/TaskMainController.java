@@ -3,17 +3,12 @@ package net.saisimon.agtms.web.controller.main;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
@@ -43,7 +39,7 @@ import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
-import net.saisimon.agtms.core.dto.UserInfo;
+import net.saisimon.agtms.core.dto.TokenInfo;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
@@ -58,7 +54,7 @@ import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
-import net.saisimon.agtms.web.controller.base.MainController;
+import net.saisimon.agtms.web.controller.base.AbstractMainController;
 import net.saisimon.agtms.web.dto.resp.TaskInfo;
 import net.saisimon.agtms.web.selection.HandleStatusSelection;
 import net.saisimon.agtms.web.selection.TaskTypeSelection;
@@ -73,7 +69,7 @@ import net.saisimon.agtms.web.selection.TaskTypeSelection;
 @RequestMapping("/task/main")
 @ControllerInfo("task.management")
 @Slf4j
-public class TaskMainController extends MainController {
+public class TaskMainController extends AbstractMainController {
 	
 	public static final String TASK = "task";
 	private static final String TASK_FILTERS = TASK + "_filters";
@@ -94,6 +90,8 @@ public class TaskMainController extends MainController {
 	private HandleStatusSelection handleStatusSelection;
 	@Autowired
 	private TaskTypeSelection taskTypeSelection;
+	@Autowired
+	private RestTemplate restTemplate;
 	
 	@PostMapping("/grid")
 	public Result grid() {
@@ -103,7 +101,7 @@ public class TaskMainController extends MainController {
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		UserInfo userInfo = AuthUtils.getUserInfo();
+		TokenInfo userInfo = AuthUtils.getTokenInfo();
 		FilterRequest filter = FilterRequest.build(body, TASK_FILTER_FIELDS);
 		filter.and(Constant.OPERATORID, userInfo.getUserId());
 		FilterPageable pageable = FilterPageable.build(param);
@@ -125,17 +123,20 @@ public class TaskMainController extends MainController {
 			}
 			result.setHandleTime(task.getHandleTime());
 			result.setAction(TASK);
-			if (task.getHandleStatus() == HandleStatuses.SUCCESS.getStatus()) { // download
+			// download
+			if (task.getHandleStatus() == HandleStatuses.SUCCESS.getStatus()) {
 				result.getDisableActions().add(Boolean.FALSE);
 			} else {
 				result.getDisableActions().add(Boolean.TRUE);
 			}
-			if (task.getHandleStatus() == HandleStatuses.PROCESSING.getStatus()) { // cancel
+			// cancel
+			if (task.getHandleStatus() == HandleStatuses.PROCESSING.getStatus()) {
 				result.getDisableActions().add(Boolean.FALSE);
 			} else {
 				result.getDisableActions().add(Boolean.TRUE);
 			}
-			result.getDisableActions().add(Boolean.FALSE); // remove
+			// remove
+			result.getDisableActions().add(Boolean.FALSE);
 			results.add(result);
 		}
 		request.getSession().setAttribute(TASK_FILTERS, body);
@@ -144,49 +145,59 @@ public class TaskMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.QUERY, value="download")
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@GetMapping("/download")
 	public void download(@RequestParam(name = "id") Long id) {
 		try {
 			TaskService taskService = TaskServiceFactory.get();
-			Long userId = AuthUtils.getUserInfo().getUserId();
+			Long userId = AuthUtils.getTokenInfo().getUserId();
 			Task task = taskService.getTask(id, userId);
 			if (task == null) {
 				SystemUtils.sendObject(response, ErrorMessage.Task.TASK_NOT_EXIST);
 				return;
 			}
-			downloadTask(task, request, response);
+			if (task == null || task.getHandleStatus() != HandleStatuses.SUCCESS.getStatus()) {
+				response.sendError(HttpStatus.NOT_FOUND.value());
+				return;
+			}
+			Actuator<?> actuator = ActuatorFactory.get(task.getTaskType());
+			if (actuator == null) {
+				response.sendError(HttpStatus.NOT_FOUND.value());
+				return;
+			}
+			actuator.download(task, request, response);
 		} catch (IOException e) {
 			log.error("响应流异常", e);
 		}
 	}
 	
 	@Operate(type=OperateTypes.QUERY, value="cancel")
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/cancel")
 	public Result cancel(@RequestParam(name = "id") Long id) {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		TaskService taskService = TaskServiceFactory.get();
-		Task task = taskService.getTask(id, AuthUtils.getUserInfo().getUserId());
+		Task task = taskService.getTask(id, AuthUtils.getTokenInfo().getUserId());
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
+		task.setHandleStatus(HandleStatuses.CANCELING.getStatus());
+		taskService.saveOrUpdate(task);
 		cancelTask(task);
 		return ResultUtils.simpleSuccess();
 	}
 	
 	@Operate(type=OperateTypes.REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		TaskService taskService = TaskServiceFactory.get();
-		Long userId = AuthUtils.getUserInfo().getUserId();
-		Task task = taskService.getTask(id, userId);
+		Task task = taskService.getTask(id, AuthUtils.getTokenInfo().getUserId());
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
@@ -196,13 +207,13 @@ public class TaskMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.BATCH_REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody List<Long> ids) {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		TaskService taskService = TaskServiceFactory.get();
 		for (Long id : ids) {
 			Task task = taskService.getTask(id, userId);
@@ -268,7 +279,7 @@ public class TaskMainController extends MainController {
 	
 	@Override
 	protected List<Action> actions(Object key) {
-		UserInfo userInfo = AuthUtils.getUserInfo();
+		TokenInfo userInfo = AuthUtils.getTokenInfo();
 		List<Action> actions = new ArrayList<>();
 		actions.add(Action.builder().key("download").icon("download").to("/task/main/download?" + AuthUtils.AUTHORIZE_UID + "=" + userInfo.getUserId() + "&" + AuthUtils.AUTHORIZE_TOKEN + "=" + userInfo.getToken() + "&id=").text(getMessage("result")).type("download").build());
 		actions.add(Action.builder().key("cancel").icon("ban").to("/task/main/cancel").text(getMessage("cancel")).variant("outline-warning").type("modal").build());
@@ -281,48 +292,12 @@ public class TaskMainController extends MainController {
 		return FUNCTIONS;
 	}
 	
-	private <P> void downloadTask(final Task task, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		if (task == null || task.getHandleStatus() != HandleStatuses.SUCCESS.getStatus()) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
+	private void cancelTask(Task task) {
+		if (task == null || StringUtils.isBlank(task.getIp()) || task.getPort() == null) {
 			return;
 		}
-		@SuppressWarnings("unchecked")
-		Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
-		if (actuator == null) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		actuator.download(task, request, response);
-	}
-	
-	private void cancelTask(final Task task) {
-		if (task.getHandleStatus() != HandleStatuses.PROCESSING.getStatus()) {
-			return;
-		}
-		TaskService taskService = TaskServiceFactory.get();
-		Future<?> future = SystemUtils.removeTaskFuture(task.getId());
-		if (future != null && !future.isDone() && !future.isCancelled()) {
-			future.cancel(true);
-			try {
-				future.get();
-			} catch (CancellationException e) {
-				task.setHandleStatus(HandleStatuses.CANCEL.getStatus());
-				task.setHandleTime(new Date());
-				task.setHandleResult("manually.cancel.task");
-				taskService.saveOrUpdate(task);
-				log.warn("手动取消任务");
-			} catch (Throwable e) {
-				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
-				task.setHandleTime(new Date());
-				taskService.saveOrUpdate(task);
-				log.error("任务执行异常", e);
-			}
-		} else {
-			task.setHandleStatus(HandleStatuses.CANCEL.getStatus());
-			task.setHandleTime(new Date());
-			task.setHandleResult("manually.cancel.task");
-			taskService.saveOrUpdate(task);
-		}
+		String url = "http://" + task.getIp() + ":" + task.getPort() + "/api/cancel/task?taskId=" + task.getId();
+		restTemplate.getForObject(url, Void.class);
 	}
 
 }

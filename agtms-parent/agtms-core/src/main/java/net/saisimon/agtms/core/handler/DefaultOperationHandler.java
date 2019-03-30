@@ -12,7 +12,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.entity.Operation;
-import net.saisimon.agtms.core.dto.UserInfo;
+import net.saisimon.agtms.core.dto.TokenInfo;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.StringUtils;
@@ -30,7 +30,7 @@ public class DefaultOperationHandler implements OperationHandler {
 	@Override
 	public Operation handle(String controllerInfo, Operate operate, Object result) {
 		Operation operation = new Operation();
-		UserInfo userInfo = AuthUtils.getUserInfo();
+		TokenInfo userInfo = AuthUtils.getTokenInfo();
 		if (userInfo == null || userInfo.getUserId() == null) {
 			return null;
 		}

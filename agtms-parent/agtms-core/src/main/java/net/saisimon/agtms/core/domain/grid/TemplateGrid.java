@@ -1,9 +1,9 @@
 package net.saisimon.agtms.core.domain.grid;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.hutool.core.map.MapUtil;
 import lombok.Builder;
 import lombok.Data;
 import net.saisimon.agtms.core.domain.tag.MultipleSelect;
@@ -60,7 +60,7 @@ public class TemplateGrid {
 	}
 	
 	public static Map<String, Object> buildRow(String key, String title, EditorTypes type) {
-		Map<String, Object> row = new HashMap<>();
+		Map<String, Object> row = MapUtil.newHashMap(3);
 		row.put("key", key);
 		row.put("title", title);
 		row.put("editor", type.getType());

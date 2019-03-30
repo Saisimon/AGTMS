@@ -1,8 +1,8 @@
 package net.saisimon.agtms.core.domain.tag;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import lombok.Data;
@@ -33,7 +33,7 @@ public class Select<T> implements Cloneable {
 		return filterSelect;
 	}
 	
-	public static <T> List<Option<T>> buildOptions(LinkedHashMap<T, String> selectionMap) {
+	public static <T> List<Option<T>> buildOptions(Map<T, String> selectionMap) {
 		if (selectionMap == null) {
 			return null;
 		}

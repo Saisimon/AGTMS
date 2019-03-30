@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.http.HttpStatus;
@@ -52,6 +53,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 	private static final int PAGE_SIZE = 2000;
 	
 	@Override
+	@Transactional(rollbackOn = Exception.class)
 	public Result execute(ExportParam param) throws Exception {
 		Template template = TemplateUtils.getTemplate(param.getTemplateId(), param.getUserId());
 		if (template == null) {
@@ -81,12 +83,15 @@ public class ExportActuator implements Actuator<ExportParam> {
 		List<List<Object>> datas = new ArrayList<>();
 		for (int page = 0; page < pageCount; page++) {
 			if (Thread.currentThread().isInterrupted()) {
-				return ErrorMessage.Task.TASK_CANCEL;
+				throw new InterruptedException("Task Cancel");
 			}
 			FilterPageable pageable = new FilterPageable(page, PAGE_SIZE, null);
 			List<Domain> domains = generateService.findList(filter, pageable, fields.toArray(new String[fields.size()]));
 			List<Map<String, Object>> domainList = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), domains, param.getUserId());
 			for (Map<String, Object> domainMap : domainList) {
+				if (Thread.currentThread().isInterrupted()) {
+					throw new InterruptedException("Task Cancel");
+				}
 				List<Object> data = new ArrayList<>();
 				for (int i = 0; i < fields.size(); i++) {
 					String field = fields.get(i);

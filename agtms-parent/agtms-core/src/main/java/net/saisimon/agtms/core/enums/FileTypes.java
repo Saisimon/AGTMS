@@ -8,8 +8,17 @@ package net.saisimon.agtms.core.enums;
  */
 public enum FileTypes {
 	
+	/**
+	 * Excel xls类型文件
+	 */
 	XLS("xls"),
+	/**
+	 * Excel xlsx类型文件
+	 */
 	XLSX("xlsx"),
+	/**
+	 * Excel csv类型文件
+	 */
 	CSV("csv");
 	
 	private String type;

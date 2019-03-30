@@ -1,9 +1,10 @@
 package net.saisimon.agtms.web.selection;
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import cn.hutool.core.map.MapUtil;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -12,9 +13,9 @@ import net.saisimon.agtms.core.util.SystemUtils;
 public class FunctionSelection extends AbstractSelection<Integer> {
 	
 	@Override
-	public LinkedHashMap<Integer, String> select() {
+	public Map<Integer, String> select() {
 		Functions[] fs = Functions.values();
-		LinkedHashMap<Integer, String> functionMap = new LinkedHashMap<>(fs.length);
+		Map<Integer, String> functionMap = MapUtil.newHashMap(fs.length, true);
 		for (Functions functions : fs) {
 			functionMap.put(functions.getCode(), getMessage(SystemUtils.humpToCode(functions.getFunction(), ".")));
 		}

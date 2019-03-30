@@ -125,7 +125,6 @@ public class TemplateScanner {
 				selectionResolverMap.put(fieldInfo.selection().getSimpleName(), selectionResolver);
 				templateField.setSelection(fieldInfo.selection().getSimpleName());
 			}
-//			templateField.setWidth(fieldInfo.width());
 			templateFields.add(templateField);
 		}
 		template.setColumns(templateColumns);

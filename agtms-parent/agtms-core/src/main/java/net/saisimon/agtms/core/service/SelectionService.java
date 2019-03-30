@@ -2,8 +2,13 @@ package net.saisimon.agtms.core.service;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.Ordered;
 import org.springframework.util.CollectionUtils;
 
@@ -62,5 +67,41 @@ public interface SelectionService extends BaseService<Selection, Long>, Ordered 
 	void saveSelectionOptions(List<SelectionOption> options);
 	
 	void saveSelectionTemplate(SelectionTemplate template);
+	
+	@Override
+	@Cacheable(cacheNames="selection", key="#p0")
+	default Optional<Selection> findById(Long id) {
+		return BaseService.super.findById(id);
+	}
+
+	@Override
+	@CacheEvict(cacheNames="selection", key="#p0.id")
+	default void delete(Selection entity) {
+		BaseService.super.delete(entity);
+	}
+
+	@Override
+	@CachePut(cacheNames="selection", key="#p0.id")
+	default Selection saveOrUpdate(Selection entity) {
+		return BaseService.super.saveOrUpdate(entity);
+	}
+
+	@Override
+	@CacheEvict(cacheNames="selection", key="#p0")
+	default void update(Long id, Map<String, Object> updateMap) {
+		BaseService.super.update(id, updateMap);
+	}
+
+	@Override
+	@CacheEvict(cacheNames="selection", allEntries=true)
+	default void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
+		BaseService.super.batchUpdate(filter, updateMap);
+	}
+	
+	@Override
+	@CacheEvict(cacheNames="selection", allEntries=true)
+	default Long delete(FilterRequest filter) {
+		return BaseService.super.delete(filter);
+	}
 	
 }

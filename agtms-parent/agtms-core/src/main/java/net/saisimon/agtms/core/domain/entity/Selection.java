@@ -1,5 +1,6 @@
 package net.saisimon.agtms.core.domain.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -24,8 +25,10 @@ import lombok.Data;
 @Entity
 @Table(name="agtms_selection")
 @Document(collection="agtms_selection")
-public class Selection {
+public class Selection implements Serializable {
 	
+	private static final long serialVersionUID = -2277466227128266669L;
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;

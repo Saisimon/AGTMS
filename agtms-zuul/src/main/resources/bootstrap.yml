@@ -14,3 +14,27 @@ eureka:
 
 server:
   port: 7891
+
+ribbon:
+  ReadTimeout: 5000
+  ConnectTimeout: 2000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 1
+
+hystrix: 
+  command: 
+    default: 
+      execution: 
+        isolation: 
+          thread: 
+            timeoutInMilliseconds: 15000
+
+feign:
+  hystrix:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 2000
+        readTimeout: 5000
+        loggerLevel: full

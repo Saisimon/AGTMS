@@ -5,13 +5,13 @@ import java.io.Serializable;
 import lombok.Data;
 
 /**
- * 用户基本信息
+ * Token 信息
  * 
  * @author saisimon
  *
  */
 @Data
-public class UserInfo implements Serializable {
+public class TokenInfo implements Serializable {
 	
 	private static final long serialVersionUID = -6183223245993366757L;
 	
@@ -21,13 +21,13 @@ public class UserInfo implements Serializable {
 	private Long userId;
 	
 	/**
-	 * 用户登录名
-	 */
-	private String loginName;
-	
-	/**
 	 * 令牌
 	 */
 	private String token;
+	
+	/**
+	 * 过期时间
+	 */
+	private Long expireTime;
 	
 }

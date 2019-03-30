@@ -7,8 +7,11 @@ public class Editor<T> {
 	
 	private T value;
 	
-	public Editor(T value) {
+	private String className;
+	
+	public Editor(T value, String className) {
 		this.value = value;
+		this.className = className;
 	}
 	
 }

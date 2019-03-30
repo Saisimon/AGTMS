@@ -16,6 +16,8 @@ public interface RemoteService {
 	
 	List<Template> templates(String serviceId);
 	
+	Template template(String serviceId, String key);
+	
 	LinkedHashMap<?, String> selection(String serviceId, String key, Map<String, Object> body);
 	
 }

@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.NumberUtil;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
@@ -44,28 +44,43 @@ import net.saisimon.agtms.core.spring.SpringContext;
 public class SelectionUtils {
 	
 	private static final int OPTION_SIZE = 30;
-	/**
-	 * 远程下拉列表对象映射
-	 */
-	public static Map<String, Selection> REMOTE_SELECTION_MAP = new ConcurrentHashMap<>();
 	
 	private SelectionUtils() {
 		throw new IllegalAccessError();
 	}
 	
+	/**
+	 * 获取下拉列表对象
+	 * 
+	 * @param key 下拉列表唯一标识
+	 * @param operatorId 用户ID
+	 * @return 下拉列表对象
+	 */
 	public static Selection getSelection(Object key, Long operatorId) {
 		if (key == null || operatorId == null) {
 			return null;
 		}
 		String sign = key.toString();
-		if (!NumberUtil.isNumber(sign)) {
-			return REMOTE_SELECTION_MAP.get(sign);
+		if (!NumberUtil.isLong(sign)) {
+			RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
+			if (remoteService == null) {
+				return null;
+			}
+			String[] strs = sign.split("-");
+			if (strs.length != 2) {
+				return null;
+			}
+			Selection selection = new Selection();
+			selection.setService(strs[0]);
+			selection.setKey(strs[1]);
+			selection.setType(SelectTypes.REMOTE.getType());
+			return selection;
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		Optional<Selection> optional = selectionService.findById(Long.valueOf(sign));
 		if (optional.isPresent()) {
 			Selection selection = optional.get();
-			if (selection != null && operatorId == selection.getOperatorId()) {
+			if (operatorId.equals(selection.getOperatorId())) {
 				return selection;
 			}
 		}
@@ -82,7 +97,7 @@ public class SelectionUtils {
 	 */
 	public static List<Map<String, Object>> handleSelection(Map<String, TemplateField> fieldInfoMap, String service, List<Domain> domains, Long operatorId) {
 		List<Map<String, Object>> datas = new ArrayList<>(domains.size());
-		Map<String, Set<String>> valueMap = new HashMap<>();
+		Map<String, Set<String>> valueMap = MapUtil.newHashMap();
 		for (Domain domain : domains) {
 			Map<String, Object> data = new HashMap<>();
 			for (Map.Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
@@ -105,7 +120,7 @@ public class SelectionUtils {
 			data.put(Constant.ID, domain.getField(Constant.ID));
 			datas.add(data);
 		}
-		Map<String, Map<String, String>> map = new HashMap<>();
+		Map<String, Map<String, String>> map = MapUtil.newHashMap();
 		for (Map.Entry<String, Set<String>> entry : valueMap.entrySet()) {
 			String fieldName = entry.getKey();
 			TemplateField templateField = fieldInfoMap.get(fieldName);
@@ -197,7 +212,7 @@ public class SelectionUtils {
 			if (remoteService == null) {
 				return options;
 			}
-			Map<String, Object> body = new HashMap<>();
+			Map<String, Object> body = MapUtil.newHashMap();
 			body.put("text", keyword);
 			LinkedHashMap<?, String> selectionMap = remoteService.selection(selection.getService(), selection.getKey(), body);
 			for (Map.Entry<?, String> entry : selectionMap.entrySet()) {
@@ -209,7 +224,7 @@ public class SelectionUtils {
 	}
 	
 	private static Map<String, String> getSelectionMap(String sign, Long operatorId, Set<String> values, boolean valueKey) {
-		Map<String, String> selectionMap = new HashMap<>();
+		Map<String, String> selectionMap = MapUtil.newHashMap();
 		if (CollectionUtils.isEmpty(values)) {
 			return selectionMap;
 		}
@@ -266,7 +281,7 @@ public class SelectionUtils {
 			if (remoteService == null) {
 				return selectionMap;
 			}
-			Map<String, Object> body = new HashMap<>();
+			Map<String, Object> body = MapUtil.newHashMap();
 			if (valueKey) {
 				body.put("values", values);
 			} else {

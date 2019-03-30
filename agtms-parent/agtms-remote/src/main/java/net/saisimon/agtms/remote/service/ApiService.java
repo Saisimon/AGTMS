@@ -23,6 +23,9 @@ public interface ApiService {
 	@RequestMapping(method = RequestMethod.POST, value = "/agtms/templates")
 	List<Template> templates();
 	
+	@RequestMapping(method = RequestMethod.POST, value = "/agtms/{key}/template")
+	Template template(@PathVariable("key") String key);
+	
 	@RequestMapping(method = RequestMethod.POST, value = "/agtms/{key}/selection")
 	LinkedHashMap<?, String> selection(@PathVariable("key") String key, @RequestBody Map<String, Object> body);
 	

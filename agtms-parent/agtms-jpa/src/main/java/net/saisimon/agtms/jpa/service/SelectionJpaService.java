@@ -61,13 +61,13 @@ public class SelectionJpaService implements SelectionService, JpaOrder {
 		}
 	}
 
-	@Transactional
+	@Transactional(rollbackOn=Exception.class)
 	@Override
 	public void removeSelectionOptions(Long selectionId) {
 		selectionOptionJpaRepository.deleteBySelectionId(selectionId);
 	}
 	
-	@Transactional
+	@Transactional(rollbackOn=Exception.class)
 	@Override
 	public void saveSelectionOptions(List<SelectionOption> options) {
 		if (CollectionUtils.isEmpty(options)) {
@@ -83,13 +83,13 @@ public class SelectionJpaService implements SelectionService, JpaOrder {
 		return selectionTemplateJpaRepository.findBySelectionId(selectionId);
 	}
 
-	@Transactional
+	@Transactional(rollbackOn=Exception.class)
 	@Override
 	public void removeSelectionTemplate(Long selectionId) {
 		selectionTemplateJpaRepository.deleteBySelectionId(selectionId);
 	}
 
-	@Transactional
+	@Transactional(rollbackOn=Exception.class)
 	@Override
 	public void saveSelectionTemplate(SelectionTemplate template) {
 		if (template == null) {

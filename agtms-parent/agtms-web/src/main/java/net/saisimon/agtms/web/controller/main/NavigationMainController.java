@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,14 +51,15 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.NavigationService;
+import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
+import net.saisimon.agtms.core.util.NavigationUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
-import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
-import net.saisimon.agtms.web.controller.base.MainController;
+import net.saisimon.agtms.web.controller.base.AbstractMainController;
 import net.saisimon.agtms.web.dto.resp.NavigationInfo;
 import net.saisimon.agtms.web.dto.resp.NavigationTree;
 import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
@@ -72,7 +74,7 @@ import net.saisimon.agtms.web.selection.NavigationSelection;
 @RestController
 @RequestMapping("/navigation/main")
 @ControllerInfo("navigation.management")
-public class NavigationMainController extends MainController {
+public class NavigationMainController extends AbstractMainController {
 	
 	public static final String NAVIGATION = "navigation";
 	private static final String NAVIGATION_FILTERS = NAVIGATION + "_filters";
@@ -94,11 +96,15 @@ public class NavigationMainController extends MainController {
 	
 	@Autowired
 	private NavigationSelection navigationSelection;
+	@Autowired
+	private DiscoveryClient discoveryClient;
+	@Autowired(required = false)
+	private RemoteService remoteService;
 	
 	@Operate(type=OperateTypes.QUERY, value="side")
 	@PostMapping("/side")
 	public Result side() {
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
 		List<NavigationTree> trees = getChildNavs(navigationService.getNavigations(userId), -1L, userId);
 		if (trees == null) {
@@ -114,8 +120,8 @@ public class NavigationMainController extends MainController {
 		if (templates == null) {
 			templates = new ArrayList<>();
 		}
-		if (!CollectionUtils.isEmpty(TemplateUtils.REMOTE_TEMPLATE_MAP)) {
-			templates.addAll(TemplateUtils.REMOTE_TEMPLATE_MAP.values());
+		if (remoteService != null) {
+			templates.addAll(remoteTemplates());
 		}
 		for (Template template : templates) {
 			links.add(new NavigationLink("/management/main/" + template.sign(), template.getTitle()));
@@ -145,7 +151,7 @@ public class NavigationMainController extends MainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, NAVIGATION_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getUserInfo().getUserId());
+		filter.and(Constant.OPERATORID, AuthUtils.getTokenInfo().getUserId());
 		FilterPageable pageable = FilterPageable.build(param);
 		NavigationService navigationService = NavigationServiceFactory.get();
 		Page<Navigation> page = navigationService.findPage(filter, pageable);
@@ -162,15 +168,14 @@ public class NavigationMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getUserInfo().getUserId();
-		NavigationService navigationService = NavigationServiceFactory.get();
-		Navigation navigation = navigationService.getNavigation(id, userId);
+		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Navigation navigation = NavigationUtils.getNavigation(id, userId);
 		if (navigation == null) {
 			return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 		}
@@ -184,7 +189,7 @@ public class NavigationMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.EDIT)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/save")
 	public Result batchSave(@RequestBody Map<String, Object> body) {
 		List<Integer> ids = SystemUtils.transformList(body.get("ids"));
@@ -193,10 +198,10 @@ public class NavigationMainController extends MainController {
 		}
 		String icon = (String) body.get("icon");
 		Object priorityObj = body.get("priority");
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		NavigationService navigationService = NavigationServiceFactory.get();
 		for (Integer id : ids) {
-			Navigation navigation = navigationService.getNavigation(id.longValue(), userId);
+			Navigation navigation = NavigationUtils.getNavigation(id.longValue(), userId);
 			if (navigation == null) {
 				continue;
 			}
@@ -218,16 +223,15 @@ public class NavigationMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.BATCH_REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody List<Long> ids) {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getUserInfo().getUserId();
-		NavigationService navigationService = NavigationServiceFactory.get();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		for (Long id : ids) {
-			Navigation navigation = navigationService.getNavigation(id, userId);
+			Navigation navigation = NavigationUtils.getNavigation(id, userId);
 			if (navigation == null) {
 				continue;
 			}
@@ -377,6 +381,25 @@ public class NavigationMainController extends MainController {
 		}
 		Collections.sort(trees, NavigationTree.COMPARATOR);
 		return trees;
+	}
+	
+	private List<Template> remoteTemplates() {
+		List<Template> templates = new ArrayList<>();
+		List<String> services = discoveryClient.getServices();
+		for (String service : services) {
+			if (service.toLowerCase().startsWith("agtms-")) {
+				continue;
+			}
+			List<Template> remoteTemplates = remoteService.templates(service);
+			if (CollectionUtils.isEmpty(remoteTemplates)) {
+				continue;
+			}
+			for (Template template : remoteTemplates) {
+				template.setService(service);
+				templates.add(template);
+			}
+		}
+		return templates;
 	}
 	
 }

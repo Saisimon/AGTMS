@@ -16,7 +16,7 @@ public class TaskInfo extends BaseInfo {
 
 	private String taskType;
 	
-	private Date TaskTime;
+	private Date taskTime;
 	
 	private Date handleTime;
 	

@@ -1,5 +1,6 @@
 package net.saisimon.agtms.core.domain.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -29,8 +30,10 @@ import lombok.ToString;
 @Entity
 @Table(name="agtms_user")
 @Document(collection="agtms_user")
-public class User {
+public class User implements Serializable {
 	
+	private static final long serialVersionUID = 7086947167059509219L;
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
@@ -101,5 +104,17 @@ public class User {
 	 */
 	@Column
 	private Date lastLoginTime;
+	
+	/**
+	 * Token 令牌
+	 */
+	@Column
+	private String token;
+	
+	/**
+	 * Token 过期时间
+	 */
+	@Column
+	private Long expireTime;
 	
 }

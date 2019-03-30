@@ -16,8 +16,6 @@ public class TemplateInfo extends BaseInfo {
 	
 	private String title;
 	
-	private String columns;
-	
 	private String functions;
 	
 	private Date createTime;

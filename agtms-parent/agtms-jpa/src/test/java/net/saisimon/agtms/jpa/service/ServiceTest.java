@@ -3,11 +3,9 @@ package net.saisimon.agtms.jpa.service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -323,11 +321,10 @@ public class ServiceTest {
 		Domain domain = generateService.newGenerate();
 		domain.setField("column0field0", "aaa", String.class);
 		domain.setField("column1field0", "bbb", String.class);
-		domain.setField(Constant.OPERATORID, 1L, Long.class);
 		Assert.assertFalse(generateService.checkExist(domain, 1L));
 		
 		// saveDomain
-		generateService.saveDomain(domain);
+		generateService.saveDomain(domain, 1L);
 		Assert.assertNotNull(domain.getField(Constant.ID));
 		Assert.assertNotNull(domain.getField(Constant.CREATETIME));
 		Assert.assertNotNull(domain.getField(Constant.UPDATETIME));
@@ -339,7 +336,7 @@ public class ServiceTest {
 		Domain newDomain = generateService.newGenerate();
 		newDomain.setField("column0field0", "ccc", String.class);
 		newDomain.setField("column1field0", "ddd", String.class);
-		generateService.updateDomain(newDomain, domain);
+		generateService.updateDomain(newDomain, domain, 1L);
 		Assert.assertNotNull(newDomain.getField(Constant.ID));
 		Assert.assertEquals(domain.getField(Constant.ID), newDomain.getField(Constant.ID));
 		Assert.assertEquals(domain.getField(Constant.CREATETIME), newDomain.getField(Constant.CREATETIME));
@@ -439,13 +436,11 @@ public class ServiceTest {
 		template.setSource("jpa");
 		template.setTitle(title);
 		template.setUpdateTime(time);
-		Set<TemplateColumn> columns = new HashSet<>();
 		for (int i = 0; i < columnSize; i++) {
 			TemplateColumn column = new TemplateColumn();
 			column.setColumnName("column" + i);
 			column.setOrdered(i);
 			column.setTitle("列" + i);
-			Set<TemplateField> fields = new HashSet<>();
 			for (int j = 0; j < i + 1; j++) {
 				TemplateField field = new TemplateField();
 				field.setDefaultValue("");
@@ -459,14 +454,12 @@ public class ServiceTest {
 				field.setSorted(Boolean.FALSE);
 				field.setUniqued(Boolean.FALSE);
 				field.setViews(Views.TEXT.getView());
-				fields.add(field);
+				column.addField(field);
 			}
-			column.setFields(fields);
-			column.setFieldIndex(fields.size());
-			columns.add(column);
+			column.setFieldIndex(column.getFields().size());
+			template.addColumn(column);
 		}
-		template.setColumns(columns);
-		template.setColumnIndex(columns.size());
+		template.setColumnIndex(template.getColumns().size());
 		return template;
 	}
 	
@@ -478,7 +471,6 @@ public class ServiceTest {
 			column.setColumnName("column" + i);
 			column.setOrdered(i);
 			column.setTitle("列" + i);
-			Set<TemplateField> fields = new HashSet<>();
 			TemplateField field = new TemplateField();
 			field.setDefaultValue("");
 			field.setFieldName("field0");
@@ -491,10 +483,9 @@ public class ServiceTest {
 			field.setSorted(Boolean.FALSE);
 			field.setUniqued(Boolean.FALSE);
 			field.setViews(Views.TEXT.getView());
-			fields.add(field);
-			column.setFields(fields);
-			column.setFieldIndex(fields.size());
-			template.getColumns().add(column);
+			column.addField(field);
+			column.setFieldIndex(column.getFields().size());
+			template.addColumn(column);
 		}
 		template.setColumnIndex(template.getColumns().size());
 	}

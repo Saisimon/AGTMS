@@ -1,9 +1,10 @@
 package net.saisimon.agtms.web.selection;
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import cn.hutool.core.map.MapUtil;
 import net.saisimon.agtms.core.enums.FileTypes;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -12,9 +13,9 @@ import net.saisimon.agtms.core.util.SystemUtils;
 public class FileTypeSelection extends AbstractSelection<String> {
 	
 	@Override
-	public LinkedHashMap<String, String> select() {
+	public Map<String, String> select() {
 		FileTypes[] types = FileTypes.values();
-		LinkedHashMap<String, String> typeMap = new LinkedHashMap<>(types.length);
+		Map<String, String> typeMap = MapUtil.newHashMap(types.length, true);
 		for (FileTypes type : types) {
 			typeMap.put(type.getType(), getMessage(SystemUtils.humpToCode(type.getType(), ".")));
 		}

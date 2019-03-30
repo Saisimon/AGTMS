@@ -16,9 +16,11 @@ extra:
   class:
     path: /tmp/classes
   max-size:
-    task: 5
+    task: 1024
     export: 65535
     import: 65535
+    cache:
+      ttl: 600
 logging:
   level:
     net.saisimon: DEBUG

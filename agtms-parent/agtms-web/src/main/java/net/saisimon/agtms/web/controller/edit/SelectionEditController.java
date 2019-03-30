@@ -66,7 +66,7 @@ public class SelectionEditController extends BaseController {
 	@PostMapping("/grid")
 	public Result grid(@RequestParam(name = "id", required = false) Long id) {
 		Selection selection = null;
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		if (id != null) {
 			selection = SelectionUtils.getSelection(id, userId);
 			if (selection == null) {
@@ -139,7 +139,7 @@ public class SelectionEditController extends BaseController {
 	
 	@PostMapping("/template")
 	public Result template(@RequestParam(name = "id") Long id) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(id, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -150,19 +150,19 @@ public class SelectionEditController extends BaseController {
 	
 	@PostMapping("/search")
 	public Result search(@RequestParam(name = "sign") String sign, @RequestParam(name = "keyword", required = false) String keyword) {
-		List<Option<Object>> options = SelectionUtils.getSelectionOptions(sign, keyword, AuthUtils.getUserInfo().getUserId());
+		List<Option<Object>> options = SelectionUtils.getSelectionOptions(sign, keyword, AuthUtils.getTokenInfo().getUserId());
 		return ResultUtils.simpleSuccess(options);
 	}
 	
 	@Operate(type=OperateTypes.EDIT)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/save")
 	public Result save(@Validated @RequestBody SelectionParam body, BindingResult result) {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Long id = body.getId();
 		Date time = new Date();
 		Selection selection = null;
@@ -189,12 +189,7 @@ public class SelectionEditController extends BaseController {
 			selection.setTitle(body.getTitle());
 			selection.setType(body.getType());
 		}
-		SelectTypes type = null;
-		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
-			type = SelectTypes.OPTION;
-		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
-			type = SelectTypes.TEMPLATE;
-		}
+		SelectTypes type = getSelectType(selection);
 		if (type == null) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
@@ -235,6 +230,15 @@ public class SelectionEditController extends BaseController {
 			selectionService.saveSelectionTemplate(template);
 		}
 		return ResultUtils.simpleSuccess();
+	}
+
+	private SelectTypes getSelectType(Selection selection) {
+		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
+			return SelectTypes.OPTION;
+		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
+			return SelectTypes.TEMPLATE;
+		}
+		return null;
 	}
 	
 	private List<Breadcrumb> breadcrumbs(Long id) {

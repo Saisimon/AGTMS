@@ -75,10 +75,10 @@ export default {
     methods: {
         modal: function(link) {
             this.$store.dispatch('requestUrl', link + "?id=" + this.rowData.id).then(() => {
-                this.$emit('succeed');
                 if (this.$route.params.module === 'navigation' || this.$route.params.module === 'template') {
                     this.$store.dispatch('getTree');
                 }
+                this.$emit('succeed');
             });
         }
     }

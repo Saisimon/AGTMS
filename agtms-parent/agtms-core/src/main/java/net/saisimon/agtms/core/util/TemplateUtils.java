@@ -8,12 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.util.NumberUtil;
-import net.saisimon.agtms.core.cache.Cache;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
@@ -22,10 +20,11 @@ import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
-import net.saisimon.agtms.core.factory.CacheFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.TemplateService;
+import net.saisimon.agtms.core.spring.SpringContext;
 
 /**
  * 模板相关工具类
@@ -34,11 +33,6 @@ import net.saisimon.agtms.core.service.TemplateService;
  *
  */
 public class TemplateUtils {
-	
-	/**
-	 * 远程模板对象映射
-	 */
-	public static Map<String, Template> REMOTE_TEMPLATE_MAP = new ConcurrentHashMap<>();
 	
 	private TemplateUtils() {
 		throw new IllegalAccessError();
@@ -56,21 +50,28 @@ public class TemplateUtils {
 			return null;
 		}
 		String sign = key.toString();
-		if (!NumberUtil.isNumber(sign)) {
-			return REMOTE_TEMPLATE_MAP.get(sign);
-		}
-		String templateKey = String.format(TemplateService.TEMPLATE_KEY, sign);
-		Cache cache = CacheFactory.get();
-		Template template = cache.get(templateKey, Template.class);
-		if (template == null) {
-			TemplateService templateService = TemplateServiceFactory.get();
-			Optional<Template> optional = templateService.findById(Long.valueOf(sign));
-			if (optional.isPresent()) {
-				template = optional.get();
-				cache.set(templateKey, template, TemplateService.TEMPLATE_TIMEOUT);
+		if (!NumberUtil.isLong(sign)) {
+			RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
+			if (remoteService == null) {
+				return null;
 			}
+			String[] strs = sign.split("-");
+			if (strs.length != 2) {
+				return null;
+			}
+			Template template = remoteService.template(strs[0], strs[1]);
+			if (template != null) {
+				template.setService(strs[0]);
+			}
+			return template;
 		}
-		if (template != null && operatorId == template.getOperatorId()) {
+		TemplateService templateService = TemplateServiceFactory.get();
+		Optional<Template> optional = templateService.findById(Long.valueOf(sign));
+		if (!optional.isPresent()) {
+			return null;
+		}
+		Template template = optional.get();
+		if (operatorId.equals(template.getOperatorId())) {
 			return template;
 		}
 		return null;
@@ -308,6 +309,9 @@ public class TemplateUtils {
 			return false;
 		}
 		for (TemplateColumn templateColumn : template.getColumns()) {
+			if (templateColumn == null) {
+				return false;
+			}
 			if (StringUtils.isBlank(templateColumn.getTitle())) {
 				return false;
 			}

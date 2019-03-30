@@ -1,7 +1,6 @@
 package net.saisimon.agtms.web.config.aspect;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.ExecutorService;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
@@ -11,12 +10,14 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.entity.Operation;
 import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.dto.TokenInfo;
 import net.saisimon.agtms.core.factory.OperationHandlerFactory;
 import net.saisimon.agtms.core.factory.OperationServiceFactory;
 import net.saisimon.agtms.core.handler.DefaultOperationHandler;
@@ -37,7 +38,7 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 public class OperationAspect {
 	
 	@Autowired
-	private ExecutorService executorService;
+	private SchedulingTaskExecutor operationThreadPool;
 	@Autowired
 	private DefaultOperationHandler defaultOperationHandler;
 	
@@ -69,7 +70,7 @@ public class OperationAspect {
 				if (operation == null || operation.getOperatorId() == null) {
 					return;
 				}
-				executorService.execute(() -> {
+				operationThreadPool.execute(() -> {
 					OperationService operationService = OperationServiceFactory.get();
 					operationService.saveOrUpdate(operation);
 				});
@@ -81,7 +82,11 @@ public class OperationAspect {
 		if (args == null || args.length == 0) {
 			return null;
 		}
-		Template template = TemplateUtils.getTemplate(args[0], AuthUtils.getUserInfo().getUserId());
+		TokenInfo tokenInfo = AuthUtils.getTokenInfo();
+		if (tokenInfo == null) {
+			return null;
+		}
+		Template template = TemplateUtils.getTemplate(args[0], tokenInfo.getUserId());
 		if (template == null) {
 			return null;
 		}

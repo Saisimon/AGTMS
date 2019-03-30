@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Navigation;
 import net.saisimon.agtms.core.domain.entity.Template;
@@ -44,7 +45,7 @@ import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
-import net.saisimon.agtms.web.controller.base.EditController;
+import net.saisimon.agtms.web.controller.base.AbstractEditController;
 
 /**
  * 自定义对象管理编辑控制器
@@ -56,11 +57,11 @@ import net.saisimon.agtms.web.controller.base.EditController;
 @RequestMapping("/management/edit/{key}")
 @ControllerInfo("management")
 @Slf4j
-public class ManagementEditController extends EditController<Domain> {
+public class ManagementEditController extends AbstractEditController<Domain> {
 	
 	@PostMapping("/grid")
 	public Result grid(@PathVariable("key") String key, @RequestParam(name = "id", required = false) Long id) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -77,15 +78,15 @@ public class ManagementEditController extends EditController<Domain> {
 	}
 	
 	@Operate(type=OperateTypes.EDIT)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/save")
 	public Result save(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		Object idObj = body.get("id");
+		Object idObj = body.get(Constant.ID);
 		if (idObj == null && !TemplateUtils.hasFunction(template, Functions.CREATE)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		} else if (idObj != null && !TemplateUtils.hasFunction(template, Functions.EDIT)) {
@@ -117,17 +118,18 @@ public class ManagementEditController extends EditController<Domain> {
 				if (generateService.checkExist(domain, userId)) {
 					return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
 				}
-				generateService.saveDomain(domain);
+				generateService.saveDomain(domain, userId);
 			} else {
 				Long id = Long.valueOf(idObj.toString());
 				Domain oldDomain = generateService.findById(id, userId);
 				if (oldDomain == null) {
 					return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
 				}
+				domain.setField(Constant.ID, id, Long.class);
 				if (generateService.checkExist(domain, userId)) {
 					return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
 				}
-				generateService.updateDomain(domain, oldDomain);
+				generateService.updateDomain(domain, oldDomain, userId);
 			}
 			return ResultUtils.simpleSuccess();
 		} catch (GenerateException e) {
@@ -147,7 +149,7 @@ public class ManagementEditController extends EditController<Domain> {
 		Long nid = template.getNavigationId();
 		if (nid != null && nid != -1) {
 			NavigationService navigationService = NavigationServiceFactory.get();
-			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(AuthUtils.getUserInfo().getUserId());
+			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(AuthUtils.getTokenInfo().getUserId());
 			do {
 				Navigation navigation = navigationMap.get(nid);
 				breadcrumbs.add(0, Breadcrumb.builder().text(navigation.getTitle()).to("/").build());
@@ -168,7 +170,7 @@ public class ManagementEditController extends EditController<Domain> {
 			return null;
 		}
 		Template template = (Template) key;
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		List<Field<?>> fields = new ArrayList<>();
 		if (CollectionUtils.isEmpty(template.getColumns())) {
 			return null;

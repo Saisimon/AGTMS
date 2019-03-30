@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import javax.transaction.Transactional;
@@ -19,7 +18,9 @@ import javax.transaction.Transactional;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.data.domain.Page;
+import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -82,7 +83,7 @@ import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
-import net.saisimon.agtms.web.controller.base.MainController;
+import net.saisimon.agtms.web.controller.base.AbstractMainController;
 import net.saisimon.agtms.web.dto.req.ExportParam;
 import net.saisimon.agtms.web.dto.req.ImportParam;
 import net.saisimon.agtms.web.selection.FileTypeSelection;
@@ -97,21 +98,25 @@ import net.saisimon.agtms.web.selection.FileTypeSelection;
 @RequestMapping("/management/main/{key}")
 @ControllerInfo("management")
 @Slf4j
-public class ManagementMainController extends MainController {
+public class ManagementMainController extends AbstractMainController {
 	
 	@Value("${extra.max-size.export:65535}")
 	private int exportMaxSize;
 	@Value("${extra.max-size.import:65535}")
 	private int importMaxSize;
+	@Value("${spring.cloud.client.ip-address}")
+	private String ip;
+	@Value("${server.port}")
+	private int port;
 	
 	@Autowired
 	private FileTypeSelection fileTypeSelection;
 	@Autowired
-	private ExecutorService executorService;
+	private SchedulingTaskExecutor taskThreadPool;
 	
 	@PostMapping("/grid")
 	public Result grid(@PathVariable("key") String key) {
-		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getTokenInfo().getUserId());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -121,7 +126,7 @@ public class ManagementMainController extends MainController {
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
 	public Result list(@PathVariable("key") String key, @RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -142,10 +147,10 @@ public class ManagementMainController extends MainController {
 	}
 
 	@Operate(type=OperateTypes.REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/remove")
 	public Result remove(@PathVariable("key") String key, @RequestParam(name = "id") Long id) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -163,7 +168,7 @@ public class ManagementMainController extends MainController {
 	
 	@PostMapping("/batch/grid")
 	public Result batchGrid(@PathVariable("key") String key) {
-		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getTokenInfo().getUserId());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -171,14 +176,14 @@ public class ManagementMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.BATCH_EDIT)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/save")
 	public Result batchSave(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
 		List<Integer> ids = SystemUtils.transformList(body.get("ids"));
 		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUserInfo().getUserId());
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getTokenInfo().getUserId());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -205,7 +210,7 @@ public class ManagementMainController extends MainController {
 		if (CollectionUtils.isEmpty(map)) {
 			return ResultUtils.simpleSuccess();
 		}
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		for (Integer id : ids) {
 			Domain domain = generateService.findById(id.longValue(), userId);
@@ -219,10 +224,10 @@ public class ManagementMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.BATCH_REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@PathVariable("key") String key, @RequestBody List<Long> ids) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -242,13 +247,12 @@ public class ManagementMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.EXPORT)
-	@Transactional
 	@PostMapping("/batch/export")
 	public Result batchExport(@PathVariable("key") String key, @Validated @RequestBody ExportParam body, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -275,24 +279,34 @@ public class ManagementMainController extends MainController {
 		exportTask.setTaskTime(new Date());
 		exportTask.setTaskType(Functions.EXPORT.getFunction());
 		exportTask.setTaskParam(SystemUtils.toJson(body));
-		exportTask.setHandleStatus(HandleStatuses.CREATE.getStatus());
+		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
+		exportTask.setIp(ip);
+		exportTask.setPort(port);
 		TaskService taskService = TaskServiceFactory.get();
-		exportTask = taskService.saveOrUpdate(exportTask);
-		submitTask(exportTask);
-		Result result = ResultUtils.simpleSuccess();
-		result.setMessage(getMessage("export.task.created"));
-		return result;
+		taskService.saveOrUpdate(exportTask);
+		try {
+			submitTask(exportTask);
+			Result result = ResultUtils.simpleSuccess();
+			result.setMessage(getMessage("export.task.created"));
+			return result;
+		} catch (TaskRejectedException e) {
+			Result result = ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
+			exportTask.setHandleTime(new Date());
+			exportTask.setHandleResult(result.getMessage());
+			exportTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
+			taskService.saveOrUpdate(exportTask);
+			return result;
+		}
 	}
 	
 	@Operate(type=OperateTypes.IMPORT)
-	@Transactional
 	@PostMapping("/batch/import")
 	public Result batchImport(@PathVariable("key") String key, 
 			@RequestParam(name="importFileName", required=false) String importFileName, 
 			@RequestParam("importFileType") String importFileType, 
 			@RequestParam("importFields") List<String> importFields, 
 			@RequestParam("importFile") MultipartFile importFile) {
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -354,13 +368,24 @@ public class ManagementMainController extends MainController {
 		exportTask.setTaskTime(new Date());
 		exportTask.setTaskType(Functions.IMPORT.getFunction());
 		exportTask.setTaskParam(SystemUtils.toJson(body));
-		exportTask.setHandleStatus(HandleStatuses.CREATE.getStatus());
+		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
+		exportTask.setIp(ip);
+		exportTask.setPort(port);
 		TaskService taskService = TaskServiceFactory.get();
-		exportTask = taskService.saveOrUpdate(exportTask);
-		submitTask(exportTask);
-		Result result = ResultUtils.simpleSuccess();
-		result.setMessage(getMessage("import.task.created"));
-		return result;
+		taskService.saveOrUpdate(exportTask);
+		try {
+			submitTask(exportTask);
+			Result result = ResultUtils.simpleSuccess();
+			result.setMessage(getMessage("import.task.created"));
+			return result;
+		} catch (TaskRejectedException e) {
+			Result result = ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
+			exportTask.setHandleTime(new Date());
+			exportTask.setHandleResult(result.getMessage());
+			exportTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
+			taskService.saveOrUpdate(exportTask);
+			return result;
+		}
 	}
 	
 	@Override
@@ -393,7 +418,7 @@ public class ManagementMainController extends MainController {
 		Long nid = template.getNavigationId();
 		if (nid != null && nid != -1) {
 			NavigationService navigationService = NavigationServiceFactory.get();
-			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(AuthUtils.getUserInfo().getUserId());
+			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(AuthUtils.getTokenInfo().getUserId());
 			do {
 				Navigation navigation = navigationMap.get(nid);
 				breadcrumbs.add(0, Breadcrumb.builder().text(navigation.getTitle()).to("/").build());
@@ -410,7 +435,7 @@ public class ManagementMainController extends MainController {
 		}
 		Template template = (Template) key;
 		List<Filter> filters = new ArrayList<>();
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		for (TemplateColumn column : template.getColumns()) {
 			Filter filter = new Filter();
 			List<String> keyValues = new ArrayList<>();
@@ -584,7 +609,6 @@ public class ManagementMainController extends MainController {
 				}
 				Column column = Column.builder().field(templateColumn.getColumnName() + templateField.getFieldName())
 						.label(templateField.getFieldTitle())
-//						.width(templateField.getWidth())
 						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
 						.views(templateField.getViews())
 						.build();
@@ -609,54 +633,54 @@ public class ManagementMainController extends MainController {
 	}
 	
 	private <P> void submitTask(final Task task) {
-		if (task == null) {
-			return;
-		}
-		Future<?> future = executorService.submit(() -> {
-			FilterRequest filter = FilterRequest.build().and("id", task.getId());
+		Future<?> future = taskThreadPool.submit(() -> {
 			TaskService taskService = TaskServiceFactory.get();
-			Map<String, Object> updateMap = new HashMap<>();
-			updateMap.put("handleStatus", HandleStatuses.PROCESSING.getStatus());
-			taskService.batchUpdate(filter, updateMap);
+			task.setHandleStatus(HandleStatuses.PROCESSING.getStatus());
+			taskService.saveOrUpdate(task);
 			try {
 				@SuppressWarnings("unchecked")
 				Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
 				if (actuator == null) {
-					updateMap.clear();
-					updateMap.put("handleStatus", HandleStatuses.PROCESSING.getStatus());
-					updateMap.put("handleTime", new Date());
-					taskService.batchUpdate(filter, updateMap);
+					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+					task.setHandleResult("failure");
+					task.setHandleTime(new Date());
+					taskService.saveOrUpdate(task);
 					return;
 				}
 				Class<P> paramClass = actuator.getParamClass();
 				P param = SystemUtils.fromJson(task.getTaskParam(), paramClass);
 				if (Thread.currentThread().isInterrupted()) {
-					return;
+					throw new InterruptedException();
 				}
 				Result result = actuator.execute(param);
 				if (Thread.currentThread().isInterrupted()) {
-					return;
+					throw new InterruptedException();
 				}
-				updateMap.clear();
-				updateMap.put("handleTime", new Date());
+				task.setHandleTime(new Date());
 				if (ResultUtils.isSuccess(result)) {
-					updateMap.put("handleStatus", HandleStatuses.SUCCESS.getStatus());
-					updateMap.put("handleResult", result.getMessage());
-					updateMap.put("taskParam", SystemUtils.toJson(param));
+					task.setHandleStatus(HandleStatuses.SUCCESS.getStatus());
+					task.setHandleResult(result.getMessage());
+					task.setTaskParam(SystemUtils.toJson(param));
 				} else {
-					updateMap.put("handleStatus", HandleStatuses.FAILURE.getStatus());
+					task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
 					if (result != null) {
-						updateMap.put("handleResult", result.getMessage());
+						task.setHandleResult(result.getMessage());
+					} else {
+						task.setHandleResult("failure");
 					}
 				}
-				taskService.batchUpdate(filter, updateMap);
+				taskService.saveOrUpdate(task);
 			} catch (InterruptedException e) {
+				task.setHandleTime(new Date());
+				task.setHandleStatus(HandleStatuses.CANCELED.getStatus());
+				task.setHandleResult("task.cancel");
+				taskService.saveOrUpdate(task);
 				log.warn("任务被中断");
 			} catch (Throwable e) {
-				updateMap.clear();
-				updateMap.put("handleStatus", HandleStatuses.FAILURE.getStatus());
-				updateMap.put("handleTime", new Date());
-				taskService.batchUpdate(filter, updateMap);
+				task.setHandleTime(new Date());
+				task.setHandleStatus(HandleStatuses.FAILURE.getStatus());
+				task.setHandleResult("server.error");
+				taskService.saveOrUpdate(task);
 				log.error("任务执行异常", e);
 			} finally {
 				SystemUtils.removeTaskFuture(task.getId());

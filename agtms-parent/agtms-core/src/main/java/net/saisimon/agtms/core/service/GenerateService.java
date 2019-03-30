@@ -142,19 +142,19 @@ public interface GenerateService {
 		return null;
 	}
 	
-	default Domain saveDomain(Domain domain) {
+	default Domain saveDomain(Domain domain, Long operatorId) {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		DomainGenerater.fillCommonFields(domain, null);
+		DomainGenerater.fillCommonFields(domain, null, operatorId);
 		return repository.saveOrUpdate(domain);
 	}
 	
-	default Domain updateDomain(Domain domain, Domain oldDomain) {
+	default Domain updateDomain(Domain domain, Domain oldDomain, Long operatorId) {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		DomainGenerater.fillCommonFields(domain, oldDomain);
+		DomainGenerater.fillCommonFields(domain, oldDomain, operatorId);
 		return repository.saveOrUpdate(domain);
 	}
 	

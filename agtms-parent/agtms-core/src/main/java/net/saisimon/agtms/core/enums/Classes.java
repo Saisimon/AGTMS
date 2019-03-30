@@ -8,9 +8,21 @@ package net.saisimon.agtms.core.enums;
  */
 public enum Classes {
 	
+	/**
+	 * 字符串
+	 */
 	STRING("string"), 
+	/**
+	 * 整数
+	 */
 	LONG("long"), 
+	/**
+	 * 小数
+	 */
 	DOUBLE("double"), 
+	/**
+	 * 日期
+	 */
 	DATE("date");
 	
 	private String name;

@@ -99,7 +99,7 @@ public class MongodbFilterUtils {
 				criteria.ne(value);
 				break;
 			case EXISTS:
-				criteria.exists(value.toString().equals("true"));
+				criteria.exists("true".equals(value.toString()));
 				break;
 			case IN:
 				if (value.getClass().isArray()) {

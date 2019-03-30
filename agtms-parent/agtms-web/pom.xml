@@ -49,6 +49,10 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-config</artifactId>
 		</dependency>
@@ -58,6 +62,10 @@
 		</dependency>
 		<!-- 
 		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
 		</dependency>
@@ -66,20 +74,16 @@
 			<artifactId>postgresql</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-mongodb</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.saisimon</groupId>
-			<artifactId>agtms-remote</artifactId>
+			<artifactId>agtms-redis</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.saisimon</groupId>
-			<artifactId>agtms-redis</artifactId>
+			<artifactId>agtms-remote</artifactId>
 		</dependency>
 		-->
 	</dependencies>

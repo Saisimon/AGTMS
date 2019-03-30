@@ -30,9 +30,10 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
+import net.saisimon.agtms.core.util.NavigationUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
-import net.saisimon.agtms.web.controller.base.EditController;
+import net.saisimon.agtms.web.controller.base.AbstractEditController;
 import net.saisimon.agtms.web.controller.main.NavigationMainController;
 import net.saisimon.agtms.web.dto.req.NavigationParam;
 import net.saisimon.agtms.web.selection.NavigationSelection;
@@ -46,7 +47,7 @@ import net.saisimon.agtms.web.selection.NavigationSelection;
 @RestController
 @RequestMapping("/navigation/edit")
 @ControllerInfo("navigation.management")
-public class NavigationEditController extends EditController<Navigation> {
+public class NavigationEditController extends AbstractEditController<Navigation> {
 	
 	@Autowired
 	private NavigationSelection navigationSelection;
@@ -55,9 +56,8 @@ public class NavigationEditController extends EditController<Navigation> {
 	public Result grid(@RequestParam(name = "id", required = false) Long id) {
 		Navigation navigation = null;
 		if (id != null) {
-			NavigationService navigationService = NavigationServiceFactory.get();
-			Long userId = AuthUtils.getUserInfo().getUserId();
-			navigation = navigationService.getNavigation(id, userId);
+			Long userId = AuthUtils.getTokenInfo().getUserId();
+			navigation = NavigationUtils.getNavigation(id, userId);
 			if (navigation == null) {
 				return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 			}
@@ -66,17 +66,17 @@ public class NavigationEditController extends EditController<Navigation> {
 	}
 	
 	@Operate(type=OperateTypes.EDIT)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/save")
 	public Result save(@Validated @RequestBody NavigationParam body, BindingResult result) {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		NavigationService navigationService = NavigationServiceFactory.get();
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Long id = body.getId();
 		if (null != id && id > 0) {
-			Navigation oldNavigation = navigationService.getNavigation(id, userId);
+			Navigation oldNavigation = NavigationUtils.getNavigation(id, userId);
 			if (oldNavigation == null) {
 				return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 			}

@@ -47,7 +47,7 @@ import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
-import net.saisimon.agtms.web.controller.base.MainController;
+import net.saisimon.agtms.web.controller.base.AbstractMainController;
 import net.saisimon.agtms.web.dto.resp.SelectionInfo;
 import net.saisimon.agtms.web.selection.SelectTypeSelection;
 
@@ -60,7 +60,7 @@ import net.saisimon.agtms.web.selection.SelectTypeSelection;
 @RestController
 @RequestMapping("/selection/main")
 @ControllerInfo("selection.management")
-public class SelectionMainController extends MainController {
+public class SelectionMainController extends AbstractMainController {
 	
 	public static final String SELECTION = "selection";
 	private static final String SELECTION_FILTERS = SELECTION + "_filters";
@@ -91,7 +91,7 @@ public class SelectionMainController extends MainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, SELECTION_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getUserInfo().getUserId());
+		filter.and(Constant.OPERATORID, AuthUtils.getTokenInfo().getUserId());
 		FilterPageable pageable = FilterPageable.build(param);
 		SelectionService selectionService = SelectionServiceFactory.get();
 		Page<Selection> page = selectionService.findPage(filter, pageable);
@@ -113,13 +113,13 @@ public class SelectionMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		Selection selection = SelectionUtils.getSelection(id, userId);
 		if (selection == null) {
 			return ErrorMessage.Selection.SELECTION_NOT_EXIST;
@@ -135,13 +135,13 @@ public class SelectionMainController extends MainController {
 	}
 	
 	@Operate(type=OperateTypes.BATCH_REMOVE)
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody List<Long> ids) {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getUserInfo().getUserId();
+		Long userId = AuthUtils.getTokenInfo().getUserId();
 		SelectionService selectionService = SelectionServiceFactory.get();
 		for (Long id : ids) {
 			Selection selection = SelectionUtils.getSelection(id, userId);

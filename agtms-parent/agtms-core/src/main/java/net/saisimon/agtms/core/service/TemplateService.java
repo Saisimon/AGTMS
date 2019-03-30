@@ -1,15 +1,15 @@
 package net.saisimon.agtms.core.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.Ordered;
 
-import net.saisimon.agtms.core.cache.Cache;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
-import net.saisimon.agtms.core.factory.CacheFactory;
-import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.util.TemplateUtils;
 
 /**
  * 模板服务接口
@@ -18,9 +18,6 @@ import net.saisimon.agtms.core.util.TemplateUtils;
  *
  */
 public interface TemplateService extends BaseService<Template, Long>, Ordered {
-	
-	public static final String TEMPLATE_KEY = "template_%s";
-	public static final long TEMPLATE_TIMEOUT = 60 * 1000L;
 	
 	default Boolean exists(String title, Long operatorId) {
 		if (title == null || operatorId == null) {
@@ -46,17 +43,6 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		return findList(filter);
 	}
 	
-	@Override
-	default void delete(Template entity) {
-		if (entity == null) {
-			return;
-		}
-		Cache cache = CacheFactory.get();
-		cache.delete(String.format(TEMPLATE_KEY, entity.getId()));
-		DomainGenerater.removeDomainClass(TemplateUtils.getNamespace(entity), DomainGenerater.buildGenerateName(entity.sign()));
-		BaseService.super.delete(entity);
-	}
-
 	default boolean createTable(Template template) {
 		if (template == null) {
 			return false;
@@ -79,14 +65,39 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 	}
 	
 	@Override
-	default Template saveOrUpdate(Template entity) {
-		Template template = BaseService.super.saveOrUpdate(entity);
-		if (template != null) {
-			String key = String.format(TEMPLATE_KEY, template.getId());
-			Cache cache = CacheFactory.get();
-			cache.set(key, template, TEMPLATE_TIMEOUT);
-		}
-		return template;
+	@Cacheable(cacheNames="template", key="#p0")
+	default Optional<Template> findById(Long id) {
+		return BaseService.super.findById(id);
 	}
 	
+	@Override
+	@CacheEvict(cacheNames="template", key="#p0.id")
+	default void delete(Template entity) {
+		BaseService.super.delete(entity);
+	}
+	
+	@Override
+	@CacheEvict(cacheNames="template", key="#p0.id")
+	default Template saveOrUpdate(Template entity) {
+		return BaseService.super.saveOrUpdate(entity);
+	}
+	
+	@Override
+	@CacheEvict(cacheNames="template", key="#p0")
+	default void update(Long id, Map<String, Object> updateMap) {
+		BaseService.super.update(id, updateMap);
+	}
+	
+	@Override
+	@CacheEvict(cacheNames="template", allEntries=true)
+	default void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
+		BaseService.super.batchUpdate(filter, updateMap);
+	}
+
+	@Override
+	@CacheEvict(cacheNames="template", allEntries=true)
+	default Long delete(FilterRequest filter) {
+		return BaseService.super.delete(filter);
+	}
+
 }

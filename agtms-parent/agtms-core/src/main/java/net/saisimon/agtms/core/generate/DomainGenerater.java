@@ -23,10 +23,8 @@ import net.saisimon.agtms.core.classloader.GenerateClassLoader;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.generate.Generate;
-import net.saisimon.agtms.core.dto.UserInfo;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.exception.GenerateException;
-import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.StringUtils;
 
@@ -253,17 +251,14 @@ public class DomainGenerater {
 		}
 	}
 	
-	public static void fillCommonFields(Domain newDomain, Domain oldDomain) {
+	public static void fillCommonFields(Domain newDomain, Domain oldDomain, Long operatorId) {
 		if (newDomain == null) {
 			return;
 		}
 		Date time = new Date();
 		if (oldDomain == null) {
 			newDomain.setField(Constant.CREATETIME, time, Date.class);
-			UserInfo userInfo = AuthUtils.getUserInfo();
-			if (userInfo != null) {
-				newDomain.setField(Constant.OPERATORID, userInfo.getUserId(), Long.class);
-			}
+			newDomain.setField(Constant.OPERATORID, operatorId, Long.class);
 		} else {
 			newDomain.setField(Constant.ID, oldDomain.getField(Constant.ID), Long.class);
 			newDomain.setField(Constant.CREATETIME, oldDomain.getField(Constant.CREATETIME), Date.class);

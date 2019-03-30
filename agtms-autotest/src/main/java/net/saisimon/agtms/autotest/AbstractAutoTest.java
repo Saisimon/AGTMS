@@ -1,6 +1,8 @@
 package net.saisimon.agtms.autotest;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
@@ -42,8 +44,8 @@ public abstract class AbstractAutoTest implements AutoTest {
 		driver.manage().window().maximize();
 		log.debug("URL: " + url);
 		driver.get(url);
-//		register(driver);
-//		signout(driver);
+		register(driver);
+		signout(driver);
 		signin(driver);
 		navigationManagement(driver);
 		templateManagement(driver);
@@ -91,6 +93,8 @@ public abstract class AbstractAutoTest implements AutoTest {
 		to(driver, "/navigation/main");
 		// 点击导航创建按钮
 		clickButton(driver, "create-btn");
+		// 空表单登录提交
+		clickButton(driver, "save-btn");
 		// 设置导航信息
 		setNavigation(driver, 1, "random", "TEST", 1);
 		// 重置取消
@@ -174,12 +178,21 @@ public abstract class AbstractAutoTest implements AutoTest {
 		// 点击批量删除按钮
 		clickButton(driver, "batch-remove-btn");
 		// 确认删除
-		findElement(driver, By.xpath("//div[@class='batch-remove-container']//div[@class='modal-content']//button[@class='btn btn-outline-danger btn-sm']")).click();
+		confireBatchRemove(driver);
 	}
 
 	protected void templateManagement(WebDriver driver) throws Exception {
 		// 跳转模板管理列表页面
 		to(driver, "/template/main");
+		// 点击模板创建按钮
+		clickButton(driver, "create-btn");
+		// 空表单登录提交
+		clickButton(driver, "save-btn");
+		// 关闭提示窗
+		closeAlert(driver);
+		// 点击返回按钮
+		clickButton(driver, "back-btn");
+		// 显示筛选条件
 		if (!findElement(driver, By.id("filter-toggle")).isDisplayed()) {
 			clickButton(driver, "filter-switch-btn");
 		}
@@ -190,11 +203,72 @@ public abstract class AbstractAutoTest implements AutoTest {
 	protected void selectionManagement(WebDriver driver) throws Exception {
 		// 跳转下拉列表管理列表页面
 		to(driver, "/selection/main");
+		// 点击下拉列表创建按钮
+		clickButton(driver, "create-btn");
+		// 空表单登录提交
+		clickButton(driver, "save-btn");
+		// 关闭提示窗
+		closeAlert(driver);
+		LinkedHashMap<String, String> optionMap = new LinkedHashMap<>();
+		optionMap.put("0", "Woman");
+		optionMap.put("1", "Man");
+		// 设置下拉列表信息
+		setOptionSelection(driver, "Gender", optionMap);
+		// 重置取消
+		reset(driver, false);
+		// 重置确认
+		reset(driver, true);
+		// 创建下拉列表信息
+		createOptionSelection(driver, "Gender", optionMap);
+		// 重置确认
+		reset(driver, true);
+		// 重复创建下拉列表信息
+		createOptionSelection(driver, "Gender", optionMap);
+		// 重置确认
+		reset(driver, true);
+		LinkedHashMap<String, String> whetherMap = new LinkedHashMap<>();
+		whetherMap.put("0", "No");
+		whetherMap.put("1", "Yes");
+		createOptionSelection(driver, "Whether", whetherMap);
+		// 重置确认
+		reset(driver, true);
+		LinkedHashMap<String, String> testMap = new LinkedHashMap<>();
+		testMap.put("0", "Zero");
+		testMap.put("1", "One");
+		testMap.put("2", "Two");
+		testMap.put("3", "Three");
+		testMap.put("4", "Four");
+		testMap.put("5", "Five");
+		createOptionSelection(driver, "Test", testMap);
+		// 点击返回按钮
+		clickButton(driver, "back-btn");
+		// 显示筛选条件
 		if (!findElement(driver, By.id("filter-toggle")).isDisplayed()) {
 			clickButton(driver, "filter-switch-btn");
 		}
-		// TODO
-		
+		// 精确查询
+		inputByClass(driver, "title-input", "Gender");
+		clickButton(driver, "search-btn");
+		// 模糊查询
+		inputByClass(driver, "title-input", "er");
+		select(driver, "//div[contains(@class,'title-operator-select')]", 2);
+		clickButton(driver, "search-btn");
+		// 逗号分隔查询
+		inputByClass(driver, "title-input", "Whether,Test");
+		select(driver, "//div[contains(@class,'title-operator-select')]", 3);
+		clickButton(driver, "search-btn");
+		// 点击清空按钮
+		clickButton(driver, "clear-btn");
+		// 点击刷新按钮
+		clickButton(driver, "refresh-btn");
+		// 删除列表第一条
+		remove(getTableList(driver).get(0));
+		// 勾选列表所有行
+		selectAllRows(driver);
+		// 点击批量删除按钮
+		clickButton(driver, "batch-remove-btn");
+		// 确认删除
+		confireBatchRemove(driver);
 	}
 	
 	protected void taskManagement(WebDriver driver) throws Exception {
@@ -215,20 +289,14 @@ public abstract class AbstractAutoTest implements AutoTest {
 		if (!findElement(driver, By.id("filter-toggle")).isDisplayed()) {
 			clickButton(driver, "filter-switch-btn");
 		}
-		// 选择登入操作类型
-		select(driver, "//div[@class='filter-container']//div[contains(@class,'operateType-select')]", 1);
-		// 搜索
-		clickButton(driver, "search-btn");
+		for (int i = 1; i <= 10; i++) {
+			// 选择操作类型
+			select(driver, "//div[@class='filter-container']//div[contains(@class,'operateType-select')]", i);
+			// 搜索
+			clickButton(driver, "search-btn");
+		}
 		// 清空
 		clickButton(driver, "clear-btn");
-		// 选择登出操作类型
-		select(driver, "//div[@class='filter-container']//div[contains(@class,'operateType-select')]", 2);
-		// 搜索
-		clickButton(driver, "search-btn");
-		// 取消选择登出操作类型
-		select(driver, "//div[@class='filter-container']//div[contains(@class,'operateType-select')]", 2);
-		// 搜索
-		clickButton(driver, "search-btn");
 		// 下一页
 		nextPage(driver);
 		// 上一页
@@ -237,6 +305,30 @@ public abstract class AbstractAutoTest implements AutoTest {
 		lastPage(driver);
 		// 首页
 		firstPage(driver);
+	}
+	
+	protected void setOptionSelection(WebDriver driver, String title, LinkedHashMap<String, String> optionMap) throws Exception {
+		inputById(driver, "title-input", title);
+		int idx = 0;
+		for (Map.Entry<String, String> entry : optionMap.entrySet()) {
+			if (idx != 0) {
+				clickButton(driver, "add-option-div");
+			}
+			inputById(driver, "optionValue-" + idx + "-input", entry.getKey());
+			inputById(driver, "optionText-" + idx + "-input", entry.getValue());
+			idx++;
+		}
+	}
+	
+	protected void confireBatchRemove(WebDriver driver) throws Exception {
+		findElement(driver, By.xpath("//div[@class='batch-remove-container']//div[@class='modal-content']//button[@class='btn btn-outline-danger btn-sm']")).click();
+		Thread.sleep(interval);
+	}
+	
+	protected void createOptionSelection(WebDriver driver, String title, LinkedHashMap<String, String> optionMap) throws Exception {
+		setOptionSelection(driver, title, optionMap);
+		clickButton(driver, "save-btn");
+		closeAlert(driver);
 	}
 	
 	protected void setNavigation(WebDriver driver, int navigationIndex, String icon, String title, int priority) throws Exception {

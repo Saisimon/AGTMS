@@ -61,7 +61,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 	private MessageSource messageSource;
 	
 	@Override
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	public Result execute(ImportParam param) throws Exception {
 		Template template = TemplateUtils.getTemplate(param.getTemplateId(), param.getUserId());
 		if (template == null) {
@@ -86,7 +86,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 		Map<String, Map<String, String>> fieldTextMap = new HashMap<>();
 		for (int i = 1; i < datas.size(); i++) {
 			if (Thread.currentThread().isInterrupted()) {
-				return ErrorMessage.Task.TASK_CANCEL;
+				throw new InterruptedException("Task Cancel");
 			}
 			Domain domain = generateService.newGenerate();
 			List<String> data = datas.get(i);
@@ -135,7 +135,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 			} else if (generateService.checkExist(domain, param.getUserId())) {
 				resultData.add(getMessage("domain.already.exists"));
 			} else {
-				generateService.saveDomain(domain);
+				generateService.saveDomain(domain, param.getUserId());
 				resultData.add(getMessage("success"));
 			}
 			resultDatas.add(resultData);

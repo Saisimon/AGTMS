@@ -9,33 +9,33 @@ package net.saisimon.agtms.core.enums;
 public enum Functions {
 	
 	/**
-	 * 创建
+	 * 创建(0000001)
 	 */
-	CREATE(1, "create"), 				// 0000001
+	CREATE(1, "create"),
 	/**
-	 * 编辑
+	 * 编辑(0000010)
 	 */
-	EDIT(2, "edit"), 					// 0000010
+	EDIT(2, "edit"),
 	/**
-	 * 批量编辑
+	 * 批量编辑(0000100)
 	 */
-	BATCH_EDIT(4, "batchEdit"), 		// 0000100
+	BATCH_EDIT(4, "batchEdit"),
 	/**
-	 * 删除
+	 * 删除(0001000)
 	 */
-	REMOVE(8, "remove"), 				// 0001000
+	REMOVE(8, "remove"),
 	/**
-	 * 批量删除
+	 * 批量删除(0010000)
 	 */
-	BATCH_REMOVE(16, "batchRemove"), 	// 0010000
+	BATCH_REMOVE(16, "batchRemove"),
 	/**
-	 * 批量导出
+	 * 批量导出(0100000)
 	 */
-	EXPORT(32, "export"), 				// 0100000
+	EXPORT(32, "export"),
 	/**
-	 * 批量导入
+	 * 批量导入(1000000)
 	 */
-	IMPORT(64, "import"); 				// 1000000
+	IMPORT(64, "import");
 	
 	/**
 	 * 功能代码

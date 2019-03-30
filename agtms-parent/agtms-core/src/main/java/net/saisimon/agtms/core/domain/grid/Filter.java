@@ -1,9 +1,9 @@
 package net.saisimon.agtms.core.domain.grid;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cn.hutool.core.map.MapUtil;
 import lombok.Data;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
@@ -20,7 +20,7 @@ public class Filter implements Cloneable {
 	public Object clone() throws CloneNotSupportedException {
 		Filter filter = (Filter) super.clone();
 		filter.key = (SingleSelect<String>) key.clone();
-		Map<String, FieldFilter> cloneValue = new HashMap<>();
+		Map<String, FieldFilter> cloneValue = MapUtil.newHashMap(filter.value.size());
 		for (Entry<String, FieldFilter> entry : filter.value.entrySet()) {
 			cloneValue.put(entry.getKey(), (FieldFilter) entry.getValue().clone());
 		}

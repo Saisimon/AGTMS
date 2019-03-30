@@ -1,7 +1,6 @@
 package net.saisimon.agtms.core.domain.sign;
 
 import lombok.Builder;
-import lombok.Data;
 
 /**
  * 标志对象
@@ -9,7 +8,6 @@ import lombok.Data;
  * @author saisimon
  *
  */
-@Data
 @Builder
 public class Sign {
 	
@@ -21,18 +19,23 @@ public class Sign {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		Sign other = (Sign) obj;
 		if (name == null) {
-			if (other.name != null)
+			if (other.name != null) {
 				return false;
-		} else if (!name.equals(other.name))
+			}
+		} else if (!name.equals(other.name)) {
 			return false;
+		}
 		return true;
 	}
 
@@ -47,6 +50,30 @@ public class Sign {
 	@Override
 	public String toString() {
 		return "Sign [name=" + name + ", text=" + text + "]";
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getText() {
+		return text;
+	}
+
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	public int getOrder() {
+		return order;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
 	}
 	
 }

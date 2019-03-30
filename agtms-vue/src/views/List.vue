@@ -561,10 +561,14 @@ export default {
             if (operator === 'fuzzy') {
                 filter['operator'] = '$regex';
             } else if (operator === 'separator') {
-                var textList = text.split(',');
-                if (textList && textList.length > 1) {
+                if (!Array.isArray(text)) {
+                    var textList = text.split(',');
+                    if (textList && textList.length > 1) {
+                        filter['operator'] = '$in';
+                        filter['value'] = textList;
+                    }
+                } else if (text.length > 1) {
                     filter['operator'] = '$in';
-                    filter['value'] = textList;
                 }
             }
             filters.push(filter);

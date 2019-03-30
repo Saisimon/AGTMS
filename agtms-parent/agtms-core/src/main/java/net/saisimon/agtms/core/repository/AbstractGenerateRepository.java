@@ -41,6 +41,13 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 	}
 	
 	/**
+	 * 清除模版对象
+	 */
+	public void remove() {
+		local.remove();
+	}
+	
+	/**
 	 * 获取模版对象
 	 * 
 	 * @return 模版对象

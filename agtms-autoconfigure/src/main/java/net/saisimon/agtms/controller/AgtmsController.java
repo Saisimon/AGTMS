@@ -1,8 +1,6 @@
 package net.saisimon.agtms.controller;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import cn.hutool.core.map.MapUtil;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
@@ -54,9 +53,21 @@ public class AgtmsController {
 		return templateScanner.getAllTemplates();
 	}
 	
+	@PostMapping("/{key}/template")
+	public Template template(@PathVariable("key") String key) {
+		if (StringUtils.isBlank(key)) {
+			return null;
+		}
+		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
+		if (templateResolver == null) {
+			return null;
+		}
+		return templateResolver.getTemplate();
+	}
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@PostMapping("/{key}/selection")
-	public LinkedHashMap<?, String> selection(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
+	public Map<?, String> selection(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
 		if (StringUtils.isBlank(key)) {
 			return null;
 		}
@@ -174,9 +185,9 @@ public class AgtmsController {
 		}
 		Page<?> page = repository.findPage(filter, pageable, properties);
 		List<?> entities = page.getContent();
-		Map<String, Object> result = new HashMap<>();
+		Map<String, Object> result = MapUtil.newHashMap();
 		if (CollectionUtils.isEmpty(entities)) {
-			result.put("rows", new ArrayList<>());
+			result.put("rows", new ArrayList<>(0));
 			result.put("total", 0L);
 			return result;
 		}
@@ -312,7 +323,7 @@ public class AgtmsController {
 	}
 	
 	private Map<String, Object> toMap(Object entity, Class<?> entityClass, Set<String> fieldNames) {
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = MapUtil.newHashMap(fieldNames.size());
 		ReflectionUtils.doWithLocalFields(entityClass, field -> {
 			if (fieldNames.contains(field.getName())) {
 				field.setAccessible(true);

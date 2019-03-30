@@ -6,7 +6,7 @@ public interface RedisOrder extends BaseOrder {
 	
 	@Override
 	default int getOrder() {
-		return 0;
+		return -1;
 	}
 	
 }

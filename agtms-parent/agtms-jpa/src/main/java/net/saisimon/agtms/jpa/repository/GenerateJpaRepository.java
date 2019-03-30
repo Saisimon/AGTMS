@@ -215,7 +215,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 	
 	@Override
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	public void delete(Domain entity) {
 		if (entity == null) { 
 			return;
@@ -230,7 +230,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	public Long delete(FilterRequest filter) {
 		StringBuilder sql = buildDeleteSql();
 		Object[] args = null;
@@ -250,7 +250,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	public Domain saveOrUpdate(Domain entity) {
 		if (entity == null) {
 			return entity;
@@ -265,7 +265,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	public void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
 		if (filter == null) {
 			return;
@@ -343,7 +343,6 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		KeyHolder holder = new GeneratedKeyHolder();
 		ArgumentPreparedStatementSetter pss = new ArgumentPreparedStatementSetter(args.toArray());
 		int result = jdbcTemplate.update(conn -> {
-//			PreparedStatement ps = conn.prepareStatement(sql.toString(), java.sql.Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement ps = conn.prepareStatement(sql.toString(), new String[] { Constant.ID });
 			pss.setValues(ps);
 			return ps;

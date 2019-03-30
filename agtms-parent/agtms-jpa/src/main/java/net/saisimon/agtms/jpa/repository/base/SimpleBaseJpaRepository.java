@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.transaction.Transactional;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -15,7 +16,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -83,7 +83,7 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 		return findById(id);
 	}
 
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@Override
 	public Long delete(final FilterRequest filter) {
 		List<T> list = findList(filter);
@@ -97,7 +97,7 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 		}
 	}
 	
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@Override
 	public T saveOrUpdate(T entity) {
 		if (entity == null) {
@@ -106,7 +106,7 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 		return saveAndFlush(entity);
 	}
 
-	@Transactional
+	@Transactional(rollbackOn = Exception.class)
 	@Override
 	public void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
 		List<T> list = findList(filter);

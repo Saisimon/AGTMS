@@ -43,13 +43,13 @@
                                         <i class="fa fa-list"></i>
                                     </div>
                                     <b-col>
-                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" v-model.trim="option.value.value" :state="option.value.state" />
+                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionValue-' + key + '-input'" v-model.trim="option.value.value" :state="option.value.state" />
                                         <b-form-invalid-feedback :state="option.value.state">
                                             {{ $t('please_input_valid') }}{{ $t('option_value') }}
                                         </b-form-invalid-feedback>
                                     </b-col>
                                     <b-col>
-                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" v-model.trim="option.text.value" :state="option.text.state" />
+                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionText-' + key + '-input'" v-model.trim="option.text.value" :state="option.text.state" />
                                         <b-form-invalid-feedback :state="option.text.state">
                                             {{ $t('please_input_valid') }}{{ $t('option_value') }}
                                         </b-form-invalid-feedback>

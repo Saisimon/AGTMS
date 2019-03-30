@@ -13,7 +13,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.entity.Operation;
 import net.saisimon.agtms.core.dto.SimpleResult;
-import net.saisimon.agtms.core.dto.UserInfo;
+import net.saisimon.agtms.core.dto.TokenInfo;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -33,8 +33,8 @@ public class LoginOperationHandler implements OperationHandler {
 		if (result instanceof SimpleResult) {
 			SimpleResult<?> simpleResult = (SimpleResult<?>) result;
 			Object data = simpleResult.getData();
-			if (data instanceof UserInfo && data != null) {
-				operation.setOperatorId(((UserInfo) data).getUserId());
+			if (data instanceof TokenInfo && data != null) {
+				operation.setOperatorId(((TokenInfo) data).getUserId());
 			}
 		}
 		operation.setOperateType(operate.type().getType());

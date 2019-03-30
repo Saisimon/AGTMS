@@ -134,19 +134,19 @@ export default {
                 for (var i = 0; i < this.rows.length; i++) {
                     var row = this.rows[i];
                     if (row.editor == 'input') {
-                        row[fieldKey] = {value: ""};
+                        row[fieldKey] = {value: "", className: fieldKey};
                     } else if (row.editor == 'select') {
                         if (row.key == 'fieldType') {
                             var classOptions = this.$store.state.template.classOptions;
-                            row[fieldKey] = {value: classOptions[0], options: classOptions};
+                            row[fieldKey] = {value: classOptions[0], options: classOptions, className: fieldKey};
                         } else if (row.key == 'showType') {
                             var viewOptions = this.$store.state.template.viewOptions;
-                            row[fieldKey] = {value: viewOptions[0], options: viewOptions};
+                            row[fieldKey] = {value: viewOptions[0], options: viewOptions, className: fieldKey};
                             var selectionOptions = this.$store.state.template.selectionOptions;
-                            row['selection-' + fieldKey] = {value: selectionOptions[0], options: selectionOptions};
+                            row['selection-' + fieldKey] = {value: selectionOptions[0], options: selectionOptions, className: 'selection-' + fieldKey};
                         } else {
                             var whetherOptions = this.$store.state.template.whetherOptions;
-                            row[fieldKey] = {value: whetherOptions[0], options: whetherOptions};
+                            row[fieldKey] = {value: whetherOptions[0], options: whetherOptions, className: fieldKey};
                         }
                     } else if (row.editor == 'remove') {
                         row[fieldKey] = "";

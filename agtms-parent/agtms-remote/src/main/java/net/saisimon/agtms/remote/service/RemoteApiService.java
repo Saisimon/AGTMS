@@ -14,12 +14,14 @@ import feign.Contract;
 import feign.Feign;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
+import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.util.StringUtils;
 
 @Import(FeignClientsConfiguration.class)
 @Service
+@Slf4j
 public class RemoteApiService implements RemoteService {
 	
 	@Autowired
@@ -37,16 +39,40 @@ public class RemoteApiService implements RemoteService {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + serviceId);
-		return apiService.templates();
+		try {
+			return apiService.templates();
+		} catch (Exception e) {
+			log.error(String.format("remote templates failed. %s", serviceId));
+			return null;
+		}
 	}
-
+	
+	@Override
+	public Template template(String serviceId, String key) {
+		if (StringUtils.isBlank(serviceId)) {
+			return null;
+		}
+		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + serviceId);
+		try {
+			return apiService.template(key);
+		} catch (Exception e) {
+			log.error(String.format("remote template failed. %s, %s", serviceId, key));
+			return null;
+		}
+	}
+	
 	@Override
 	public LinkedHashMap<?, String> selection(String serviceId, String key, Map<String, Object> body) {
 		if (StringUtils.isBlank(serviceId)) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + serviceId);
-		return apiService.selection(key, body);
+		try {
+			return apiService.selection(key, body);
+		} catch (Exception e) {
+			log.error(String.format("remote selection failed. %s, %s", serviceId, key));
+			return null;
+		}
 	}
-	
+
 }

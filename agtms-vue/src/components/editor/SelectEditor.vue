@@ -1,5 +1,5 @@
 <template>
-    <div class="select-editor" @click="show=true">
+    <div class="select-editor" :class="editor.className" @click="show=true">
         <multiselect v-if="show" 
             @blur.native.capture="show=false" 
             v-model="editor.value"

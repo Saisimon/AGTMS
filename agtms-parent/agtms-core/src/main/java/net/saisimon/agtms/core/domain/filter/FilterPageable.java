@@ -5,12 +5,12 @@ import static net.saisimon.agtms.core.constant.Constant.Param.SIZE;
 import static net.saisimon.agtms.core.constant.Constant.Param.SORT;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import cn.hutool.core.map.MapUtil;
 import lombok.Getter;
 
 /**
@@ -97,7 +97,7 @@ public class FilterPageable implements Serializable {
 	}
 	
 	public Map<String, Object> toMap() {
-		Map<String, Object> pageableMap = new HashMap<>();
+		Map<String, Object> pageableMap = MapUtil.newHashMap(3);
 		pageableMap.put(INDEX, index);
 		pageableMap.put(SIZE, size);
 		pageableMap.put(SORT, sort.toString());
