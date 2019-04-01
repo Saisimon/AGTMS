@@ -377,7 +377,7 @@ public class TemplateUtils {
 	 * @return 是否包含指定的功能
 	 */
 	public static boolean hasFunction(Template template, Functions func) {
-		if (template == null || template.getFunctions() == null || template.getFunctions() == 0 || func == null) {
+		if (template == null || template.getFunctions() == null || func == null) {
 			return false;
 		}
 		return hasFunction(template.getFunctions(), func);

@@ -120,7 +120,7 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Navigation navigation, Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.module")).to("/").build());
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("navigation.management")).to("/navigation/main").build());
 		if (navigation == null) {
 			breadcrumbs.add(Breadcrumb.builder().text(getMessage("create")).active(true).build());

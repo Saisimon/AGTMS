@@ -67,8 +67,8 @@ public class TemplateMainController extends AbstractMainController {
 	private static final String TEMPLATE_FILTERS = TEMPLATE + "_filters";
 	private static final String TEMPLATE_PAGEABLE = TEMPLATE + "_pageable";
 	private static final List<String> FUNCTIONS = Arrays.asList(
+			Functions.VIEW.getFunction(),
 			Functions.CREATE.getFunction(),
-			"view",
 			Functions.EDIT.getFunction(),
 			Functions.REMOVE.getFunction(),
 			Functions.BATCH_REMOVE.getFunction()
@@ -152,7 +152,7 @@ public class TemplateMainController extends AbstractMainController {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.module")).to("/").build());
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("template.management")).active(true).build());
 		return breadcrumbs;
 	}

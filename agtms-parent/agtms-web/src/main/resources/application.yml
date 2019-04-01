@@ -12,9 +12,37 @@ spring:
       minimum-idle: 10
       maximum-pool-size: 100
       max-lifetime: 1800000
+
+ribbon:
+  ReadTimeout: 5000
+  ConnectTimeout: 2000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 1
+
+hystrix: 
+  command: 
+    default: 
+      execution: 
+        isolation: 
+          thread: 
+            timeoutInMilliseconds: 15000
+
+feign:
+  hystrix:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 2000
+        readTimeout: 5000
+        loggerLevel: full
+
 extra:
   class:
     path: /tmp/classes
+  admin:
+    username: admin
+    password: 123456
   max-size:
     task: 1024
     export: 65535

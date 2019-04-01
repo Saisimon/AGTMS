@@ -9,6 +9,10 @@ package net.saisimon.agtms.core.enums;
 public enum Functions {
 	
 	/**
+	 * 	查看(0000000)
+	 */
+	VIEW(0, "view"),
+	/**
 	 * 创建(0000001)
 	 */
 	CREATE(1, "create"),

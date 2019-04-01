@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.jpa.dialect.H2Dialect;
@@ -26,6 +27,7 @@ import net.saisimon.agtms.jpa.repository.base.BaseJpaRepositoryFactoryBean;
 @ConditionalOnClass(BaseJpaRepositoryFactoryBean.class)
 @EnableJpaRepositories(basePackages="net.saisimon.agtms.jpa.repository", repositoryFactoryBeanClass=BaseJpaRepositoryFactoryBean.class)
 @EntityScan(basePackages="net.saisimon.agtms.core.domain.entity")
+@EnableTransactionManagement
 @Slf4j
 public class JpaConfig {
 	

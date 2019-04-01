@@ -243,7 +243,7 @@ public class SelectionEditController extends BaseController {
 	
 	private List<Breadcrumb> breadcrumbs(Long id) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.module")).to("/").build());
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("selection.management")).to("/selection/main").build());
 		if (id == null) {
 			breadcrumbs.add(Breadcrumb.builder().text(getMessage("create")).active(true).build());

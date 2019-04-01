@@ -360,7 +360,7 @@ public class TemplateEditController extends BaseController {
 	
 	private List<Breadcrumb> breadcrumbs(Long id) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.module")).to("/").build());
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("template.management")).to("/template/main").build());
 		if (id == null) {
 			breadcrumbs.add(Breadcrumb.builder().text(getMessage("create")).active(true).build());

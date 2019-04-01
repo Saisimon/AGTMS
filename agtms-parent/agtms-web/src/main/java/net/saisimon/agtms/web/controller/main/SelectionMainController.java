@@ -66,6 +66,7 @@ public class SelectionMainController extends AbstractMainController {
 	private static final String SELECTION_FILTERS = SELECTION + "_filters";
 	private static final String SELECTION_PAGEABLE = SELECTION + "_pageable";
 	private static final List<String> FUNCTIONS = Arrays.asList(
+			Functions.VIEW.getFunction(),
 			Functions.CREATE.getFunction(),
 			Functions.EDIT.getFunction(),
 			Functions.REMOVE.getFunction(),
@@ -166,7 +167,7 @@ public class SelectionMainController extends AbstractMainController {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.module")).to("/").build());
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("selection.management")).active(true).build());
 		return breadcrumbs;
 	}

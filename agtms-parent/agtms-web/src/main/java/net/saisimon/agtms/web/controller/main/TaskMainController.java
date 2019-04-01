@@ -75,6 +75,7 @@ public class TaskMainController extends AbstractMainController {
 	private static final String TASK_FILTERS = TASK + "_filters";
 	private static final String TASK_PAGEABLE = TASK + "_pageable";
 	private static final List<String> FUNCTIONS = Arrays.asList(
+			Functions.VIEW.getFunction(),
 			Functions.REMOVE.getFunction(),
 			Functions.BATCH_REMOVE.getFunction()
 	);
@@ -232,7 +233,7 @@ public class TaskMainController extends AbstractMainController {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.module")).to("/").build());
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("task.management")).active(true).build());
 		return breadcrumbs;
 	}

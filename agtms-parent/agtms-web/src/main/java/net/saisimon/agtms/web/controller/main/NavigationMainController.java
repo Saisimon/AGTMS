@@ -80,6 +80,7 @@ public class NavigationMainController extends AbstractMainController {
 	private static final String NAVIGATION_FILTERS = NAVIGATION + "_filters";
 	private static final String NAVIGATION_PAGEABLE = NAVIGATION + "_pageable";
 	private static final List<String> FUNCTIONS = Arrays.asList(
+			Functions.VIEW.getFunction(),
 			Functions.CREATE.getFunction(),
 			Functions.EDIT.getFunction(),
 			Functions.REMOVE.getFunction(),
@@ -110,7 +111,8 @@ public class NavigationMainController extends AbstractMainController {
 		if (trees == null) {
 			trees = new ArrayList<>(1);
 		}
-		trees.add(0, NavigationTree.SYSTEM_MODEL_TREE);
+		trees.add(0, NavigationTree.SYSTEM_MODULE_TREE);
+		trees.add(0, NavigationTree.USER_MODULE_TREE);
 		NavigationTree root = new NavigationTree();
 		root.setId(-1L);
 		root.setChildrens(internationNavigationTrees(trees));
@@ -248,7 +250,7 @@ public class NavigationMainController extends AbstractMainController {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.model")).to("/").build());
+		breadcrumbs.add(Breadcrumb.builder().text(getMessage("system.module")).to("/").build());
 		breadcrumbs.add(Breadcrumb.builder().text(getMessage("navigation.management")).active(true).build());
 		return breadcrumbs;
 	}

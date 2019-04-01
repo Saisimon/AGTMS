@@ -12,7 +12,8 @@ public class NavigationTree implements Serializable, Cloneable {
 	
 	private static final long serialVersionUID = -3273153285193976032L;
 	
-	public static final NavigationTree SYSTEM_MODEL_TREE = getSystemModelTree();
+	public static final NavigationTree SYSTEM_MODULE_TREE = getSystemModuleTree();
+	public static final NavigationTree USER_MODULE_TREE = getUserModuleTree();
 	public static final Comparator<NavigationTree> COMPARATOR = (n1, n2) -> {
 		int i = n1.getPriority().compareTo(n2.getPriority());
 		if (i != 0) {
@@ -33,19 +34,30 @@ public class NavigationTree implements Serializable, Cloneable {
 	
 	private List<NavigationTree> childrens;
 	
-	private static NavigationTree getSystemModelTree() {
-		NavigationTree systemModel = new NavigationTree();
-		systemModel.setId(0L);
-		systemModel.setIcon("cogs");
-		systemModel.setTitle("system.model");
+	private static NavigationTree getUserModuleTree() {
+		NavigationTree userModule = new NavigationTree();
+		userModule.setId(0L);
+		userModule.setIcon("users");
+		userModule.setTitle("user.module");
+		List<NavigationLink> links = new ArrayList<>();
+		links.add(NavigationLink.USER_LINK);
+		userModule.setLinks(links);
+		return userModule;
+	}
+	
+	private static NavigationTree getSystemModuleTree() {
+		NavigationTree systemModule = new NavigationTree();
+		systemModule.setId(0L);
+		systemModule.setIcon("cogs");
+		systemModule.setTitle("system.module");
 		List<NavigationLink> links = new ArrayList<>();
 		links.add(NavigationLink.NAVIGATION_LINK);
 		links.add(NavigationLink.TEMPLATE_LINK);
 		links.add(NavigationLink.SELECTION_LINK);
 		links.add(NavigationLink.TASK_LINK);
 		links.add(NavigationLink.OPERATION_LINK);
-		systemModel.setLinks(links);
-		return systemModel;
+		systemModule.setLinks(links);
+		return systemModule;
 	}
 
 	@Override
@@ -73,6 +85,7 @@ public class NavigationTree implements Serializable, Cloneable {
 		
 		private static final long serialVersionUID = -3939528526240558953L;
 		
+		public static final NavigationLink USER_LINK = new NavigationLink("/user/main", "user.management");
 		public static final NavigationLink NAVIGATION_LINK = new NavigationLink("/navigation/main", "navigation.management");
 		public static final NavigationLink TEMPLATE_LINK = new NavigationLink("/template/main", "template.management");
 		public static final NavigationLink TASK_LINK = new NavigationLink("/task/main", "task.management");
