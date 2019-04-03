@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.enums.Classes;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
  * 条件过滤对象
@@ -46,7 +46,7 @@ public class FilterParam extends FilterRequest {
 	}
 	
 	public FilterParam(String key, Object value, String operator, String type) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			throw new IllegalArgumentException("key can not be blank");
 		}
 		if (value == null) {
@@ -55,7 +55,7 @@ public class FilterParam extends FilterRequest {
 		this.key = key;
 		this.operator = operator;
 		this.value = value;
-		if (StringUtils.isBlank(type)) {
+		if (SystemUtils.isBlank(type)) {
 			this.type = value.getClass().getName();
 		} else {
 			this.type = type;

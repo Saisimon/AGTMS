@@ -1,5 +1,7 @@
 package net.saisimon.agtms.web.controller.user;
 
+import java.util.Date;
+
 import javax.transaction.Transactional;
 
 import org.springframework.validation.BindingResult;
@@ -12,9 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.entity.User;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.dto.Result;
-import net.saisimon.agtms.core.dto.TokenInfo;
 import net.saisimon.agtms.core.enums.OperateTypes;
+import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -54,9 +57,11 @@ public class UserController {
 		if (user == null) {
 			return ErrorMessage.User.USERNAME_OR_PASSWORD_NOT_CORRECT;
 		}
-		TokenInfo userInfo = AuthUtils.buildTokenInfo(user);
-		AuthUtils.setTokenInfo(userInfo.getUserId().toString(), userInfo);
-		return ResultUtils.simpleSuccess(userInfo);
+		user.setLastLoginTime(new Date());
+		userService.saveOrUpdate(user);
+		UserToken token = buildToken(user.getId());
+		TokenFactory.get().setToken(user.getId(), token);
+		return ResultUtils.simpleSuccess(token);
 	}
 	
 	/**
@@ -81,9 +86,9 @@ public class UserController {
 		if (user == null) {
 			return ErrorMessage.User.ACCOUNT_ALREADY_EXISTS;
 		}
-		TokenInfo userInfo = AuthUtils.buildTokenInfo(user);
-		AuthUtils.setTokenInfo(userInfo.getUserId().toString(), userInfo);
-		return ResultUtils.simpleSuccess(userInfo);
+		UserToken token = buildToken(user.getId());
+		TokenFactory.get().setToken(user.getId(), token);
+		return ResultUtils.simpleSuccess(token);
 	}
 	
 	/**
@@ -94,9 +99,17 @@ public class UserController {
 	@Operate(type=OperateTypes.LOGOUT)
 	@RequestMapping("/logout")
 	public Result logout() {
-		String uid = AuthUtils.getUid();
-		AuthUtils.setTokenInfo(uid, null);
+		Long uid = AuthUtils.getUid();
+		TokenFactory.get().setToken(uid, null);
 		return ResultUtils.simpleSuccess(uid);
+	}
+	
+	private UserToken buildToken(Long userId) {
+		UserToken token = new UserToken();
+		token.setExpireTime(AuthUtils.getExpireTime());
+		token.setToken(AuthUtils.createToken());
+		token.setUserId(userId);
+		return token;
 	}
 	
 }

@@ -20,6 +20,8 @@ import javax.mail.internet.MimeUtility;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.util.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -36,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @Slf4j
-public final class SystemUtils {
+public final class SystemUtils extends StringUtils {
 	
 	private static final Pattern EMAIL_PATTERN = Pattern.compile("[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?");
 	private static final Pattern URL_PATTERN = Pattern.compile("^((https|http|ftp|rtsp|mms)?://)?(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?(([0-9]{1,3}\\.){3}[0-9]{1,3}|([0-9a-z_!~*'()-]+\\.)*([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\.[a-z]{2,6})(:[0-9]{1,4})?((/?)|(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$");
@@ -48,6 +50,26 @@ public final class SystemUtils {
 		throw new IllegalAccessError();
 	}
 	
+	public static boolean isNotEmpty(Object str) {
+		return !isEmpty(str);
+	}
+
+	public static boolean isBlank(String str) {
+		return !isNotBlank(str);
+	}
+
+	public static boolean isNotBlank(String str) {
+		return hasText(str);
+	}
+
+	public static String toLowerCase(String str) {
+		return toCase(str, true);
+	}
+
+	public static String toUpperCase(String str) {
+		return toCase(str, false);
+	}
+
 	/**
 	 * 判断输入邮箱地址有效性
 	 * 
@@ -55,7 +77,7 @@ public final class SystemUtils {
 	 * @return 邮箱地址有效性
 	 */
 	public static boolean isEmail(String email) {
-		if (StringUtils.isBlank(email)) {
+		if (isBlank(email)) {
 			return false;
 		}
 		return EMAIL_PATTERN.matcher(email).matches();
@@ -68,7 +90,7 @@ public final class SystemUtils {
 	 * @return 链接地址有效性
 	 */
 	public static boolean isURL(String url) {
-		if (StringUtils.isBlank(url)) {
+		if (isBlank(url)) {
 			return false;
 		}
 		return URL_PATTERN.matcher(url).matches();
@@ -103,7 +125,7 @@ public final class SystemUtils {
 	 * @return 指定类型的对象
 	 */
 	public static <T> T fromJson(String json, Class<T> clazz, Class<?>... genericClasses) {
-		if (StringUtils.isBlank(json)) {
+		if (isBlank(json)) {
 			return null;
 		}
 		try {
@@ -314,6 +336,23 @@ public final class SystemUtils {
 
 	private static JavaType construct(Class<?> cls, List<JavaType> javaTypes) {
 		return TypeFactory.defaultInstance().constructParametricType(cls, javaTypes.toArray(new JavaType[javaTypes.size()]));
+	}
+	
+	private static String toCase(String str, boolean lower) {
+		if (isBlank(str)) {
+			return str;
+		}
+		char[] cs = new char[str.length()];
+		if (lower) {
+			for (int i = 0; i < cs.length; i++) {
+				cs[i] = Character.toLowerCase(str.charAt(i));
+			}
+		} else {
+			for (int i = 0; i < cs.length; i++) {
+				cs[i] = Character.toUpperCase(str.charAt(i));
+			}
+		}
+		return new String(cs);
 	}
 	
 }

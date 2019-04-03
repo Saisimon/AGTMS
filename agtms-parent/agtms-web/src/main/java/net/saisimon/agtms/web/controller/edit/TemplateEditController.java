@@ -45,7 +45,7 @@ import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.NavigationUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.BaseController;
@@ -82,7 +82,7 @@ public class TemplateEditController extends BaseController {
 	
 	@PostMapping("/grid")
 	public Result grid(@RequestParam(name = "id", required = false) Long id) {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		TemplateGrid grid = new TemplateGrid();
 		grid.setBreadcrumbs(breadcrumbs(id));
 		grid.setClassOptions(Select.buildOptions(classSelection.select()));
@@ -131,7 +131,7 @@ public class TemplateEditController extends BaseController {
 		if (!TemplateUtils.checkRequired(template)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		if (template.getNavigationId() != null && template.getNavigationId() > 0) {
 			Navigation navigation = NavigationUtils.getNavigation(template.getNavigationId(), userId);
 			if (navigation == null) {
@@ -310,7 +310,7 @@ public class TemplateEditController extends BaseController {
 				requiredRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getRequired() ? 1 : 0), field.getFieldName()));
 				uniquedRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getUniqued() ? 1 : 0), field.getFieldName()));
 				hiddenRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getHidden() ? 1 : 0), field.getFieldName()));
-				defaultRow.put(field.getFieldName(), new Editor<>(StringUtils.isEmpty(field.getDefaultValue()) ? "" : field.getDefaultValue(), field.getFieldName()));
+				defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(field.getDefaultValue()) ? "" : field.getDefaultValue(), field.getFieldName()));
 				subremoveRow.put(field.getFieldName(), "");
 			}
 		} else {

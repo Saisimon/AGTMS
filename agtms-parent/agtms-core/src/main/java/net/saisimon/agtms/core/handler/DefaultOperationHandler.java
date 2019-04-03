@@ -12,10 +12,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.entity.Operation;
-import net.saisimon.agtms.core.dto.TokenInfo;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.util.AuthUtils;
-import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
@@ -30,11 +28,11 @@ public class DefaultOperationHandler implements OperationHandler {
 	@Override
 	public Operation handle(String controllerInfo, Operate operate, Object result) {
 		Operation operation = new Operation();
-		TokenInfo userInfo = AuthUtils.getTokenInfo();
-		if (userInfo == null || userInfo.getUserId() == null) {
+		Long userId = AuthUtils.getUid();
+		if (userId == null) {
 			return null;
 		}
-		operation.setOperatorId(userInfo.getUserId());
+		operation.setOperatorId(userId);
 		operation.setOperateType(operate.type().getType());
 		operation.setOperateTime(new Date());
 		RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
@@ -43,11 +41,13 @@ public class DefaultOperationHandler implements OperationHandler {
 			HttpServletResponse response = ((ServletRequestAttributes) requestAttributes).getResponse();
 			operation.setOperateUrl(request.getRequestURI());
 			operation.setOperateIp(SystemUtils.getIPAddress(request));
-			operation.setOperateStatus(response.getStatus());
+			if (response != null) {
+				operation.setOperateStatus(response.getStatus());
+			}
 		}
 		if (controllerInfo != null) {
 			String value = operate.value();
-			if (StringUtils.isBlank(value)) {
+			if (SystemUtils.isBlank(value)) {
 				value = operate.type().getName();
 			}
 			operation.setOperateContent(controllerInfo + "," + value);

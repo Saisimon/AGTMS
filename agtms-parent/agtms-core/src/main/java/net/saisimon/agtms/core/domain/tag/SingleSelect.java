@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 前端单选下拉列表
@@ -14,8 +14,8 @@ import lombok.EqualsAndHashCode;
  *
  * @param <T> value 的类型
  */
-@Data
-@EqualsAndHashCode(callSuper=false)
+@Getter
+@Setter
 public class SingleSelect<T> extends Select<T> implements Cloneable {
 	
 	public static final List<String> OPERATORS = Arrays.asList("strict", "fuzzy", "separator");

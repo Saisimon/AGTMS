@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.task.Actuator;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
  * 执行器构建工厂
@@ -27,7 +27,7 @@ public class ActuatorFactory implements BeanPostProcessor {
 	private static final Map<String, Actuator<?>> ACTUATOR_MAP = new ConcurrentHashMap<>(16);
 	
 	public static Actuator<?> get(String key) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			throw new IllegalArgumentException("get Actuator failed");
 		}
 		return ACTUATOR_MAP.get(key);
@@ -43,7 +43,7 @@ public class ActuatorFactory implements BeanPostProcessor {
 			return bean;
 		}
 		Actuator<?> actuator = (Actuator<?>) bean;
-		if (actuator.sign() == null || StringUtils.isBlank(actuator.sign().getName())) {
+		if (actuator.sign() == null || SystemUtils.isBlank(actuator.sign().getName())) {
 			return bean;
 		}
 		if (!SIGNS.contains(actuator.sign())) {

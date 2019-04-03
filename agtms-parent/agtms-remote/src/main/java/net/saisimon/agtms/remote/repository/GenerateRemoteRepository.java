@@ -34,7 +34,6 @@ import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.repository.BaseRepository;
-import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.remote.service.ApiService;
@@ -56,7 +55,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public Long count(FilterRequest filter) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
+		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
@@ -75,7 +74,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
+		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
@@ -106,7 +105,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
+		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
@@ -138,7 +137,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
+		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
 			return null;
 		}
 		if (pageable == null) {
@@ -177,8 +176,8 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
-			return null;
+		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
+			return Optional.empty();
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = MapUtil.newHashMap(3);
@@ -201,14 +200,14 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			return Optional.empty();
 		} catch (Exception e) {
 			log.error(String.format("remote findOne failed. %s, %s", template.getService(), template.getKey()));
-			return null;
+			return Optional.empty();
 		}
 	}
 	
 	@Override
 	public Long delete(FilterRequest filter) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
+		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
 			return null;
 		}
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
@@ -230,7 +229,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public void delete(Domain entity) {
 		Template template = template();
-		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
+		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
 			return;
 		}
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
@@ -250,7 +249,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			return null;
 		}
 		Template template = template();
-		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
+		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
 			return null;
 		}
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.CREATE, Functions.EDIT, Functions.BATCH_EDIT)) {
@@ -275,7 +274,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			return;
 		}
 		Template template = template();
-		if (StringUtils.isBlank(template.getService()) || StringUtils.isBlank(template.getKey())) {
+		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
 			return;
 		}
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.BATCH_EDIT)) {

@@ -3,8 +3,8 @@ package net.saisimon.agtms.core.domain.tag;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 前端多选下拉列表
@@ -13,8 +13,8 @@ import lombok.EqualsAndHashCode;
  *
  * @param <T> value 的类型
  */
-@Data
-@EqualsAndHashCode(callSuper=false)
+@Getter
+@Setter
 public class MultipleSelect<T> extends Select<T> implements Cloneable {
 	
 	private List<Option<T>> selected;

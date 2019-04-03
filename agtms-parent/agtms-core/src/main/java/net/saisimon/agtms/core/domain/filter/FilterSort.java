@@ -13,7 +13,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 
 import lombok.Getter;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
  * 排序过滤对象
@@ -61,7 +61,7 @@ public class FilterSort implements Serializable {
 	
 	public static FilterSort build(String sort) {
 		String str = sort;
-		if (StringUtils.isBlank(str)) {
+		if (SystemUtils.isBlank(str)) {
 			str = "-id";
 		}
 		str = str.trim();

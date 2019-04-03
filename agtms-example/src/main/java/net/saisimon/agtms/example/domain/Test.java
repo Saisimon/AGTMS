@@ -21,7 +21,7 @@ import net.saisimon.agtms.example.selection.GenderSelection;
 @Entity
 @Data
 @Table(name = "test")
-@TemplateInfo(key = "test", repository = TestRepository.class, title = "测试", functions = { Functions.CREATE, Functions.EDIT, Functions.REMOVE, Functions.BATCH_EDIT, Functions.BATCH_REMOVE, Functions.EXPORT, Functions.IMPORT })
+@TemplateInfo(key = "test", repository = TestRepository.class, title = "测试", functions = { Functions.VIEW, Functions.CREATE, Functions.EDIT, Functions.REMOVE, Functions.BATCH_EDIT, Functions.BATCH_REMOVE, Functions.EXPORT, Functions.IMPORT })
 public class Test {
 	
 	@Id

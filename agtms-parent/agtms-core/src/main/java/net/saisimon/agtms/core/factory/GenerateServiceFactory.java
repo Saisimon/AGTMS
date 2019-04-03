@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.service.GenerateService;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
  * 自定义对象服务构建工厂
@@ -28,7 +28,7 @@ public class GenerateServiceFactory implements BeanPostProcessor {
 	private static final Map<String, GenerateService> GENERATE_SERVICE_MAP = new ConcurrentHashMap<>(16);
 	
 	public static GenerateService build(Template template) {
-		if (template == null || StringUtils.isBlank(template.getSource())) {
+		if (template == null || SystemUtils.isBlank(template.getSource())) {
 			throw new IllegalArgumentException("build GenerateService failed");
 		}
 		GenerateService generateService = GENERATE_SERVICE_MAP.get(template.getSource());
@@ -49,7 +49,7 @@ public class GenerateServiceFactory implements BeanPostProcessor {
 			return bean;
 		}
 		GenerateService generateService = (GenerateService) bean;
-		if (generateService.sign() == null || StringUtils.isBlank(generateService.sign().getName())) {
+		if (generateService.sign() == null || SystemUtils.isBlank(generateService.sign().getName())) {
 			return bean;
 		}
 		if (!SIGNS.contains(generateService.sign())) {

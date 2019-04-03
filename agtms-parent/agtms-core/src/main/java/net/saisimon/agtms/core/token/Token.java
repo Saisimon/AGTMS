@@ -1,11 +1,11 @@
 package net.saisimon.agtms.core.token;
 
-import net.saisimon.agtms.core.dto.TokenInfo;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 
 public interface Token {
 	
-	TokenInfo getTokenInfo(Long uid);
+	UserToken getToken(Long uid);
 	
-	void setTokenInfo(Long uid, TokenInfo tokenInfo);
+	void setToken(Long uid, UserToken token);
 	
 }

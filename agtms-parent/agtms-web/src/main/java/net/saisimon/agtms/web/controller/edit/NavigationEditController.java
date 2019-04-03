@@ -56,7 +56,7 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 	public Result grid(@RequestParam(name = "id", required = false) Long id) {
 		Navigation navigation = null;
 		if (id != null) {
-			Long userId = AuthUtils.getTokenInfo().getUserId();
+			Long userId = AuthUtils.getUid();
 			navigation = NavigationUtils.getNavigation(id, userId);
 			if (navigation == null) {
 				return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
@@ -73,7 +73,7 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		NavigationService navigationService = NavigationServiceFactory.get();
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Long id = body.getId();
 		if (null != id && id > 0) {
 			Navigation oldNavigation = NavigationUtils.getNavigation(id, userId);

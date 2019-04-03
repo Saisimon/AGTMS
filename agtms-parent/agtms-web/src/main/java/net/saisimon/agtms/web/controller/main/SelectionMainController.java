@@ -92,7 +92,7 @@ public class SelectionMainController extends AbstractMainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, SELECTION_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getTokenInfo().getUserId());
+		filter.and(Constant.OPERATORID, AuthUtils.getUid());
 		FilterPageable pageable = FilterPageable.build(param);
 		SelectionService selectionService = SelectionServiceFactory.get();
 		Page<Selection> page = selectionService.findPage(filter, pageable);
@@ -120,7 +120,7 @@ public class SelectionMainController extends AbstractMainController {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Selection selection = SelectionUtils.getSelection(id, userId);
 		if (selection == null) {
 			return ErrorMessage.Selection.SELECTION_NOT_EXIST;
@@ -142,7 +142,7 @@ public class SelectionMainController extends AbstractMainController {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		SelectionService selectionService = SelectionServiceFactory.get();
 		for (Long id : ids) {
 			Selection selection = SelectionUtils.getSelection(id, userId);

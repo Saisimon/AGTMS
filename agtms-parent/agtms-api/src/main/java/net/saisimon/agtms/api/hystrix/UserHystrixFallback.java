@@ -5,6 +5,12 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.api.UserInterface;
 
+/**
+ * 用户接口断路器
+ * 
+ * @author saisimon
+ *
+ */
 @Slf4j
 @Component
 public class UserHystrixFallback implements UserInterface {

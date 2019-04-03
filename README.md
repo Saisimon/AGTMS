@@ -1,6 +1,7 @@
 # 自动生成模板管理系统 (Auto-Generate Template Management System)
 [![Build Status](https://travis-ci.com/Saisimon/AGTMS.svg?token=NEGBSLzoPsiP31io9ioJ&branch=master)](https://travis-ci.com/Saisimon/AGTMS)
 ![GitHub](https://img.shields.io/github/license/Saisimon/AGTMS.svg)
+[![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
 
 AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系统，支持 Oracle、Mysql、Sqlserver、Postgresql、Mongodb、REST 等方式获取数据。
 

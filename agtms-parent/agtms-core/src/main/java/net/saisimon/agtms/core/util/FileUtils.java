@@ -171,7 +171,7 @@ public final class FileUtils {
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
 			String line = null;
 			while ((line = br.readLine()) != null) {
-				if (StringUtils.isBlank(line)) {
+				if (SystemUtils.isBlank(line)) {
 					continue;
 				}
 				size++;
@@ -226,7 +226,7 @@ public final class FileUtils {
 			}
 			String line = null;
 			while ((line = br.readLine()) != null) {
-				if (StringUtils.isBlank(line)) {
+				if (SystemUtils.isBlank(line)) {
 					continue;
 				}
 				String[] dataArray = line.split(separator);
@@ -263,11 +263,11 @@ public final class FileUtils {
 	 * @throws IOException 创建文件异常
 	 */
 	public static File createFile(String path, String name, String suffix) throws IOException {
-		if (StringUtils.isBlank(path) || StringUtils.isBlank(name)) {
+		if (SystemUtils.isBlank(path) || SystemUtils.isBlank(name)) {
 			return null;
 		}
 		String filePath = path + File.separator + name;
-		if (StringUtils.isNotBlank(suffix)) {
+		if (SystemUtils.isNotBlank(suffix)) {
 			filePath += suffix;
 		}
 		File file = new File(filePath);

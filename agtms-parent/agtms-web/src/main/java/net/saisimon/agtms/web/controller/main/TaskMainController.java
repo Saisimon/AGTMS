@@ -39,7 +39,6 @@ import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
-import net.saisimon.agtms.core.dto.TokenInfo;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
@@ -51,7 +50,6 @@ import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
-import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.AbstractMainController;
@@ -102,9 +100,8 @@ public class TaskMainController extends AbstractMainController {
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		TokenInfo userInfo = AuthUtils.getTokenInfo();
 		FilterRequest filter = FilterRequest.build(body, TASK_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, userInfo.getUserId());
+		filter.and(Constant.OPERATORID, AuthUtils.getUid());
 		FilterPageable pageable = FilterPageable.build(param);
 		TaskService taskService = TaskServiceFactory.get();
 		Page<Task> page = taskService.findPage(filter, pageable);
@@ -119,19 +116,19 @@ public class TaskMainController extends AbstractMainController {
 			result.setTaskType(taskTypeMap.get(task.getTaskType().toString()));
 			result.setTaskTime(task.getTaskTime());
 			result.setHandleStatus(handleStatusMap.get(task.getHandleStatus()));
-			if (StringUtils.isNotBlank(task.getHandleResult())) {
+			if (SystemUtils.isNotBlank(task.getHandleResult())) {
 				result.setHandleResult(getMessage(task.getHandleResult()));
 			}
 			result.setHandleTime(task.getHandleTime());
 			result.setAction(TASK);
 			// download
-			if (task.getHandleStatus() == HandleStatuses.SUCCESS.getStatus()) {
+			if (HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
 				result.getDisableActions().add(Boolean.FALSE);
 			} else {
 				result.getDisableActions().add(Boolean.TRUE);
 			}
 			// cancel
-			if (task.getHandleStatus() == HandleStatuses.PROCESSING.getStatus()) {
+			if (HandleStatuses.PROCESSING.getStatus().equals(task.getHandleStatus())) {
 				result.getDisableActions().add(Boolean.FALSE);
 			} else {
 				result.getDisableActions().add(Boolean.TRUE);
@@ -151,13 +148,13 @@ public class TaskMainController extends AbstractMainController {
 	public void download(@RequestParam(name = "id") Long id) {
 		try {
 			TaskService taskService = TaskServiceFactory.get();
-			Long userId = AuthUtils.getTokenInfo().getUserId();
+			Long userId = AuthUtils.getUid();
 			Task task = taskService.getTask(id, userId);
 			if (task == null) {
 				SystemUtils.sendObject(response, ErrorMessage.Task.TASK_NOT_EXIST);
 				return;
 			}
-			if (task == null || task.getHandleStatus() != HandleStatuses.SUCCESS.getStatus()) {
+			if (task == null || !HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
 				response.sendError(HttpStatus.NOT_FOUND.value());
 				return;
 			}
@@ -180,7 +177,7 @@ public class TaskMainController extends AbstractMainController {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		TaskService taskService = TaskServiceFactory.get();
-		Task task = taskService.getTask(id, AuthUtils.getTokenInfo().getUserId());
+		Task task = taskService.getTask(id, AuthUtils.getUid());
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
@@ -198,7 +195,7 @@ public class TaskMainController extends AbstractMainController {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		TaskService taskService = TaskServiceFactory.get();
-		Task task = taskService.getTask(id, AuthUtils.getTokenInfo().getUserId());
+		Task task = taskService.getTask(id, AuthUtils.getUid());
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
@@ -214,7 +211,7 @@ public class TaskMainController extends AbstractMainController {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		TaskService taskService = TaskServiceFactory.get();
 		for (Long id : ids) {
 			Task task = taskService.getTask(id, userId);
@@ -280,9 +277,8 @@ public class TaskMainController extends AbstractMainController {
 	
 	@Override
 	protected List<Action> actions(Object key) {
-		TokenInfo userInfo = AuthUtils.getTokenInfo();
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().key("download").icon("download").to("/task/main/download?" + AuthUtils.AUTHORIZE_UID + "=" + userInfo.getUserId() + "&" + AuthUtils.AUTHORIZE_TOKEN + "=" + userInfo.getToken() + "&id=").text(getMessage("result")).type("download").build());
+		actions.add(Action.builder().key("download").icon("download").to("/task/main/download?" + AuthUtils.AUTHORIZE_UID + "=" + AuthUtils.getUid() + "&" + AuthUtils.AUTHORIZE_TOKEN + "=" + AuthUtils.getToken() + "&id=").text(getMessage("result")).type("download").build());
 		actions.add(Action.builder().key("cancel").icon("ban").to("/task/main/cancel").text(getMessage("cancel")).variant("outline-warning").type("modal").build());
 		actions.add(Action.builder().key("remove").icon("trash").to("/task/main/remove").text(getMessage("remove")).variant("outline-danger").type("modal").build());
 		return actions;
@@ -294,7 +290,7 @@ public class TaskMainController extends AbstractMainController {
 	}
 	
 	private void cancelTask(Task task) {
-		if (task == null || StringUtils.isBlank(task.getIp()) || task.getPort() == null) {
+		if (task == null || SystemUtils.isBlank(task.getIp()) || task.getPort() == null) {
 			return;
 		}
 		String url = "http://" + task.getIp() + ":" + task.getPort() + "/api/cancel/task?taskId=" + task.getId();

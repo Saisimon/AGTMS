@@ -10,6 +10,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.Ordered;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.domain.entity.Selection;
@@ -26,9 +27,8 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 public interface SelectionService extends BaseService<Selection, Long>, Ordered {
 	
 	default Boolean exists(String title, Long operatorId) {
-		if (title == null || operatorId == null) {
-			return null;
-		}
+		Assert.notNull(title, "title can not be null");
+		Assert.notNull(operatorId, "operatorId can not be null");
 		FilterRequest filter = FilterRequest.build().and("title", title).and("operatorId", operatorId);
 		return count(filter) > 0;
 	}

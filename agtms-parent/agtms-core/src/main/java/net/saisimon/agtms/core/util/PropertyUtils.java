@@ -40,7 +40,7 @@ public class PropertyUtils {
 	}
 	
 	private static Object fetchProperties(PropertySourceLoader loader, String name, String key) {
-		if (loader == null || StringUtils.isBlank(name) || StringUtils.isBlank(key)) {
+		if (loader == null || SystemUtils.isBlank(name) || SystemUtils.isBlank(key)) {
 			return null;
 		}
 		try {

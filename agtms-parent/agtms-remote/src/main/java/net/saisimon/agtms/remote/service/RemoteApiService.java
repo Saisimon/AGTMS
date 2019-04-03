@@ -17,7 +17,7 @@ import feign.codec.Encoder;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.service.RemoteService;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 @Import(FeignClientsConfiguration.class)
 @Service
@@ -35,7 +35,7 @@ public class RemoteApiService implements RemoteService {
 
 	@Override
 	public List<Template> templates(String serviceId) {
-		if (StringUtils.isBlank(serviceId)) {
+		if (SystemUtils.isBlank(serviceId)) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + serviceId);
@@ -49,7 +49,7 @@ public class RemoteApiService implements RemoteService {
 	
 	@Override
 	public Template template(String serviceId, String key) {
-		if (StringUtils.isBlank(serviceId)) {
+		if (SystemUtils.isBlank(serviceId)) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + serviceId);
@@ -63,7 +63,7 @@ public class RemoteApiService implements RemoteService {
 	
 	@Override
 	public LinkedHashMap<?, String> selection(String serviceId, String key, Map<String, Object> body) {
-		if (StringUtils.isBlank(serviceId)) {
+		if (SystemUtils.isBlank(serviceId)) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + serviceId);

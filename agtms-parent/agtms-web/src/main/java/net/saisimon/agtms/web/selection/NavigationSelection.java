@@ -21,7 +21,7 @@ public class NavigationSelection extends AbstractSelection<Long> {
 	@Override
 	public Map<Long, String> select() {
 		NavigationService navigationService = NavigationServiceFactory.get();
-		List<Navigation> navigations = navigationService.getNavigations(AuthUtils.getTokenInfo().getUserId());
+		List<Navigation> navigations = navigationService.getNavigations(AuthUtils.getUid());
 		Map<Long, String> navigationMap = MapUtil.newHashMap(navigations.size() + 1, true);
 		navigationMap.put(-1L, "/");
 		for (Navigation navigation : navigations) {
@@ -32,7 +32,7 @@ public class NavigationSelection extends AbstractSelection<Long> {
 	
 	public Map<Long, String> selectWithParent(Long excludeId) {
 		NavigationService navigationService = NavigationServiceFactory.get();
-		List<Navigation> navigations = navigationService.getNavigations(AuthUtils.getTokenInfo().getUserId());
+		List<Navigation> navigations = navigationService.getNavigations(AuthUtils.getUid());
 		LinkedHashMap<Long, String> navigationMap = new LinkedHashMap<>();
 		parse(navigations, -1L, navigationMap, excludeId);
 		LinkedHashMap<Long, String> map = new LinkedHashMap<>(navigations.size() + 1);
@@ -51,8 +51,8 @@ public class NavigationSelection extends AbstractSelection<Long> {
 		List<Navigation> currents = new ArrayList<>();
 		List<Navigation> rests = new ArrayList<>();
 		for (Navigation pn : navigations) {
-			if (pn.getId() != excludeId) {
-				if (pn.getParentId().longValue() == parentId.longValue()) {
+			if (!pn.getId().equals(excludeId)) {
+				if (pn.getParentId().equals(parentId)) {
 					currents.add(pn);
 				} else {
 					rests.add(pn);

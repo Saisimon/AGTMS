@@ -181,13 +181,13 @@ public class SelectionUtils {
 			return options;
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
-		if (SelectTypes.OPTION.getType() == selection.getType()) {
+		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
 			List<SelectionOption> selectionOptions = selectionService.searchSelectionOptions(selection.getId(), keyword, OPTION_SIZE);
 			for (SelectionOption selectionOption : selectionOptions) {
 				Option<Object> option = new Option<>(selectionOption.getValue(), selectionOption.getText());
 				options.add(option);
 			}
-		} else if (SelectTypes.TEMPLATE.getType() == selection.getType()) {
+		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
 			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId());
 			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorId);
 			if (template == null) {
@@ -195,7 +195,7 @@ public class SelectionUtils {
 			}
 			GenerateService generateService = GenerateServiceFactory.build(template);
 			FilterRequest filter = FilterRequest.build().and(selectionTemplate.getValueFieldName(), "", Operator.EXISTS);
-			if (StringUtils.isBlank(keyword)) {
+			if (SystemUtils.isBlank(keyword)) {
 				filter.and(selectionTemplate.getTextFieldName(), "", Operator.EXISTS);
 			} else {
 				filter.and(selectionTemplate.getTextFieldName(), keyword, Operator.REGEX);
@@ -207,7 +207,7 @@ public class SelectionUtils {
 				Option<Object> option = new Option<>(domain.getField(selectionTemplate.getValueFieldName()), text);
 				options.add(option);
 			}
-		} else if (SelectTypes.REMOTE.getType() == selection.getType()) {
+		} else if (SelectTypes.REMOTE.getType().equals(selection.getType())) {
 			RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
 			if (remoteService == null) {
 				return options;
@@ -233,7 +233,7 @@ public class SelectionUtils {
 			return selectionMap;
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
-		if (SelectTypes.OPTION.getType() == selection.getType()) {
+		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
 			List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection.getId(), values, valueKey);
 			if (selectionOptions == null) {
 				return selectionMap;
@@ -245,7 +245,7 @@ public class SelectionUtils {
 					selectionMap.put(selectionOption.getText(), selectionOption.getValue());
 				}
 			}
-		} else if (SelectTypes.TEMPLATE.getType() == selection.getType()) {
+		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
 			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId());
 			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorId);
 			GenerateService generateService = GenerateServiceFactory.build(template);
@@ -276,7 +276,7 @@ public class SelectionUtils {
 					selectionMap.put(domainText.toString(), domainValue.toString());
 				}
 			}
-		} else if (SelectTypes.REMOTE.getType() == selection.getType()) {
+		} else if (SelectTypes.REMOTE.getType().equals(selection.getType())) {
 			RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
 			if (remoteService == null) {
 				return selectionMap;

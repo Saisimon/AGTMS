@@ -34,7 +34,7 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.jpa.dialect.Dialect;
 import net.saisimon.agtms.jpa.domain.Statement;
@@ -65,7 +65,11 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		if (log.isDebugEnabled()) {
 			log.debug("Generate SQL: " + sql.toString());
 		}
-		return jdbcTemplate.queryForObject(sql.toString(), args, Long.class);
+		if (args == null) {
+			return jdbcTemplate.queryForObject(sql.toString(), Long.class);
+		} else {
+			return jdbcTemplate.queryForObject(sql.toString(), args, Long.class);
+		}
 	}
 
 	@Override
@@ -85,7 +89,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		}
 		if (sort != null) {
 			String orderby = JpaFilterUtils.orderby(sort);
-			if (StringUtils.isNotBlank(orderby)) {
+			if (SystemUtils.isNotBlank(orderby)) {
 				sql.append(" ORDER BY ").append(orderby);
 			}
 		}
@@ -151,8 +155,8 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			pageable = FilterPageable.build(null);
 		}
 		Pageable springPageable = pageable.getPageable();
-		if (total == 0) {
-			return new PageImpl<>(new ArrayList<>(0), springPageable, total);
+		if (total == null || total == 0) {
+			return new PageImpl<>(new ArrayList<>(0), springPageable, 0);
 		}
 		Template template = template();
 		Set<String> columnNames = getColumnNames(template, properties);
@@ -348,7 +352,10 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			return ps;
 		}, holder);
 		if (result > 0) {
-			domain.setField(Constant.ID, holder.getKey().longValue(), Long.class);
+			Number key = holder.getKey();
+			if (key != null) {
+				domain.setField(Constant.ID, key.longValue(), Long.class);
+			}
 		}
 		pss.cleanupParameters();
 		return result > 0;

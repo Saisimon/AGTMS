@@ -18,7 +18,7 @@ public class TemplateSelection extends AbstractSelection<Long> {
 	@Override
 	public Map<Long, String> select() {
 		TemplateService templateService = TemplateServiceFactory.get();
-		List<Template> templates = templateService.getTemplates(AuthUtils.getTokenInfo().getUserId());
+		List<Template> templates = templateService.getTemplates(AuthUtils.getUid());
 		Map<Long, String> templateMap = MapUtil.newHashMap(templates.size() + 1, true);
 		templateMap.put(-1L, "");
 		for (Template template : templates) {

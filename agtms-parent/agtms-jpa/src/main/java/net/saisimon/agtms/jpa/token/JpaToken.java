@@ -1,6 +1,5 @@
 package net.saisimon.agtms.jpa.token;
 
-import java.util.Map;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -8,59 +7,48 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cn.hutool.core.map.MapUtil;
-import net.saisimon.agtms.core.domain.entity.User;
-import net.saisimon.agtms.core.dto.TokenInfo;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.token.Token;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.jpa.order.JpaOrder;
-import net.saisimon.agtms.jpa.service.UserJpaService;
+import net.saisimon.agtms.jpa.repository.UserTokenJpaRepository;
 
 @Service
 public class JpaToken implements Token, JpaOrder {
 	
 	@Autowired
-	private UserJpaService userJpaService;
+	private UserTokenJpaRepository userTokenJpaRepository;
 
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public TokenInfo getTokenInfo(Long uid) {
+	public UserToken getToken(Long uid) {
 		if (uid == null) {
 			return null;
 		}
-		Optional<User> optional = userJpaService.findById(uid);
+		Optional<UserToken> optional = userTokenJpaRepository.findByUserId(uid);
 		if (!optional.isPresent()) {
 			return null;
 		}
-		User user = optional.get();
-		if (user.getToken() == null || user.getExpireTime() == null || user.getExpireTime() < System.currentTimeMillis()) {
+		UserToken token = optional.get();
+		if (token.getToken() == null || token.getExpireTime() == null || token.getExpireTime() < System.currentTimeMillis()) {
 			return null;
 		}
-		Map<String, Object> updateMap = MapUtil.newHashMap(1);
-		updateMap.put("expireTime", AuthUtils.getExpireTime());
-		userJpaService.update(user.getId(), updateMap);
-		return AuthUtils.buildTokenInfo(user);
+		token.setExpireTime(AuthUtils.getExpireTime());
+		userTokenJpaRepository.saveOrUpdate(token);
+		return token;
 	}
 
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public void setTokenInfo(Long uid, TokenInfo tokenInfo) {
+	public void setToken(Long uid, UserToken token) {
 		if (uid == null) {
 			return;
 		}
-		Optional<User> optional = userJpaService.findById(uid);
-		if (!optional.isPresent()) {
-			return;
+		if (token == null) {
+			token = new UserToken();
+			token.setUserId(uid);
 		}
-		Map<String, Object> updateMap = MapUtil.newHashMap(2);
-		if (tokenInfo == null) {
-			updateMap.put("expireTime", null);
-			updateMap.put("token", null);
-		} else {
-			updateMap.put("expireTime", tokenInfo.getExpireTime());
-			updateMap.put("token", tokenInfo.getToken());
-		}
-		userJpaService.update(uid, updateMap);
+		userTokenJpaRepository.saveOrUpdate(token);
 	}
 	
 }

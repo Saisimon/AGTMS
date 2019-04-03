@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.selection.AbstractSelection;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 @Component
 public class ClassSelection extends AbstractSelection<String> {
@@ -16,7 +16,7 @@ public class ClassSelection extends AbstractSelection<String> {
 		Classes[] cs = Classes.values();
 		LinkedHashMap<String, String> classMap = new LinkedHashMap<>(cs.length, 1.0F);
 		for (Classes c : cs) {
-			classMap.put(c.getName(), getMessage(StringUtils.uncapitalize(c.name().toLowerCase())));
+			classMap.put(c.getName(), getMessage(SystemUtils.uncapitalize(c.name().toLowerCase())));
 		}
 		return classMap;
 	}

@@ -26,7 +26,7 @@ public @interface TemplateInfo {
 	/**
 	 * 模板标题名称
 	 */
-	String title();
+	String title() default "";
 	
 	/**
 	 * 模板支持的功能数组

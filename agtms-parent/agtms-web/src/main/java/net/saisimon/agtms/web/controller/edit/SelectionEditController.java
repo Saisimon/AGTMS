@@ -66,7 +66,7 @@ public class SelectionEditController extends BaseController {
 	@PostMapping("/grid")
 	public Result grid(@RequestParam(name = "id", required = false) Long id) {
 		Selection selection = null;
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		if (id != null) {
 			selection = SelectionUtils.getSelection(id, userId);
 			if (selection == null) {
@@ -88,7 +88,7 @@ public class SelectionEditController extends BaseController {
 			typeField.setValue(Select.getOption(selectTypeOptions, selection.getType()));
 			titleField.setValue(selection.getTitle());
 			SelectionService selectionService = SelectionServiceFactory.get();
-			if (SelectTypes.OPTION.getType() == selection.getType()) {
+			if (SelectTypes.OPTION.getType().equals(selection.getType())) {
 				List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection.getId());
 				for (SelectionOption selectionOption : selectionOptions) {
 					SelectionGrid.OptionField option = new SelectionGrid.OptionField();
@@ -99,7 +99,7 @@ public class SelectionEditController extends BaseController {
 				templateField.setValue(templateOptions.get(0));
 				templateValue.setOptions(new ArrayList<>());
 				templateText.setOptions(new ArrayList<>());
-			} else if (SelectTypes.TEMPLATE.getType() == selection.getType()) {
+			} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
 				SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId());
 				Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), userId);
 				if (template == null) {
@@ -139,7 +139,7 @@ public class SelectionEditController extends BaseController {
 	
 	@PostMapping("/template")
 	public Result template(@RequestParam(name = "id") Long id) {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(id, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -150,7 +150,7 @@ public class SelectionEditController extends BaseController {
 	
 	@PostMapping("/search")
 	public Result search(@RequestParam(name = "sign") String sign, @RequestParam(name = "keyword", required = false) String keyword) {
-		List<Option<Object>> options = SelectionUtils.getSelectionOptions(sign, keyword, AuthUtils.getTokenInfo().getUserId());
+		List<Option<Object>> options = SelectionUtils.getSelectionOptions(sign, keyword, AuthUtils.getUid());
 		return ResultUtils.simpleSuccess(options);
 	}
 	
@@ -162,7 +162,7 @@ public class SelectionEditController extends BaseController {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Long id = body.getId();
 		Date time = new Date();
 		Selection selection = null;

@@ -79,7 +79,6 @@ import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
-import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
@@ -116,7 +115,7 @@ public class ManagementMainController extends AbstractMainController {
 	
 	@PostMapping("/grid")
 	public Result grid(@PathVariable("key") String key) {
-		Template template = TemplateUtils.getTemplate(key, AuthUtils.getTokenInfo().getUserId());
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUid());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -126,7 +125,7 @@ public class ManagementMainController extends AbstractMainController {
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
 	public Result list(@PathVariable("key") String key, @RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -150,7 +149,7 @@ public class ManagementMainController extends AbstractMainController {
 	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/remove")
 	public Result remove(@PathVariable("key") String key, @RequestParam(name = "id") Long id) {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -168,7 +167,7 @@ public class ManagementMainController extends AbstractMainController {
 	
 	@PostMapping("/batch/grid")
 	public Result batchGrid(@PathVariable("key") String key) {
-		Template template = TemplateUtils.getTemplate(key, AuthUtils.getTokenInfo().getUserId());
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUid());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -183,7 +182,7 @@ public class ManagementMainController extends AbstractMainController {
 		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Template template = TemplateUtils.getTemplate(key, AuthUtils.getTokenInfo().getUserId());
+		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUid());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -195,7 +194,7 @@ public class ManagementMainController extends AbstractMainController {
 		for (Map.Entry<String, Object> entry : body.entrySet()) {
 			String fieldName = entry.getKey();
 			Object fieldValue = entry.getValue();
-			if (StringUtils.isEmpty(fieldValue)) {
+			if (SystemUtils.isEmpty(fieldValue)) {
 				continue;
 			}
 			TemplateField field = fieldInfoMap.get(fieldName);
@@ -210,7 +209,7 @@ public class ManagementMainController extends AbstractMainController {
 		if (CollectionUtils.isEmpty(map)) {
 			return ResultUtils.simpleSuccess();
 		}
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		for (Integer id : ids) {
 			Domain domain = generateService.findById(id.longValue(), userId);
@@ -227,7 +226,7 @@ public class ManagementMainController extends AbstractMainController {
 	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@PathVariable("key") String key, @RequestBody List<Long> ids) {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -252,7 +251,7 @@ public class ManagementMainController extends AbstractMainController {
 		if (bindingResult.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -271,7 +270,7 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		body.setTemplateId(template.sign());
 		body.setUserId(userId);
-		if (StringUtils.isBlank(body.getExportFileName())) {
+		if (SystemUtils.isBlank(body.getExportFileName())) {
 			body.setExportFileName(template.getTitle());
 		}
 		Task exportTask = new Task();
@@ -306,7 +305,7 @@ public class ManagementMainController extends AbstractMainController {
 			@RequestParam("importFileType") String importFileType, 
 			@RequestParam("importFields") List<String> importFields, 
 			@RequestParam("importFile") MultipartFile importFile) {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -418,7 +417,7 @@ public class ManagementMainController extends AbstractMainController {
 		Long nid = template.getNavigationId();
 		if (nid != null && nid != -1) {
 			NavigationService navigationService = NavigationServiceFactory.get();
-			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(AuthUtils.getTokenInfo().getUserId());
+			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(AuthUtils.getUid());
 			do {
 				Navigation navigation = navigationMap.get(nid);
 				breadcrumbs.add(0, Breadcrumb.builder().text(navigation.getTitle()).to("/").build());
@@ -435,7 +434,7 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		Template template = (Template) key;
 		List<Filter> filters = new ArrayList<>();
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		for (TemplateColumn column : template.getColumns()) {
 			Filter filter = new Filter();
 			List<String> keyValues = new ArrayList<>();
@@ -548,7 +547,7 @@ public class ManagementMainController extends AbstractMainController {
 			if (templateField.getRequired()) {
 				field.setRequired(true);
 			}
-			if (StringUtils.isNotEmpty(templateField.getDefaultValue())) {
+			if (SystemUtils.isNotEmpty(templateField.getDefaultValue())) {
 				field.setValue(templateField.getDefaultValue());
 			}
 			editFields.put(fieldName, field);

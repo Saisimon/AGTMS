@@ -12,9 +12,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
-import net.saisimon.agtms.core.domain.entity.User;
-import net.saisimon.agtms.core.dto.TokenInfo;
-import net.saisimon.agtms.core.factory.TokenFactory;
 
 /**
  * 用户相关工具类
@@ -57,7 +54,7 @@ public class AuthUtils {
 	 * 
 	 * @return 用户ID
 	 */
-	public static String getUid() {
+	public static Long getUid() {
 		RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
 		if (requestAttributes == null) {
 			return null;
@@ -75,50 +72,46 @@ public class AuthUtils {
 	 * @param request HTTP 请求
 	 * @return 用户ID
 	 */
-	public static String getUid(HttpServletRequest request) {
+	public static Long getUid(HttpServletRequest request) {
 		String uid = request.getHeader(AUTHORIZE_UID);
-		if (StringUtils.isBlank(uid)) {
+		if (SystemUtils.isBlank(uid)) {
 			uid = request.getParameter(AUTHORIZE_UID);
 		}
-		return uid;
-	}
-	
-	/**
-	 * 获取 Token 信息
-	 * 
-	 * @return 用户信息
-	 * @see net.saisimon.agtms.core.dto.TokenInfo
-	 */
-	public static TokenInfo getTokenInfo() {
-		return getTokenInfo(getUid());
-	}
-	
-	/**
-	 * 根据指定用户ID的 Token 信息
-	 * 
-	 * @param uid 用户ID
-	 * @return Token 信息
-	 * @see net.saisimon.agtms.core.dto.TokenInfo
-	 */
-	public static TokenInfo getTokenInfo(String uid) {
-		if (uid == null || !NumberUtil.isLong(uid)) {
+		if (!NumberUtil.isLong(uid)) {
 			return null;
 		}
-		return TokenFactory.get().getTokenInfo(Long.valueOf(uid));
+		return Long.valueOf(uid);
 	}
 	
 	/**
-	 * 设置指定用户ID的 Token 信息
+	 * 获取当前线程的请求中的 Token
 	 * 
-	 * @param uid 用户ID
-	 * @param tokenInfo Token信息
-	 * @see net.saisimon.agtms.core.dto.TokenInfo
+	 * @return Token
 	 */
-	public static void setTokenInfo(String uid, TokenInfo tokenInfo) {
-		if (uid == null || !NumberUtil.isLong(uid)) {
-			return;
+	public static String getToken() {
+		RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+		if (requestAttributes == null) {
+			return null;
 		}
-		TokenFactory.get().setTokenInfo(Long.valueOf(uid), tokenInfo);
+		HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
+		if (request == null) {
+			return null;
+		}
+		return getToken(request);
+	}
+	
+	/**
+	 * 获取请求中的 Token
+	 * 
+	 * @param request HTTP 请求
+	 * @return Token 
+	 */
+	public static String getToken(HttpServletRequest request) {
+		String token = request.getHeader(AUTHORIZE_TOKEN);
+		if (SystemUtils.isBlank(token)) {
+			token = request.getParameter(AUTHORIZE_TOKEN);
+		}
+		return token;
 	}
 	
 	/**
@@ -139,17 +132,6 @@ public class AuthUtils {
 	 */
 	public static String hmac(String password, String salt) {
 		return new HmacUtils(HmacAlgorithms.HMAC_SHA_256, salt).hmacHex(password).toUpperCase();
-	}
-	
-	public static TokenInfo buildTokenInfo(User user) {
-		if (user == null) {
-			return null;
-		}
-		TokenInfo userInfo = new TokenInfo();
-		userInfo.setUserId(user.getId());
-		userInfo.setExpireTime(user.getExpireTime());
-		userInfo.setToken(user.getToken());
-		return userInfo;
 	}
 	
 }

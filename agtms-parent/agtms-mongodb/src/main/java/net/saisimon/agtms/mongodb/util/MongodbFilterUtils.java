@@ -24,7 +24,7 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 public class MongodbFilterUtils {
 	
@@ -76,7 +76,7 @@ public class MongodbFilterUtils {
 		Object value = param.getValue();
 		String operator = param.getOperator();
 		String type = param.getType();
-		if (StringUtils.isNotBlank(key) && value != null) {
+		if (SystemUtils.isNotBlank(key) && value != null) {
 			criteria = Criteria.where(key);
 			value = DomainGenerater.parseFieldValue(value, type);
 			switch (operator) {

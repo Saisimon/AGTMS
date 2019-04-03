@@ -26,7 +26,7 @@ import lombok.ToString;
  */
 @Setter
 @Getter
-@ToString(exclude={"password", "remark"})
+@ToString(exclude={"password", "salt", "remark"})
 @Entity
 @Table(name="agtms_user")
 @Document(collection="agtms_user")
@@ -94,27 +94,9 @@ public class User implements Serializable {
 	private String remark;
 	
 	/**
-	 * 上次操作
-	 */
-	@Column(length=50)
-	private String lastOperation;
-	
-	/**
 	 * 上次登陆时间
 	 */
 	@Column
 	private Date lastLoginTime;
-	
-	/**
-	 * Token 令牌
-	 */
-	@Column
-	private String token;
-	
-	/**
-	 * Token 过期时间
-	 */
-	@Column
-	private Long expireTime;
 	
 }

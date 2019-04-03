@@ -53,6 +53,7 @@ public interface BaseService<T, ID> {
 	 * 根据指定条件查询列表
 	 * 
 	 * @param filter 指定过滤条件
+	 * @param properties 属性名称数组
 	 * @return 实体对象列表
 	 */
 	default List<T> findList(FilterRequest filter, String... properties) {
@@ -64,6 +65,7 @@ public interface BaseService<T, ID> {
 	 * 
 	 * @param filter 指定过滤条件
 	 * @param sort 指定排序条件
+	 * @param properties 属性名称数组
 	 * @return 实体对象列表
 	 */
 	default List<T> findList(FilterRequest filter, FilterSort sort, String... properties) {
@@ -77,6 +79,7 @@ public interface BaseService<T, ID> {
 	 * 
 	 * @param filter 指定过滤条件
 	 * @param pageable 指定分页条件
+	 * @param properties 属性名称数组
 	 * @return 实体对象分页对象
 	 */
 	default Page<T> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
@@ -89,6 +92,7 @@ public interface BaseService<T, ID> {
 	 * 根据指定条件查询一条记录
 	 * 
 	 * @param filter 指定过滤条件
+	 * @param properties 属性名称数组
 	 * @return 实体对象
 	 */
 	default Optional<T> findOne(FilterRequest filter, String... properties) {
@@ -100,6 +104,7 @@ public interface BaseService<T, ID> {
 	 * 
 	 * @param filter 指定过滤条件
 	 * @param sort 指定排序条件
+	 * @param properties 属性名称数组
 	 * @return 实体对象
 	 */
 	default Optional<T> findOne(FilterRequest filter, FilterSort sort, String... properties) {

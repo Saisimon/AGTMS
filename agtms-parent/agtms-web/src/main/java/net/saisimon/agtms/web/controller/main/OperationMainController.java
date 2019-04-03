@@ -71,7 +71,7 @@ public class OperationMainController extends AbstractMainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, OPERATION_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getTokenInfo().getUserId());
+		filter.and(Constant.OPERATORID, AuthUtils.getUid());
 		FilterPageable pageable = FilterPageable.build(param);
 		OperationService operationService = OperationServiceFactory.get();
 		Page<Operation> page = operationService.findPage(filter, pageable);

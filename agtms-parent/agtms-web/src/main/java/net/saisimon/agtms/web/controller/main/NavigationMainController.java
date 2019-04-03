@@ -56,7 +56,6 @@ import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.NavigationUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
-import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.AbstractMainController;
@@ -105,7 +104,7 @@ public class NavigationMainController extends AbstractMainController {
 	@Operate(type=OperateTypes.QUERY, value="side")
 	@PostMapping("/side")
 	public Result side() {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		NavigationService navigationService = NavigationServiceFactory.get();
 		List<NavigationTree> trees = getChildNavs(navigationService.getNavigations(userId), -1L, userId);
 		if (trees == null) {
@@ -153,7 +152,7 @@ public class NavigationMainController extends AbstractMainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, NAVIGATION_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getTokenInfo().getUserId());
+		filter.and(Constant.OPERATORID, AuthUtils.getUid());
 		FilterPageable pageable = FilterPageable.build(param);
 		NavigationService navigationService = NavigationServiceFactory.get();
 		Page<Navigation> page = navigationService.findPage(filter, pageable);
@@ -176,7 +175,7 @@ public class NavigationMainController extends AbstractMainController {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Navigation navigation = NavigationUtils.getNavigation(id, userId);
 		if (navigation == null) {
 			return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
@@ -200,7 +199,7 @@ public class NavigationMainController extends AbstractMainController {
 		}
 		String icon = (String) body.get("icon");
 		Object priorityObj = body.get("priority");
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		NavigationService navigationService = NavigationServiceFactory.get();
 		for (Integer id : ids) {
 			Navigation navigation = NavigationUtils.getNavigation(id.longValue(), userId);
@@ -208,7 +207,7 @@ public class NavigationMainController extends AbstractMainController {
 				continue;
 			}
 			boolean update = false;
-			if (StringUtils.isNotBlank(icon) && !icon.equals(navigation.getIcon())) {
+			if (SystemUtils.isNotBlank(icon) && !icon.equals(navigation.getIcon())) {
 				update = true;
 				navigation.setIcon(icon);
 			}
@@ -231,7 +230,7 @@ public class NavigationMainController extends AbstractMainController {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		for (Long id : ids) {
 			Navigation navigation = NavigationUtils.getNavigation(id, userId);
 			if (navigation == null) {

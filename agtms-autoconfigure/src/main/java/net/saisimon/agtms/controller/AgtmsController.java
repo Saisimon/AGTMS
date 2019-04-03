@@ -26,7 +26,6 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.selection.Selection;
-import net.saisimon.agtms.core.util.StringUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.scanner.TemplateScanner;
@@ -55,7 +54,7 @@ public class AgtmsController {
 	
 	@PostMapping("/{key}/template")
 	public Template template(@PathVariable("key") String key) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
 		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
@@ -68,7 +67,7 @@ public class AgtmsController {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@PostMapping("/{key}/selection")
 	public Map<?, String> selection(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
 		SelectionResolver selectionResolver = templateScanner.getSelectionResolver(key);
@@ -85,7 +84,7 @@ public class AgtmsController {
 			return selection.selectText(texts);
 		}
 		String text = (String) body.get("text");
-		if (StringUtils.isBlank(text)) {
+		if (SystemUtils.isBlank(text)) {
 			return selection.select();
 		} else {
 			return selection.selectFuzzyText(text);
@@ -94,7 +93,7 @@ public class AgtmsController {
 	
 	@PostMapping("/{key}/count")
 	public Long count(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
 		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
@@ -114,7 +113,7 @@ public class AgtmsController {
 	@SuppressWarnings("unchecked")
 	@PostMapping("/{key}/findList")
 	public List<Map<String, Object>> findListBySort(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
 		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
@@ -161,7 +160,7 @@ public class AgtmsController {
 	@SuppressWarnings("unchecked")
 	@PostMapping("/{key}/findPage")
 	public Map<String, Object> findPage(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
 		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
@@ -205,7 +204,7 @@ public class AgtmsController {
 	@SuppressWarnings("unchecked")
 	@PostMapping("/{key}/findOne")
 	public Map<String, Object> findOne(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
 		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
@@ -241,7 +240,7 @@ public class AgtmsController {
 	
 	@PostMapping("/{key}/delete")
 	public Long delete(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
 		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
@@ -261,7 +260,7 @@ public class AgtmsController {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@PostMapping("/{key}/deleteEntity")
 	public void delete(@PathVariable("key") String key, @RequestParam(name="body") String body) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return;
 		}
 		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
@@ -279,7 +278,7 @@ public class AgtmsController {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@PostMapping("/{key}/saveOrUpdate")
 	public Map<String, Object> saveOrUpdate(@PathVariable("key") String key, @RequestParam(name="body") String body) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
 		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);
@@ -303,7 +302,7 @@ public class AgtmsController {
 	@SuppressWarnings("unchecked")
 	@PostMapping("/{key}/batchUpdate")
 	public void batchUpdate(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		if (StringUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return;
 		}
 		TemplateResolver templateResolver = templateScanner.getTemplateResolver(key);

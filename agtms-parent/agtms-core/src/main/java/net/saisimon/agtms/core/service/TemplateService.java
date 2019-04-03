@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.Ordered;
+import org.springframework.util.Assert;
 
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -20,9 +21,8 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 public interface TemplateService extends BaseService<Template, Long>, Ordered {
 	
 	default Boolean exists(String title, Long operatorId) {
-		if (title == null || operatorId == null) {
-			return null;
-		}
+		Assert.notNull(title, "title can not be null");
+		Assert.notNull(operatorId, "operatorId can not be null");
 		FilterRequest filter = FilterRequest.build().and("title", title).and("operatorId", operatorId);
 		return count(filter) > 0;
 	}

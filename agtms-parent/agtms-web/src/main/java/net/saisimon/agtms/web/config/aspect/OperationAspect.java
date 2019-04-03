@@ -17,7 +17,6 @@ import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.entity.Operation;
 import net.saisimon.agtms.core.domain.entity.Template;
-import net.saisimon.agtms.core.dto.TokenInfo;
 import net.saisimon.agtms.core.factory.OperationHandlerFactory;
 import net.saisimon.agtms.core.factory.OperationServiceFactory;
 import net.saisimon.agtms.core.handler.DefaultOperationHandler;
@@ -82,11 +81,11 @@ public class OperationAspect {
 		if (args == null || args.length == 0) {
 			return null;
 		}
-		TokenInfo tokenInfo = AuthUtils.getTokenInfo();
-		if (tokenInfo == null) {
+		Long userId = AuthUtils.getUid();
+		if (userId == null) {
 			return null;
 		}
-		Template template = TemplateUtils.getTemplate(args[0], tokenInfo.getUserId());
+		Template template = TemplateUtils.getTemplate(args[0], userId);
 		if (template == null) {
 			return null;
 		}

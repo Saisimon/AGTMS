@@ -42,7 +42,7 @@ import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.AbstractEditController;
@@ -61,7 +61,7 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 	
 	@PostMapping("/grid")
 	public Result grid(@PathVariable("key") String key, @RequestParam(name = "id", required = false) Long id) {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -81,7 +81,7 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/save")
 	public Result save(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -101,11 +101,11 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 				TemplateField field = entry.getValue();
 				Object fieldValue = body.get(fieldName);
 				fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
-				if (StringUtils.isEmpty(fieldValue)) {
+				if (SystemUtils.isEmpty(fieldValue)) {
 					if (field.getRequired()) {
 						return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 					}
-					if (StringUtils.isNotBlank(field.getDefaultValue())) {
+					if (SystemUtils.isNotBlank(field.getDefaultValue())) {
 						fieldValue = field.getDefaultValue();
 						fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
 					}
@@ -149,7 +149,7 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 		Long nid = template.getNavigationId();
 		if (nid != null && nid != -1) {
 			NavigationService navigationService = NavigationServiceFactory.get();
-			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(AuthUtils.getTokenInfo().getUserId());
+			Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(AuthUtils.getUid());
 			do {
 				Navigation navigation = navigationMap.get(nid);
 				breadcrumbs.add(0, Breadcrumb.builder().text(navigation.getTitle()).to("/").build());
@@ -170,7 +170,7 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 			return null;
 		}
 		Template template = (Template) key;
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		List<Field<?>> fields = new ArrayList<>();
 		if (CollectionUtils.isEmpty(template.getColumns())) {
 			return null;

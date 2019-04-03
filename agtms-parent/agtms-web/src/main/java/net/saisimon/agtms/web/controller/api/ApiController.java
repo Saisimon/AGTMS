@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.saisimon.agtms.core.dto.TokenInfo;
-import net.saisimon.agtms.core.util.AuthUtils;
+import cn.hutool.core.util.NumberUtil;
+import net.saisimon.agtms.core.domain.entity.UserToken;
+import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
@@ -31,11 +32,14 @@ public class ApiController {
 	 */
 	@PostMapping("/check/token")
 	public boolean checkToken(@RequestParam("uid") String uid, @RequestParam("token") String token) {
-		TokenInfo userInfo = AuthUtils.getTokenInfo(uid);
-		if (userInfo == null) {
+		if (!NumberUtil.isLong(uid)) {
 			return false;
 		}
-		return token.equals(userInfo.getToken());
+		UserToken userToken = TokenFactory.get().getToken(Long.valueOf(uid));
+		if (userToken == null) {
+			return false;
+		}
+		return token.equals(userToken.getToken());
 	}
 	
 	/**

@@ -40,9 +40,6 @@ feign:
 extra:
   class:
     path: /tmp/classes
-  admin:
-    username: admin
-    password: 123456
   max-size:
     task: 1024
     export: 65535

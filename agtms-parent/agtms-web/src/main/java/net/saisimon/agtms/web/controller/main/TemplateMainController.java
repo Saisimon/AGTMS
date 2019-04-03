@@ -93,7 +93,7 @@ public class TemplateMainController extends AbstractMainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, TEMPLATE_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getTokenInfo().getUserId());
+		filter.and(Constant.OPERATORID, AuthUtils.getUid());
 		FilterPageable pageable = FilterPageable.build(param);
 		TemplateService templateService = TemplateServiceFactory.get();
 		Page<Template> page = templateService.findPage(filter, pageable);
@@ -114,7 +114,7 @@ public class TemplateMainController extends AbstractMainController {
 	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/remove")
 	public Result remove(@RequestParam(name = "id") Long id) {
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(id, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -132,7 +132,7 @@ public class TemplateMainController extends AbstractMainController {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Long userId = AuthUtils.getTokenInfo().getUserId();
+		Long userId = AuthUtils.getUid();
 		TemplateService templateService = TemplateServiceFactory.get();
 		for (Long id : ids) {
 			Template template = TemplateUtils.getTemplate(id, userId);

@@ -302,7 +302,7 @@ public class TemplateUtils {
 	 * @return 是否检查通过
 	 */
 	public static boolean checkRequired(Template template) {
-		if (template == null || StringUtils.isBlank(template.getTitle())) {
+		if (template == null || SystemUtils.isBlank(template.getTitle())) {
 			return false;
 		}
 		if (CollectionUtils.isEmpty(template.getColumns()) || template.getColumns().size() > 10) {
@@ -312,14 +312,14 @@ public class TemplateUtils {
 			if (templateColumn == null) {
 				return false;
 			}
-			if (StringUtils.isBlank(templateColumn.getTitle())) {
+			if (SystemUtils.isBlank(templateColumn.getTitle())) {
 				return false;
 			}
 			if (CollectionUtils.isEmpty(templateColumn.getFields()) || templateColumn.getFields().size() > 10) {
 				return false;
 			}
 			for (TemplateField templateField : templateColumn.getFields()) {
-				if (StringUtils.isBlank(templateField.getFieldTitle())) {
+				if (SystemUtils.isBlank(templateField.getFieldTitle())) {
 					return false;
 				}
 				if (Views.SELECTION.getView().equals(templateField.getViews()) && templateField.selectionSign(template.getService()) == null) {

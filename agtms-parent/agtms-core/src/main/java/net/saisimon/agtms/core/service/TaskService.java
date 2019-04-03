@@ -26,7 +26,7 @@ public interface TaskService extends BaseService<Task, Long>, Ordered {
 		Optional<Task> optional = findById(id);
 		if (optional.isPresent()) {
 			Task task = optional.get();
-			if (operatorId == task.getOperatorId()) {
+			if (operatorId.equals(task.getOperatorId())) {
 				return task;
 			}
 		}

@@ -24,7 +24,7 @@ import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.repository.BaseRepository;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
  * 模板注解扫描类
@@ -55,7 +55,7 @@ public class TemplateScanner {
 		}
 		for (Class<?> clazz : classes) {
 			TemplateInfo templateInfo = AnnotationUtils.findAnnotation(clazz, TemplateInfo.class);
-			if (StringUtils.isBlank(templateInfo.key())) {
+			if (templateInfo == null || SystemUtils.isBlank(templateInfo.key())) {
 				continue;
 			}
 			Template template = buildTemplate(clazz, templateInfo);
@@ -72,7 +72,11 @@ public class TemplateScanner {
 		template.setKey(templateInfo.key());
 		template.setNavigationId(-1L);
 		template.setFunctions(function);
-		template.setTitle(templateInfo.title());
+		String title = templateInfo.title();
+		if (SystemUtils.isBlank(title)) {
+			title = template.getKey();
+		}
+		template.setTitle(title);
 		template.setSource("remote");
 		Map<FieldInfo, Field> fieldInfoMap = new TreeMap<>((f1, f2) -> {
 			if (f1.columnOrdered() == f2.columnOrdered()) {
@@ -96,7 +100,7 @@ public class TemplateScanner {
 				templateColumn.setColumnName("");
 				templateColumn.setOrdered(fieldInfo.columnOrdered());
 				String columnTitle = fieldInfo.columnTitle();
-				if (StringUtils.isBlank(columnTitle)) {
+				if (SystemUtils.isBlank(columnTitle)) {
 					columnTitle = fieldInfo.fieldTitle();
 				}
 				templateColumn.setTitle(columnTitle);

@@ -26,7 +26,7 @@ import net.saisimon.agtms.core.domain.generate.Generate;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.util.FileUtils;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
  * 自定义对象生成器
@@ -119,7 +119,7 @@ public class DomainGenerater {
 	 */
 	@SuppressWarnings("unchecked")
 	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String domainName, boolean force, Class<?> templateClass) throws GenerateException {
-		if (fieldMap == null || StringUtils.isBlank(namespace) || StringUtils.isBlank(domainName)) {
+		if (fieldMap == null || SystemUtils.isBlank(namespace) || SystemUtils.isBlank(domainName)) {
 			return null;
 		}
 		Map<String, String> map = new HashMap<>(fieldMap);
@@ -193,7 +193,7 @@ public class DomainGenerater {
 	 * @return 删除状态
 	 */
 	public static boolean removeDomainClass(String namespace, String domainName) {
-		if (StringUtils.isBlank(namespace) || StringUtils.isBlank(domainName)) {
+		if (SystemUtils.isBlank(namespace) || SystemUtils.isBlank(domainName)) {
 			return false;
 		}
 		String domainFullName = DEFAULT_PACKAGE + "." + domainName;
@@ -221,7 +221,7 @@ public class DomainGenerater {
 			throw new IllegalArgumentException("domain can not be null");
 		}
 		try {
-			String getterMethodName = GETTER_PREFIX + StringUtils.capitalize(fieldName);
+			String getterMethodName = GETTER_PREFIX + SystemUtils.capitalize(fieldName);
 			Method m = domain.getClass().getMethod(getterMethodName, new Class<?>[]{});
 			return m.invoke(domain);
 		} catch (Exception e) {
@@ -243,7 +243,7 @@ public class DomainGenerater {
 			throw new IllegalArgumentException("domain can not be null");
 		}
 		try {
-			String setterMethodName = SETTER_PREFIX + StringUtils.capitalize(fieldName);
+			String setterMethodName = SETTER_PREFIX + SystemUtils.capitalize(fieldName);
 			Method m = domain.getClass().getMethod(setterMethodName, fieldClass);
 			m.invoke(domain, fieldValue);
 		} catch (Exception e) {
@@ -298,7 +298,7 @@ public class DomainGenerater {
 	}
 
 	private static void buildSetterMethod(ClassWriter cw, String domainFullName, String fieldName, String fieldDesc) {
-		String setterMethodName = SETTER_PREFIX + StringUtils.capitalize(fieldName);
+		String setterMethodName = SETTER_PREFIX + SystemUtils.capitalize(fieldName);
 		MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, setterMethodName, "(" + fieldDesc + ")V", null, null);
 		mv.visitCode();
 		mv.visitVarInsn(Opcodes.ALOAD, 0);
@@ -311,7 +311,7 @@ public class DomainGenerater {
 	}
 	
 	private static void buildGetterMethod(ClassWriter cw, String domainFullName, String fieldName, String fieldDesc) {
-		String getterMethodName = GETTER_PREFIX + StringUtils.capitalize(fieldName);
+		String getterMethodName = GETTER_PREFIX + SystemUtils.capitalize(fieldName);
 		MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, getterMethodName, "()" + fieldDesc, null, null);
 		mv.visitCode();
 		mv.visitVarInsn(Opcodes.ALOAD, 0);

@@ -118,7 +118,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 	
 	@Override
 	public void download(Task task, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		if (task == null || task.getHandleStatus() != HandleStatuses.SUCCESS.getStatus()) {
+		if (task == null || !HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}

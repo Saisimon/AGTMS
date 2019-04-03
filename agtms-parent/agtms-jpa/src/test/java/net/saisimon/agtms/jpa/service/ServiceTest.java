@@ -21,9 +21,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
+import net.saisimon.agtms.core.domain.entity.Navigation;
 import net.saisimon.agtms.core.domain.entity.Selection;
 import net.saisimon.agtms.core.domain.entity.SelectionOption;
 import net.saisimon.agtms.core.domain.entity.SelectionTemplate;
+import net.saisimon.agtms.core.domain.entity.Task;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
@@ -32,18 +34,24 @@ import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.enums.Classes;
+import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.SelectTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.service.GenerateService;
+import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.SelectionService;
+import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.service.UserService;
+import net.saisimon.agtms.core.util.NavigationUtils;
+import net.saisimon.agtms.core.util.SelectionUtils;
+import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.jpa.JpaTestApplication;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = JpaTestApplication.class, properties = "logging.level.net.saisimon=DEBUG")
+@SpringBootTest(classes = JpaTestApplication.class, properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG"})
 @DataJpaTest
 @JdbcTest
 public class ServiceTest {
@@ -54,12 +62,18 @@ public class ServiceTest {
 	private UserService userService;
 	@Autowired
 	private SelectionService selectionService;
+	@Autowired
+	private NavigationService navigationService;
+	@Autowired
+	private TaskService taskService;
 	
 	@Before
 	public void before() {
 		templateService.delete(FilterRequest.build());
 		userService.delete(FilterRequest.build());
 		selectionService.delete(FilterRequest.build());
+		navigationService.delete(FilterRequest.build());
+		taskService.delete(FilterRequest.build());
 	}
 	
 	@Test
@@ -180,13 +194,26 @@ public class ServiceTest {
 	@Test
 	public void templateServiceTest() {
 		String title = "xxx";
+		// exists
+		Assert.assertFalse(templateService.exists(title, 1L));
+		
+		// getTemplate
+		Assert.assertNull(TemplateUtils.getTemplate(1L, 1L));
+		
+		// saveOrUpdate
 		int columnSize = 2;
 		Template template = buildTestTemplate(title, columnSize);
-		template = templateService.saveOrUpdate(template);
+		templateService.saveOrUpdate(template);
 		title = "aaa";
 		int addColumnSize = 3;
 		updateTemplate(template, title, addColumnSize);
 		templateService.saveOrUpdate(template);
+		
+		// getTemplate
+		Assert.assertNull(TemplateUtils.getTemplate(template.getId(), 2L));
+		Assert.assertNotNull(TemplateUtils.getTemplate(template.getId(), 1L));
+		
+		// saveOrUpdate
 		Template newTemplate = buildTestTemplate("bbb", 1);
 		templateService.saveOrUpdate(newTemplate);
 		
@@ -274,12 +301,22 @@ public class ServiceTest {
 	@Test
 	public void selectionServiceTest() {
 		// exists
-		Assert.assertNull(selectionService.exists(null, null));
+		Assert.assertFalse(selectionService.exists("option", 1L));
+		
+		// getSelection
+		Assert.assertNull(SelectionUtils.getSelection(1L, 1L));
 		
 		// saveOrUpdate
 		Selection optionSelection = buildTestSelection("option", SelectTypes.OPTION);
 		selectionService.saveOrUpdate(optionSelection);
 		Assert.assertNotNull(optionSelection.getId());
+		
+		// exists
+		Assert.assertTrue(selectionService.exists("option", 1L));
+		
+		// getSelection
+		Assert.assertNull(SelectionUtils.getSelection(optionSelection.getId(), 2L));
+		Assert.assertNotNull(SelectionUtils.getSelection(optionSelection.getId(), 1L));
 		
 		// saveSelectionOptions
 		selectionService.saveSelectionOptions(null);
@@ -306,6 +343,61 @@ public class ServiceTest {
 		Assert.assertNotNull(template);
 		Assert.assertEquals("column0field0", template.getTextFieldName());
 		Assert.assertEquals("id", template.getValueFieldName());
+	}
+	
+	@Test
+	public void navigationServiceTest() {
+		// exists
+		Assert.assertFalse(navigationService.exists("parent", 1L));
+		
+		// getNavigation
+		Assert.assertNull(NavigationUtils.getNavigation(1L, 1L));
+		
+		// saveOrUpdate
+		Navigation parent = buildTestNavigation("parent", -1L);
+		navigationService.saveOrUpdate(parent);
+		Assert.assertNotNull(parent.getId());
+		
+		// exists
+		Assert.assertTrue(navigationService.exists("parent", 1L));
+		
+		// getNavigation
+		Assert.assertNull(NavigationUtils.getNavigation(parent.getId(), 2L));
+		Assert.assertNotNull(NavigationUtils.getNavigation(parent.getId(), 1L));
+		
+		// saveOrUpdate
+		Navigation test = buildTestNavigation("test", parent.getId());
+		navigationService.saveOrUpdate(test);
+		Assert.assertNotNull(test.getId());
+		
+		// getNavigations
+		List<Navigation> navigations = navigationService.getNavigations(1L);
+		Assert.assertEquals(2, navigations.size());
+		
+		// getChildrenNavigations
+		List<Navigation> childrenNavigations = navigationService.getChildrenNavigations(parent.getId(), 1L);
+		Assert.assertEquals(1, childrenNavigations.size());
+		Assert.assertEquals(test.getId(), childrenNavigations.get(0).getId());
+		
+		// getNavigationMap
+		Map<Long, Navigation> navigationMap = navigationService.getNavigationMap(1L);
+		Assert.assertEquals(new Long(-1L), navigationMap.get(parent.getId()).getParentId());
+		Assert.assertEquals(parent.getId(), navigationMap.get(test.getId()).getParentId());
+	}
+	
+	@Test
+	public void taskServiceTest() {
+		// getTask
+		Assert.assertNull(taskService.getTask(1L, 1L));
+		
+		// saveOrUpdate
+		Task task = buildTestTask();
+		taskService.saveOrUpdate(task);
+		Assert.assertNotNull(task.getId());
+		
+		// getTask
+		Assert.assertNull(taskService.getTask(task.getId(), 2L));
+		Assert.assertNotNull(taskService.getTask(task.getId(), 1L));
 	}
 	
 	@Test
@@ -488,6 +580,34 @@ public class ServiceTest {
 			template.addColumn(column);
 		}
 		template.setColumnIndex(template.getColumns().size());
+	}
+	
+	private Navigation buildTestNavigation(String title, Long pid) {
+		Navigation navigation = new Navigation();
+		Date time = new Date();
+		navigation.setIcon("cogs");
+		navigation.setOperatorId(1L);
+		navigation.setParentId(pid);
+		navigation.setPriority(0L);
+		navigation.setTitle(title);
+		navigation.setCreateTime(time);
+		navigation.setUpdateTime(time);
+		return navigation;
+	}
+	
+	private Task buildTestTask() {
+		Task task = new Task();
+		Date time = new Date();
+		task.setHandleResult("success");
+		task.setHandleStatus(HandleStatuses.SUCCESS.getStatus());
+		task.setIp("127.0.0.1");
+		task.setOperatorId(1L);
+		task.setPort(7891);
+		task.setTaskParam("{}");
+		task.setHandleTime(time);
+		task.setTaskTime(time);
+		task.setTaskType("export");
+		return task;
 	}
 	
 }

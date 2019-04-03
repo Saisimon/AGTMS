@@ -1,17 +1,14 @@
 package net.saisimon.agtms.core.service;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.Ordered;
 
-import cn.hutool.core.map.MapUtil;
-import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.util.AuthUtils;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
  * 用户服务接口
@@ -22,14 +19,14 @@ import net.saisimon.agtms.core.util.StringUtils;
 public interface UserService extends BaseService<User, Long>, Ordered {
 	
 	default User getUserByLoginNameOrEmail(String username, String email) {
-		if (StringUtils.isBlank(username) && StringUtils.isBlank(email)) {
+		if (SystemUtils.isBlank(username) && SystemUtils.isBlank(email)) {
 			return null;
 		}
 		FilterRequest filter = FilterRequest.build();
-		if (StringUtils.isNotBlank(username)) {
+		if (SystemUtils.isNotBlank(username)) {
 			filter.or("loginName", username);
 		}
-		if (StringUtils.isNotBlank(email)) {
+		if (SystemUtils.isNotBlank(email)) {
 			filter.or("email", email);
 		}
 		Optional<User> optional = findOne(filter);
@@ -37,7 +34,7 @@ public interface UserService extends BaseService<User, Long>, Ordered {
 	}
 	
 	default User auth(String username, String password) {
-		if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
+		if (SystemUtils.isBlank(username) || SystemUtils.isBlank(password)) {
 			return null;
 		}
 		User user = getUserByLoginNameOrEmail(username, username);
@@ -49,16 +46,11 @@ public interface UserService extends BaseService<User, Long>, Ordered {
 		if (!hmacPwd.equals(user.getPassword())) {
 			return null;
 		}
-		Map<String, Object> updateMap = MapUtil.newHashMap(3);
-		updateMap.put("lastLoginTime", new Date());
-		updateMap.put("token", AuthUtils.createToken());
-		updateMap.put("expireTime", AuthUtils.getExpireTime());
-		batchUpdate(FilterRequest.build().and(Constant.ID, user.getId()), updateMap);
 		return user;
 	}
 	
 	default User register(String username, String email, String password) {
-		if (StringUtils.isBlank(username) || StringUtils.isBlank(email) || StringUtils.isBlank(password)) {
+		if (SystemUtils.isBlank(username) || SystemUtils.isBlank(email) || SystemUtils.isBlank(password)) {
 			return null;
 		}
 		User user = getUserByLoginNameOrEmail(username, email);
@@ -76,8 +68,6 @@ public interface UserService extends BaseService<User, Long>, Ordered {
 		user.setLastLoginTime(time);
 		user.setSalt(salt);
 		user.setPassword(hmacPwd);
-		user.setExpireTime(AuthUtils.getExpireTime());
-		user.setToken(AuthUtils.createToken());
 		saveOrUpdate(user);
 		return user;
 	}

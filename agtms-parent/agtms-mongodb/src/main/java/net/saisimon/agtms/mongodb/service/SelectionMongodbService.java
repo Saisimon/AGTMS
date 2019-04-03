@@ -14,7 +14,7 @@ import net.saisimon.agtms.core.domain.entity.SelectionOption;
 import net.saisimon.agtms.core.domain.entity.SelectionTemplate;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.service.SelectionService;
-import net.saisimon.agtms.core.util.StringUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.mongodb.order.MongodbOrder;
 import net.saisimon.agtms.mongodb.repository.SelectionMongodbRepository;
 import net.saisimon.agtms.mongodb.repository.SelectionOptionMongodbRepository;
@@ -54,7 +54,7 @@ public class SelectionMongodbService implements SelectionService, MongodbOrder {
 	@Override
 	public List<SelectionOption> searchSelectionOptions(Long selectionId, String keyword, Integer size) {
 		Pageable pageable = PageRequest.of(0, size);
-		if (StringUtils.isBlank(keyword)) {
+		if (SystemUtils.isBlank(keyword)) {
 			return selectionOptionMongodbRepository.findBySelectionId(selectionId, pageable);
 		} else {
 			return selectionOptionMongodbRepository.findBySelectionIdAndTextContaining(selectionId, keyword, pageable);
