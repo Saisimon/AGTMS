@@ -18,6 +18,8 @@ public class TemplateInfo extends BaseInfo {
 	
 	private String functions;
 	
+	private String operator;
+	
 	private Date createTime;
 	
 	private Date updateTime;

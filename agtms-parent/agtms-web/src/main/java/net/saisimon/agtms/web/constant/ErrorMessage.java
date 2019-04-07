@@ -15,6 +15,7 @@ public class ErrorMessage {
 		public static final Result SERVER_ERROR = ResultUtils.error(501, "server.error");
 		public static final Result MISSING_REQUIRED_FIELD = ResultUtils.error(502, "missing.required.field");
 		public static final Result PARAM_ERROR = ResultUtils.error(503, "param.error");
+		public static final Result PERMISSION_DENIED = ResultUtils.error(504, "permission.denied");
 	}
 	
 	public static class User {
@@ -22,6 +23,7 @@ public class ErrorMessage {
 		public static final Result ACCOUNT_ALREADY_EXISTS = ResultUtils.error(1002, "account.already.exists");
 		public static final Result EMAIL_FORMAT_ERROR = ResultUtils.error(1003, "email.format.error");
 		public static final Result ACCOUNT_NOT_EXIST = ResultUtils.error(1004, "account.not.exist");
+		public static final Result ACCOUNT_LOCKED = ResultUtils.error(1005, "account.locked");
 	}
 	
 	public static class Navigation {

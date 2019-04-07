@@ -35,7 +35,7 @@ public class ApiController {
 		if (!NumberUtil.isLong(uid)) {
 			return false;
 		}
-		UserToken userToken = TokenFactory.get().getToken(Long.valueOf(uid));
+		UserToken userToken = TokenFactory.get().getToken(Long.valueOf(uid), true);
 		if (userToken == null) {
 			return false;
 		}

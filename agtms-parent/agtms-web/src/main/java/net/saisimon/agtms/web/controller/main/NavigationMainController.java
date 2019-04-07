@@ -29,6 +29,7 @@ import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Navigation;
 import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -50,6 +51,7 @@ import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
+import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.TemplateService;
@@ -63,6 +65,7 @@ import net.saisimon.agtms.web.dto.resp.NavigationInfo;
 import net.saisimon.agtms.web.dto.resp.NavigationTree;
 import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
 import net.saisimon.agtms.web.selection.NavigationSelection;
+import net.saisimon.agtms.web.selection.UserSelection;
 
 /**
  * 导航主控制器
@@ -97,6 +100,8 @@ public class NavigationMainController extends AbstractMainController {
 	@Autowired
 	private NavigationSelection navigationSelection;
 	@Autowired
+	private UserSelection userSelection;
+	@Autowired
 	private DiscoveryClient discoveryClient;
 	@Autowired(required = false)
 	private RemoteService remoteService;
@@ -104,20 +109,22 @@ public class NavigationMainController extends AbstractMainController {
 	@Operate(type=OperateTypes.QUERY, value="side")
 	@PostMapping("/side")
 	public Result side() {
-		Long userId = AuthUtils.getUid();
+		UserToken userToken = TokenFactory.get().getToken(AuthUtils.getUid(), false);
 		NavigationService navigationService = NavigationServiceFactory.get();
-		List<NavigationTree> trees = getChildNavs(navigationService.getNavigations(userId), -1L, userId);
+		List<NavigationTree> trees = getChildNavs(navigationService.getNavigations(userToken.getUserId()), -1L, userToken.getUserId());
 		if (trees == null) {
-			trees = new ArrayList<>(1);
+			trees = new ArrayList<>();
 		}
 		trees.add(0, NavigationTree.SYSTEM_MODULE_TREE);
-		trees.add(0, NavigationTree.USER_MODULE_TREE);
+		if (userToken.getAdmin()) {
+			trees.add(0, NavigationTree.USER_MODULE_TREE);
+		}
 		NavigationTree root = new NavigationTree();
 		root.setId(-1L);
 		root.setChildrens(internationNavigationTrees(trees));
 		List<NavigationLink> links = new ArrayList<>();
 		TemplateService templateService = TemplateServiceFactory.get();
-		List<Template> templates = templateService.getTemplates(-1L, userId);
+		List<Template> templates = templateService.getTemplates(-1L, userToken.getUserId());
 		if (templates == null) {
 			templates = new ArrayList<>();
 		}
@@ -152,13 +159,19 @@ public class NavigationMainController extends AbstractMainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, NAVIGATION_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getUid());
+		Long userId = AuthUtils.getUid();
+		UserToken userToken = TokenFactory.get().getToken(userId, false);
+		if (!userToken.getAdmin()) {
+			filter.and(Constant.OPERATORID, userId);
+		}
 		FilterPageable pageable = FilterPageable.build(param);
 		NavigationService navigationService = NavigationServiceFactory.get();
 		Page<Navigation> page = navigationService.findPage(filter, pageable);
 		List<NavigationInfo> results = new ArrayList<>(page.getContent().size());
+		Map<Long, String> userMap = userSelection.select();
 		for (Navigation navigation : page.getContent()) {
 			NavigationInfo result = buildNavigationResult(navigation);
+			result.setOperator(userMap.get(navigation.getOperatorId()));
 			result.setIcon("<i class='fa fa-"+ navigation.getIcon() +"'></i>");
 			result.setAction(NAVIGATION);
 			results.add(result);
@@ -189,7 +202,7 @@ public class NavigationMainController extends AbstractMainController {
 		return ResultUtils.simpleSuccess(getBatchGrid(NAVIGATION));
 	}
 	
-	@Operate(type=OperateTypes.EDIT)
+	@Operate(type=OperateTypes.BATCH_EDIT)
 	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/save")
 	public Result batchSave(@RequestBody Map<String, Object> body) {
@@ -260,6 +273,7 @@ public class NavigationMainController extends AbstractMainController {
 		columns.add(Column.builder().field("icon").label(getMessage("icon")).width(100).views(Views.ICON.getView()).build());
 		columns.add(Column.builder().field("title").label(getMessage("title")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("priority").label(getMessage("priority")).type("number").width(100).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
@@ -330,8 +344,7 @@ public class NavigationMainController extends AbstractMainController {
 	
 	private void recursiveRemove(Navigation navigation, Long userId) {
 		NavigationService navigationService = NavigationServiceFactory.get();
-		Long id = navigation.getId();
-		List<Navigation> list = navigationService.getChildrenNavigations(id, userId);
+		List<Navigation> list = navigationService.getChildrenNavigations(navigation.getId(), userId);
 		if (!CollectionUtils.isEmpty(list)) {
 			for (Navigation n : list) {
 				recursiveRemove(n, userId);

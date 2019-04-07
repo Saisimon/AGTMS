@@ -9,6 +9,7 @@
         <b-col sm="10">
             <b-form-textarea :id="field.name + '-input'"
                     :state="field.state"
+                    :disabled="field.disabled"
                     v-model.trim="field.value"
                     no-resize
                     :rows="6">

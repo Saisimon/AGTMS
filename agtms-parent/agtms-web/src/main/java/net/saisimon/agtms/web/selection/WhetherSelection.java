@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import cn.hutool.core.map.MapUtil;
+import net.saisimon.agtms.core.enums.Whether;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 
 @Component
@@ -12,9 +13,11 @@ public class WhetherSelection extends AbstractSelection<Integer> {
 
 	@Override
 	public Map<Integer, String> select() {
-		Map<Integer, String> whetherMap = MapUtil.newHashMap(2, true);
-		whetherMap.put(0, getMessage("no"));
-		whetherMap.put(1, getMessage("yes"));
+		Whether[] ws = Whether.values();
+		Map<Integer, String> whetherMap = MapUtil.newHashMap(ws.length, true);
+		for (Whether w : ws) {
+			whetherMap.put(w.getValue(), getMessage(w.getName()));
+		}
 		return whetherMap;
 	}
 	

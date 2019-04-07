@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Operation;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -33,12 +34,14 @@ import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.OperationServiceFactory;
+import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.service.OperationService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.web.controller.base.AbstractMainController;
 import net.saisimon.agtms.web.dto.resp.OperationInfo;
 import net.saisimon.agtms.web.selection.OperateTypeSelection;
+import net.saisimon.agtms.web.selection.UserSelection;
 
 /**
  * 操作记录主控制器
@@ -62,6 +65,8 @@ public class OperationMainController extends AbstractMainController {
 	
 	@Autowired
 	private OperateTypeSelection operateTypeSelection;
+	@Autowired
+	private UserSelection userSelection;
 	
 	@PostMapping("/grid")
 	public Result grid() {
@@ -71,12 +76,17 @@ public class OperationMainController extends AbstractMainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, OPERATION_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getUid());
+		Long userId = AuthUtils.getUid();
+		UserToken userToken = TokenFactory.get().getToken(userId, false);
+		if (!userToken.getAdmin()) {
+			filter.and(Constant.OPERATORID, userId);
+		}
 		FilterPageable pageable = FilterPageable.build(param);
 		OperationService operationService = OperationServiceFactory.get();
 		Page<Operation> page = operationService.findPage(filter, pageable);
 		List<OperationInfo> results = new ArrayList<>(page.getContent().size());
 		Map<Integer, String> operateTypeMap = operateTypeSelection.select();
+		Map<Long, String> userMap = userSelection.select();
 		for (Operation operation : page.getContent()) {
 			OperationInfo result = new OperationInfo();
 			result.setId(operation.getId());
@@ -86,6 +96,7 @@ public class OperationMainController extends AbstractMainController {
 			if (operation.getOperateContent() != null) {
 				result.setOperateContent(Arrays.stream(operation.getOperateContent().split(",")).map(msg -> { return getMessage(msg);}).collect(Collectors.joining(" / ")));
 			}
+			result.setOperator(userMap.get(operation.getOperatorId()));
 			result.setAction(OPERATION);
 			results.add(result);
 		}
@@ -129,6 +140,7 @@ public class OperationMainController extends AbstractMainController {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("operateContent").label(getMessage("operate.content")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("operateType").label(getMessage("operate.type")).views(Views.TEXT.getView()).width(200).build());
+		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("operateTime").label(getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("operateIp").label(getMessage("operate.ip")).views(Views.TEXT.getView()).width(200).build());
 		return columns;

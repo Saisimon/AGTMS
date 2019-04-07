@@ -122,9 +122,12 @@
                     :is-loading="isLoading"
                     :columns="columns"
                     :rows="datas"
-                    :totalRecords="total"
+                    :totalRows="total"
                     :sort-options="sortOptions"
                     :select-options="selectOptions"
+                    :pagination-options="paginationOptions"
+                    @on-page-change="onPageChange"
+                    @on-per-page-change="onPerPageChange"
                     @on-select-all="selectAll"
                     @on-selected-rows-change="selectChange"
                     @on-sort-change="sortChange" >
@@ -134,23 +137,6 @@
                     <div slot="emptystate" class="text-center">
                         {{ $t('no_data') }}
                     </div>
-                    <b-row slot="table-actions-bottom" class="mt-2">
-                        <b-col>
-                            <div class="rows-div">{{ $t("total") }} {{ total }} {{ $t("rows") }}</div>
-                        </b-col>
-                        <b-col cols="8">
-                            <b-pagination 
-                                v-model="pageable.pageIndex" 
-                                :total-rows="total" 
-                                :per-page="10" 
-                                :first-text="$t('first_page')"
-                                :prev-text="$t('previous_page')"
-                                :next-text="$t('next_page')"
-                                :last-text="$t('last_page')"
-                                align="right" 
-                                @change="pageChange" />
-                        </b-col>
-                    </b-row>
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.field == 'action'">
                             <action-cell 
@@ -247,13 +233,17 @@ export default {
             this.$store.dispatch('getMainGrid', to.path).then(resp => {
                 if (resp.data.code === 0) {
                     vm.$store.commit('setFunctions', resp.data.data.functions);
-                    vm.$store.commit('setPageable', resp.data.data.pageable);
                     vm.$store.commit('setShowFilters', resp.data.data.showFilters);
                     vm.$store.commit('setFilters', resp.data.data.filters);
                     vm.$store.commit('setHeader', resp.data.data.header);
                     vm.$store.commit('setBreadcrumbs', resp.data.data.breadcrumbs);
                     vm.$store.commit('setColumns', resp.data.data.columns);
                     vm.$store.commit('setActions', resp.data.data.actions);
+                    var pageable = resp.data.data.pageable;
+                    vm.pageIndex = pageable.pageIndex;
+                    vm.pageSize = pageable.pageSize;
+                    vm.paginationOptions.setCurrentPage = pageable.pageIndex;
+                    vm.paginationOptions.perPage = pageable.pageSize;
                     vm.$store.dispatch('getDatas', {
                         url: to.path,
                         filters: vm.searchFilters(),
@@ -367,9 +357,6 @@ export default {
         datas: function() {
             return this.$store.state.list.datas;
         },
-        pageable: function() {
-            return this.$store.state.list.pageable;
-        },
         total: function() {
             return this.$store.state.list.total;
         }
@@ -381,13 +368,17 @@ export default {
             this.$store.dispatch('getMainGrid', this.$route.path).then(resp => {
                 if (resp.data.code === 0) {
                     vm.$store.commit('setFunctions', resp.data.data.functions);
-                    vm.$store.commit('setPageable', resp.data.data.pageable);
                     vm.$store.commit('setShowFilters', resp.data.data.showFilters);
                     vm.$store.commit('setFilters', resp.data.data.filters);
                     vm.$store.commit('setHeader', resp.data.data.header);
                     vm.$store.commit('setBreadcrumbs', resp.data.data.breadcrumbs);
                     vm.$store.commit('setColumns', resp.data.data.columns);
                     vm.$store.commit('setActions', resp.data.data.actions);
+                    var pageable = resp.data.data.pageable;
+                    vm.pageIndex = pageable.pageIndex;
+                    vm.pageSize = pageable.pageSize;
+                    vm.paginationOptions.setCurrentPage = pageable.pageIndex;
+                    vm.paginationOptions.perPage = pageable.pageSize;
                     vm.searchByFilters();
                 }
                 vm.$store.commit('clearProgress');
@@ -418,7 +409,22 @@ export default {
                 selectionText: this.$t('rows_selected'),
                 clearSelectionText: '',
             },
-            selects: []
+            selects: [],
+            pageSize: 10,
+            pageIndex: 1,
+            paginationOptions: {
+                enabled: true,
+                mode: 'pages',
+                perPageDropdown: [10, 20, 50],
+                setCurrentPage: this.pageIndex,
+                perPage: this.pageSize,
+                dropdownAllowAll: false,
+                nextLabel: this.$t('next_page'),
+                prevLabel: this.$t('previous_page'),
+                rowsPerPageLabel: this.$t('rows_pre_page'),
+                ofLabel: "/",
+                pageLabel: ''
+            }
         }
     },
     methods: {
@@ -476,19 +482,23 @@ export default {
                 return 'table-actions-cell';
             }
         },
-        pageChange: function(pageIndex) {
-            this.$store.commit('setPageIndex', pageIndex);
+        onPageChange: function(params) {
+            this.pageIndex = params.currentPage;
             this.searchByFilters();
         },
-        pageSizeChange: function(pageSize) {
-            this.$store.commit('setPageSize', pageSize);
+        onPerPageChange: function(params) {
+            if (this.pageSize == params.currentPerPage) {
+                return;
+            }
+            this.pageIndex = 1;
+            this.pageSize = params.currentPerPage;
             this.searchByFilters();
         },
         sortChange: function(params) {
             this.$store.commit('setSort', params);
             this.searchByFilters();
         },
-        searchByFilters: function() {
+        searchByFilters: function(key) {
             this.$store.dispatch('getDatas', {
                 url: this.$route.path,
                 filters: this.searchFilters(),
@@ -512,8 +522,8 @@ export default {
                 }
             }
             return {
-                'index': (this.pageable.pageIndex - 1),
-                'size': this.pageable.pageSize,
+                'index': (this.pageIndex - 1),
+                'size': this.pageSize,
                 'sort': sorts.join(',')
             };
         },
@@ -698,6 +708,21 @@ export default {
 .vgt-wrap__actions-footer {
     border: 0px!important;
     position: relative;
+}
+.vgt-wrap__footer {
+    border-top: 0px!important;
+    padding: .75em!important;
+}
+.vgt-wrap__footer .footer__row-count__select {
+    width: 50px!important;
+    height: 30px!important;
+    line-height: 30px!important;
+}
+.vgt-wrap__footer .footer__navigation__page-info__current-entry {
+    width: 50px!important;
+    margin: 0px!important;
+    height: 30px!important;
+    line-height: 30px!important;
 }
 table.vgt-table {
     font-size: 14px!important;

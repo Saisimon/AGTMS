@@ -12,8 +12,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.map.MapUtil;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Navigation;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
+import net.saisimon.agtms.core.factory.TokenFactory;
 
 /**
  * 导航服务接口
@@ -26,7 +29,7 @@ public interface NavigationService extends BaseService<Navigation, Long>, Ordere
 	default Boolean exists(String title, Long operatorId) {
 		Assert.notNull(title, "title can not be null");
 		Assert.notNull(operatorId, "operatorId can not be null");
-		FilterRequest filter = FilterRequest.build().and("title", title).and("operatorId", operatorId);
+		FilterRequest filter = FilterRequest.build().and("title", title).and(Constant.OPERATORID, operatorId);
 		return count(filter) > 0;
 	}
 	
@@ -34,7 +37,11 @@ public interface NavigationService extends BaseService<Navigation, Long>, Ordere
 		if (operatorId == null) {
 			return null;
 		}
-		FilterRequest filter = FilterRequest.build().and("operatorId", operatorId);
+		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
+		FilterRequest filter = FilterRequest.build();
+		if (userToken == null || !userToken.getAdmin()) {
+			filter.and(Constant.OPERATORID, operatorId);
+		}
 		return findList(filter);
 	}
 	
@@ -42,7 +49,11 @@ public interface NavigationService extends BaseService<Navigation, Long>, Ordere
 		if (parentId == null || operatorId == null) {
 			return null;
 		}
-		FilterRequest filter = FilterRequest.build().and("parentId", parentId).and("operatorId", operatorId);
+		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
+		FilterRequest filter = FilterRequest.build().and("parentId", parentId);
+		if (userToken == null || !userToken.getAdmin()) {
+			filter.and(Constant.OPERATORID, operatorId);
+		}
 		return findList(filter);
 	}
 	

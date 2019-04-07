@@ -15,11 +15,7 @@ const state = {
     batchExport: null,
     batchImport: null,
     datas: [],
-    total: 0,
-    pageable: {
-        pageIndex: 1,
-        pageSize: 10
-    }
+    total: 0
 };
 
 const mutations = {
@@ -38,10 +34,6 @@ const mutations = {
         state.batchImport = null;
         state.datas = [];
         state.total = 0;
-        state.pageable = {
-            pageIndex: 1,
-            pageSize: 10
-        };
     },
     setHeader(state, header) {
         if (header) {
@@ -51,21 +43,6 @@ const mutations = {
     setFunctions(state, functions) {
         if (functions) {
             state.functions = functions;
-        }
-    },
-    setPageIndex(state, pageIndex) {
-        if (pageIndex) {
-            state.pageable.pageIndex = pageIndex;
-        }
-    },
-    setPageSize(state, pageSize) {
-        if (pageSize) {
-            state.pageable.pageSize = pageSize;
-        }
-    },
-    setPageable(state, pageable) {
-        if (pageable) {
-            state.pageable = pageable;
         }
     },
     setSort(state, params) {

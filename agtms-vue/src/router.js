@@ -2,7 +2,6 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Signin from './views/Signin.vue'
-import Register from './views/Register.vue'
 import List from './views/List.vue'
 import Edit from './views/Edit.vue'
 import Template from './views/Template.vue'
@@ -24,10 +23,6 @@ const router = new Router({
             path: '/signin',
             name: 'signin',
             component: Signin
-        }, {
-            path: '/register',
-            name: 'register',
-            component: Register
         }, {
             path: '/template/edit',
             name: 'template-edit',
@@ -63,10 +58,10 @@ router.beforeEach((to, from, next) => {
     }, 100);
     store.commit('setIntervalId', intervalId);
     store.commit('refreshUser');
-    const whiteList = ['/', '/signin', '/register'];
+    const whiteList = ['/', '/signin'];
     if (whiteList.indexOf(to.path) === -1 && store.state.base.user == null) {
         next('/signin?reply=' + encodeURIComponent(to.path));
-    } else if ((to.path === '/signin' || to.path === '/register') && store.state.base.user != null) {
+    } else if ((to.path === '/signin') && store.state.base.user != null) {
         if (to.query.reply && to.query.reply != '/') {
             next(decodeURIComponent(to.query.reply));
         } else {

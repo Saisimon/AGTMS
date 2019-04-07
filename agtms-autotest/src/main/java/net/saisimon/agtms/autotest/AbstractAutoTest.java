@@ -26,10 +26,13 @@ public abstract class AbstractAutoTest implements AutoTest {
 	private Long interval;
 	@Value("${auto.test.timeout}")
 	private Long timeout;
+	
+	private static final String TEST_USERNAME = "test";
+	private static final String TEST_PASSWORD = "test";
 
 	@Override
 	public void detroyDriver(WebDriver driver) {
-		log.debug("Detroy Chrome Driver");
+		log.debug("Detroy Driver");
 		if (driver != null) {
 			driver.quit();
 		}
@@ -44,8 +47,6 @@ public abstract class AbstractAutoTest implements AutoTest {
 		driver.manage().window().maximize();
 		log.debug("URL: " + url);
 		driver.get(url);
-		register(driver);
-		signout(driver);
 		signin(driver);
 		navigationManagement(driver);
 		templateManagement(driver);
@@ -53,21 +54,6 @@ public abstract class AbstractAutoTest implements AutoTest {
 		taskManagement(driver);
 		operationManagement(driver);
 		signout(driver);
-	}
-	
-	protected void register(WebDriver driver) throws Exception {
-		// 跳转注册页面
-		to(driver, "/register");
-		// 空表单注册提交
-		clickButton(driver, "register-btn");
-		// 输入用户名
-		inputById(driver, "username", "test");
-		// 输入电子邮箱
-		inputById(driver, "email", "test@test.com");
-		// 输入密码
-		inputById(driver, "password", "123456");
-		// 点击注册按钮
-		clickButton(driver, "register-btn");
 	}
 	
 	protected void signout(WebDriver driver) throws Exception {
@@ -81,9 +67,9 @@ public abstract class AbstractAutoTest implements AutoTest {
 		// 空表单登录提交
 		clickButton(driver, "signin-btn");
 		// 输入用户名
-		inputById(driver, "username", "test");
+		inputById(driver, "username", TEST_USERNAME);
 		// 输入密码
-		inputById(driver, "password", "123456");
+		inputById(driver, "password", TEST_PASSWORD);
 		// 点击登录按钮
 		clickButton(driver, "signin-btn");
 	}
@@ -138,10 +124,6 @@ public abstract class AbstractAutoTest implements AutoTest {
 		nextPage(driver);
 		// 上一页
 		prevPage(driver);
-		// 末页
-		lastPage(driver);
-		// 首页
-		firstPage(driver);
 		// 点击批量编辑按钮
 		clickButton(driver, "batch-edit-btn");
 		closeAlert(driver);
@@ -289,7 +271,7 @@ public abstract class AbstractAutoTest implements AutoTest {
 		if (!findElement(driver, By.id("filter-toggle")).isDisplayed()) {
 			clickButton(driver, "filter-switch-btn");
 		}
-		for (int i = 1; i <= 10; i++) {
+		for (int i = 1; i <= 9; i++) {
 			// 选择操作类型
 			select(driver, "//div[@class='filter-container']//div[contains(@class,'operateType-select')]", i);
 			// 搜索
@@ -301,10 +283,6 @@ public abstract class AbstractAutoTest implements AutoTest {
 		nextPage(driver);
 		// 上一页
 		prevPage(driver);
-		// 末页
-		lastPage(driver);
-		// 首页
-		firstPage(driver);
 	}
 	
 	protected void setOptionSelection(WebDriver driver, String title, LinkedHashMap<String, String> optionMap) throws Exception {
@@ -419,29 +397,15 @@ public abstract class AbstractAutoTest implements AutoTest {
 		return driver.findElement(by);
 	}
 	
-	protected void firstPage(WebDriver driver) throws Exception {
-		page(driver, 0);
-	}
-	
 	protected void prevPage(WebDriver driver) throws Exception {
-		page(driver, 1);
+		List<WebElement> pageableElements = driver.findElements(By.xpath("//div[@class='table-container']//div[@class='footer__navigation vgt-pull-right']/a"));
+		pageableElements.get(0).click();
+		Thread.sleep(interval);
 	}
 	
 	protected void nextPage(WebDriver driver) throws Exception {
-		page(driver, -2);
-	}
-	
-	protected void lastPage(WebDriver driver) throws Exception {
-		page(driver, -1);
-	}
-	
-	protected void page(WebDriver driver, int liIndex) throws Exception {
-		List<WebElement> pageableElements = driver.findElements(By.xpath("//ul[contains(@class,'pagination')]/li"));
-		liIndex = liIndex % pageableElements.size();
-		if (liIndex < 0) {
-			liIndex += pageableElements.size();
-		}
-		pageableElements.get(liIndex).click();
+		List<WebElement> pageableElements = driver.findElements(By.xpath("//div[@class='table-container']//div[@class='footer__navigation vgt-pull-right']/a"));
+		pageableElements.get(1).click();
 		Thread.sleep(interval);
 	}
 	

@@ -17,7 +17,7 @@ public class RedisToken implements RedisOrder, Token {
 	private StringRedisTemplate redisTemplate;
 
 	@Override
-	public UserToken getToken(Long uid) {
+	public UserToken getToken(Long uid, boolean update) {
 		if (uid == null) {
 			return null;
 		}
@@ -30,8 +30,10 @@ public class RedisToken implements RedisOrder, Token {
 			redisTemplate.delete(uid.toString());
 			return null;
 		}
-		token.setExpireTime(AuthUtils.getExpireTime());
-		setToken(uid, token);
+		if (update) {
+			token.setExpireTime(AuthUtils.getExpireTime());
+			setToken(uid, token);
+		}
 		return token;
 	}
 

@@ -21,6 +21,7 @@ import net.saisimon.agtms.core.domain.entity.Selection;
 import net.saisimon.agtms.core.domain.entity.SelectionOption;
 import net.saisimon.agtms.core.domain.entity.SelectionTemplate;
 import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -30,6 +31,7 @@ import net.saisimon.agtms.core.enums.SelectTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.SelectionServiceFactory;
+import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.SelectionService;
@@ -78,11 +80,16 @@ public class SelectionUtils {
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		Optional<Selection> optional = selectionService.findById(Long.valueOf(sign));
-		if (optional.isPresent()) {
-			Selection selection = optional.get();
-			if (operatorId.equals(selection.getOperatorId())) {
-				return selection;
-			}
+		if (!optional.isPresent()) {
+			return null;
+		}
+		Selection selection = optional.get();
+		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
+		if (userToken != null && userToken.getAdmin()) {
+			return selection;
+		}
+		if (operatorId.equals(selection.getOperatorId())) {
+			return selection;
 		}
 		return null;
 	}

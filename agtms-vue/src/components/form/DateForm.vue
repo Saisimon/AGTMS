@@ -11,6 +11,7 @@
                 :clear-button="true"
                 :language="datepickerLanguage"
                 :state="field.state"
+                :disabled="field.disabled" 
                 :input-class="inputClass"
                 format="yyyy-MM-dd" 
                 class="datepicker-container" />

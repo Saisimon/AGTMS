@@ -36,6 +36,7 @@ import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.SelectTypes;
+import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
@@ -45,6 +46,7 @@ import net.saisimon.agtms.core.service.SelectionService;
 import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.service.UserService;
+import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.NavigationUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
@@ -259,7 +261,7 @@ public class ServiceTest {
 		// getUserByLoginNameOrEmail
 		User user = userService.getUserByLoginNameOrEmail(null, null);
 		Assert.assertNull(user);
-		String username = "admin";
+		String username = "test";
 		String password = "123456";
 		user = userService.getUserByLoginNameOrEmail(username, null);
 		Assert.assertNull(user);
@@ -274,26 +276,14 @@ public class ServiceTest {
 		user = userService.auth(username, password);
 		Assert.assertNull(user);
 		
-		// register
-		user = userService.register(null, null, null);
-		Assert.assertNull(user);
-		String email = "saisimon@test.com";
-		user = userService.register(username, email, password);
-		Assert.assertNotNull(user);
-		Assert.assertNotNull(user.getId());
+		user = buildTestUser(username, password);
+		userService.saveOrUpdate(user);
 		Long uid = user.getId();
-		user = userService.register(username, email + "a", password);
-		Assert.assertNull(user);
-		user = userService.register(username + "a", email, password);
-		Assert.assertNull(user);
 		
 		// auth
 		user = userService.auth(username + "aaa", password);
 		Assert.assertNull(user);
 		user = userService.auth(username, password);
-		Assert.assertNotNull(user);
-		Assert.assertEquals(uid, user.getId());
-		user = userService.auth(email, password);
 		Assert.assertNotNull(user);
 		Assert.assertEquals(uid, user.getId());
 	}
@@ -608,6 +598,26 @@ public class ServiceTest {
 		task.setTaskTime(time);
 		task.setTaskType("export");
 		return task;
+	}
+	
+	private User buildTestUser(String username, String password) {
+		User user = new User();
+		user.setLoginName(username);
+		String salt = AuthUtils.createSalt();
+		String hmacPwd = AuthUtils.hmac(password, salt);
+		Date time = new Date();
+		user.setNickname(username);
+		user.setRemark(username);
+		user.setCellphone(username);
+		user.setEmail(username);
+		user.setCreateTime(time);
+		user.setUpdateTime(time);
+		user.setLastLoginTime(time);
+		user.setSalt(salt);
+		user.setPassword(hmacPwd);
+		user.setAdmin(false);
+		user.setStatus(UserStatuses.NORMAL.getStatus());
+		return user;
 	}
 	
 }

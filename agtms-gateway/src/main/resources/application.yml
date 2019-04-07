@@ -50,4 +50,4 @@ logging:
     
 white:
   list:
-    urls: /agtms/user/auth,/agtms/user/register
+    urls: /agtms/user/auth

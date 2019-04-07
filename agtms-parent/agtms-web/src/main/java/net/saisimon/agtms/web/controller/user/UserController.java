@@ -1,6 +1,7 @@
 package net.saisimon.agtms.web.controller.user;
 
 import java.util.Date;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -17,15 +18,15 @@ import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.OperateTypes;
+import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
-import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.UserAuthParam;
-import net.saisimon.agtms.web.dto.req.UserRegisterParam;
+import net.saisimon.agtms.web.dto.req.UserChangePasswordParam;
 
 /**
  * 用户信息控制器
@@ -57,38 +58,35 @@ public class UserController {
 		if (user == null) {
 			return ErrorMessage.User.USERNAME_OR_PASSWORD_NOT_CORRECT;
 		}
+		if (UserStatuses.LOCKED.getStatus().equals(user.getStatus())) {
+			return ErrorMessage.User.ACCOUNT_LOCKED;
+		}
 		user.setLastLoginTime(new Date());
 		userService.saveOrUpdate(user);
-		UserToken token = buildToken(user.getId());
+		UserToken token = buildToken(user.getId(), user.isAdmin());
 		TokenFactory.get().setToken(user.getId(), token);
 		return ResultUtils.simpleSuccess(token);
 	}
 	
-	/**
-	 * 注册用户信息
-	 * 
-	 * @param param 用户注册信息
-	 * @param result
-	 * @return 注册结果响应
-	 */
-	@Operate(type=OperateTypes.REGISTER)
+	@Operate(type=OperateTypes.EDIT, value="change.password")
 	@Transactional(rollbackOn = Exception.class)
-	@PostMapping("/register")
-	public Result register(@Validated @RequestBody UserRegisterParam param, BindingResult result) {
+	@PostMapping("/change/password")
+	public Result changePassword(@Validated @RequestBody UserChangePasswordParam param, BindingResult result) {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		if (!SystemUtils.isEmail(param.getEmail())) {
-			return ErrorMessage.User.EMAIL_FORMAT_ERROR;
-		}
+		Long userId = AuthUtils.getUid();
 		UserService userService = UserServiceFactory.get();
-		User user = userService.register(param.getName(), param.getEmail(), param.getPassword());
-		if (user == null) {
-			return ErrorMessage.User.ACCOUNT_ALREADY_EXISTS;
+		Optional<User> optional = userService.findById(userId);
+		if (!optional.isPresent()) {
+			return ErrorMessage.User.ACCOUNT_NOT_EXIST;
 		}
-		UserToken token = buildToken(user.getId());
-		TokenFactory.get().setToken(user.getId(), token);
-		return ResultUtils.simpleSuccess(token);
+		User user = optional.get();
+		String hmacPassword = AuthUtils.hmac(param.getPassword(), user.getSalt());
+		user.setPassword(hmacPassword);
+		userService.saveOrUpdate(user);
+		TokenFactory.get().setToken(user.getId(), null);
+		return ResultUtils.simpleSuccess();
 	}
 	
 	/**
@@ -104,11 +102,12 @@ public class UserController {
 		return ResultUtils.simpleSuccess(uid);
 	}
 	
-	private UserToken buildToken(Long userId) {
+	private UserToken buildToken(Long userId, boolean admin) {
 		UserToken token = new UserToken();
 		token.setExpireTime(AuthUtils.getExpireTime());
 		token.setToken(AuthUtils.createToken());
 		token.setUserId(userId);
+		token.setAdmin(admin);
 		return token;
 	}
 	

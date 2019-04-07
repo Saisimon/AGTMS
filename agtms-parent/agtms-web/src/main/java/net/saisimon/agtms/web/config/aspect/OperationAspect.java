@@ -48,7 +48,7 @@ public class OperationAspect {
 	public void after(JoinPoint joinPoint, Object result) {
 		Signature signature = joinPoint.getSignature();
 		if (signature instanceof MethodSignature) {
-			MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+			MethodSignature methodSignature = (MethodSignature) signature;
 			Method method = methodSignature.getMethod();
 			Operate operate = method.getDeclaredAnnotation(Operate.class);
 			if (operate != null) {

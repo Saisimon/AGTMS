@@ -9,8 +9,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
+import net.saisimon.agtms.core.factory.TokenFactory;
 
 /**
  * 模板服务接口
@@ -23,7 +26,7 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 	default Boolean exists(String title, Long operatorId) {
 		Assert.notNull(title, "title can not be null");
 		Assert.notNull(operatorId, "operatorId can not be null");
-		FilterRequest filter = FilterRequest.build().and("title", title).and("operatorId", operatorId);
+		FilterRequest filter = FilterRequest.build().and("title", title).and(Constant.OPERATORID, operatorId);
 		return count(filter) > 0;
 	}
 	
@@ -31,7 +34,11 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		if (operatorId == null) {
 			return null;
 		}
-		FilterRequest filter = FilterRequest.build().and("operatorId", operatorId);
+		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
+		FilterRequest filter = FilterRequest.build();
+		if (userToken == null || !userToken.getAdmin()) {
+			filter.and(Constant.OPERATORID, operatorId);
+		}
 		return findList(filter);
 	}
 	
@@ -39,7 +46,11 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		if (navigationId == null || operatorId == null) {
 			return null;
 		}
-		FilterRequest filter = FilterRequest.build().and("navigationId", navigationId).and("operatorId", operatorId);
+		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
+		FilterRequest filter = FilterRequest.build().and("navigationId", navigationId);
+		if (!userToken.getAdmin()) {
+			filter.and(Constant.OPERATORID, operatorId);
+		}
 		return findList(filter);
 	}
 	

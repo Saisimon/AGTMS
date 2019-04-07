@@ -18,6 +18,8 @@ public class TaskInfo extends BaseInfo {
 	
 	private Date taskTime;
 	
+	private String operator;
+	
 	private Date handleTime;
 	
 	private String handleStatus;

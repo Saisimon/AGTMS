@@ -13,10 +13,6 @@ public enum OperateTypes {
 	 */
 	LOGOUT(0, "logout"),
 	/**
-	 * 注册
-	 */
-	REGISTER(10, "register"),
-	/**
 	 * 登入
 	 */
 	LOGIN(20, "login"),

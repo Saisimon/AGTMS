@@ -20,4 +20,6 @@ public class OperationInfo extends BaseInfo {
 	
 	private String operateContent;
 	
+	private String operator;
+	
 }

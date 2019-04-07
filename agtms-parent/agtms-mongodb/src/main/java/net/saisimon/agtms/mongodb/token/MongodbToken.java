@@ -18,7 +18,7 @@ public class MongodbToken implements Token, MongodbOrder {
 	private UserTokenMongodbRepository userTokenMongodbRepository;
 
 	@Override
-	public UserToken getToken(Long uid) {
+	public UserToken getToken(Long uid, boolean update) {
 		if (uid == null) {
 			return null;
 		}
@@ -30,8 +30,10 @@ public class MongodbToken implements Token, MongodbOrder {
 		if (token.getToken() == null || token.getExpireTime() == null || token.getExpireTime() < System.currentTimeMillis()) {
 			return null;
 		}
-		token.setExpireTime(AuthUtils.getExpireTime());
-		userTokenMongodbRepository.saveOrUpdate(token);
+		if (update) {
+			token.setExpireTime(AuthUtils.getExpireTime());
+			userTokenMongodbRepository.saveOrUpdate(token);
+		}
 		return token;
 	}
 

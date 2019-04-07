@@ -20,6 +20,8 @@ public class NavigationInfo extends BaseInfo {
 	
 	private Long parentId;
 	
+	private String operator;
+	
 	private Date createTime;
 	
 	private Date updateTime;

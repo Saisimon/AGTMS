@@ -60,7 +60,7 @@ public class LoginOperationHandler implements OperationHandler {
 
 	@Override
 	public OperateTypes[] keys() {
-		return new OperateTypes[] { OperateTypes.LOGIN, OperateTypes.REGISTER };
+		return new OperateTypes[] { OperateTypes.LOGIN };
 	}
 
 }

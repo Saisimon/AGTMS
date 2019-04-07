@@ -15,6 +15,8 @@ public class SelectionInfo extends BaseInfo {
 	private String title;
 	
 	private String type;
+	
+	private String operator;
 
 	private Date createTime;
 	

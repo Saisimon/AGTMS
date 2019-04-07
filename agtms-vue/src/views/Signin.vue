@@ -19,9 +19,6 @@
                 <span>{{error.message}}</span>
             </div>
             <b-button @click.stop="signIn" class="input-filter input-btn mt-1 signin-btn">{{ $t("sign_in") }}</b-button>
-            <div class="register-link">
-                {{$t("no_account")}}<router-link to="/register">{{ $t("create_account") }}</router-link>
-            </div>
         </b-card>
     </b-container>
 </template>

@@ -21,7 +21,7 @@ public class JpaToken implements Token, JpaOrder {
 
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public UserToken getToken(Long uid) {
+	public UserToken getToken(Long uid, boolean update) {
 		if (uid == null) {
 			return null;
 		}
@@ -33,8 +33,10 @@ public class JpaToken implements Token, JpaOrder {
 		if (token.getToken() == null || token.getExpireTime() == null || token.getExpireTime() < System.currentTimeMillis()) {
 			return null;
 		}
-		token.setExpireTime(AuthUtils.getExpireTime());
-		userTokenJpaRepository.saveOrUpdate(token);
+		if (update) {
+			token.setExpireTime(AuthUtils.getExpireTime());
+			userTokenJpaRepository.saveOrUpdate(token);
+		}
 		return token;
 	}
 

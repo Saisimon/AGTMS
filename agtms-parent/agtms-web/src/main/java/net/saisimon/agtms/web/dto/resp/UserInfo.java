@@ -14,16 +14,20 @@ public class UserInfo extends BaseInfo {
 
 	private String loginName;
 	
-	private String nickName;
+	private String nickname;
 	
 	private String cellphone;
 	
 	private String email;
 	
+	private String avatar;
+	
+	private String status;
+	
+	private Date lastLoginTime;
+	
 	private Date createTime;
 	
 	private Date updateTime;
-	
-	private Date lastLoginTime;
 	
 }

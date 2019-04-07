@@ -36,4 +36,10 @@ public class UserToken {
 	@Column
 	private Long expireTime;
 	
+	/**
+	 * 管理员
+	 */
+	@Column
+	private Boolean admin;
+	
 }

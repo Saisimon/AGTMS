@@ -27,6 +27,7 @@ import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Task;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -46,6 +47,7 @@ import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
+import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -56,6 +58,7 @@ import net.saisimon.agtms.web.controller.base.AbstractMainController;
 import net.saisimon.agtms.web.dto.resp.TaskInfo;
 import net.saisimon.agtms.web.selection.HandleStatusSelection;
 import net.saisimon.agtms.web.selection.TaskTypeSelection;
+import net.saisimon.agtms.web.selection.UserSelection;
 
 /**
  * 任务主控制器
@@ -91,6 +94,8 @@ public class TaskMainController extends AbstractMainController {
 	private TaskTypeSelection taskTypeSelection;
 	@Autowired
 	private RestTemplate restTemplate;
+	@Autowired
+	private UserSelection userSelection;
 	
 	@PostMapping("/grid")
 	public Result grid() {
@@ -101,13 +106,18 @@ public class TaskMainController extends AbstractMainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, TASK_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getUid());
+		Long userId = AuthUtils.getUid();
+		UserToken userToken = TokenFactory.get().getToken(userId, false);
+		if (!userToken.getAdmin()) {
+			filter.and(Constant.OPERATORID, userId);
+		}
 		FilterPageable pageable = FilterPageable.build(param);
 		TaskService taskService = TaskServiceFactory.get();
 		Page<Task> page = taskService.findPage(filter, pageable);
 		List<TaskInfo> results = new ArrayList<>(page.getContent().size());
 		Map<Integer, String> handleStatusMap = handleStatusSelection.select();
 		Map<String, String> taskTypeMap = taskTypeSelection.select();
+		Map<Long, String> userMap = userSelection.select();
 		for (Task task : page.getContent()) {
 			TaskInfo result = new TaskInfo();
 			result.setId(task.getId());
@@ -120,6 +130,7 @@ public class TaskMainController extends AbstractMainController {
 				result.setHandleResult(getMessage(task.getHandleResult()));
 			}
 			result.setHandleTime(task.getHandleTime());
+			result.setOperator(userMap.get(task.getOperatorId()));
 			result.setAction(TASK);
 			// download
 			if (HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
@@ -268,6 +279,7 @@ public class TaskMainController extends AbstractMainController {
 		columns.add(Column.builder().field("taskContent").label(getMessage("task.content")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("taskType").label(getMessage("task.type")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("taskTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("handleStatus").label(getMessage("handle.status")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("handleResult").label(getMessage("handle.result")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("handleTime").label(getMessage("handle.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());

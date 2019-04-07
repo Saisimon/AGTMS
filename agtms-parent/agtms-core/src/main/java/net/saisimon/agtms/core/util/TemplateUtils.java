@@ -15,12 +15,14 @@ import cn.hutool.core.util.NumberUtil;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
+import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.TemplateService;
@@ -71,6 +73,10 @@ public class TemplateUtils {
 			return null;
 		}
 		Template template = optional.get();
+		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
+		if (userToken != null && userToken.getAdmin()) {
+			return template;
+		}
 		if (operatorId.equals(template.getOperatorId())) {
 			return template;
 		}

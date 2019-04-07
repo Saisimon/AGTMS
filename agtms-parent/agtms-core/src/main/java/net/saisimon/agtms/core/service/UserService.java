@@ -1,10 +1,11 @@
 package net.saisimon.agtms.core.service;
 
-import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.core.Ordered;
 
+import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -18,26 +19,35 @@ import net.saisimon.agtms.core.util.SystemUtils;
  */
 public interface UserService extends BaseService<User, Long>, Ordered {
 	
-	default User getUserByLoginNameOrEmail(String username, String email) {
-		if (SystemUtils.isBlank(username) && SystemUtils.isBlank(email)) {
+	default Boolean exists(Long excludeId, String loginName, String cellphone, String email) {
+		FilterRequest filter = FilterRequest.build();
+		if (excludeId != null) {
+			filter.and(Constant.ID, excludeId, Operator.NE);
+		}
+		filter.or("loginName", loginName).or("cellphone", cellphone).or("email", email);
+		return count(filter) > 0;
+	}
+	
+	default User getUserByLoginNameOrEmail(String loginName, String email) {
+		if (SystemUtils.isBlank(loginName) && SystemUtils.isBlank(email)) {
 			return null;
 		}
 		FilterRequest filter = FilterRequest.build();
-		if (SystemUtils.isNotBlank(username)) {
-			filter.or("loginName", username);
+		if (SystemUtils.isNotBlank(loginName)) {
+			filter.or("loginName", loginName);
 		}
 		if (SystemUtils.isNotBlank(email)) {
 			filter.or("email", email);
 		}
 		Optional<User> optional = findOne(filter);
-		return optional.isPresent() ? optional.get() : null;
+		return optional.orElse(null);
 	}
 	
-	default User auth(String username, String password) {
-		if (SystemUtils.isBlank(username) || SystemUtils.isBlank(password)) {
+	default User auth(String loginName, String password) {
+		if (SystemUtils.isBlank(loginName) || SystemUtils.isBlank(password)) {
 			return null;
 		}
-		User user = getUserByLoginNameOrEmail(username, username);
+		User user = getUserByLoginNameOrEmail(loginName, loginName);
 		if (user == null) {
 			return null;
 		}
@@ -46,29 +56,6 @@ public interface UserService extends BaseService<User, Long>, Ordered {
 		if (!hmacPwd.equals(user.getPassword())) {
 			return null;
 		}
-		return user;
-	}
-	
-	default User register(String username, String email, String password) {
-		if (SystemUtils.isBlank(username) || SystemUtils.isBlank(email) || SystemUtils.isBlank(password)) {
-			return null;
-		}
-		User user = getUserByLoginNameOrEmail(username, email);
-		if (user != null) {
-			return null;
-		}
-		user = new User();
-		user.setLoginName(username);
-		user.setEmail(email);
-		String salt = AuthUtils.createSalt();
-		String hmacPwd = AuthUtils.hmac(password, salt);
-		Date time = new Date();
-		user.setCreateTime(time);
-		user.setUpdateTime(time);
-		user.setLastLoginTime(time);
-		user.setSalt(salt);
-		user.setPassword(hmacPwd);
-		saveOrUpdate(user);
 		return user;
 	}
 	

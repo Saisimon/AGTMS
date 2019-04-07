@@ -23,6 +23,7 @@ import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Selection;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -42,6 +43,7 @@ import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.SelectTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.SelectionServiceFactory;
+import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.service.SelectionService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -50,6 +52,7 @@ import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.AbstractMainController;
 import net.saisimon.agtms.web.dto.resp.SelectionInfo;
 import net.saisimon.agtms.web.selection.SelectTypeSelection;
+import net.saisimon.agtms.web.selection.UserSelection;
 
 /**
  * 下拉列表主控制器
@@ -82,6 +85,8 @@ public class SelectionMainController extends AbstractMainController {
 	
 	@Autowired
 	private SelectTypeSelection selectTypeSelection;
+	@Autowired
+	private UserSelection userSelection;
 	
 	@PostMapping("/grid")
 	public Result grid() {
@@ -92,12 +97,17 @@ public class SelectionMainController extends AbstractMainController {
 	@PostMapping("/list")
 	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
 		FilterRequest filter = FilterRequest.build(body, SELECTION_FILTER_FIELDS);
-		filter.and(Constant.OPERATORID, AuthUtils.getUid());
+		Long userId = AuthUtils.getUid();
+		UserToken userToken = TokenFactory.get().getToken(userId, false);
+		if (!userToken.getAdmin()) {
+			filter.and(Constant.OPERATORID, userId);
+		}
 		FilterPageable pageable = FilterPageable.build(param);
 		SelectionService selectionService = SelectionServiceFactory.get();
 		Page<Selection> page = selectionService.findPage(filter, pageable);
 		List<SelectionInfo> results = new ArrayList<>(page.getContent().size());
 		Map<Integer, String> selectTypeMap = selectTypeSelection.select();
+		Map<Long, String> userMap = userSelection.select();
 		for (Selection selection : page.getContent()) {
 			SelectionInfo result = new SelectionInfo();
 			result.setId(selection.getId());
@@ -105,6 +115,7 @@ public class SelectionMainController extends AbstractMainController {
 			result.setTitle(selection.getTitle());
 			result.setType(selectTypeMap.get(selection.getType()));
 			result.setUpdateTime(selection.getUpdateTime());
+			result.setOperator(userMap.get(selection.getOperatorId()));
 			result.setAction(SELECTION);
 			results.add(result);
 		}
@@ -214,6 +225,7 @@ public class SelectionMainController extends AbstractMainController {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("title").label(getMessage("title")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("type").label(getMessage("type")).width(200).views(Views.TEXT.getView()).build());
+		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
