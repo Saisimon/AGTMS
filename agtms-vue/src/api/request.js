@@ -30,7 +30,7 @@ export default function request(user, reqUrl, payload) {
                     store.commit('setUser', null);
                     store.commit('setTree', {});
                     store.commit('setBreadcrumbs', []);
-                    const whiteList = ['/', '/signin', '/register'];
+                    const whiteList = ['/', '/signin'];
                     if (whiteList.indexOf(window.location.pathname) === -1) {
                         router.push({
                             path: '/signin?reply=' + encodeURIComponent(window.location.pathname + window.location.search)

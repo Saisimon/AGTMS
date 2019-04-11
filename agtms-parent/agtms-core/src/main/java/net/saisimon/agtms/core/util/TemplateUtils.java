@@ -74,7 +74,7 @@ public class TemplateUtils {
 		}
 		Template template = optional.get();
 		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
-		if (userToken != null && userToken.getAdmin()) {
+		if (userToken != null && userToken.isAdmin()) {
 			return template;
 		}
 		if (operatorId.equals(template.getOperatorId())) {

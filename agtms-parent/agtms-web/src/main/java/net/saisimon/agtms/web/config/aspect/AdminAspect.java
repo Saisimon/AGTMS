@@ -44,7 +44,7 @@ public class AdminAspect {
 			}
 			if (admin != null) {
 				UserToken userToken = TokenFactory.get().getToken(AuthUtils.getUid(), false);
-				if (!userToken.getAdmin()) {
+				if (!userToken.isAdmin()) {
 					return ErrorMessage.Common.PERMISSION_DENIED;
 				}
 			}

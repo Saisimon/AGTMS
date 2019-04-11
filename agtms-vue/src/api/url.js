@@ -1,6 +1,4 @@
 export const SIGN_IN = '/user/auth'
-export const REGISTER = '/user/register'
 export const SIGN_OUT = '/user/logout'
-
-export const NAVIGATION_SELECTION = '/navigation/main/selection'
+export const RESET_PASSWORD = '/user/reset/password'
 export const NAVIGATION_SIDE = '/navigation/main/side'

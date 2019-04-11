@@ -17,7 +17,7 @@
             </transition>
             <!-- 警告框 -->
             <div class="modal d-block" v-if="alert.dismissCountDown" style="z-index: 9999">
-                <div class="modal-dialog modal-md modal-dialog-centered">
+                <div class="modal-dialog modal-md">
                     <b-alert :variant="alert.variant"
                         dismissible
                         :show="alert.dismissCountDown"

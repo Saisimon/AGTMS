@@ -1,12 +1,10 @@
 <template>
     <b-row class="mb-3">
-        <b-col sm="2">
-            <label :for="field.name + '-input'" class="form-label">
+        <b-col :class="'invalid'">
+            <label :for="field.name + '-input'" class="form-label font-weight-bold">
                 {{ field.text }}
                 <span class="text-danger" v-if="field.required">*</span>
             </label>
-        </b-col>
-        <b-col sm="10" :class="'invalid'">
             <multiselect
                 v-if="field.multiple"
                 v-model="field.value"

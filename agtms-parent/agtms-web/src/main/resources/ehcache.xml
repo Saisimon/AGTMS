@@ -6,4 +6,5 @@
 	<cache name="selection" maxElementsInMemory="1000" timeToIdleSeconds="600" />
 	<cache name="task" maxElementsInMemory="1000" timeToIdleSeconds="600" />
 	<cache name="template" maxElementsInMemory="1000" timeToIdleSeconds="600" />
+	<cache name="user" maxElementsInMemory="1000" timeToIdleSeconds="600" />
 </ehcache>

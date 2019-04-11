@@ -34,6 +34,7 @@ import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
+import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
 import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchEdit;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
@@ -95,6 +96,7 @@ public class NavigationMainController extends AbstractMainController {
 		NAVIGATION_FILTER_FIELDS.add("priority");
 		NAVIGATION_FILTER_FIELDS.add("createTime");
 		NAVIGATION_FILTER_FIELDS.add("updateTime");
+		NAVIGATION_FILTER_FIELDS.add(Constant.OPERATORID);
 	}
 	
 	@Autowired
@@ -116,7 +118,7 @@ public class NavigationMainController extends AbstractMainController {
 			trees = new ArrayList<>();
 		}
 		trees.add(0, NavigationTree.SYSTEM_MODULE_TREE);
-		if (userToken.getAdmin()) {
+		if (userToken.isAdmin()) {
 			trees.add(0, NavigationTree.USER_MODULE_TREE);
 		}
 		NavigationTree root = new NavigationTree();
@@ -161,7 +163,7 @@ public class NavigationMainController extends AbstractMainController {
 		FilterRequest filter = FilterRequest.build(body, NAVIGATION_FILTER_FIELDS);
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
-		if (!userToken.getAdmin()) {
+		if (!userToken.isAdmin()) {
 			filter.and(Constant.OPERATORID, userId);
 		}
 		FilterPageable pageable = FilterPageable.build(param);
@@ -273,9 +275,9 @@ public class NavigationMainController extends AbstractMainController {
 		columns.add(Column.builder().field("icon").label(getMessage("icon")).width(100).views(Views.ICON.getView()).build());
 		columns.add(Column.builder().field("title").label(getMessage("title")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("priority").label(getMessage("priority")).type("number").width(100).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
@@ -311,7 +313,7 @@ public class NavigationMainController extends AbstractMainController {
 		Filter filter = new Filter();
 		List<String> keyValues = Arrays.asList("title", "priority");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
-		Map<String, FieldFilter> value = new HashMap<>();
+		Map<String, FieldFilter> value = new HashMap<>(4);
 		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.LONG.getName(), "", Classes.LONG.getName()));
 		filter.setValue(value);
@@ -320,9 +322,24 @@ public class NavigationMainController extends AbstractMainController {
 		filter = new Filter();
 		keyValues = Arrays.asList("createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
-		value = new HashMap<>();
+		value = new HashMap<>(4);
 		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		filter.setValue(value);
+		filters.add(filter);
+		
+		filter = new Filter();
+		keyValues = Arrays.asList("operatorId");
+		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
+		value = new HashMap<>(4);
+		Map<Long, String> userMap = userSelection.select();
+		List<Long> userValues = new ArrayList<>(userMap.size());
+		List<String> userTexts = new ArrayList<>(userMap.size());
+		for (Entry<Long, String> entry : userMap.entrySet()) {
+			userValues.add(entry.getKey());
+			userTexts.add(entry.getValue());
+		}
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), userValues, userTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;

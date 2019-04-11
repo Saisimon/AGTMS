@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.transaction.Transactional;
 
@@ -86,6 +87,7 @@ public class TaskMainController extends AbstractMainController {
 		TASK_FILTER_FIELDS.add("taskTime");
 		TASK_FILTER_FIELDS.add("handleStatus");
 		TASK_FILTER_FIELDS.add("handleTime");
+		TASK_FILTER_FIELDS.add(Constant.OPERATORID);
 	}
 	
 	@Autowired
@@ -108,7 +110,7 @@ public class TaskMainController extends AbstractMainController {
 		FilterRequest filter = FilterRequest.build(body, TASK_FILTER_FIELDS);
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
-		if (!userToken.getAdmin()) {
+		if (!userToken.isAdmin()) {
 			filter.and(Constant.OPERATORID, userId);
 		}
 		FilterPageable pageable = FilterPageable.build(param);
@@ -252,7 +254,7 @@ public class TaskMainController extends AbstractMainController {
 		Filter filter = new Filter();
 		List<String> keyValues = Arrays.asList("taskType", "taskTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("task.type", "create.time")));
-		Map<String, FieldFilter> value = new HashMap<>();
+		Map<String, FieldFilter> value = new HashMap<>(4);
 		Map<String, String> taskTypeMap = taskTypeSelection.select();
 		List<String> values = new ArrayList<>(taskTypeMap.keySet());
 		List<String> texts = new ArrayList<>(taskTypeMap.values());
@@ -264,10 +266,25 @@ public class TaskMainController extends AbstractMainController {
 		filter = new Filter();
 		keyValues = Arrays.asList("handleStatus", "handleTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("handle.status", "handle.time")));
-		value = new HashMap<>();
+		value = new HashMap<>(4);
 		Map<Integer, String> handleStatusMap = handleStatusSelection.select();
 		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), new ArrayList<>(handleStatusMap.keySet()), new ArrayList<>(handleStatusMap.values())));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		filter.setValue(value);
+		filters.add(filter);
+		
+		filter = new Filter();
+		keyValues = Arrays.asList("operatorId");
+		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
+		value = new HashMap<>(4);
+		Map<Long, String> userMap = userSelection.select();
+		List<Long> userValues = new ArrayList<>(userMap.size());
+		List<String> userTexts = new ArrayList<>(userMap.size());
+		for (Entry<Long, String> entry : userMap.entrySet()) {
+			userValues.add(entry.getKey());
+			userTexts.add(entry.getValue());
+		}
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), userValues, userTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;
@@ -279,10 +296,10 @@ public class TaskMainController extends AbstractMainController {
 		columns.add(Column.builder().field("taskContent").label(getMessage("task.content")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("taskType").label(getMessage("task.type")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("taskTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("handleStatus").label(getMessage("handle.status")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("handleResult").label(getMessage("handle.result")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("handleTime").label(getMessage("handle.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}

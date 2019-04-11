@@ -1,4 +1,4 @@
-import { signIn, register, signOut } from '@/api/user'
+import { signIn, signOut, resetPassword } from '@/api/user'
 
 const state = {
     urlPrefix: '///' + window.location.hostname + ':7891/agtms',
@@ -85,10 +85,10 @@ const actions = {
             }
         });
     },
-    reg(context, payload) {
+    logout(context) {
         return new Promise((resolve, reject) => {
-            if (context.state.user == null) {
-                register(payload.username, payload.email, payload.password).then(resp => {
+            if (context.state.user !== null) {
+                signOut(context.state.user).then(resp => {
                     resolve(resp);
                 }, error => {
                     reject(error);
@@ -96,10 +96,10 @@ const actions = {
             }
         });
     },
-    logout(context) {
+    resetPwd(context, payload) {
         return new Promise((resolve, reject) => {
             if (context.state.user !== null) {
-                signOut(context.state.user).then(resp => {
+                resetPassword(context.state.user, payload.oldPassword, payload.newPassword).then(resp => {
                     resolve(resp);
                 }, error => {
                     reject(error);

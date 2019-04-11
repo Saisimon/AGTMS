@@ -13,8 +13,6 @@ import javax.persistence.Table;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -55,7 +53,6 @@ public class User implements Serializable {
 	/**
 	 * 密码（密文）
 	 */
-	@JsonIgnore
 	@Column(length=128, nullable=false)
 	private String password;
 	
@@ -115,6 +112,8 @@ public class User implements Serializable {
 	
 	/**
 	 * 用户状态
+	 * 
+	 * @see net.saisimon.agtms.core.enums.UserStatuses
 	 */
 	@Column
 	private Integer status;
@@ -129,18 +128,23 @@ public class User implements Serializable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		User other = (User) obj;
 		if (loginName == null) {
-			if (other.loginName != null)
+			if (other.loginName != null) {
 				return false;
-		} else if (!loginName.equals(other.loginName))
+			}
+		} else if (!loginName.equals(other.loginName)) {
 			return false;
+		}
 		return true;
 	}
 	

@@ -1,6 +1,5 @@
 export default {
     sign_in: 'Sign in',
-    register: 'Register',
     no_account: 'Don\'t have an account? ',
     have_account: 'Already have an account? ',
     create_account: 'Create account',
@@ -106,4 +105,10 @@ export default {
     previous_page: 'Prev',
     next_page: 'Next',
     last_page: 'Last',
+    reset_password: 'Reset password',
+    old_password: 'Old password',
+    new_password: 'New password',
+    confirm_password: 'Password confirmation',
+    confirm_password_diff: 'Password confirmation doesn\'t match Password',
+    reset_password_success: 'Reset password successfully, please login again'
 }

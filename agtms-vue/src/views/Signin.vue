@@ -103,7 +103,7 @@ export default {
     }
 }
 .signin-container {
-    height: 350px;
+    height: 300px;
     margin: calc((100vh - 500px) / 2) auto;
     max-width: 400px;
 }
@@ -142,13 +142,5 @@ export default {
 .input-filter:focus, .input-filter:hover {
     box-shadow: none;
     border-color: #367fa9;
-}
-.register-link {
-    margin: 5px;
-    text-align: center;
-    font-size: 12px;
-}
-.register-link a {
-    color: #367fa9!important;
 }
 </style>

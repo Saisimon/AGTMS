@@ -85,7 +85,7 @@ public class SelectionUtils {
 		}
 		Selection selection = optional.get();
 		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
-		if (userToken != null && userToken.getAdmin()) {
+		if (userToken != null && userToken.isAdmin()) {
 			return selection;
 		}
 		if (operatorId.equals(selection.getOperatorId())) {

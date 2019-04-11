@@ -81,6 +81,7 @@ public class SelectionMainController extends AbstractMainController {
 		SELECTION_FILTER_FIELDS.add("type");
 		SELECTION_FILTER_FIELDS.add("createTime");
 		SELECTION_FILTER_FIELDS.add("updateTime");
+		SELECTION_FILTER_FIELDS.add(Constant.OPERATORID);
 	}
 	
 	@Autowired
@@ -99,7 +100,7 @@ public class SelectionMainController extends AbstractMainController {
 		FilterRequest filter = FilterRequest.build(body, SELECTION_FILTER_FIELDS);
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
-		if (!userToken.getAdmin()) {
+		if (!userToken.isAdmin()) {
 			filter.and(Constant.OPERATORID, userId);
 		}
 		FilterPageable pageable = FilterPageable.build(param);
@@ -189,7 +190,7 @@ public class SelectionMainController extends AbstractMainController {
 		Filter filter = new Filter();
 		List<String> keyValues = Arrays.asList("type");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("type")));
-		Map<String, FieldFilter> value = new HashMap<>();
+		Map<String, FieldFilter> value = new HashMap<>(4);
 		Map<Integer, String> selectTypeMap = selectTypeSelection.select();
 		List<Integer> selectTypeValues = new ArrayList<>(selectTypeMap.size());
 		List<String> selectTypeTexts = new ArrayList<>(selectTypeMap.size());
@@ -204,7 +205,7 @@ public class SelectionMainController extends AbstractMainController {
 		filter = new Filter();
 		keyValues = Arrays.asList("title");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
-		value = new HashMap<>();
+		value = new HashMap<>(4);
 		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
 		filter.setValue(value);
 		filters.add(filter);
@@ -212,9 +213,24 @@ public class SelectionMainController extends AbstractMainController {
 		filter = new Filter();
 		keyValues = Arrays.asList("createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
-		value = new HashMap<>();
+		value = new HashMap<>(4);
 		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		filter.setValue(value);
+		filters.add(filter);
+		
+		filter = new Filter();
+		keyValues = Arrays.asList("operatorId");
+		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
+		value = new HashMap<>(4);
+		Map<Long, String> userMap = userSelection.select();
+		List<Long> userValues = new ArrayList<>(userMap.size());
+		List<String> userTexts = new ArrayList<>(userMap.size());
+		for (Entry<Long, String> entry : userMap.entrySet()) {
+			userValues.add(entry.getKey());
+			userTexts.add(entry.getValue());
+		}
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), userValues, userTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;
@@ -225,9 +241,9 @@ public class SelectionMainController extends AbstractMainController {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("title").label(getMessage("title")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("type").label(getMessage("type")).width(200).views(Views.TEXT.getView()).build());
-		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}

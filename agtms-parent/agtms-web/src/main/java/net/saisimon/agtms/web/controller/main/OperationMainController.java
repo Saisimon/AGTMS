@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,7 @@ public class OperationMainController extends AbstractMainController {
 		OPERATION_FILTER_FIELDS.add("operateType");
 		OPERATION_FILTER_FIELDS.add("operateTime");
 		OPERATION_FILTER_FIELDS.add("operateIp");
+		OPERATION_FILTER_FIELDS.add(Constant.OPERATORID);
 	}
 	
 	@Autowired
@@ -78,7 +80,7 @@ public class OperationMainController extends AbstractMainController {
 		FilterRequest filter = FilterRequest.build(body, OPERATION_FILTER_FIELDS);
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
-		if (!userToken.getAdmin()) {
+		if (!userToken.isAdmin()) {
 			filter.and(Constant.OPERATORID, userId);
 		}
 		FilterPageable pageable = FilterPageable.build(param);
@@ -124,12 +126,27 @@ public class OperationMainController extends AbstractMainController {
 		Filter filter = new Filter();
 		List<String> keyValues = Arrays.asList("operateType", "operateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operate.type", "operate.time")));
-		Map<String, FieldFilter> value = new HashMap<>();
+		Map<String, FieldFilter> value = new HashMap<>(4);
 		Map<Integer, String> operateTypeMap = operateTypeSelection.select();
 		List<Integer> values = new ArrayList<>(operateTypeMap.keySet());
 		List<String> texts = new ArrayList<>(operateTypeMap.values());
 		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), values, texts));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		filter.setValue(value);
+		filters.add(filter);
+		
+		filter = new Filter();
+		keyValues = Arrays.asList("operatorId");
+		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
+		value = new HashMap<>(4);
+		Map<Long, String> userMap = userSelection.select();
+		List<Long> userValues = new ArrayList<>(userMap.size());
+		List<String> userTexts = new ArrayList<>(userMap.size());
+		for (Entry<Long, String> entry : userMap.entrySet()) {
+			userValues.add(entry.getKey());
+			userTexts.add(entry.getValue());
+		}
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), userValues, userTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;
@@ -140,9 +157,9 @@ public class OperationMainController extends AbstractMainController {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("operateContent").label(getMessage("operate.content")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("operateType").label(getMessage("operate.type")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("operateTime").label(getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("operateIp").label(getMessage("operate.ip")).views(Views.TEXT.getView()).width(200).build());
+		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		return columns;
 	}
 

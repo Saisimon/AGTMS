@@ -13,6 +13,12 @@ import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
 
+/**
+ * 初始化操作
+ * 
+ * @author saisimon
+ *
+ */
 public class InitRunner implements CommandLineRunner {
 	
 	@Value("${extra.admin.username:admin}")
@@ -47,7 +53,6 @@ public class InitRunner implements CommandLineRunner {
 		user.setEmail(username);
 		user.setCreateTime(time);
 		user.setUpdateTime(time);
-		user.setLastLoginTime(time);
 		user.setSalt(salt);
 		user.setPassword(hmacPwd);
 		user.setAdmin(true);
@@ -72,7 +77,6 @@ public class InitRunner implements CommandLineRunner {
 		user.setEmail(TEST_USERNAME);
 		user.setCreateTime(time);
 		user.setUpdateTime(time);
-		user.setLastLoginTime(time);
 		user.setSalt(salt);
 		user.setPassword(hmacPwd);
 		user.setAdmin(false);

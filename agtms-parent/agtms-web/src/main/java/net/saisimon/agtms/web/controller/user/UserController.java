@@ -26,7 +26,7 @@ import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.UserAuthParam;
-import net.saisimon.agtms.web.dto.req.UserChangePasswordParam;
+import net.saisimon.agtms.web.dto.req.UserResetPasswordParam;
 
 /**
  * 用户信息控制器
@@ -63,15 +63,22 @@ public class UserController {
 		}
 		user.setLastLoginTime(new Date());
 		userService.saveOrUpdate(user);
-		UserToken token = buildToken(user.getId(), user.isAdmin());
+		UserToken token = buildToken(user);
 		TokenFactory.get().setToken(user.getId(), token);
 		return ResultUtils.simpleSuccess(token);
 	}
 	
-	@Operate(type=OperateTypes.EDIT, value="change.password")
+	/**
+	 * 用户重置密码
+	 * 
+	 * @param param 密码信息
+	 * @param result 
+	 * @return 密码信息正确返回成功响应，否则返回失败原因响应
+	 */
+	@Operate(type=OperateTypes.EDIT, value="reset.password")
 	@Transactional(rollbackOn = Exception.class)
-	@PostMapping("/change/password")
-	public Result changePassword(@Validated @RequestBody UserChangePasswordParam param, BindingResult result) {
+	@PostMapping("/reset/password")
+	public Result resetPassword(@Validated @RequestBody UserResetPasswordParam param, BindingResult result) {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
@@ -82,7 +89,11 @@ public class UserController {
 			return ErrorMessage.User.ACCOUNT_NOT_EXIST;
 		}
 		User user = optional.get();
-		String hmacPassword = AuthUtils.hmac(param.getPassword(), user.getSalt());
+		String oldHmacPassword = AuthUtils.hmac(param.getOldPassword(), user.getSalt());
+		if (!oldHmacPassword.equals(user.getPassword())) {
+			return ErrorMessage.User.OLD_PASSWORD_NOT_CORRECT;
+		}
+		String hmacPassword = AuthUtils.hmac(param.getNewPassword(), user.getSalt());
 		user.setPassword(hmacPassword);
 		userService.saveOrUpdate(user);
 		TokenFactory.get().setToken(user.getId(), null);
@@ -102,12 +113,14 @@ public class UserController {
 		return ResultUtils.simpleSuccess(uid);
 	}
 	
-	private UserToken buildToken(Long userId, boolean admin) {
+	private UserToken buildToken(User user) {
 		UserToken token = new UserToken();
 		token.setExpireTime(AuthUtils.getExpireTime());
 		token.setToken(AuthUtils.createToken());
-		token.setUserId(userId);
-		token.setAdmin(admin);
+		token.setUserId(user.getId());
+		token.setAdmin(user.isAdmin());
+		token.setLoginName(user.getLoginName());
+		token.setAvatar(user.getAvatar());
 		return token;
 	}
 	

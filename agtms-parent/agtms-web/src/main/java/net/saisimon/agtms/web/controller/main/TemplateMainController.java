@@ -82,6 +82,7 @@ public class TemplateMainController extends AbstractMainController {
 		TEMPLATE_FILTER_FIELDS.add("title");
 		TEMPLATE_FILTER_FIELDS.add("createTime");
 		TEMPLATE_FILTER_FIELDS.add("updateTime");
+		TEMPLATE_FILTER_FIELDS.add(Constant.OPERATORID);
 	}
 	
 	@Autowired
@@ -100,7 +101,7 @@ public class TemplateMainController extends AbstractMainController {
 		FilterRequest filter = FilterRequest.build(body, TEMPLATE_FILTER_FIELDS);
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
-		if (!userToken.getAdmin()) {
+		if (!userToken.isAdmin()) {
 			filter.and(Constant.OPERATORID, userId);
 		}
 		FilterPageable pageable = FilterPageable.build(param);
@@ -174,9 +175,9 @@ public class TemplateMainController extends AbstractMainController {
 		columns.add(Column.builder().field("navigationName").label(getMessage("navigation")).views(Views.TEXT.getView()).width(100).build());
 		columns.add(Column.builder().field("title").label(getMessage("title")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("functions").label(getMessage("functions")).views(Views.TEXT.getView()).width(300).build());
-		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("createTime").label(getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("updateTime").label(getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		columns.add(Column.builder().field("action").label(getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
@@ -196,7 +197,7 @@ public class TemplateMainController extends AbstractMainController {
 		Filter filter = new Filter();
 		List<String> keyValues = Arrays.asList("navigationId");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("navigation")));
-		Map<String, FieldFilter> value = new HashMap<>();
+		Map<String, FieldFilter> value = new HashMap<>(4);
 		Map<Long, String> navigationMap = navigationSelection.selectWithParent(null);
 		List<Long> navigationValues = new ArrayList<>(navigationMap.size());
 		List<String> navigationTexts = new ArrayList<>(navigationMap.size());
@@ -211,7 +212,7 @@ public class TemplateMainController extends AbstractMainController {
 		filter = new Filter();
 		keyValues = Arrays.asList("title");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
-		value = new HashMap<>();
+		value = new HashMap<>(4);
 		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
 		filter.setValue(value);
 		filters.add(filter);
@@ -219,9 +220,24 @@ public class TemplateMainController extends AbstractMainController {
 		filter = new Filter();
 		keyValues = Arrays.asList("createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
-		value = new HashMap<>();
+		value = new HashMap<>(4);
 		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		filter.setValue(value);
+		filters.add(filter);
+		
+		filter = new Filter();
+		keyValues = Arrays.asList("operatorId");
+		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
+		value = new HashMap<>(4);
+		Map<Long, String> userMap = userSelection.select();
+		List<Long> userValues = new ArrayList<>(userMap.size());
+		List<String> userTexts = new ArrayList<>(userMap.size());
+		for (Entry<Long, String> entry : userMap.entrySet()) {
+			userValues.add(entry.getKey());
+			userTexts.add(entry.getValue());
+		}
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), userValues, userTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;

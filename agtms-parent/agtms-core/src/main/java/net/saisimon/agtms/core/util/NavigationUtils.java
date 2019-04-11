@@ -29,7 +29,7 @@ public class NavigationUtils {
 		}
 		Navigation navigation = optional.get();
 		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
-		if (userToken != null && userToken.getAdmin()) {
+		if (userToken != null && userToken.isAdmin()) {
 			return navigation;
 		}
 		if (operatorId.equals(navigation.getOperatorId())) {

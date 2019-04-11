@@ -1,10 +1,13 @@
 package net.saisimon.agtms.core.domain.entity;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Getter;
@@ -15,8 +18,10 @@ import lombok.Setter;
 @Entity
 @Table(name="agtms_user_token")
 @Document(collection="agtms_user_token")
-public class UserToken {
+public class UserToken implements Serializable {
 	
+	private static final long serialVersionUID = -481086455612777941L;
+
 	/**
 	 * 用户 ID
 	 */
@@ -36,10 +41,13 @@ public class UserToken {
 	@Column
 	private Long expireTime;
 	
-	/**
-	 * 管理员
-	 */
-	@Column
-	private Boolean admin;
+	@Transient
+	private boolean admin;
+	
+	@Transient
+	private String loginName;
+	
+	@Transient
+	private String avatar;
 	
 }

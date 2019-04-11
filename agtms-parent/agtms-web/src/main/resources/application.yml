@@ -49,6 +49,3 @@ extra:
     import: 65535
     cache:
       ttl: 600
-logging:
-  level:
-    net.saisimon: DEBUG

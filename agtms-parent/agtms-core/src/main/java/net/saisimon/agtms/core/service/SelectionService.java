@@ -42,7 +42,7 @@ public interface SelectionService extends BaseService<Selection, Long>, Ordered 
 		}
 		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
 		FilterRequest filter = FilterRequest.build();
-		if (!userToken.getAdmin()) {
+		if (!userToken.isAdmin()) {
 			filter.and(Constant.OPERATORID, operatorId);
 		}
 		return findList(filter);

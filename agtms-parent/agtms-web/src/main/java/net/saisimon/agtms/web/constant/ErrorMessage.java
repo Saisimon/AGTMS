@@ -19,11 +19,12 @@ public class ErrorMessage {
 	}
 	
 	public static class User {
-		public static final Result USERNAME_OR_PASSWORD_NOT_CORRECT = ResultUtils.error(1001, "username.or.password.not.correct");
+		public static final Result USERNAME_OR_PASSWORD_NOT_CORRECT = ResultUtils.error(1001, "username.or.password.incorrect");
 		public static final Result ACCOUNT_ALREADY_EXISTS = ResultUtils.error(1002, "account.already.exists");
 		public static final Result EMAIL_FORMAT_ERROR = ResultUtils.error(1003, "email.format.error");
 		public static final Result ACCOUNT_NOT_EXIST = ResultUtils.error(1004, "account.not.exist");
 		public static final Result ACCOUNT_LOCKED = ResultUtils.error(1005, "account.locked");
+		public static final Result OLD_PASSWORD_NOT_CORRECT = ResultUtils.error(1006, "old.password.incorrect");
 	}
 	
 	public static class Navigation {

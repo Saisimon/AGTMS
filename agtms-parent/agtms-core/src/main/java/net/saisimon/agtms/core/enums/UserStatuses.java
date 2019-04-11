@@ -8,7 +8,13 @@ package net.saisimon.agtms.core.enums;
  */
 public enum UserStatuses {
 	
+	/**
+	 * 锁定
+	 */
 	LOCKED(-10, "locked"),
+	/**
+	 * 正常
+	 */
 	NORMAL(0, "normal");
 	
 	/**

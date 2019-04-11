@@ -1,7 +1,11 @@
 package net.saisimon.agtms.core.service;
 
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.Ordered;
 
 import net.saisimon.agtms.core.constant.Constant;
@@ -57,6 +61,42 @@ public interface UserService extends BaseService<User, Long>, Ordered {
 			return null;
 		}
 		return user;
+	}
+	
+	@Override
+	@Cacheable(cacheNames="user", key="#p0")
+	default Optional<User> findById(Long id) {
+		return BaseService.super.findById(id);
+	}
+
+	@Override
+	@CacheEvict(cacheNames="user", key="#p0.id")
+	default void delete(User entity) {
+		BaseService.super.delete(entity);
+	}
+
+	@Override
+	@CachePut(cacheNames="user", key="#p0.id")
+	default User saveOrUpdate(User entity) {
+		return BaseService.super.saveOrUpdate(entity);
+	}
+
+	@Override
+	@CacheEvict(cacheNames="user", key="#p0")
+	default void update(Long id, Map<String, Object> updateMap) {
+		BaseService.super.update(id, updateMap);
+	}
+
+	@Override
+	@CacheEvict(cacheNames="user", allEntries=true)
+	default void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
+		BaseService.super.batchUpdate(filter, updateMap);
+	}
+	
+	@Override
+	@CacheEvict(cacheNames="user", allEntries=true)
+	default Long delete(FilterRequest filter) {
+		return BaseService.super.delete(filter);
 	}
 	
 }

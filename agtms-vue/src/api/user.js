@@ -8,14 +8,13 @@ export function signIn(username, password) {
     });
 }
 
-export function register(username, email, password) {
-    return request(null, url.REGISTER, {
-        name: username,
-        email: email,
-        password: password
-    });
-}
-
 export function signOut(user) {
     return request(user, url.SIGN_OUT);
+}
+
+export function resetPassword(user, oldPassword, newPassword) {
+    return request(user, url.RESET_PASSWORD, {
+        oldPassword: oldPassword,
+        newPassword: newPassword
+    });
 }

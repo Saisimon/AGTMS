@@ -27,6 +27,9 @@ import net.saisimon.agtms.web.config.runner.InitRunner;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 	
+	/**
+	 * 任务队列大小
+	 */
 	@Value("${extra.max-size.task:1024}")
 	private int taskMaxSize;
 	
@@ -108,6 +111,11 @@ public class WebConfig implements WebMvcConfigurer {
 		return new RestTemplate();
 	}
 	
+	/**
+	 * 初始化操作
+	 * 
+	 * @return
+	 */
 	@Bean
 	public InitRunner initRunner() {
 		return new InitRunner();

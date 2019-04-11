@@ -7,7 +7,9 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.domain.entity.UserToken;
+import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.token.Token;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.jpa.order.JpaOrder;
@@ -25,7 +27,7 @@ public class JpaToken implements Token, JpaOrder {
 		if (uid == null) {
 			return null;
 		}
-		Optional<UserToken> optional = userTokenJpaRepository.findByUserId(uid);
+		Optional<UserToken> optional = userTokenJpaRepository.findById(uid);
 		if (!optional.isPresent()) {
 			return null;
 		}
@@ -33,10 +35,18 @@ public class JpaToken implements Token, JpaOrder {
 		if (token.getToken() == null || token.getExpireTime() == null || token.getExpireTime() < System.currentTimeMillis()) {
 			return null;
 		}
+		Optional<User> userOptional = UserServiceFactory.get().findById(token.getUserId());
+		if (!userOptional.isPresent()) {
+			return null;
+		}
 		if (update) {
 			token.setExpireTime(AuthUtils.getExpireTime());
 			userTokenJpaRepository.saveOrUpdate(token);
 		}
+		User user = userOptional.get();
+		token.setAdmin(user.isAdmin());
+		token.setLoginName(user.getLoginName());
+		token.setAvatar(user.getAvatar());
 		return token;
 	}
 
@@ -47,10 +57,10 @@ public class JpaToken implements Token, JpaOrder {
 			return;
 		}
 		if (token == null) {
-			token = new UserToken();
-			token.setUserId(uid);
+			userTokenJpaRepository.deleteById(uid);
+		} else {
+			userTokenJpaRepository.saveOrUpdate(token);
 		}
-		userTokenJpaRepository.saveOrUpdate(token);
 	}
 	
 }

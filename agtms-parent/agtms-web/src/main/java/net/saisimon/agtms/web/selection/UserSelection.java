@@ -23,7 +23,7 @@ public class UserSelection extends AbstractSelection<Long> {
 		UserService userService = UserServiceFactory.get();
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
-		if (userToken.getAdmin()) {
+		if (userToken != null && userToken.isAdmin()) {
 			List<User> users = userService.findList(null, "id", "loginName");
 			Map<Long, String> userMap = MapUtil.newHashMap(users.size(), true);
 			for (User user : users) {

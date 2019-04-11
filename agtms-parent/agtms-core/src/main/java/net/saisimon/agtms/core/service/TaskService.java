@@ -31,7 +31,7 @@ public interface TaskService extends BaseService<Task, Long>, Ordered {
 		}
 		Task task = optional.get();
 		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
-		if (userToken != null && userToken.getAdmin()) {
+		if (userToken != null && userToken.isAdmin()) {
 			return task;
 		}
 		if (operatorId.equals(task.getOperatorId())) {

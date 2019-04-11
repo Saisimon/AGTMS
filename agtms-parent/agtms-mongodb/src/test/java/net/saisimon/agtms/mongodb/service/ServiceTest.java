@@ -610,7 +610,6 @@ public class ServiceTest {
 		user.setEmail(username);
 		user.setCreateTime(time);
 		user.setUpdateTime(time);
-		user.setLastLoginTime(time);
 		user.setSalt(salt);
 		user.setPassword(hmacPwd);
 		user.setAdmin(false);

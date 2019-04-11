@@ -5,7 +5,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.domain.entity.UserToken;
+import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.token.Token;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.mongodb.order.MongodbOrder;
@@ -22,7 +24,7 @@ public class MongodbToken implements Token, MongodbOrder {
 		if (uid == null) {
 			return null;
 		}
-		Optional<UserToken> optional = userTokenMongodbRepository.findByUserId(uid);
+		Optional<UserToken> optional = userTokenMongodbRepository.findById(uid);
 		if (!optional.isPresent()) {
 			return null;
 		}
@@ -30,10 +32,18 @@ public class MongodbToken implements Token, MongodbOrder {
 		if (token.getToken() == null || token.getExpireTime() == null || token.getExpireTime() < System.currentTimeMillis()) {
 			return null;
 		}
+		Optional<User> userOptional = UserServiceFactory.get().findById(token.getUserId());
+		if (!userOptional.isPresent()) {
+			return null;
+		}
 		if (update) {
 			token.setExpireTime(AuthUtils.getExpireTime());
 			userTokenMongodbRepository.saveOrUpdate(token);
 		}
+		User user = userOptional.get();
+		token.setAdmin(user.isAdmin());
+		token.setLoginName(user.getLoginName());
+		token.setAvatar(user.getAvatar());
 		return token;
 	}
 
@@ -43,10 +53,10 @@ public class MongodbToken implements Token, MongodbOrder {
 			return;
 		}
 		if (token == null) {
-			token = new UserToken();
-			token.setUserId(uid);
+			userTokenMongodbRepository.deleteById(uid);
+		} else {
+			userTokenMongodbRepository.saveOrUpdate(token);
 		}
-		userTokenMongodbRepository.saveOrUpdate(token);
 	}
 
 }

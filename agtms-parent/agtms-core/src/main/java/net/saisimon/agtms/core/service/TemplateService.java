@@ -36,7 +36,7 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		}
 		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
 		FilterRequest filter = FilterRequest.build();
-		if (userToken == null || !userToken.getAdmin()) {
+		if (userToken == null || !userToken.isAdmin()) {
 			filter.and(Constant.OPERATORID, operatorId);
 		}
 		return findList(filter);
@@ -48,7 +48,7 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		}
 		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
 		FilterRequest filter = FilterRequest.build().and("navigationId", navigationId);
-		if (!userToken.getAdmin()) {
+		if (!userToken.isAdmin()) {
 			filter.and(Constant.OPERATORID, operatorId);
 		}
 		return findList(filter);

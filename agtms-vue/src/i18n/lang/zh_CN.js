@@ -1,6 +1,5 @@
 export default {
     sign_in: '登录',
-    register: '注册',
     no_account: '没有账户？',
     have_account: '已有账户？',
     create_account: '创建账户',
@@ -100,10 +99,16 @@ export default {
     options_value_desc: '下拉列表选项的值不允许重复',
     options_text_desc: '下拉列表选项的名称不允许重复',
     template_value_desc: '下拉列表选项的值对应的模板字段必须唯一且必填',
-    template_text_desc: '下下拉列表选项的名称对应的模板字段必须唯一且必填',
+    template_text_desc: '下拉列表选项的名称对应的模板字段必须唯一且必填',
     draggable_desc: '拖动来改变字段位置',
     first_page: '首页',
     previous_page: '上页',
     next_page: '下页',
     last_page: '末页',
+    reset_password: '重置密码',
+    old_password: '原密码',
+    new_password: '新密码',
+    confirm_password: '密码确认',
+    confirm_password_diff: '密码确认与新密码不匹配',
+    reset_password_success: '重置密码成功，请重新登录'
 }
