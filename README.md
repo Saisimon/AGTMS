@@ -139,3 +139,15 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 ```
 3. 运行测试用例
 * `agtms-autotest/src/test/java/net/saisimon/agtms/autotest/FirefoxTest`
+
+## 待完成
+1. 用户初次登录修改密码
+2. 用户信息编辑
+3. 管理员重置密码
+4. 图片编辑上传
+5. 富文本编辑
+6. 导入导出优化
+7. 完善自动化测试
+8. 系统引导
+9. 数据可视化
+10. ...
