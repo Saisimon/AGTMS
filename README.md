@@ -141,9 +141,9 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 * `agtms-autotest/src/test/java/net/saisimon/agtms/autotest/FirefoxTest`
 
 ## 待完成
-1. 用户初次登录修改密码
+1. ~~用户初次登录修改密码~~
 2. 用户信息编辑
-3. 管理员重置密码
+3. ~~管理员重置密码~~
 4. 图片编辑上传
 5. 富文本编辑
 6. 导入导出优化
