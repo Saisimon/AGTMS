@@ -59,9 +59,9 @@
                         <span class="nav-bar-content text-light ml-1">{{ loginName }}</span>
                     </template>
                     <!-- 修改密码 -->
-                    <b-dropdown-item href="javascript:void(0);" @click.stop="showResetPasswordModel=!showResetPasswordModel">
+                    <b-dropdown-item href="javascript:void(0);" @click.stop="$store.commit('changePasswordModal', true)">
                         <i class="fa fa-fw fa-edit"></i>
-                        <span class="ml-1">{{ $t('reset_password') }}</span>
+                        <span class="ml-1">{{ $t('change_password') }}</span>
                     </b-dropdown-item>
                     <b-dropdown-divider />
                     <!-- 登出 -->
@@ -81,10 +81,10 @@
                 </b-nav-item>
             </b-navbar-nav>
         </b-collapse>
-        <b-modal :id="'modal-reset-password'" 
-            @hide="resetPasswordValue"
-            :title="$t('reset_password')"
-            v-model="showResetPasswordModel"
+        <b-modal :id="'modal-change-password'" 
+            @hide="changePasswordValue"
+            :title="$t('change_password')"
+            v-model="$store.state.base.showChangePasswordModal"
             centered 
             hide-footer
             no-close-on-backdrop
@@ -185,7 +185,7 @@
                     <b-col class="text-right">
                         <b-button variant="outline-primary" 
                             size="sm"
-                            @click="resetPassword">
+                            @click="changePassword">
                             <i class="fa fa-fw fa-save"></i>
                             {{ $t("confirm_save") }}
                         </b-button>
@@ -203,7 +203,6 @@ export default {
     name: 'nav-bar',
     data: function() {
         return {
-            showResetPasswordModel: false,
             oldPassword: {
                 value: '',
                 state: null,
@@ -304,7 +303,7 @@ export default {
             var openTree = this.$store.state.navigation.openTree;
             this.$store.commit('changeOpenTree', !openTree);
         },
-        resetPasswordValue: function() {
+        changePasswordValue: function() {
             this.oldPassword.value='';
             this.oldPassword.state=null;
             this.oldPassword.message='';
@@ -318,7 +317,7 @@ export default {
             this.confirmPassword.message='';
             this.confirmPassword.show=false;
         },
-        resetPassword: function() {
+        changePassword: function() {
             var checked = true;
             var oldPasswordValue = this.oldPassword.value;
             if (oldPasswordValue == null || oldPasswordValue == '') {
@@ -353,15 +352,15 @@ export default {
             }
             if (checked) {
                 var vm = this;
-                this.$store.dispatch('resetPwd', {
+                this.$store.dispatch('changePwd', {
                     oldPassword: oldPasswordValue,
                     newPassword: newPasswordValue
                 }).then(resp => {
                     if (resp.data.code === 0) {
-                        vm.showResetPasswordModel = false;
+                        vm.$store.commit('changePasswordModal', false);
                         vm.$store.commit('showAlert', {
                             variant: 'success',
-                            message: vm.$t('reset_password_success')
+                            message: vm.$t('change_password_success')
                         });
                         vm.$store.commit('setUser', null);
                         vm.$store.commit('setTree', {});

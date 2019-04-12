@@ -105,10 +105,10 @@ export default {
     previous_page: '上页',
     next_page: '下页',
     last_page: '末页',
-    reset_password: '重置密码',
+    change_password: '修改密码',
     old_password: '原密码',
     new_password: '新密码',
     confirm_password: '密码确认',
     confirm_password_diff: '密码确认与新密码不匹配',
-    reset_password_success: '重置密码成功，请重新登录'
+    change_password_success: '修改密码成功，请重新登录'
 }

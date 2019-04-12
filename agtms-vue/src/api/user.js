@@ -1,19 +1,18 @@
-import * as url from './url'
 import request from './request'
 
 export function signIn(username, password) {
-    return request(null, url.SIGN_IN, {
+    return request(null, "/user/auth", {
         name: username,
         password: password
     });
 }
 
 export function signOut(user) {
-    return request(user, url.SIGN_OUT);
+    return request(user, "/user/logout");
 }
 
-export function resetPassword(user, oldPassword, newPassword) {
-    return request(user, url.RESET_PASSWORD, {
+export function changePassword(user, oldPassword, newPassword) {
+    return request(user, "/user/change/password", {
         oldPassword: oldPassword,
         newPassword: newPassword
     });

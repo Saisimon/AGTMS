@@ -42,6 +42,9 @@ public class UserToken implements Serializable {
 	private Long expireTime;
 	
 	@Transient
+	private Integer status;
+	
+	@Transient
 	private boolean admin;
 	
 	@Transient

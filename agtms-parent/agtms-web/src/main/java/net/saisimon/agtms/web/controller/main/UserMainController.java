@@ -13,6 +13,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -82,6 +83,8 @@ public class UserMainController extends AbstractMainController {
 		USER_FILTER_FIELDS.add("updateTime");
 	}
 	
+	@Value("${extra.default.password:123456}")
+	private String defaultPassword;
 	@Autowired
 	private UserStatusSelection userStatusSelection;
 	
@@ -110,21 +113,24 @@ public class UserMainController extends AbstractMainController {
 				result.getDisableActions().add(Boolean.TRUE);
 				// lock
 				result.getDisableActions().add(Boolean.TRUE);
+				// reset password
+				result.getDisableActions().add(Boolean.FALSE);
 			} else {
 				// edit
 				result.getDisableActions().add(Boolean.FALSE);
-				// unlock
 				if (UserStatuses.LOCKED.getStatus().equals(user.getStatus())) {
+					// unlock
 					result.getDisableActions().add(Boolean.FALSE);
-				} else {
+					// lock
 					result.getDisableActions().add(Boolean.TRUE);
-				}
-				// lock
-				if (UserStatuses.NORMAL.getStatus().equals(user.getStatus())) {
+				} else {
+					// unlock
+					result.getDisableActions().add(Boolean.TRUE);
+					// lock
 					result.getDisableActions().add(Boolean.FALSE);
-				} else {
-					result.getDisableActions().add(Boolean.TRUE);
 				}
+				// reset password
+				result.getDisableActions().add(Boolean.FALSE);
 			}
 			results.add(result);
 		}
@@ -160,6 +166,24 @@ public class UserMainController extends AbstractMainController {
 		}
 		User user = optional.get();
 		user.setStatus(UserStatuses.NORMAL.getStatus());
+		userService.saveOrUpdate(user);
+		TokenFactory.get().setToken(user.getId(), null);
+		return ResultUtils.simpleSuccess();
+	}
+	
+	@Operate(type=OperateTypes.EDIT, value="reset.password")
+	@Transactional(rollbackOn = Exception.class)
+	@PostMapping("/reset/password")
+	public Result resetPassword(@RequestParam("id") Long id) {
+		UserService userService = UserServiceFactory.get();
+		Optional<User> optional = userService.findById(id);
+		if (!optional.isPresent()) {
+			return ErrorMessage.User.ACCOUNT_NOT_EXIST;
+		}
+		User user = optional.get();
+		String hmacPassword = AuthUtils.hmac(defaultPassword, user.getSalt());
+		user.setPassword(hmacPassword);
+		user.setStatus(UserStatuses.CREATED.getStatus());
 		userService.saveOrUpdate(user);
 		TokenFactory.get().setToken(user.getId(), null);
 		return ResultUtils.simpleSuccess();
@@ -235,6 +259,7 @@ public class UserMainController extends AbstractMainController {
 		actions.add(Action.builder().key("edit").to("/user/edit?id=").icon("edit").text(getMessage("edit")).type("link").build());
 		actions.add(Action.builder().key("unlock").icon("unlock").to("/user/main/unlock").text(getMessage("unlock")).variant("outline-warning").type("modal").build());
 		actions.add(Action.builder().key("lock").icon("lock").to("/user/main/lock").text(getMessage("lock")).variant("outline-warning").type("modal").build());
+		actions.add(Action.builder().key("reset").icon("key").to("/user/main/reset/password").text(getMessage("reset.password")).variant("outline-danger").type("modal").build());
 		return actions;
 	}
 	

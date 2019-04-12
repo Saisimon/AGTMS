@@ -71,9 +71,14 @@ export default {
             this.error.message = '';
             this.$store.dispatch('login', this.form).then(resp => {
                 var data = resp.data;
-                if (data) {
-                    if (data.code === 0) {
-                        this.$store.commit('setUser', data.data);
+                if (data.code === 0) {
+                    this.$store.commit('setUser', data.data);
+                    if (data.data.status == -1) {
+                        this.$store.commit('changePasswordModal', true);
+                        this.$router.push({
+                            path: '/'
+                        });
+                    } else {
                         this.$store.dispatch('getTree');
                         var reply = this.$route.query.reply;
                         if (reply && reply != '/') {
@@ -85,10 +90,6 @@ export default {
                                 path: '/'
                             });
                         }
-                    } else {
-                        this.error.username = true;
-                        this.error.password = true;
-                        this.error.message = data.message;
                     }
                 }
             });

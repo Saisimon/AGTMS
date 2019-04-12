@@ -13,6 +13,10 @@ public enum UserStatuses {
 	 */
 	LOCKED(-10, "locked"),
 	/**
+	 * 已创建
+	 */
+	CREATED(-1, "created"),
+	/**
 	 * 正常
 	 */
 	NORMAL(0, "normal");

@@ -26,7 +26,7 @@ import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.UserAuthParam;
-import net.saisimon.agtms.web.dto.req.UserResetPasswordParam;
+import net.saisimon.agtms.web.dto.req.UserChangePasswordParam;
 
 /**
  * 用户信息控制器
@@ -69,16 +69,16 @@ public class UserController {
 	}
 	
 	/**
-	 * 用户重置密码
+	 * 用户修改密码
 	 * 
 	 * @param param 密码信息
 	 * @param result 
 	 * @return 密码信息正确返回成功响应，否则返回失败原因响应
 	 */
-	@Operate(type=OperateTypes.EDIT, value="reset.password")
+	@Operate(type=OperateTypes.EDIT, value="change.password")
 	@Transactional(rollbackOn = Exception.class)
-	@PostMapping("/reset/password")
-	public Result resetPassword(@Validated @RequestBody UserResetPasswordParam param, BindingResult result) {
+	@PostMapping("/change/password")
+	public Result changePassword(@Validated @RequestBody UserChangePasswordParam param, BindingResult result) {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
@@ -95,6 +95,9 @@ public class UserController {
 		}
 		String hmacPassword = AuthUtils.hmac(param.getNewPassword(), user.getSalt());
 		user.setPassword(hmacPassword);
+		if (UserStatuses.CREATED.getStatus().equals(user.getStatus())) {
+			user.setStatus(UserStatuses.NORMAL.getStatus());
+		}
 		userService.saveOrUpdate(user);
 		TokenFactory.get().setToken(user.getId(), null);
 		return ResultUtils.simpleSuccess();
@@ -118,6 +121,7 @@ public class UserController {
 		token.setExpireTime(AuthUtils.getExpireTime());
 		token.setToken(AuthUtils.createToken());
 		token.setUserId(user.getId());
+		token.setStatus(user.getStatus());
 		token.setAdmin(user.isAdmin());
 		token.setLoginName(user.getLoginName());
 		token.setAvatar(user.getAvatar());

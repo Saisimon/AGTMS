@@ -125,7 +125,7 @@ public class UserEditController extends AbstractEditController<User> {
 			user.setNickname(body.getNickname());
 			user.setAvatar(body.getAvatar());
 			user.setAdmin(Whether.YES.getValue().equals(body.getAdmin()));
-			user.setStatus(UserStatuses.NORMAL.getStatus());
+			user.setStatus(UserStatuses.CREATED.getStatus());
 			user.setRemark(body.getRemark());
 			userService.saveOrUpdate(user);
 		}

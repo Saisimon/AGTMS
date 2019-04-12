@@ -41,6 +41,7 @@ public class MongodbToken implements Token, MongodbOrder {
 			userTokenMongodbRepository.saveOrUpdate(token);
 		}
 		User user = userOptional.get();
+		token.setStatus(user.getStatus());
 		token.setAdmin(user.isAdmin());
 		token.setLoginName(user.getLoginName());
 		token.setAvatar(user.getAvatar());

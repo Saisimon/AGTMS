@@ -25,6 +25,7 @@ public class ErrorMessage {
 		public static final Result ACCOUNT_NOT_EXIST = ResultUtils.error(1004, "account.not.exist");
 		public static final Result ACCOUNT_LOCKED = ResultUtils.error(1005, "account.locked");
 		public static final Result OLD_PASSWORD_NOT_CORRECT = ResultUtils.error(1006, "old.password.incorrect");
+		public static final Result PASSWORD_NEED_RESET = ResultUtils.error(1007, "password.need.reset");
 	}
 	
 	public static class Navigation {

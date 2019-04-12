@@ -44,6 +44,7 @@ public class JpaToken implements Token, JpaOrder {
 			userTokenJpaRepository.saveOrUpdate(token);
 		}
 		User user = userOptional.get();
+		token.setStatus(user.getStatus());
 		token.setAdmin(user.isAdmin());
 		token.setLoginName(user.getLoginName());
 		token.setAvatar(user.getAvatar());
@@ -57,7 +58,7 @@ public class JpaToken implements Token, JpaOrder {
 			return;
 		}
 		if (token == null) {
-			userTokenJpaRepository.deleteById(uid);
+			userTokenJpaRepository.deleteByUserId(uid);
 		} else {
 			userTokenJpaRepository.saveOrUpdate(token);
 		}

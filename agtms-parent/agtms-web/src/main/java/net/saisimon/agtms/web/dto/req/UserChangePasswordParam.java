@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class UserResetPasswordParam implements Serializable {
+public class UserChangePasswordParam implements Serializable {
 
 	private static final long serialVersionUID = 5696615388572482761L;
 	

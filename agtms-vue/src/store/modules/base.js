@@ -1,4 +1,4 @@
-import { signIn, signOut, resetPassword } from '@/api/user'
+import { signIn, signOut, changePassword } from '@/api/user'
 
 const state = {
     urlPrefix: '///' + window.location.hostname + ':7891/agtms',
@@ -12,7 +12,8 @@ const state = {
         dismissCountDown: 0,
         variant: 'success',
         text: ''
-    }
+    },
+    showChangePasswordModal: false
 };
 
 const mutations = {
@@ -70,6 +71,9 @@ const mutations = {
             }
             state.alert.dismissCountDown = state.alert.dismissSecs;
         }
+    },
+    changePasswordModal(state, show) {
+        state.showChangePasswordModal = show;
     }
 };
 
@@ -96,10 +100,10 @@ const actions = {
             }
         });
     },
-    resetPwd(context, payload) {
+    changePwd(context, payload) {
         return new Promise((resolve, reject) => {
             if (context.state.user !== null) {
-                resetPassword(context.state.user, payload.oldPassword, payload.newPassword).then(resp => {
+                changePassword(context.state.user, payload.oldPassword, payload.newPassword).then(resp => {
                     resolve(resp);
                 }, error => {
                     reject(error);

@@ -105,10 +105,10 @@ export default {
     previous_page: 'Prev',
     next_page: 'Next',
     last_page: 'Last',
-    reset_password: 'Reset password',
+    change_password: 'Change password',
     old_password: 'Old password',
     new_password: 'New password',
     confirm_password: 'Password confirmation',
     confirm_password_diff: 'Password confirmation doesn\'t match Password',
-    reset_password_success: 'Reset password successfully, please login again'
+    change_password_success: 'Change password successfully, please login again'
 }
