@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -28,6 +29,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.date.DateUtil;
+import net.saisimon.agtms.core.enums.ImageFormats;
 
 /**
  * 文件相关工具类
@@ -238,6 +240,58 @@ public final class FileUtils {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * 判断输入流的图片格式
+	 * 
+	 * @param input 输入流
+	 * @return 图片格式
+	 * @throws IOException 读取异常
+	 */
+	public static ImageFormats imageFormat(InputStream input) throws IOException {
+		if (input == null) {
+			return ImageFormats.UNKNOWN;
+		}
+		try {
+			byte[] bs = new byte[4];
+			input.read(bs, 0, bs.length);
+			String hex = Hex.encodeHexString(bs, false);
+			if (hex.contains("FFD8FF")) {
+				return ImageFormats.JPG;
+			} else if (hex.contains("89504E47")) {
+				return ImageFormats.PNG;
+			} else if (hex.contains("47494638")) {
+				return ImageFormats.GIF;
+			} else if (hex.contains("424D")) {
+				return ImageFormats.BMP;
+			} else {
+				return ImageFormats.UNKNOWN;
+			}
+		} finally {
+			if (input != null) {
+				input.close();
+			}
+		}
+	}
+	
+	/**
+	 * 根据文件名称判断图片格式
+	 * 
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	public static ImageFormats imageFormat(String name) throws IOException {
+		if (SystemUtils.isBlank(name)) {
+			return ImageFormats.UNKNOWN;
+		}
+		for (ImageFormats imageFormats : ImageFormats.values()) {
+			if (name.endsWith(imageFormats.getSuffix())) {
+				return imageFormats;
+			}
+		}
+		return ImageFormats.UNKNOWN;
 	}
 	
 	/**

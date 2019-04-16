@@ -164,7 +164,7 @@
                                 :field="props.column.field" 
                                 :index="props.row.originalIndex"  />
                         </span>
-                        <span v-else-if="props.column.views == 'html'">
+                        <span v-else-if="props.column.views == 'textarea'">
                             <html-cell 
                                 :rowData="props.formattedRow" 
                                 :field="props.column.field" 

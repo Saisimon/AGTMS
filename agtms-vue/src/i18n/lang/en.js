@@ -110,5 +110,9 @@ export default {
     new_password: 'New password',
     confirm_password: 'Password confirmation',
     confirm_password_diff: 'Password confirmation doesn\'t match Password',
-    change_password_success: 'Change password successfully, please login again'
+    change_password_success: 'Change password successfully, please login again',
+    upload_image: 'Upload image',
+    upload: 'Upload',
+    upload_image_failed: 'Upload image failed'
+
 }

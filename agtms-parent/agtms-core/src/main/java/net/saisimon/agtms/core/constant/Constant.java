@@ -55,6 +55,7 @@ public class Constant {
 		
 		public static final String EXPORT_PATH = System.getProperty("java.io.tmpdir") + "export";
 		public static final String IMPORT_PATH = System.getProperty("java.io.tmpdir") + "import";
+		public static final String UPLOAD_PATH = System.getProperty("java.io.tmpdir") + "upload";
 		
 	}
 	

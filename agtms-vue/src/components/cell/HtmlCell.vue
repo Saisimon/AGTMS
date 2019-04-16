@@ -1,6 +1,6 @@
 <template>
     <div class="marquee">
-        <span v-html="rowData[field]"></span>
+        <div v-html="rowData[field]"></div>
     </div>
 </template>
 

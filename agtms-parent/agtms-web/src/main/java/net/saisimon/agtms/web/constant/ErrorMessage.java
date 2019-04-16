@@ -16,6 +16,8 @@ public class ErrorMessage {
 		public static final Result MISSING_REQUIRED_FIELD = ResultUtils.error(502, "missing.required.field");
 		public static final Result PARAM_ERROR = ResultUtils.error(503, "param.error");
 		public static final Result PERMISSION_DENIED = ResultUtils.error(504, "permission.denied");
+		public static final Result UNSUPPORTED_FORMAT = ResultUtils.error(505, "unsupported.format");
+		public static final Result UPLOAD_FAILED = ResultUtils.error(506, "upload.failed");
 	}
 	
 	public static class User {

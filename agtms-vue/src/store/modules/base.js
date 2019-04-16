@@ -1,4 +1,5 @@
 import { signIn, signOut, changePassword } from '@/api/user'
+import { uploadImage } from '@/api/upload'
 
 const state = {
     urlPrefix: '///' + window.location.hostname + ':7891/agtms',
@@ -104,6 +105,17 @@ const actions = {
         return new Promise((resolve, reject) => {
             if (context.state.user !== null) {
                 changePassword(context.state.user, payload.oldPassword, payload.newPassword).then(resp => {
+                    resolve(resp);
+                }, error => {
+                    reject(error);
+                });
+            }
+        });
+    },
+    uploadImg(context, payload) {
+        return new Promise((resolve, reject) => {
+            if (context.state.user !== null) {
+                uploadImage(context.state.user, payload).then(resp => {
                     resolve(resp);
                 }, error => {
                     reject(error);

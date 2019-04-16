@@ -45,3 +45,5 @@ feign:
 white:
   list:
     urls: /agtms/user/auth
+  prefix:
+    urls: /agtms/image/res

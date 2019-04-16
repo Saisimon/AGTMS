@@ -110,5 +110,8 @@ export default {
     new_password: '新密码',
     confirm_password: '密码确认',
     confirm_password_diff: '密码确认与新密码不匹配',
-    change_password_success: '修改密码成功，请重新登录'
+    change_password_success: '修改密码成功，请重新登录',
+    upload_image: '上传图片',
+    upload: '上传',
+    upload_image_failed: '上传图片失败'
 }

@@ -43,7 +43,11 @@ public enum OperateTypes {
 	/**
 	 * 导入
 	 */
-	IMPORT(90, "import");
+	IMPORT(90, "import"),
+	/**
+	 * 上传
+	 */
+	UPLOAD(100, "upload");
 	
 	private Integer type;
 	private String name;

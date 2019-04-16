@@ -13,6 +13,7 @@ import com.netflix.zuul.exception.ZuulException;
 
 import net.saisimon.agtms.api.UserInterface;
 import net.saisimon.agtms.zuul.config.WhiteList;
+import net.saisimon.agtms.zuul.config.WhitePrefix;
 
 @RefreshScope
 @Component
@@ -24,6 +25,8 @@ public class AccessFilter extends ZuulFilter {
 	@Autowired
 	private WhiteList whiteList;
 	@Autowired
+	private WhitePrefix whitePrefix;
+	@Autowired
 	private UserInterface userInterface;
 
 	@Override
@@ -33,6 +36,13 @@ public class AccessFilter extends ZuulFilter {
 		String uri = request.getRequestURI();
 		if (whiteList != null && whiteList.getUrls().contains(uri)) {
 			return false;
+		} else if (whitePrefix != null) {
+			for (String prefix : whitePrefix.getUrls()) {
+				if (uri.startsWith(prefix)) {
+					return false;
+				}
+			}
+			return true;
 		} else {
 			return true;
 		}

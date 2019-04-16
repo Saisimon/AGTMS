@@ -1,12 +1,12 @@
 <template>
     <div class="marquee" style="width: 150px">
-        <b-img fluid thumbnail :src="rowData[field]" :alt="rowData[field]" style="cursor: pointer;" @click="modalShow = true" />
+        <b-img fluid thumbnail :src="$store.state.base.urlPrefix + rowData[field]" :alt="rowData[field]" style="cursor: pointer;" @click="modalShow = true" />
         <b-modal v-model="modalShow" 
             centered 
             size="lg" 
             hide-footer 
             hide-header >
-            <b-img center thumbnail fluid :src="rowData[field]" />
+            <b-img center thumbnail fluid :src="$store.state.base.urlPrefix + rowData[field]" />
         </b-modal>
     </div>
 </template>
