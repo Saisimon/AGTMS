@@ -9,8 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
@@ -66,9 +66,11 @@ public class Selection implements Serializable {
 	private Integer type;
 	
 	@Transient
+	@javax.persistence.Transient
 	private String service;
 	
 	@Transient
+	@javax.persistence.Transient
 	private String key;
 	
 	/**

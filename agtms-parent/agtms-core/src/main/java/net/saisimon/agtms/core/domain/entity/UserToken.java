@@ -42,15 +42,19 @@ public class UserToken implements Serializable {
 	private Long expireTime;
 	
 	@Transient
+	@javax.persistence.Transient
 	private Integer status;
 	
 	@Transient
+	@javax.persistence.Transient
 	private boolean admin;
 	
 	@Transient
+	@javax.persistence.Transient
 	private String loginName;
 	
 	@Transient
+	@javax.persistence.Transient
 	private String avatar;
 	
 }

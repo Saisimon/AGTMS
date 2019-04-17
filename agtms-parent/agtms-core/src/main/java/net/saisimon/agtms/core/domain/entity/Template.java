@@ -99,9 +99,11 @@ public class Template implements Cloneable, Serializable {
 	private String source;
 	
 	@Transient
+	@javax.persistence.Transient
 	private String service;
 	
 	@Transient
+	@javax.persistence.Transient
 	private String key;
 	
 	public void addColumn(TemplateColumn column) {
@@ -226,11 +228,11 @@ public class Template implements Cloneable, Serializable {
 				return false;
 			}
 			TemplateColumn other = (TemplateColumn) obj;
-			if (columnName == null) {
-				if (other.columnName != null) {
+			if (title == null) {
+				if (other.title != null) {
 					return false;
 				}
-			} else if (!columnName.equals(other.columnName)) {
+			} else if (!title.equals(other.title)) {
 				return false;
 			}
 			return true;
@@ -240,7 +242,7 @@ public class Template implements Cloneable, Serializable {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((columnName == null) ? 0 : columnName.hashCode());
+			result = prime * result + ((title == null) ? 0 : title.hashCode());
 			return result;
 		}
 		
@@ -374,11 +376,11 @@ public class Template implements Cloneable, Serializable {
 				return false;
 			}
 			TemplateField other = (TemplateField) obj;
-			if (fieldName == null) {
-				if (other.fieldName != null) {
+			if (fieldTitle == null) {
+				if (other.fieldTitle != null) {
 					return false;
 				}
-			} else if (!fieldName.equals(other.fieldName)) {
+			} else if (!fieldTitle.equals(other.fieldTitle)) {
 				return false;
 			}
 			return true;
@@ -388,7 +390,7 @@ public class Template implements Cloneable, Serializable {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());
+			result = prime * result + ((fieldTitle == null) ? 0 : fieldTitle.hashCode());
 			return result;
 		}
 		
