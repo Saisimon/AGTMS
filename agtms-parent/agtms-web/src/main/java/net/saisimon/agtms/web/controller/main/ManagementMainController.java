@@ -103,6 +103,8 @@ public class ManagementMainController extends AbstractMainController {
 	private int exportMaxSize;
 	@Value("${extra.max-size.import:65535}")
 	private int importMaxSize;
+	@Value("${extra.file.path}")
+	private String filePath;
 	@Value("${spring.cloud.client.ip-address}")
 	private String ip;
 	@Value("${server.port}")
@@ -321,10 +323,16 @@ public class ManagementMainController extends AbstractMainController {
 				}
 			}
 		}
-		String path = Constant.File.IMPORT_PATH + File.separatorChar + userId;
-		String name = UUID.randomUUID().toString();
-		File file = new File(path + File.separator + name + "." + importFileType);
-		try {
+		ImportParam body = new ImportParam();
+		body.setImportFields(importFields);
+		body.setImportFileName(importFileName);
+		body.setImportFileType(importFileType);
+		body.setImportFileUUID(UUID.randomUUID().toString());
+		body.setTemplateId(template.sign());
+		body.setUserId(userId);
+		StringBuilder importFilePath = new StringBuilder();
+		importFilePath.append(filePath).append(Constant.File.IMPORT_PATH).append(File.separatorChar).append(userId);
+		try (FileOutputStream output = new FileOutputStream(FileUtils.createFile(importFilePath.toString(), body.getImportFileUUID(), "." + importFileType))) {
 			int size = 0;
 			switch (importFileType) {
 				case Constant.File.XLS:
@@ -347,43 +355,24 @@ public class ManagementMainController extends AbstractMainController {
 				result.setMessageArgs(new Object[]{ importMaxSize });
 				return result;
 			}
-			FileUtils.createDir(file.getParentFile());
-			FileOutputStream output = new FileOutputStream(file);
 			IOUtils.copy(importFile.getInputStream(), output);
 			output.flush();
 		} catch (IOException e) {
 			log.error("导入异常", e);
 			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
 		}
-		ImportParam body = new ImportParam();
-		body.setImportFields(importFields);
-		body.setImportFileName(importFileName);
-		body.setImportFileType(importFileType);
-		body.setImportFileUUID(name);
-		body.setTemplateId(template.sign());
-		body.setUserId(userId);
-		Task exportTask = new Task();
-		exportTask.setOperatorId(userId);
-		exportTask.setTaskTime(new Date());
-		exportTask.setTaskType(Functions.IMPORT.getFunction());
-		exportTask.setTaskParam(SystemUtils.toJson(body));
-		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
-		exportTask.setIp(ip);
-		exportTask.setPort(port);
-		TaskService taskService = TaskServiceFactory.get();
-		taskService.saveOrUpdate(exportTask);
+		Task exportTask = createExportTask(body);
 		try {
 			submitTask(exportTask);
 			Result result = ResultUtils.simpleSuccess();
 			result.setMessage(getMessage("import.task.created"));
 			return result;
 		} catch (TaskRejectedException e) {
-			Result result = ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
 			exportTask.setHandleTime(new Date());
-			exportTask.setHandleResult(result.getMessage());
+			exportTask.setHandleResult(ErrorMessage.Task.TASK_MAX_SIZE_LIMIT.getMessage());
 			exportTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
-			taskService.saveOrUpdate(exportTask);
-			return result;
+			TaskServiceFactory.get().saveOrUpdate(exportTask);
+			return ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
 		}
 	}
 	
@@ -629,6 +618,19 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		Collections.sort(columns, Column.COMPARATOR);
 		return columns;
+	}
+	
+	private Task createExportTask(ImportParam body) {
+		Task exportTask = new Task();
+		exportTask.setOperatorId(body.getUserId());
+		exportTask.setTaskTime(new Date());
+		exportTask.setTaskType(Functions.IMPORT.getFunction());
+		exportTask.setTaskParam(SystemUtils.toJson(body));
+		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
+		exportTask.setIp(ip);
+		exportTask.setPort(port);
+		TaskServiceFactory.get().saveOrUpdate(exportTask);
+		return exportTask;
 	}
 	
 	private <P> void submitTask(final Task task) {

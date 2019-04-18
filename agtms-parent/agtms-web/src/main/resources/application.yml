@@ -38,6 +38,8 @@ feign:
         loggerLevel: full
 
 extra:
+  file:
+    path: /tmp/files
   class:
     path: /tmp/classes
   admin:

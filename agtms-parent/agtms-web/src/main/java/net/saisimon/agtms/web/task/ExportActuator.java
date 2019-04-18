@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -52,6 +53,9 @@ public class ExportActuator implements Actuator<ExportParam> {
 	private static final Sign EXPORT_SIGN = Sign.builder().name(Functions.EXPORT.getFunction()).text(Functions.EXPORT.getFunction()).build();
 	private static final int PAGE_SIZE = 2000;
 	
+	@Value("${extra.file.path}")
+	private String filePath;
+	
 	@Override
 	@Transactional(rollbackOn = Exception.class)
 	public Result execute(ExportParam param) throws Exception {
@@ -62,6 +66,90 @@ public class ExportActuator implements Actuator<ExportParam> {
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
+		param.setExportFileUUID(UUID.randomUUID().toString());
+		File file = createExportFile(param);
+		exportDatas(param, template, file);
+		return ResultUtils.simpleSuccess();
+	}
+
+	@Override
+	public String taskContent(Task task) {
+		if (task == null) {
+			return null;
+		}
+		ExportParam param = SystemUtils.fromJson(task.getTaskParam(), ExportParam.class);
+		return param.getExportFileName();
+	}
+	
+	@Override
+	public void download(Task task, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		if (task == null || !HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		ExportParam param = SystemUtils.fromJson(task.getTaskParam(), ExportParam.class);
+		if (param.getExportFileUUID() == null) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		Template template = TemplateUtils.getTemplate(param.getTemplateId(), param.getUserId());
+		if (template == null) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		String userAgent = request.getHeader("user-agent");
+		StringBuilder exportFilePath = new StringBuilder();
+		exportFilePath.append(filePath).append(Constant.File.EXPORT_PATH)
+			.append(File.separatorChar).append(param.getUserId())
+			.append(File.separatorChar).append(param.getExportFileUUID());
+		File file = null;
+		String filename = param.getExportFileName();
+		switch (param.getExportFileType()) {
+			case Constant.File.XLS:
+				response.setContentType("application/vnd.ms-excel");
+				exportFilePath.append(Constant.File.XLS_SUFFIX);
+				file = new File(exportFilePath.toString());
+				filename += Constant.File.XLS_SUFFIX;
+				break;
+			case Constant.File.CSV:
+				response.setContentType("application/CSV");
+				exportFilePath.append(Constant.File.CSV_SUFFIX);
+				file = new File(exportFilePath.toString());
+				filename += Constant.File.CSV_SUFFIX;
+				break;
+			case Constant.File.XLSX:
+				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+				exportFilePath.append(Constant.File.XLSX_SUFFIX);
+				file = new File(exportFilePath.toString());
+				filename += Constant.File.XLSX_SUFFIX;
+				break;
+			default:
+				break;
+		}
+		if (file == null || !file.exists()) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(userAgent, filename));
+			IOUtils.copy(in, response.getOutputStream());
+			response.flushBuffer();
+		}
+	}
+	
+	@Override
+	public Sign sign() {
+		return EXPORT_SIGN;
+	}
+	
+	private File createExportFile(ExportParam param) throws IOException {
+		StringBuilder exportFilePath = new StringBuilder();
+		exportFilePath.append(filePath).append(Constant.File.EXPORT_PATH)
+			.append(File.separatorChar).append(param.getUserId());
+		return FileUtils.createFile(exportFilePath.toString(), param.getExportFileUUID(), "." + param.getExportFileType());
+	}
+	
+	private void exportDatas(ExportParam param, Template template, File file) throws IOException, InterruptedException {
 		List<Object> heads = new ArrayList<>();
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		List<String> fields = new ArrayList<>();
@@ -73,8 +161,6 @@ public class ExportActuator implements Actuator<ExportParam> {
 			heads.add(templateField.getFieldTitle());
 			fields.add(exportField);
 		}
-		String name = UUID.randomUUID().toString();
-		File file = createExportFile(param, name);
 		fillHead(file, heads, param.getExportFileType(), false);
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		FilterRequest filter = FilterRequest.build(param.getFilter(), TemplateUtils.getFilters(template)).and(Constant.OPERATORID, param.getUserId());
@@ -103,77 +189,6 @@ public class ExportActuator implements Actuator<ExportParam> {
 			fillDatas(file, datas, param.getExportFileType(), true);
 			datas.clear();
 		}
-		param.setExportFileUUID(name);
-		return ResultUtils.simpleSuccess();
-	}
-	
-	@Override
-	public String taskContent(Task task) {
-		if (task == null) {
-			return null;
-		}
-		ExportParam param = SystemUtils.fromJson(task.getTaskParam(), ExportParam.class);
-		return param.getExportFileName();
-	}
-	
-	@Override
-	public void download(Task task, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		if (task == null || !HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		ExportParam param = SystemUtils.fromJson(task.getTaskParam(), ExportParam.class);
-		if (param.getExportFileUUID() == null) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		Template template = TemplateUtils.getTemplate(param.getTemplateId(), param.getUserId());
-		if (template == null) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		String userAgent = request.getHeader("user-agent");
-		String path = Constant.File.EXPORT_PATH + File.separatorChar + param.getUserId();
-		File file = null;
-		String filename = param.getExportFileName();
-		switch (param.getExportFileType()) {
-			case Constant.File.XLS:
-				response.setContentType("application/vnd.ms-excel");
-				file = new File(path + File.separatorChar + param.getExportFileUUID() + Constant.File.XLS_SUFFIX);
-				filename += Constant.File.XLS_SUFFIX;
-				break;
-			case Constant.File.CSV:
-				response.setContentType("application/CSV");
-				file = new File(path + File.separatorChar + param.getExportFileUUID() + Constant.File.CSV_SUFFIX);
-				filename += Constant.File.CSV_SUFFIX;
-				break;
-			case Constant.File.XLSX:
-				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				file = new File(path + File.separatorChar + param.getExportFileUUID() + Constant.File.XLSX_SUFFIX);
-				filename += Constant.File.XLSX_SUFFIX;
-				break;
-			default:
-				break;
-		}
-		if (file == null || !file.exists()) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(userAgent, filename));
-			IOUtils.copy(in, response.getOutputStream());
-			response.flushBuffer();
-		}
-	}
-	
-	@Override
-	public Sign sign() {
-		return EXPORT_SIGN;
-	}
-	
-	private File createExportFile(ExportParam param, String name) throws IOException {
-		String path = Constant.File.EXPORT_PATH + File.separatorChar + param.getUserId();
-		return FileUtils.createFile(path, name, "." + param.getExportFileType());
 	}
 	
 	private void fillHead(File file, List<Object> heads, String fileType, boolean append) throws IOException {

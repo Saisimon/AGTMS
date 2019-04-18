@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +36,9 @@ import net.saisimon.agtms.web.controller.base.BaseController;
 @Slf4j
 public class ImageController extends BaseController {
 	
+	@Value("${extra.file.path}")
+	private String filePath;
+	
 	@Operate(type=OperateTypes.UPLOAD)
 	@PostMapping("/upload")
 	public Result upload(@RequestParam("image") MultipartFile image) {
@@ -44,16 +48,25 @@ public class ImageController extends BaseController {
 				return ErrorMessage.Common.UNSUPPORTED_FORMAT;
 			}
 			String md5 = DigestUtils.md5Hex(image.getInputStream());
-			String path = md5.substring(0, 2) + "/" + md5.substring(2, 4) + "/" + md5.substring(4) + imageFormat.getSuffix();
-			File file = new File(Constant.File.UPLOAD_PATH + "/image/" + path);
+			String first = md5.substring(0, 2);
+			String second = md5.substring(2, 4);
+			String third = md5.substring(4) + imageFormat.getSuffix();
+			StringBuilder uploadFilePath = new StringBuilder();
+			uploadFilePath.append(filePath).append(Constant.File.UPLOAD_PATH)
+				.append(File.separatorChar).append("image")
+				.append(File.separatorChar).append(first)
+				.append(File.separatorChar).append(second)
+				.append(File.separatorChar).append(third);
+			File file = new File(uploadFilePath.toString());
 			if (!file.exists()) {
 				FileUtils.createDir(file.getParentFile());
 				FileOutputStream output = new FileOutputStream(file);
 				IOUtils.copy(image.getInputStream(), output);
 				output.flush();
 			}
-			String url = "/image/res/" + path;
-			return ResultUtils.simpleSuccess(url);
+			StringBuilder uploadUri= new StringBuilder();
+			uploadUri.append("/image/res/").append(first).append("/").append(second).append("/").append(third);
+			return ResultUtils.simpleSuccess(uploadUri.toString());
 		} catch (IOException e) {
 			log.error("Upload Failed", e);
 			return ErrorMessage.Common.UPLOAD_FAILED;
@@ -62,8 +75,13 @@ public class ImageController extends BaseController {
 	
 	@GetMapping("/res/{first}/{second}/{third}")
 	public void res(@PathVariable("first") String first, @PathVariable("second") String second, @PathVariable("third") String third) throws IOException {
-		String path = first + "/" + second + "/" + third;
-		File file = new File(Constant.File.UPLOAD_PATH + "/image/" + path);
+		StringBuilder uploadFilePath = new StringBuilder();
+		uploadFilePath.append(filePath).append(Constant.File.UPLOAD_PATH)
+			.append(File.separatorChar).append("image")
+			.append(File.separatorChar).append(first)
+			.append(File.separatorChar).append(second)
+			.append(File.separatorChar).append(third);
+		File file = new File(uploadFilePath.toString());
 		if (!file.exists()) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
