@@ -131,6 +131,9 @@ public class TemplateEditController extends BaseController {
 		if (!TemplateUtils.checkRequired(template)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
+		if (template.getTitle().length() > 50) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("title"), 50);
+		}
 		Long userId = AuthUtils.getUid();
 		if (template.getNavigationId() != null && template.getNavigationId() > 0) {
 			Navigation navigation = NavigationUtils.getNavigation(template.getNavigationId(), userId);

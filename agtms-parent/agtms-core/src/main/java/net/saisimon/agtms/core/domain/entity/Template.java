@@ -333,7 +333,7 @@ public class Template implements Cloneable, Serializable {
 		/**
 		 * 默认值
 		 */
-		@Column(length=20)
+		@Column(length=512)
 		private String defaultValue;
 		
 		/**

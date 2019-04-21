@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Signin from './views/Signin.vue'
+import Profile from './views/Profile.vue'
 import List from './views/List.vue'
 import Edit from './views/Edit.vue'
 import Template from './views/Template.vue'
@@ -23,6 +24,10 @@ const router = new Router({
             path: '/signin',
             name: 'signin',
             component: Signin
+        }, {
+            path: '/profile',
+            name: 'profile',
+            component: Profile
         }, {
             path: '/template/edit',
             name: 'template-edit',

@@ -18,6 +18,7 @@ public class ErrorMessage {
 		public static final Result PERMISSION_DENIED = ResultUtils.error(504, "permission.denied");
 		public static final Result UNSUPPORTED_FORMAT = ResultUtils.error(505, "unsupported.format");
 		public static final Result UPLOAD_FAILED = ResultUtils.error(506, "upload.failed");
+		public static final Result FIELD_LENGTH_OVERFLOW = ResultUtils.error(507, "field.length.overflow");
 	}
 	
 	public static class User {

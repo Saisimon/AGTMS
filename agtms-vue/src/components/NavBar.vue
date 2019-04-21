@@ -28,7 +28,7 @@
                         <i class="fa fa-fw fa-cog pt-2 text-light"></i>
                         <span class="nav-bar-content text-light ml-1">{{ $t("setting") }}</span>
                     </template>
-                    <b-dropdown-item href="javascript:void(0);" @click.stop="toggleFullscreen">
+                    <b-dropdown-item class="pt-2 pb-2" href="javascript:void(0);" @click.stop="toggleFullscreen">
                         <i class="fa fa-fw fa-arrows-alt"></i>
                         <span class="ml-1">{{ $t("fullscreen") }}</span>
                     </b-dropdown-item>
@@ -43,29 +43,35 @@
                         <span class="nav-bar-content text-light ml-1">{{ $t('language') }}</span>
                     </template>
                     <div v-for="(text, code, index) in languages" :key="index">
-                        <b-dropdown-item href="javascript:void(0);" @click.stop="changeLanguage(code)">
+                        <b-dropdown-item class="pt-2 pb-2" href="javascript:void(0);" @click.stop="changeLanguage(code)">
                             <span>{{ text }}</span>
                         </b-dropdown-item>
-                        <b-dropdown-divider v-if="index != Object.keys(languages).length - 1"></b-dropdown-divider>
                     </div>
                 </b-nav-item-dropdown>
-                <b-nav-item-dropdown v-if="signIn" 
+                <b-nav-item-dropdown v-if="$store.state.base.user" 
                     variant="link" 
                     href="javascript:void(0);" 
                     right no-caret
                     class="nav-bar-item">
                     <template slot="button-content">
-                        <img :src="avatar" width="30" height="30">
-                        <span class="nav-bar-content text-light ml-1">{{ loginName }}</span>
+                        <div style="line-height: 30px;">
+                            <img class="avatar-image" :src="$store.state.base.urlPrefix + $store.state.base.user.avatar" width="30" height="30" v-if="$store.state.base.user.avatar">
+                            <avatar v-else :username="$store.state.base.user.loginName" :size="30" :rounded="false" class="float-left avatar-image"></avatar>
+                            <span class="nav-bar-content text-light ml-2">{{ $store.state.base.user.loginName }}</span>
+                        </div>
                     </template>
                     <!-- 修改密码 -->
-                    <b-dropdown-item href="javascript:void(0);" @click.stop="$store.commit('changePasswordModal', true)">
-                        <i class="fa fa-fw fa-edit"></i>
+                    <b-dropdown-item class="pt-2 pb-2" href="javascript:void(0);" @click.stop="$store.commit('changePasswordModal', true)">
+                        <i class="fa fa-fw fa-key"></i>
                         <span class="ml-1">{{ $t('change_password') }}</span>
                     </b-dropdown-item>
-                    <b-dropdown-divider />
+                    <!-- 编辑个人资料 -->
+                    <b-dropdown-item class="pt-2 pb-2" to="/profile">
+                        <i class="fa fa-fw fa-edit"></i>
+                        <span class="ml-1">{{ $t('edit_profile') }}</span>
+                    </b-dropdown-item>
                     <!-- 登出 -->
-                    <b-dropdown-item href="javascript:void(0);" @click.stop="signOut">
+                    <b-dropdown-item class="pt-2 pb-2" href="javascript:void(0);" @click.stop="signOut">
                         <i class="fa fa-fw fa-sign-out"></i>
                         <span class="ml-1">{{ $t('sign_out') }}</span>
                     </b-dropdown-item>
@@ -117,7 +123,7 @@
                             </b-input-group-text>
                         </b-input-group>
                         <b-form-invalid-feedback id="oldPassword-input-feedback" :class="{'d-block': oldPassword.state == false}">
-                            {{ $t(oldPassword.message) }}
+                            {{ oldPassword.message }}
                         </b-form-invalid-feedback>
                     </b-col>
                 </b-row>
@@ -147,7 +153,7 @@
                             </b-input-group-text>
                         </b-input-group>
                         <b-form-invalid-feedback id="newPassword-input-feedback" :class="{'d-block': newPassword.state == false}">
-                            {{ $t(newPassword.message) }}
+                            {{ newPassword.message }}
                         </b-form-invalid-feedback>
                     </b-col>
                 </b-row>
@@ -177,7 +183,7 @@
                             </b-input-group-text>
                         </b-input-group>
                         <b-form-invalid-feedback id="confirmPassword-input-feedback" :class="{'d-block': confirmPassword.state == false}">
-                            {{ $t(confirmPassword.message) }}
+                            {{ confirmPassword.message }}
                         </b-form-invalid-feedback>
                     </b-col>
                 </b-row>
@@ -198,6 +204,7 @@
 
 <script>
 import SideBar from '@/components/SideBar.vue'
+import Avatar from 'vue-avatar'
 
 export default {
     name: 'nav-bar',
@@ -230,29 +237,6 @@ export default {
                 'zh_TW': '繁體中文',
                 'en': 'English'
             };
-        },
-        signIn: function() {
-            return this.$store.state.base.user != null;
-        },
-        loginName: function() {
-            var user = this.$store.state.base.user;
-            if (user == null) {
-                return '';
-            }
-            if (user.loginName == null) {
-                return '';
-            }
-            return user.loginName;
-        },
-        avatar: function() {
-            var user = this.$store.state.base.user;
-            if (user == null) {
-                return '';
-            }
-            if (user.avatar == null) {
-                return '';
-            }
-            return user.avatar;
         }
     },
     methods: {
@@ -374,7 +358,8 @@ export default {
         }
     },
     components: {
-        'side-bar': SideBar
+        'side-bar': SideBar,
+        'avatar': Avatar
     }
 }
 </script>
@@ -435,5 +420,14 @@ export default {
 }
 .nav-bar-item:hover {
     background: rgba(0,0,0,0.1);
+}
+.avatar-image {
+    border-radius: 50%!important;
+}
+</style>
+
+<style>
+.navbar-light .navbar-toggler {
+    border: 0px;
 }
 </style>

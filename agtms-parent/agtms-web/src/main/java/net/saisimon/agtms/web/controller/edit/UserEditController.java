@@ -78,6 +78,27 @@ public class UserEditController extends AbstractEditController<User> {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
+		if (body.getLoginName().length() > 32) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("login.name"), 32);
+		}
+		if (body.getPassword().length() > 16) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("password"), 16);
+		}
+		if (body.getNickname().length() > 32) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("nickname"), 32);
+		}
+		if (body.getCellphone().length() > 32) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("cellphone"), 32);
+		}
+		if (body.getEmail().length() > 256) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("email"), 256);
+		}
+		if (body.getAvatar().length() > 64) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("avatar"), 64);
+		}
+		if (body.getRemark().length() > 512) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("remark"), 512);
+		}
 		UserService userService = UserServiceFactory.get();
 		Long id = body.getId();
 		if (null != id && id > 0) {

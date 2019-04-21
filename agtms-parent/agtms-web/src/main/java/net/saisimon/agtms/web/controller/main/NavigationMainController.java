@@ -174,7 +174,6 @@ public class NavigationMainController extends AbstractMainController {
 		for (Navigation navigation : page.getContent()) {
 			NavigationInfo result = buildNavigationResult(navigation);
 			result.setOperator(userMap.get(navigation.getOperatorId()));
-			result.setIcon("<i class='fa fa-"+ navigation.getIcon() +"'></i>");
 			result.setAction(NAVIGATION);
 			results.add(result);
 		}

@@ -11,48 +11,54 @@ public enum Views {
 	/**
 	 * 文本类型
 	 */
-	TEXT("text"), 
+	TEXT("text", 512), 
 	/**
 	 * 长文本类型
 	 */
-	TEXTAREA("textarea"), 
+	TEXTAREA("textarea", -1), 
 	/**
 	 * 图标类型
 	 */
-	ICON("icon"), 
+	ICON("icon", 64), 
 	/**
 	 * 图片类型
 	 */
-	IMAGE("image"), 
+	IMAGE("image", 64), 
 	/**
 	 * 链接类型
 	 */
-	LINK("link"), 
+	LINK("link", 1024), 
 	/**
 	 * 邮件类型
 	 */
-	EMAIL("email"), 
+	EMAIL("email", 256), 
 	/**
 	 * 电话类型
 	 */
-	PHONE("phone"), 
+	PHONE("phone", 32), 
 	/**
 	 * 密码类型
 	 */
-	PASSWORD("password"),
+	PASSWORD("password", 32),
 	/**
 	 * 下拉列表类型
 	 */
-	SELECTION("selection");
+	SELECTION("selection", -1);
 	
 	private String view;
+	private Integer size;
 	
-	Views(String view) {
+	Views(String view, Integer size) {
 		this.view = view;
+		this.size = size;
 	}
 	
 	public String getView() {
 		return view;
+	}
+	
+	public Integer getSize() {
+		return size;
 	}
 	
 }

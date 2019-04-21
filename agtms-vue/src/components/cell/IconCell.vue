@@ -1,6 +1,6 @@
 <template>
     <div class="marquee">
-        <span v-html="rowData[field]"></span>
+        <i class="fa" :class="'fa-' + rowData[field]"></i>
     </div>
 </template>
 

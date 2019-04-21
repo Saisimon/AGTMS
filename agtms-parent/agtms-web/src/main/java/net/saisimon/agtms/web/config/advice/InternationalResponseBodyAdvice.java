@@ -22,7 +22,9 @@ import org.springframework.web.servlet.mvc.method.annotation.AbstractMappingJack
 
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.International;
+import net.saisimon.agtms.core.dto.PageResult;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.dto.SimpleResult;
 
 /**
  * 全局响应消息国际化
@@ -37,14 +39,32 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 	@Autowired
 	private MessageSource messageSource;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void beforeBodyWriteInternal(MappingJacksonValue bodyContainer, MediaType contentType,
 			MethodParameter returnType, ServerHttpRequest request, ServerHttpResponse response) {
 		Object resultObj = bodyContainer.getValue();
-		if (resultObj instanceof Result) {
+		if (resultObj instanceof SimpleResult) {
+			SimpleResult<Object> result = (SimpleResult<Object>) resultObj;
+			SimpleResult<Object> simpleResult = new SimpleResult<>();
+			simpleResult.setCode(result.getCode());
+			simpleResult.setData(result.getData());
+			simpleResult.setMessage(messageSource.getMessage(result.getMessage(), result.getMessageArgs(), LocaleContextHolder.getLocale()));
+			resultObj = simpleResult;
+		} else if (resultObj instanceof PageResult) {
+			PageResult<Object> result = (PageResult<Object>) resultObj;
+			PageResult<Object> pageResult = new PageResult<>();
+			pageResult.setCode(result.getCode());
+			pageResult.setMessage(messageSource.getMessage(result.getMessage(), result.getMessageArgs(), LocaleContextHolder.getLocale()));
+			pageResult.setRows(result.getRows());
+			pageResult.setTotal(result.getTotal());
+			resultObj = pageResult;
+		} else if (resultObj instanceof Result) {
 			Result result = (Result) resultObj;
-			result.setMessage(messageSource.getMessage(result.getMessage(), result.getMessageArgs(), LocaleContextHolder.getLocale()));
-			result.setMessageArgs(null);
+			Result res = new Result();
+			res.setCode(result.getCode());
+			res.setMessage(messageSource.getMessage(result.getMessage(), result.getMessageArgs(), LocaleContextHolder.getLocale()));
+			resultObj = res;
 		}
 		bodyContainer.setValue(international(resultObj));
 	}

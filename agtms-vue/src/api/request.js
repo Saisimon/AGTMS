@@ -8,7 +8,7 @@ export default function request(user, reqUrl, payload) {
         url: store.state.base.urlPrefix + reqUrl
     };
     if (user != undefined && user != null && user.token && user.userId) {
-        if (user.status == -1 && (reqUrl != "/user/change/password" && reqUrl != "/user/logout")) {
+        if (user.status == -1 && (reqUrl != "/user/password/change" && reqUrl != "/user/logout")) {
             store.commit('changePasswordModal', true);
             return;
         }

@@ -7,6 +7,7 @@ export default {
     username: '用户名',
     username_or_email: '用户名或电子邮箱',
     email: '电子邮箱',
+    cellphone: '手机',
     password: '密码',
     or: '或',
     not_blank: '不能为空',
@@ -113,5 +114,11 @@ export default {
     change_password_success: '修改密码成功，请重新登录',
     upload_image: '上传图片',
     upload: '上传',
-    upload_image_failed: '上传图片失败'
+    upload_image_failed: '上传图片失败',
+    edit_profile: '编辑个人资料',
+    avatar: '头像',
+    nickname: '昵称',
+    remark: '说明',
+    update_profile: '更新个人资料',
+    save_success: '保存成功'
 }

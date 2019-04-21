@@ -41,7 +41,7 @@ public class User implements Serializable {
 	 * 登陆名
 	 */
 	@Indexed
-	@Column(length=50, nullable=false, unique=true)
+	@Column(length=64, nullable=false, unique=true)
 	private String loginName;
 	
 	/**
@@ -59,25 +59,25 @@ public class User implements Serializable {
 	/**
 	 * 昵称
 	 */
-	@Column(length=50)
+	@Column(length=64)
 	private String nickname;
 	
 	/**
 	 * 联系方式
 	 */
-	@Column(length=20)
+	@Column(length=32)
 	private String cellphone;
 	
 	/**
 	 * 电子邮箱
 	 */
-	@Column(length=50)
+	@Column(length=256)
 	private String email;
 	
 	/**
 	 * 头像
 	 */
-	@Column(length=200)
+	@Column(length=64)
 	private String avatar;
 	
 	/**
@@ -95,7 +95,7 @@ public class User implements Serializable {
 	/**
 	 * 备注
 	 */
-	@Column(length=500)
+	@Column(length=512)
 	private String remark;
 	
 	/**

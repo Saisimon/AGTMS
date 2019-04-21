@@ -29,6 +29,10 @@ export default {
     created: function() {
         this.$store.commit('clearProgress');
     },
+    beforeRouteUpdate: function(to, from, next) {
+        this.$store.commit('clearProgress');
+        next();
+    },
     data: function() {
         return {
             form: {

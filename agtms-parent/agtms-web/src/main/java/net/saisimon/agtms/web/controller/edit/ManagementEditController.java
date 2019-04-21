@@ -30,6 +30,7 @@ import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
@@ -101,6 +102,10 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 				TemplateField field = entry.getValue();
 				Object fieldValue = body.get(fieldName);
 				fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
+				int size = fieldSizeOverflow(field, fieldValue);
+				if (size > 0) {
+					return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), size);
+				}
 				if (SystemUtils.isEmpty(fieldValue)) {
 					if (field.getRequired()) {
 						return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
@@ -222,6 +227,25 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 		}
 		Collections.sort(fields, Field.COMPARATOR);
 		return fields;
+	}
+	
+	private int fieldSizeOverflow(TemplateField field, Object value) {
+		if (value == null) {
+			return -1;
+		}
+		if (!Classes.STRING.getName().equals(field.getFieldType())) {
+			return -1;
+		}
+		String str = value.toString();
+		for (Views view : Views.values()) {
+			if (view.getView().equals(field.getViews())) {
+				if (str.length() > view.getSize()) {
+					return view.getSize();
+				}
+				return -1;
+			}
+		}
+		return -1;
 	}
 	
 }

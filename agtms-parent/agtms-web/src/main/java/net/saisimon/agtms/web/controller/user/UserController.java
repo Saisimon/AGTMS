@@ -25,8 +25,11 @@ import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
+import net.saisimon.agtms.web.controller.base.BaseController;
 import net.saisimon.agtms.web.dto.req.UserAuthParam;
-import net.saisimon.agtms.web.dto.req.UserChangePasswordParam;
+import net.saisimon.agtms.web.dto.req.UserPasswordChangeParam;
+import net.saisimon.agtms.web.dto.req.UserProfileSaveParam;
+import net.saisimon.agtms.web.dto.resp.ProfileInfo;
 
 /**
  * 用户信息控制器
@@ -37,7 +40,7 @@ import net.saisimon.agtms.web.dto.req.UserChangePasswordParam;
 @RestController
 @RequestMapping(path = "/user")
 @ControllerInfo("user")
-public class UserController {
+public class UserController extends BaseController {
 	
 	/**
 	 * 校验用户信息
@@ -77,10 +80,16 @@ public class UserController {
 	 */
 	@Operate(type=OperateTypes.EDIT, value="change.password")
 	@Transactional(rollbackOn = Exception.class)
-	@PostMapping("/change/password")
-	public Result changePassword(@Validated @RequestBody UserChangePasswordParam param, BindingResult result) {
+	@PostMapping("/password/change")
+	public Result passwordChange(@Validated @RequestBody UserPasswordChangeParam param, BindingResult result) {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		if (param.getOldPassword().length() > 16) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("old.password"), 16);
+		}
+		if (param.getNewPassword().length() > 16) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("new.password"), 16);
 		}
 		Long userId = AuthUtils.getUid();
 		UserService userService = UserServiceFactory.get();
@@ -100,6 +109,69 @@ public class UserController {
 		}
 		userService.saveOrUpdate(user);
 		TokenFactory.get().setToken(user.getId(), null);
+		return ResultUtils.simpleSuccess();
+	}
+	
+	/**
+	 * 用户个人资料
+	 * 
+	 */
+	@Operate(type=OperateTypes.QUERY, value="profile")
+	@Transactional(rollbackOn = Exception.class)
+	@PostMapping("/profile/info")
+	public Result profileInfo() {
+		Long userId = AuthUtils.getUid();
+		UserService userService = UserServiceFactory.get();
+		Optional<User> optional = userService.findById(userId);
+		if (!optional.isPresent()) {
+			return ErrorMessage.User.ACCOUNT_NOT_EXIST;
+		}
+		User user = optional.get();
+		ProfileInfo profileInfo = new ProfileInfo();
+		profileInfo.setLoginName(user.getLoginName());
+		profileInfo.setAvatar(user.getAvatar());
+		profileInfo.setNickname(user.getNickname());
+		profileInfo.setRemark(user.getRemark());
+		profileInfo.setCellphone(user.getCellphone());
+		profileInfo.setEmail(user.getEmail());
+		return ResultUtils.simpleSuccess(profileInfo);
+	}
+	
+	/**
+	 * 用户编辑个人资料
+	 * 
+	 * @param param 个人资料信息
+	 * @param result
+	 * @return 个人资料信息正确返回成功响应，否则返回失败原因响应
+	 */
+	@Operate(type=OperateTypes.EDIT, value="edit.profile")
+	@Transactional(rollbackOn = Exception.class)
+	@PostMapping("/profile/save")
+	public Result profileSave(@Validated @RequestBody UserProfileSaveParam param, BindingResult result) {
+		if (result.hasErrors()) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		if (param.getNickname().length() > 32) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("nickname"), 32);
+		}
+		if (param.getAvatar().length() > 64) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("avatar"), 64);
+		}
+		if (param.getRemark().length() > 512) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("remark"), 512);
+		}
+		Long userId = AuthUtils.getUid();
+		UserService userService = UserServiceFactory.get();
+		Optional<User> optional = userService.findById(userId);
+		if (!optional.isPresent()) {
+			return ErrorMessage.User.ACCOUNT_NOT_EXIST;
+		}
+		User user = optional.get();
+		user.setAvatar(param.getAvatar());
+		user.setNickname(param.getNickname());
+		user.setRemark(param.getRemark());
+		user.setUpdateTime(new Date());
+		userService.saveOrUpdate(user);
 		return ResultUtils.simpleSuccess();
 	}
 	

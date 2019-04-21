@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Classes;
+import net.saisimon.agtms.core.enums.Views;
 
 public class OracleDialect implements Dialect {
 
@@ -57,8 +58,20 @@ public class OracleDialect implements Dialect {
 			column = " FLOAT";
 		} else if (Classes.DATE.getName().equals(field.getFieldType())) {
 			column = " TIMESTAMP";
+		} else if (Views.TEXTAREA.getView().equals(field.getViews())) {
+			column = " CLOB";
+		} else if (Views.PHONE.getView().equals(field.getViews())) {
+			column = " VARCHAR(32)";
+		} else if (Views.EMAIL.getView().equals(field.getViews())) {
+			column = " VARCHAR(256)";
+		} else if (Views.LINK.getView().equals(field.getViews())) {
+			column = " VARCHAR(1024)";
+		} else if (Views.ICON.getView().equals(field.getViews())) {
+			column = " VARCHAR(64)";
+		} else if (Views.IMAGE.getView().equals(field.getViews())) {
+			column = " VARCHAR(64)";
 		} else {
-			column = " VARCHAR2(500)";
+			column = " VARCHAR(512)";
 		}
 		if (field.getRequired()) {
 			column += " NOT NULL";

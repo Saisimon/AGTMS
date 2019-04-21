@@ -1,4 +1,4 @@
-import { signIn, signOut, changePassword } from '@/api/user'
+import { signIn, signOut, passwordChange, profileSave, profileInfo } from '@/api/user'
 import { uploadImage } from '@/api/upload'
 
 const state = {
@@ -18,6 +18,11 @@ const state = {
 };
 
 const mutations = {
+    setAvatar(state, avatar) {
+        if (avatar) {
+            state.user.avatar = avatar;
+        }
+    },
     setUser(state, user) {
         if (user) {
             state.user = user;
@@ -104,7 +109,7 @@ const actions = {
     changePwd(context, payload) {
         return new Promise((resolve, reject) => {
             if (context.state.user !== null) {
-                changePassword(context.state.user, payload.oldPassword, payload.newPassword).then(resp => {
+                passwordChange(context.state.user, payload.oldPassword, payload.newPassword).then(resp => {
                     resolve(resp);
                 }, error => {
                     reject(error);
@@ -116,6 +121,28 @@ const actions = {
         return new Promise((resolve, reject) => {
             if (context.state.user !== null) {
                 uploadImage(context.state.user, payload).then(resp => {
+                    resolve(resp);
+                }, error => {
+                    reject(error);
+                });
+            }
+        });
+    },
+    profile(context) {
+        return new Promise((resolve, reject) => {
+            if (context.state.user !== null) {
+                profileInfo(context.state.user).then(resp => {
+                    resolve(resp);
+                }, error => {
+                    reject(error);
+                });
+            }
+        });
+    },
+    saveProfile(context, payload) {
+        return new Promise((resolve, reject) => {
+            if (context.state.user !== null) {
+                profileSave(context.state.user, payload).then(resp => {
                     resolve(resp);
                 }, error => {
                     reject(error);

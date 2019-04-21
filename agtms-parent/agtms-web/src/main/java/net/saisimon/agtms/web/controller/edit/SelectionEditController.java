@@ -161,6 +161,9 @@ public class SelectionEditController extends BaseController {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
+		if (body.getTitle().length() > 50) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("title"), 50);
+		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		Long userId = AuthUtils.getUid();
 		Long id = body.getId();
@@ -199,7 +202,7 @@ public class SelectionEditController extends BaseController {
 			}
 			selectionService.saveOrUpdate(selection);
 			selectionService.removeSelectionOptions(selection.getId());
-			List<SelectionOption> options = new ArrayList<>(body.getOptions().size());
+			List<SelectionOption> selectionOptions = new ArrayList<>(body.getOptions().size());
 			Set<String> values = new HashSet<>();
 			Set<String> texts = new HashSet<>();
 			for (SelectionOptionParam param : body.getOptions()) {
@@ -209,25 +212,29 @@ public class SelectionEditController extends BaseController {
 					values.add(param.getValue());
 					texts.add(param.getText());
 				}
-				SelectionOption option = new SelectionOption();
-				option.setText(param.getText());
-				option.setValue(param.getValue());
-				option.setSelectionId(selection.getId());
-				options.add(option);
+				SelectionOption selectionOption = new SelectionOption();
+				selectionOption.setText(param.getText());
+				selectionOption.setValue(param.getValue());
+				selectionOption.setSelectionId(selection.getId());
+				selectionOptions.add(selectionOption);
 			}
-			selectionService.saveSelectionOptions(options);
+			selectionService.saveSelectionOptions(selectionOptions);
 		} else if (type == SelectTypes.TEMPLATE) {
 			if (body.getTemplate() == null) {
 				return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 			}
+			Template template = TemplateUtils.getTemplate(body.getTemplate().getId(), userId);
+			if (template == null) {
+				return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
+			}
 			selectionService.saveOrUpdate(selection);
 			selectionService.removeSelectionTemplate(selection.getId());
-			SelectionTemplate template = new SelectionTemplate();
-			template.setTemplateId(body.getTemplate().getId());
-			template.setTextFieldName(body.getTemplate().getText());
-			template.setValueFieldName(body.getTemplate().getValue());
-			template.setSelectionId(selection.getId());
-			selectionService.saveSelectionTemplate(template);
+			SelectionTemplate selectionTemplate = new SelectionTemplate();
+			selectionTemplate.setTemplateId(body.getTemplate().getId());
+			selectionTemplate.setTextFieldName(body.getTemplate().getText());
+			selectionTemplate.setValueFieldName(body.getTemplate().getValue());
+			selectionTemplate.setSelectionId(selection.getId());
+			selectionService.saveSelectionTemplate(selectionTemplate);
 		}
 		return ResultUtils.simpleSuccess();
 	}

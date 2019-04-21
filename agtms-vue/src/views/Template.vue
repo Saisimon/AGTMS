@@ -164,7 +164,7 @@
             </b-modal>
             <b-modal id="preview-modal"
                 centered
-                size="lg" 
+                size="xl" 
                 hide-footer 
                 hide-header >
                 <vue-good-table

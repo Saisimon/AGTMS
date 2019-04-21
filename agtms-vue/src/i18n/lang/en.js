@@ -7,6 +7,7 @@ export default {
     username: 'Username',
     username_or_email: 'Username or Email',
     email: 'Email',
+    cellphone: 'Cellphone',
     password: 'Password',
     or: ' or ',
     not_blank: ' can not be blank',
@@ -43,8 +44,8 @@ export default {
     priority: 'Priority',
     reference: 'Reference',
     notselected: 'No Select Item',
-    confirm_reset: 'Confire Reset',
-    confirm_save: 'Confire Save',
+    confirm_reset: 'Confirm Reset',
+    confirm_save: 'Confirm Save',
     confirm: 'Confirm',
     are_you_confirm: 'Are you confirm ?',
     create_time: 'Create Time',
@@ -113,6 +114,11 @@ export default {
     change_password_success: 'Change password successfully, please login again',
     upload_image: 'Upload image',
     upload: 'Upload',
-    upload_image_failed: 'Upload image failed'
-
+    upload_image_failed: 'Upload image failed',
+    edit_profile: 'Edit profile',
+    avatar: 'Avatar',
+    nickname: 'Nickname',
+    remark: 'Remark',
+    update_profile: 'Update profile',
+    save_success: 'Successfully saved'
 }

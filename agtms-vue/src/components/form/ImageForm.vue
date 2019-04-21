@@ -24,12 +24,18 @@
             <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required" :class="{'d-block': field.state == false}">
                 {{ $t('please_input_valid') }}{{ field.text }}
             </b-form-invalid-feedback>
-            <b-img class="mt-2" v-if="field.value != ''" :src="$store.state.base.urlPrefix + field.value" thumbnail fluid :width="200" @click="modalShow = true" />
-            <div class="image-cancel-div mt-2" v-if="field.value != ''" @click.stop="cancelImage">
+            <b-img thumbnail fluid
+                class="mt-2" 
+                v-if="field.value" 
+                :src="$store.state.base.urlPrefix + field.value" 
+                style="cursor: zoom-in;" 
+                :width="200" 
+                @click="modalShow = true" />
+            <div class="image-cancel-div mt-2" v-if="field.value" @click.stop="cancelImage">
                 <i class="fa fa-fw fa-lg fa-ban" ></i>
             </div>
             <b-modal v-model="modalShow" 
-                v-if="field.value != ''"
+                v-if="field.value"
                 centered 
                 size="lg" 
                 hide-footer 
@@ -84,6 +90,8 @@ export default {
 input[type=file] {
     cursor: pointer;
 }
+</style>
+<style scoped>
 .image-cancel-div {
     cursor: pointer;
     color: red;

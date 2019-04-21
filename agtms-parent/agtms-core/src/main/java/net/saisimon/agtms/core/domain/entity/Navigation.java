@@ -49,7 +49,7 @@ public class Navigation implements Serializable {
 	/**
 	 * 导航图标
 	 */
-	@Column(length=10)
+	@Column(length=64)
 	private String icon;
 	
 	/**

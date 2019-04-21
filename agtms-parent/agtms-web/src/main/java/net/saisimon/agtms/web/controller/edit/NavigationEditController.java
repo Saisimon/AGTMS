@@ -72,6 +72,12 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
+		if (body.getTitle().length() > 50) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("title"), 50);
+		}
+		if (body.getIcon().length() > 64) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("icon"), 64);
+		}
 		NavigationService navigationService = NavigationServiceFactory.get();
 		Long userId = AuthUtils.getUid();
 		Long id = body.getId();

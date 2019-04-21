@@ -30,4 +30,9 @@ public class Result {
 	 */
 	private Object[] messageArgs;
 	
+	public Result messageArgs(Object... messageArgs) {
+		this.messageArgs = messageArgs;
+		return this;
+	}
+	
 }

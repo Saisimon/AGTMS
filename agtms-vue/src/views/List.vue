@@ -89,7 +89,7 @@
                         {{ selects.length }} {{ $t('rows_selected') }}
                         </div>
                     </b-col>
-                    <b-col cols="8" class="text-right">
+                    <b-col class="col-12 col-md-8 text-right">
                         <template v-for="(batch, index) in batches" >
                             <b-button :key="index" 
                                 :size="'sm'" 
@@ -638,6 +638,16 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.list-container >>> .vgt-left-align {
+    min-width: 130px;
+}
+.list-container >>> .vgt-right-align {
+    min-width: 130px;
+}
+</style>
+
 
 <style>
 .breadcrumb {
