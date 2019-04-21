@@ -142,7 +142,7 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 
 ## 待完成
 1. ~~用户初次登录修改密码~~
-2. 用户信息编辑
+2. ~~用户信息编辑~~
 3. ~~管理员重置密码~~
 4. ~~图片编辑上传~~
 5. ~~富文本编辑~~
@@ -151,4 +151,7 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 8. 完善自动化测试
 9. 系统引导
 10. 数据可视化
-11. ...
+11. Gradle
+12. Docker
+13. Standalone Branch
+14. ...
