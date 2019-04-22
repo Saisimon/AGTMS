@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -115,13 +114,13 @@ public class UserEditController extends AbstractEditController<User> {
 			oldUser.setEmail(body.getEmail());
 			oldUser.setUpdateTime(new Date());
 			oldUser.setAdmin(Whether.YES.getValue().equals(body.getAdmin()));
-			if (StringUtils.isNotBlank(body.getNickname())) {
+			if (SystemUtils.isNotBlank(body.getNickname())) {
 				oldUser.setNickname(body.getNickname());
 			}
-			if (StringUtils.isNotBlank(body.getAvatar())) {
+			if (SystemUtils.isNotBlank(body.getAvatar())) {
 				oldUser.setAvatar(body.getAvatar());
 			}
-			if (StringUtils.isNotBlank(body.getRemark())) {
+			if (SystemUtils.isNotBlank(body.getRemark())) {
 				oldUser.setRemark(body.getRemark());
 			}
 			userService.saveOrUpdate(oldUser);

@@ -5,6 +5,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
 import org.springframework.context.annotation.Bean;
@@ -13,9 +15,15 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
+import net.saisimon.agtms.web.config.filter.AccessFilter;
+import net.saisimon.agtms.web.config.property.WhiteList;
+import net.saisimon.agtms.web.config.property.WhitePrefix;
 import net.saisimon.agtms.web.config.runner.InitRunner;
 
 /**
@@ -32,6 +40,57 @@ public class WebConfig implements WebMvcConfigurer {
 	 */
 	@Value("${extra.max-size.task:1024}")
 	private int taskMaxSize;
+	
+	@Bean
+	@ConfigurationProperties(prefix="white.list")
+	public WhiteList whiteList() {
+		return new WhiteList();
+	}
+	
+	@Bean
+	@ConfigurationProperties(prefix="white.prefix")
+	public WhitePrefix whitePrefix() {
+		return new WhitePrefix();
+	}
+	
+	/**
+	 * 跨域配置
+	 */
+	@Bean
+	public CorsConfiguration corsConfiguration() {
+		final CorsConfiguration config = new CorsConfiguration();
+		config.setAllowCredentials(true);
+		config.addAllowedOrigin("*");
+		config.addAllowedHeader("*");
+		config.addAllowedMethod("*");
+		return config;
+	}
+	
+	/**
+	 * 跨域过滤器
+	 */
+	@Bean
+	public CorsFilter corsFilter() {
+		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", corsConfiguration());
+		return new CorsFilter(source);
+	}
+	
+	/**
+	 * 访问过滤器
+	 */
+	@Bean
+	public FilterRegistrationBean<AccessFilter> accessFilter() {
+		FilterRegistrationBean<AccessFilter> registration = new FilterRegistrationBean<>();
+		AccessFilter accessFilter = new AccessFilter();
+		accessFilter.setWhiteList(whiteList());
+		accessFilter.setWhitePrefix(whitePrefix());
+		accessFilter.setCorsConfiguration(corsConfiguration());
+		registration.setFilter(accessFilter);
+		registration.addUrlPatterns("/*");
+		registration.setName("accessFilter");
+		return registration;
+	}
 	
 	/**
 	 * 配置国际化

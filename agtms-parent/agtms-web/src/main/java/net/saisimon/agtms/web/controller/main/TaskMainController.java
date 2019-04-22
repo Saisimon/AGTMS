@@ -7,8 +7,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.transaction.Transactional;
 
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
@@ -94,8 +94,6 @@ public class TaskMainController extends AbstractMainController {
 	private HandleStatusSelection handleStatusSelection;
 	@Autowired
 	private TaskTypeSelection taskTypeSelection;
-	@Autowired
-	private RestTemplate restTemplate;
 	@Autowired
 	private UserSelection userSelection;
 	
@@ -319,11 +317,10 @@ public class TaskMainController extends AbstractMainController {
 	}
 	
 	private void cancelTask(Task task) {
-		if (task == null || SystemUtils.isBlank(task.getIp()) || task.getPort() == null) {
-			return;
+		Future<?> future = SystemUtils.removeTaskFuture(task.getId());
+		if (future != null) {
+			future.cancel(true);
 		}
-		String url = "http://" + task.getIp() + ":" + task.getPort() + "/api/cancel/task?taskId=" + task.getId();
-		restTemplate.getForObject(url, Void.class);
 	}
 
 }

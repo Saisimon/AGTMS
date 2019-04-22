@@ -16,7 +16,6 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<java.version>1.8</java.version>
 		<spring-boot.version>2.0.1.RELEASE</spring-boot.version>
-		<spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
 		<jpa.version>2.2</jpa.version>
 		<poi.version>3.17</poi.version>
 		<commons-beanutils.version>1.9.3</commons-beanutils.version>
@@ -25,13 +24,8 @@
 	</properties>
 
 	<modules>
-		<module>agtms-autoconfigure</module>
 		<module>agtms-autotest</module>
-		<module>agtms-eureka</module>
-		<module>agtms-example</module>
-		<module>agtms-gateway</module>
 		<module>agtms-parent</module>
-		<module>agtms-zuul</module>
 	</modules>
 
 	<dependencyManagement>
@@ -44,20 +38,8 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
 				<groupId>net.saisimon</groupId>
 				<artifactId>agtms-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>net.saisimon</groupId>
-				<artifactId>agtms-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -78,16 +60,6 @@
 			<dependency>
 				<groupId>net.saisimon</groupId>
 				<artifactId>agtms-jpa</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>net.saisimon</groupId>
-				<artifactId>agtms-remote</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>net.saisimon</groupId>
-				<artifactId>agtms-autoconfigure</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -113,11 +85,6 @@
 			<dependency>
 				<groupId>cn.hutool</groupId>
 				<artifactId>hutool-core</artifactId>
-				<version>${hutool.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>cn.hutool</groupId>
-				<artifactId>hutool-cache</artifactId>
 				<version>${hutool.version}</version>
 			</dependency>
 		</dependencies>

@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: AGTMS-WEB
   main:
     banner-mode: 'off'
   servlet:
@@ -45,29 +47,10 @@ spring:
     port: 6379
     password: 1qaz1QAZ
 
-ribbon:
-  ReadTimeout: 5000
-  ConnectTimeout: 2000
-  MaxAutoRetries: 0
-  MaxAutoRetriesNextServer: 1
-
-hystrix: 
-  command: 
-    default: 
-      execution: 
-        isolation: 
-          thread: 
-            timeoutInMilliseconds: 15000
-
-feign:
-  hystrix:
+server:
+  port: 7892
+  compression:
     enabled: true
-  client:
-    config:
-      default:
-        connectTimeout: 2000
-        readTimeout: 5000
-        loggerLevel: full
 
 extra:
   file:
@@ -85,3 +68,9 @@ extra:
     import: 65535
     cache:
       ttl: 600
+
+white:
+  list:
+    urls: /user/auth
+  prefix:
+    urls: /image/res

@@ -15,7 +15,6 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,7 +53,6 @@ import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.service.NavigationService;
-import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.NavigationUtils;
@@ -103,10 +101,6 @@ public class NavigationMainController extends AbstractMainController {
 	private NavigationSelection navigationSelection;
 	@Autowired
 	private UserSelection userSelection;
-	@Autowired
-	private DiscoveryClient discoveryClient;
-	@Autowired(required = false)
-	private RemoteService remoteService;
 	
 	@Operate(type=OperateTypes.QUERY, value="side")
 	@PostMapping("/side")
@@ -129,9 +123,6 @@ public class NavigationMainController extends AbstractMainController {
 		List<Template> templates = templateService.getTemplates(-1L, userToken.getUserId());
 		if (templates == null) {
 			templates = new ArrayList<>();
-		}
-		if (remoteService != null) {
-			templates.addAll(remoteTemplates());
 		}
 		for (Template template : templates) {
 			links.add(new NavigationLink("/management/main/" + template.sign(), template.getTitle()));
@@ -411,25 +402,6 @@ public class NavigationMainController extends AbstractMainController {
 		}
 		Collections.sort(trees, NavigationTree.COMPARATOR);
 		return trees;
-	}
-	
-	private List<Template> remoteTemplates() {
-		List<Template> templates = new ArrayList<>();
-		List<String> services = discoveryClient.getServices();
-		for (String service : services) {
-			if (service.toLowerCase().startsWith("agtms-")) {
-				continue;
-			}
-			List<Template> remoteTemplates = remoteService.templates(service);
-			if (CollectionUtils.isEmpty(remoteTemplates)) {
-				continue;
-			}
-			for (Template template : remoteTemplates) {
-				template.setService(service);
-				templates.add(template);
-			}
-		}
-		return templates;
 	}
 	
 }

@@ -17,12 +17,10 @@
 	<name>agtms-parent</name>
 
 	<modules>
-		<module>agtms-api</module>
 		<module>agtms-core</module>
 		<module>agtms-redis</module>
 		<module>agtms-jpa</module>
 		<module>agtms-mongodb</module>
-		<module>agtms-remote</module>
 		<module>agtms-config</module>
 		<module>agtms-web</module>
 	</modules>

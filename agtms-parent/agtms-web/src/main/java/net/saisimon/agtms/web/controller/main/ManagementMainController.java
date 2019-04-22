@@ -97,6 +97,7 @@ import net.saisimon.agtms.web.selection.FileTypeSelection;
 @RequestMapping("/management/main/{key}")
 @ControllerInfo("management")
 @Slf4j
+// TODO
 public class ManagementMainController extends AbstractMainController {
 	
 	@Value("${extra.max-size.export:65535}")
@@ -105,8 +106,6 @@ public class ManagementMainController extends AbstractMainController {
 	private int importMaxSize;
 	@Value("${extra.file.path}")
 	private String filePath;
-	@Value("${spring.cloud.client.ip-address}")
-	private String ip;
 	@Value("${server.port}")
 	private int port;
 	
@@ -281,7 +280,6 @@ public class ManagementMainController extends AbstractMainController {
 		exportTask.setTaskType(Functions.EXPORT.getFunction());
 		exportTask.setTaskParam(SystemUtils.toJson(body));
 		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
-		exportTask.setIp(ip);
 		exportTask.setPort(port);
 		TaskService taskService = TaskServiceFactory.get();
 		taskService.saveOrUpdate(exportTask);
@@ -627,7 +625,6 @@ public class ManagementMainController extends AbstractMainController {
 		exportTask.setTaskType(Functions.IMPORT.getFunction());
 		exportTask.setTaskParam(SystemUtils.toJson(body));
 		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
-		exportTask.setIp(ip);
 		exportTask.setPort(port);
 		TaskServiceFactory.get().saveOrUpdate(exportTask);
 		return exportTask;

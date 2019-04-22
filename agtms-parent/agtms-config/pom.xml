@@ -32,11 +32,6 @@
 		</dependency>
 		<dependency>
 			<groupId>net.saisimon</groupId>
-			<artifactId>agtms-remote</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-redis</artifactId>
 			<optional>true</optional>
 		</dependency>
