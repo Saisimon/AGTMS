@@ -5,6 +5,10 @@
 
 AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系统，支持 Oracle、Mysql、Sqlserver、Postgresql、Mongodb、REST 等方式获取数据。
 
+## 分支
+[master](https://github.com/Saisimon/AGTMS) - 分布式环境
+[standalone](https://github.com/Saisimon/AGTMS/tree/standalone) - 单机环境
+[dev](https://github.com/Saisimon/AGTMS/tree/dev) - 开发分支
 
 ## 项目结构
 ```
