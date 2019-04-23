@@ -26,3 +26,11 @@
 
 .DS_Store
 data
+
+agtms-autoconfigure/
+agtms-eureka/
+agtms-example/
+agtms-gateway/
+agtms-parent/agtms-api/
+agtms-parent/agtms-remote/
+agtms-zuul/
