@@ -30,7 +30,7 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 ## 要求
 1. [JRE(JDK) 8+](https://www.java.com)
 2. [Node.js](https://nodejs.org/)
-3. RAM 4G+
+3. RAM 2G+
 
 ## 最小安装并启动
 * `默认使用 H2 内存数据库，每次重启数据会重制。要想保存数据，请自行配置数据库连接`
