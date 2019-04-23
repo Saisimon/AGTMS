@@ -25,13 +25,13 @@ public abstract class AbstractSelection<T> implements Selection<T> {
 	}
 
 	@Override
-	public Map<T, String> selectValue(List<T> values) {
+	public Map<T, String> selectValue(List<?> values) {
 		if (CollectionUtils.isEmpty(values)) {
 			return new LinkedHashMap<>();
 		}
 		Map<T, String> selectMap = select();
 		selectMap.entrySet().removeIf(e -> {
-			for (T key : values) {
+			for (Object key : values) {
 				if (key == null) {
 					continue;
 				}

@@ -3,7 +3,7 @@
         <div v-if="rowData[field]">
             <b-img fluid thumbnail 
                 width="100" 
-                :src="$store.state.base.urlPrefix + rowData[field]" 
+                :src="src" 
                 style="cursor: zoom-in;" 
                 @click="modalShow = true" />
             <b-modal v-model="modalShow" 
@@ -11,7 +11,7 @@
                 size="xl" 
                 hide-footer 
                 hide-header >
-                <b-img center thumbnail fluid :src="$store.state.base.urlPrefix + rowData[field]" />
+                <b-img center thumbnail fluid :src="src" />
             </b-modal>
         </div>
         <div v-else>-</div>
@@ -30,6 +30,15 @@ export default {
         },
         index:{
             type: Number
+        }
+    },
+    computed: {
+        src: function() {
+            var src = this.rowData[this.field];
+            if (src && !src.startsWith("http")) {
+                src = this.$store.state.base.urlPrefix + src;
+            }
+            return src;
         }
     },
     data: function() {

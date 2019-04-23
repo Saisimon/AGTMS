@@ -27,7 +27,7 @@
             <b-img thumbnail fluid
                 class="mt-2" 
                 v-if="field.value" 
-                :src="$store.state.base.urlPrefix + field.value" 
+                :src="src" 
                 style="cursor: zoom-in;" 
                 :width="200" 
                 @click="modalShow = true" />
@@ -40,7 +40,7 @@
                 size="lg" 
                 hide-footer 
                 hide-header >
-                <b-img center thumbnail fluid :src="$store.state.base.urlPrefix + field.value" />
+                <b-img center thumbnail fluid :src="src" />
             </b-modal>
         </b-col>
     </b-row>
@@ -50,6 +50,15 @@
 export default {
     name: 'image-form',
     props: [ 'field' ],
+    computed: {
+        src: function() {
+            var src = this.field.value;
+            if (src && !src.startsWith("http")) {
+                src = this.$store.state.base.urlPrefix + src;
+            }
+            return src;
+        }
+    },
     data: function() {
         return {
             image: null,
