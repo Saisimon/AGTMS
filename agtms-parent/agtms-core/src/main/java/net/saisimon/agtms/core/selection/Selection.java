@@ -24,7 +24,7 @@ public interface Selection<T> {
 	 * @param values
 	 * @return 下拉列表映射集合
 	 */
-	Map<T, String> selectValue(List<T> values);
+	Map<T, String> selectValue(List<?> values);
 	
 	/**
 	 * 根据下拉列表选项名称集合，获取下拉列表映射集合，key 为下拉列表选项值，value 为下拉列表选项名称
