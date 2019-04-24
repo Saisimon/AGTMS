@@ -79,7 +79,7 @@ public class AgtmsController {
 		if (!CollectionUtils.isEmpty(values)) {
 			return selection.selectValue(values);
 		}
-		List<String> texts = (ArrayList<String>) body.get("text");
+		List<String> texts = (ArrayList<String>) body.get("texts");
 		if (!CollectionUtils.isEmpty(texts)) {
 			return selection.selectText(texts);
 		}

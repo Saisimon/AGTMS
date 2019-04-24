@@ -2,23 +2,39 @@ package net.saisimon.agtms.jpa.repository.base;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.Tuple;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.data.repository.support.PageableExecutionUtils;
 import org.springframework.util.CollectionUtils;
 
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ReflectUtil;
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -28,8 +44,13 @@ import net.saisimon.agtms.jpa.util.JpaFilterUtils;
 public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJpaRepository<T, ID> 
 	implements JpaRepository<T, ID>, BaseJpaRepository<T, ID> {
 	
+	private JpaEntityInformation<T, ?> entityInformation;
+	private EntityManager entityManager;
+	
 	public SimpleBaseJpaRepository(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager) {
 		super(entityInformation, entityManager);
+		this.entityInformation = entityInformation;
+		this.entityManager = entityManager;
 	}
 
 	@Override
@@ -39,19 +60,65 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 
 	@Override
 	public List<T> findList(final FilterRequest filter, FilterSort sort, String... properties) {
-		if (sort != null) {
-			return findAll(JpaFilterUtils.specification(filter, properties), sort.getSort());
+		Sort s = getSort(sort);
+		if (ArrayUtil.isEmpty(properties)) {
+			return findAll(JpaFilterUtils.specification(filter, properties), s);
 		} else {
-			return findAll(JpaFilterUtils.specification(filter, properties));
+			TypedQuery<Tuple> query = getTupleQuery(filter, getDomainClass(), s, properties);
+			List<Tuple> tuples = query.getResultList();
+			List<T> domains = new ArrayList<>(tuples.size());
+			for (Tuple tuple : tuples) {
+				domains.add(buildDomain(getDomainClass(), tuple, properties));
+			}
+			return domains;
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<T> findList(final FilterRequest filter, FilterPageable pageable, String... properties) {
-		if (pageable != null) {
-			return findAll(JpaFilterUtils.specification(filter, properties), pageable.getPageable()).getContent();
+		// 分页为空
+		if (pageable == null) {
+			return findList(filter, (FilterSort)null, properties);
+		}
+		Pageable springPageable = pageable.getPageable();
+		Class<T> domainClass = getDomainClass();
+		// 如果是复合ID，直接查出指定属性，否则先查出ID集合再根据ID查指定属性
+		if (entityInformation.hasCompositeId()) {
+			if (ArrayUtil.isEmpty(properties)) {
+				TypedQuery<T> query = getQuery(JpaFilterUtils.specification(filter, properties), springPageable);
+				if (springPageable.isPaged()) {
+					query.setFirstResult((int) springPageable.getOffset());
+					query.setMaxResults(springPageable.getPageSize());
+				}
+				return query.getResultList();
+			} else {
+				TypedQuery<Tuple> query = getTupleQuery(filter, domainClass, springPageable, properties);
+				List<Tuple> tuples = query.getResultList();
+				List<T> domains = new ArrayList<>(tuples.size());
+				for (Tuple tuple : tuples) {
+					domains.add(buildDomain(domainClass, tuple, properties));
+				}
+				return domains;
+			}
 		} else {
-			return findAll(JpaFilterUtils.specification(filter, properties));
+			List<String> idNames = new ArrayList<>();
+			Iterable<String> it = entityInformation.getIdAttributeNames();
+			for (String idName : it) {
+				idNames.add(idName);
+			}
+			TypedQuery<Tuple> query = getTupleQuery(filter, domainClass, springPageable, idNames.toArray(new String[idNames.size()]));
+			List<Tuple> tuples = query.getResultList();
+			if (CollectionUtils.isEmpty(tuples)) {
+				return new ArrayList<>(0);
+			}
+			List<ID> ids = new ArrayList<>(tuples.size());
+			for (Tuple tuple : tuples) {
+				ids.add((ID) tuple.get(0));
+			}
+			String idName = idNames.get(0);
+			List<T> domains = findList(FilterRequest.build().and(idName, ids, Constant.Operator.IN), properties);
+			return sortDomains(domains, ids, idName);
 		}
 	}
 
@@ -60,19 +127,26 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 		if (pageable == null) {
 			pageable = FilterPageable.build(null);
 		}
-		return findAll(JpaFilterUtils.specification(filter, properties), pageable.getPageable());
+		Pageable springPageable = pageable.getPageable();
+		long count = count(filter);
+		if (count == 0) {
+			return new PageImpl<>(new ArrayList<>(), springPageable, 0);
+		}
+		List<T> domains = findList(filter, pageable, properties);
+		return PageableExecutionUtils.getPage(domains, springPageable, () -> count);
 	}
-
+	
 	@Override
 	public Optional<T> findOne(final FilterRequest filter, FilterSort sort, String... properties) {
-		Sort s = null;
-		if (sort != null) {
-			s = sort.getSort();
-		} else {
-			s = Sort.unsorted();
-		}
+		Sort s = getSort(sort);
 		try {
-			return Optional.of(getQuery(JpaFilterUtils.specification(filter, properties), s).setMaxResults(1).getSingleResult());
+			if (ArrayUtil.isEmpty(properties)) {
+				return Optional.of(getQuery(JpaFilterUtils.specification(filter, properties), s).setMaxResults(1).getSingleResult());
+			} else {
+				Class<T> domainClass = getDomainClass();
+				TypedQuery<Tuple> query = getTupleQuery(filter, domainClass, s, properties).setMaxResults(1);
+				return Optional.of(buildDomain(domainClass, query.getSingleResult(), properties));
+			}
 		} catch (NoResultException e) {
 			return Optional.empty();
 		}
@@ -122,6 +196,63 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			log.error("batch update error", e);
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private T buildDomain(Class<?> domainClass, Tuple tuple, String... properties) {
+		T domain = (T) ReflectUtil.newInstance(domainClass);
+		for (int i = 0; i < properties.length; i++) {
+			String idName = properties[i];
+			Object idValue = tuple.get(i);
+			ReflectUtil.setFieldValue(domain, idName, idValue);
+		}
+		return domain;
+	}
+	
+	private <S> TypedQuery<Tuple> getTupleQuery(FilterRequest filter, Class<S> domainClass, Pageable pageable, String... properties) {
+		TypedQuery<Tuple> query = getTupleQuery(filter, domainClass, pageable.getSort(), properties);
+		query.setFirstResult((int) pageable.getOffset());
+		query.setMaxResults(pageable.getPageSize());
+		return query;
+	}
+	
+	private <S> TypedQuery<Tuple> getTupleQuery(FilterRequest filter, Class<S> domainClass, Sort sort, String... properties) {
+		Specification<S> spec = JpaFilterUtils.specification(filter, properties);
+		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = builder.createTupleQuery();
+		Root<S> root = query.from(domainClass);
+		if (spec != null) {
+			Predicate predicate = spec.toPredicate(root, query, builder);
+			if (predicate != null) {
+				query.where(predicate);
+			}
+		}
+		if (sort.isSorted()) {
+			query.orderBy(QueryUtils.toOrders(sort, root, builder));
+		}
+		return entityManager.createQuery(query);
+	}
+	
+	private Sort getSort(FilterSort sort) {
+		if (sort != null && sort.getSort() != null) {
+			return sort.getSort();
+		} else {
+			return Sort.unsorted();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private List<T> sortDomains(List<T> domains, List<ID> ids, String idName) {
+		Map<ID, T> domainMap = new HashMap<>();
+		for (T domain : domains) {
+			ID id = (ID) ReflectUtil.getFieldValue(domain, idName);
+			domainMap.put(id, domain);
+		}
+		List<T> results = new ArrayList<>(domains.size());
+		for (ID id : ids) {
+			results.add(domainMap.get(id));
+		}
+		return results;
 	}
 	
 }

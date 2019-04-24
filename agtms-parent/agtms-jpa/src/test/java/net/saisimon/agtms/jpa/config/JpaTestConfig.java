@@ -11,7 +11,7 @@ import net.saisimon.agtms.jpa.repository.base.BaseJpaRepositoryFactoryBean;
 
 @TestConfiguration
 @EnableJpaRepositories(basePackages="net.saisimon.agtms.jpa.repository", repositoryFactoryBeanClass=BaseJpaRepositoryFactoryBean.class)
-@EntityScan(basePackages="net.saisimon.agtms.core.domain.entity")
+@EntityScan(basePackages= {"net.saisimon.agtms.core.domain.entity", "net.saisimon.agtms.jpa.domain"})
 public class JpaTestConfig {
 	
 	@Bean

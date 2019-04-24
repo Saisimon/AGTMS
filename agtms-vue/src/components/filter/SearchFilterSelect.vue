@@ -21,6 +21,21 @@
 </template>
 
 <script>
+export function debounce(fn, t) {
+    var delay = t || 500;
+    var timer;
+    return function() {
+        var args = arguments;
+        if (timer) {
+            clearTimeout(timer);
+        }
+        timer = setTimeout(() => {
+            timer = null;
+            fn.apply(this, args);
+        }, delay);
+    }
+}
+
 export default {
     name: 'search-filter-select',
     props: ['filter', 'field'],
@@ -30,7 +45,7 @@ export default {
         }
     },
     methods: {
-        search: function(query) {
+        search: debounce(function(query) {
             if (this.filter.sign == null) {
                 return;
             }
@@ -45,7 +60,7 @@ export default {
                 }
                 this.isLoading = false;
             });
-        }
+        }, 500)
     }
 }
 </script>
