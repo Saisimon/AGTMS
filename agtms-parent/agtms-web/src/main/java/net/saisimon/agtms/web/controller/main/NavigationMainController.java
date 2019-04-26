@@ -65,7 +65,6 @@ import net.saisimon.agtms.web.controller.base.AbstractMainController;
 import net.saisimon.agtms.web.dto.resp.NavigationInfo;
 import net.saisimon.agtms.web.dto.resp.NavigationTree;
 import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
-import net.saisimon.agtms.web.selection.NavigationSelection;
 import net.saisimon.agtms.web.selection.UserSelection;
 
 /**
@@ -100,10 +99,8 @@ public class NavigationMainController extends AbstractMainController {
 	}
 	
 	@Autowired
-	private NavigationSelection navigationSelection;
-	@Autowired
 	private UserSelection userSelection;
-	@Autowired
+	@Autowired(required = false)
 	private DiscoveryClient discoveryClient;
 	@Autowired(required = false)
 	private RemoteService remoteService;
@@ -140,18 +137,6 @@ public class NavigationMainController extends AbstractMainController {
 		return ResultUtils.simpleSuccess(root);
 	}
 	
-	@Operate(type=OperateTypes.QUERY, value="selection")
-	@PostMapping("/selection")
-	public Result selection(@RequestParam(name = "id", required = false) Long excludeId) {
-		Map<Long, String> navigationMap = navigationSelection.selectWithParent(excludeId);
-		List<Option<Long>> options = new ArrayList<>(navigationMap.size());
-		for (Entry<Long, String> entry : navigationMap.entrySet()) {
-			Option<Long> option = new Option<>(entry.getKey(), entry.getValue());
-			options.add(option);
-		}
-		return ResultUtils.simpleSuccess(options);
-	}
-	
 	@PostMapping("/grid")
 	public Result grid() {
 		return ResultUtils.simpleSuccess(getMainGrid(NAVIGATION));
@@ -164,6 +149,9 @@ public class NavigationMainController extends AbstractMainController {
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
 		if (!userToken.isAdmin()) {
+			if (filter == null) {
+				filter = FilterRequest.build();
+			}
 			filter.and(Constant.OPERATORID, userId);
 		}
 		FilterPageable pageable = FilterPageable.build(param);

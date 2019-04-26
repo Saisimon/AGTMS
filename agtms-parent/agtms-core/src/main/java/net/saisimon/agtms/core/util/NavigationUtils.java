@@ -14,9 +14,7 @@ import net.saisimon.agtms.core.service.NavigationService;
  */
 public class NavigationUtils {
 	
-	private NavigationUtils() {
-		throw new IllegalAccessError();
-	}
+	private NavigationUtils() {}
 	
 	public static Navigation getNavigation(Long id, Long operatorId) {
 		if (id == null || operatorId == null) {

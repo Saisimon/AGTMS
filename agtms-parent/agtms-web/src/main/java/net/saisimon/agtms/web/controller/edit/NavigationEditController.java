@@ -72,8 +72,8 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		if (body.getTitle().length() > 50) {
-			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("title"), 50);
+		if (body.getTitle().length() > 32) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("title"), 32);
 		}
 		if (body.getIcon().length() > 64) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("icon"), 64);
@@ -92,7 +92,7 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 				}
 			}
 			Map<Long, String> navigationMap = navigationSelection.selectWithParent(oldNavigation.getId());
-			if (!navigationMap.containsKey(oldNavigation.getParentId())) {
+			if (!navigationMap.containsKey(body.getParentId())) {
 				return ErrorMessage.Common.PARAM_ERROR;
 			}
 			oldNavigation.setParentId(body.getParentId());

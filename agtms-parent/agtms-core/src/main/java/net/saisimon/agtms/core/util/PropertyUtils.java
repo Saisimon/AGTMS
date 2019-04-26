@@ -17,9 +17,7 @@ import org.springframework.core.io.ClassPathResource;
  */
 public class PropertyUtils {
 
-	private PropertyUtils() {
-		throw new IllegalAccessError();
-	}
+	private PropertyUtils() {}
 
 	/**
 	 * 读取 application.yml 文件的属性
@@ -40,7 +38,7 @@ public class PropertyUtils {
 	}
 	
 	private static Object fetchProperties(PropertySourceLoader loader, String name, String key) {
-		if (loader == null || SystemUtils.isBlank(name) || SystemUtils.isBlank(key)) {
+		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
 		try {

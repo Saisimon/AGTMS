@@ -9,8 +9,11 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SystemUtilsTest {
+import lombok.Getter;
+import lombok.Setter;
 
+public class SystemUtilsTest {
+	
 	@Test
 	public void testIsEmail() {
 		String email = null;
@@ -225,6 +228,15 @@ public class SystemUtilsTest {
 		Assert.assertNotNull(map2);
 		Assert.assertEquals(2, map2.size());
 		Assert.assertEquals("bbb", map2.get(2));
+		
+		json = "{\"name\": \"test\"}";
+		Entity entity = SystemUtils.fromJson(json, Entity.class);
+		Assert.assertNotNull(entity);
+		Assert.assertEquals("test", entity.getName());
+		
+		json = "{";
+		HashMap<String, String> map3 = SystemUtils.fromJson(json, HashMap.class, String.class, String.class);
+		Assert.assertNull(map3);
 	}
 
 	@Test
@@ -298,5 +310,74 @@ public class SystemUtilsTest {
 		List<String> testObjList = SystemUtils.transformList(testObj);
 		Assert.assertNull(testObjList);
 	}
-
+	
+	@Test
+	public void testToUpperCase() {
+		Assert.assertNull(SystemUtils.toUpperCase(null));
+		Assert.assertEquals("", SystemUtils.toUpperCase(""));
+		Assert.assertEquals("  ", SystemUtils.toUpperCase("  "));
+		Assert.assertEquals("A", SystemUtils.toUpperCase("A"));
+		Assert.assertEquals("A", SystemUtils.toUpperCase("a"));
+		Assert.assertEquals("1", SystemUtils.toUpperCase("1"));
+	}
+	
+	@Test
+	public void testToLowerCase() {
+		Assert.assertNull(SystemUtils.toLowerCase(null));
+		Assert.assertEquals("", SystemUtils.toLowerCase(""));
+		Assert.assertEquals("  ", SystemUtils.toLowerCase("  "));
+		Assert.assertEquals("a", SystemUtils.toLowerCase("A"));
+		Assert.assertEquals("a", SystemUtils.toLowerCase("a"));
+		Assert.assertEquals("1", SystemUtils.toLowerCase("1"));
+	}
+	
+	@Test
+	public void testIsNotEmpty() {
+		Assert.assertFalse(SystemUtils.isNotEmpty(null));
+		Assert.assertFalse(SystemUtils.isNotEmpty(""));
+		Assert.assertTrue(SystemUtils.isNotEmpty(" "));
+		Assert.assertTrue(SystemUtils.isNotEmpty("A"));
+	}
+	
+	@Test
+	public void testGetInterfaceGenericClass() {
+		Assert.assertNull(SystemUtils.getInterfaceGenericClass(null, Object.class, 0));
+		Assert.assertNull(SystemUtils.getInterfaceGenericClass(Entity.class, null, 0));
+		Assert.assertNull(SystemUtils.getInterfaceGenericClass(Entity.class, Object.class, -1));
+		Assert.assertNull(SystemUtils.getInterfaceGenericClass(Entity.class, Object.class, 0));
+		Assert.assertEquals(Entity.class, SystemUtils.getInterfaceGenericClass(EntityService.class, BaseService.class, 0));
+		Assert.assertEquals(Long.class, SystemUtils.getInterfaceGenericClass(EntityService.class, BaseService.class, 1));
+		Assert.assertNull(SystemUtils.getInterfaceGenericClass(EntityService.class, BaseService.class, 2));
+		Assert.assertEquals(String.class, SystemUtils.getInterfaceGenericClass(EntityService.class, SimpleService.class, 0));
+	}
+	
+	@Test
+	public void testTestFuture() {
+		Assert.assertNull(SystemUtils.removeTaskFuture(null));
+		Assert.assertNull(SystemUtils.removeTaskFuture(1L));
+		SystemUtils.putTaskFuture(1L, null);
+	}
+	
+	@Setter
+	@Getter
+	public static class Entity {
+		
+		private Long id;
+		
+		private String name;
+		
+	}
+	
+	public static interface BaseService<B, C> {
+		
+	}
+	
+	public static interface SimpleService<B> {
+		
+	}
+	
+	public static abstract class AbstractEntityService implements BaseService<Entity, Long> {}
+	
+	public static class EntityService extends AbstractEntityService implements SimpleService<String> {}
+	
 }

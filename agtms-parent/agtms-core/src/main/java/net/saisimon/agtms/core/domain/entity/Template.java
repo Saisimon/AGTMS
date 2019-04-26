@@ -53,7 +53,7 @@ public class Template implements Cloneable, Serializable {
 	/**
 	 * 模板标题
 	 */
-	@Column(length=50, nullable=false)
+	@Column(length=32, nullable=false)
 	private String title;
 	
 	/**

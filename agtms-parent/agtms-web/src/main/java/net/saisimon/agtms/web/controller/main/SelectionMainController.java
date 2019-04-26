@@ -101,6 +101,9 @@ public class SelectionMainController extends AbstractMainController {
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
 		if (!userToken.isAdmin()) {
+			if (filter == null) {
+				filter = FilterRequest.build();
+			}
 			filter.and(Constant.OPERATORID, userId);
 		}
 		FilterPageable pageable = FilterPageable.build(param);

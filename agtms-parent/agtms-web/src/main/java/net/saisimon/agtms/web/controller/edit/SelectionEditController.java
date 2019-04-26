@@ -161,8 +161,8 @@ public class SelectionEditController extends BaseController {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		if (body.getTitle().length() > 50) {
-			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("title"), 50);
+		if (body.getTitle().length() > 32) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("title"), 32);
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		Long userId = AuthUtils.getUid();

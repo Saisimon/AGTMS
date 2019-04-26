@@ -54,6 +54,7 @@ public class ErrorMessage {
 		public static final Result TASK_NOT_EXIST = ResultUtils.error(5001, "task.not.exist");
 		public static final Result TASK_CANCEL = ResultUtils.error(5002, "task.cancel");
 		public static final Result TASK_MAX_SIZE_LIMIT = ResultUtils.error(5003, "task.max.size.limit");
+		public static final Result TASK_CANCEL_FAILED = ResultUtils.error(5004, "task.cancel.failed");
 		
 		public static class Export {
 			public static final Result TASK_EXPORT_FAILED = ResultUtils.error(5101, "export.failed");

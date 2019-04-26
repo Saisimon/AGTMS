@@ -147,17 +147,14 @@ public class UserController extends BaseController {
 	@Operate(type=OperateTypes.EDIT, value="edit.profile")
 	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/profile/save")
-	public Result profileSave(@Validated @RequestBody UserProfileSaveParam param, BindingResult result) {
-		if (result.hasErrors()) {
-			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
-		}
-		if (param.getNickname().length() > 32) {
+	public Result profileSave(@Validated @RequestBody UserProfileSaveParam param) {
+		if (param.getNickname() != null && param.getNickname().length() > 32) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("nickname"), 32);
 		}
-		if (param.getAvatar().length() > 64) {
+		if (param.getAvatar() != null && param.getAvatar().length() > 64) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("avatar"), 64);
 		}
-		if (param.getRemark().length() > 512) {
+		if (param.getRemark() != null && param.getRemark().length() > 512) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("remark"), 512);
 		}
 		Long userId = AuthUtils.getUid();

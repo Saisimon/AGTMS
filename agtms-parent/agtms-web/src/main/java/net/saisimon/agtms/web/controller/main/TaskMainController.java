@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
@@ -111,6 +112,9 @@ public class TaskMainController extends AbstractMainController {
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
 		if (!userToken.isAdmin()) {
+			if (filter == null) {
+				filter = FilterRequest.build();
+			}
 			filter.and(Constant.OPERATORID, userId);
 		}
 		FilterPageable pageable = FilterPageable.build(param);
@@ -194,9 +198,11 @@ public class TaskMainController extends AbstractMainController {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
+		if (!cancelTask(task)) {
+			return ErrorMessage.Task.TASK_CANCEL_FAILED;
+		}
 		task.setHandleStatus(HandleStatuses.CANCELING.getStatus());
 		taskService.saveOrUpdate(task);
-		cancelTask(task);
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -212,7 +218,9 @@ public class TaskMainController extends AbstractMainController {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
-		cancelTask(task);
+		if (!cancelTask(task)) {
+			return ErrorMessage.Task.TASK_CANCEL_FAILED;
+		}
 		taskService.delete(task);
 		return ResultUtils.simpleSuccess();
 	}
@@ -318,12 +326,18 @@ public class TaskMainController extends AbstractMainController {
 		return FUNCTIONS;
 	}
 	
-	private void cancelTask(Task task) {
+	// TODO
+	private boolean cancelTask(Task task) {
 		if (task == null || SystemUtils.isBlank(task.getIp()) || task.getPort() == null) {
-			return;
+			return false;
 		}
 		String url = "http://" + task.getIp() + ":" + task.getPort() + "/api/cancel/task?taskId=" + task.getId();
-		restTemplate.getForObject(url, Void.class);
+		try {
+			restTemplate.getForObject(url, Void.class);
+			return true;
+		} catch (RestClientException e) {
+			return false;
+		}
 	}
 
 }

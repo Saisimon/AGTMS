@@ -204,6 +204,10 @@ public class ManagementMainController extends AbstractMainController {
 				continue;
 			}
 			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
+			int size = TemplateUtils.fieldSizeOverflow(field, fieldValue);
+			if (size > 0) {
+				return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), size);
+			}
 			if (fieldValue != null) {
 				map.put(fieldName, fieldValue);
 			}
@@ -263,6 +267,9 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
+		if (filter == null) {
+			filter = FilterRequest.build();
+		}
 		filter.and(Constant.OPERATORID, userId);
 		Long total = generateService.count(filter);
 		if (total > exportMaxSize) {

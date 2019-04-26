@@ -43,7 +43,7 @@ public class Navigation implements Serializable {
 	/**
 	 * 导航名称
 	 */
-	@Column(nullable=false, length=50)
+	@Column(nullable=false, length=32)
 	private String title;
 	
 	/**

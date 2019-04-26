@@ -47,9 +47,7 @@ public class SelectionUtils {
 	
 	private static final int OPTION_SIZE = 30;
 	
-	private SelectionUtils() {
-		throw new IllegalAccessError();
-	}
+	private SelectionUtils() {}
 	
 	/**
 	 * 获取下拉列表对象

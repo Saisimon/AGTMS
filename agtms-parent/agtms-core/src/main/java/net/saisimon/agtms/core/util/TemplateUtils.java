@@ -18,6 +18,7 @@ import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
@@ -36,9 +37,7 @@ import net.saisimon.agtms.core.spring.SpringContext;
  */
 public class TemplateUtils {
 	
-	private TemplateUtils() {
-		throw new IllegalAccessError();
-	}
+	private TemplateUtils() {}
 	
 	/**
 	 * 获取模板对象
@@ -406,6 +405,32 @@ public class TemplateUtils {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * 判断字段长度是否越界。属性值长度未越界返回-1，反之返回属性最大长度
+	 * 
+	 * @param field 属性字段
+	 * @param value 属性值
+	 * @return 该属性最大长度
+	 */
+	public static int fieldSizeOverflow(TemplateField field, Object value) {
+		if (field == null || value == null) {
+			return -1;
+		}
+		if (!Classes.STRING.getName().equals(field.getFieldType())) {
+			return -1;
+		}
+		String str = value.toString();
+		for (Views view : Views.values()) {
+			if (view.getView().equals(field.getViews())) {
+				if (str.length() > view.getSize()) {
+					return view.getSize();
+				}
+				return -1;
+			}
+		}
+		return -1;
 	}
 	
 	private static boolean hasFunction(Integer function, Functions func) {
