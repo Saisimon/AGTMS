@@ -233,10 +233,11 @@ public class SystemUtilsTest {
 		Entity entity = SystemUtils.fromJson(json, Entity.class);
 		Assert.assertNotNull(entity);
 		Assert.assertEquals("test", entity.getName());
-		
-		json = "{";
-		HashMap<String, String> map3 = SystemUtils.fromJson(json, HashMap.class, String.class, String.class);
-		Assert.assertNull(map3);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testFromJsonWithException() {
+		SystemUtils.fromJson("{", HashMap.class, String.class, String.class);
 	}
 
 	@Test

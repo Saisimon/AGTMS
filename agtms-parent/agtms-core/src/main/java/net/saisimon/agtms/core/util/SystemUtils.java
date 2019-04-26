@@ -132,8 +132,7 @@ public final class SystemUtils extends StringUtils {
 			JavaType javaType = parse(clazz, genericClasses);
 			return objectMapper.readValue(json, javaType);
 		} catch (IOException e) {
-			log.error("解析 json 失败", e);
-			return null;
+			throw new IllegalArgumentException("解析 Json 失败", e);
 		}
 	}
 	
@@ -266,7 +265,7 @@ public final class SystemUtils extends StringUtils {
 		while (clazz != null && clazz != Object.class) {
 			Type[] types = clazz.getGenericInterfaces();
 			for (Type type : types) {
-				if (type.getTypeName().startsWith(targetInterfaceClass.getName())) {
+				if (type.getTypeName().contains(targetInterfaceClass.getName())) {
 					Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
 					if (genericIndex >= typeArguments.length) {
 						return null;
