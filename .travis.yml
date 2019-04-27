@@ -16,7 +16,10 @@ install: true
 
 script:
   - ./mvnw clean install
-  - ./mvnw cobertura:cobertura
+
+env:
+  global:
+    - CODECOV_TOKEN=a7c26320-35ba-43a4-bfbe-f98c40526e83
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash) -t a7c26320-35ba-43a4-bfbe-f98c40526e83
+  - bash <(curl -s https://codecov.io/bash)
