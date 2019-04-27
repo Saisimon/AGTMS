@@ -147,7 +147,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		StringBuilder countSql = buildCountSql(template);
 		List<Object> args = new ArrayList<>();
 		Statement where = JpaFilterUtils.where(filter);
-		if (where.isNotEmpty()) {
+		if (where != null && where.isNotEmpty()) {
 			countSql.append(" WHERE ").append(where.getExpression());
 			if (where.getArgs() != null) {
 				args = where.getArgs();
@@ -165,7 +165,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 			return new PageImpl<>(new ArrayList<>(0), springPageable, 0);
 		}
 		StringBuilder idSql = buildIdSql(template);
-		if (where.isNotEmpty()) {
+		if (where != null && where.isNotEmpty()) {
 			idSql.append(" WHERE ").append(where.getExpression());
 		}
 		idSql.append(" ORDER BY ").append(JpaFilterUtils.orderby(pageable.getSort()));

@@ -10,7 +10,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 
 /**
@@ -25,9 +24,7 @@ public class AuthUtils {
 	public static final String AUTHORIZE_TOKEN = "X-TOKEN";
 	public static final String AUTHORIZE_UID = "X-UID";
 	
-	private AuthUtils() {
-		throw new IllegalAccessError();
-	}
+	private AuthUtils() {}
 	
 	/**
 	 * 创建 Token，去掉“-”的UUID字符串
@@ -77,10 +74,14 @@ public class AuthUtils {
 		if (SystemUtils.isBlank(uid)) {
 			uid = request.getParameter(AUTHORIZE_UID);
 		}
-		if (!NumberUtil.isLong(uid)) {
+		if (SystemUtils.isBlank(uid)) {
 			return null;
 		}
-		return Long.valueOf(uid);
+		try {
+			return Long.valueOf(uid);
+		} catch (NumberFormatException e) {
+			return null;
+		}
 	}
 	
 	/**

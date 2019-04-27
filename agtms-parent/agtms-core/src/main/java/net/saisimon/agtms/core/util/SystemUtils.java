@@ -46,9 +46,7 @@ public final class SystemUtils extends StringUtils {
 	
 	private static final Map<Long, Future<?>> TASK_FUTURE_MAP = new ConcurrentHashMap<>();
 	
-	private SystemUtils() {
-		throw new IllegalAccessError();
-	}
+	private SystemUtils() {}
 	
 	public static boolean isNotEmpty(Object str) {
 		return !isEmpty(str);
@@ -134,8 +132,7 @@ public final class SystemUtils extends StringUtils {
 			JavaType javaType = parse(clazz, genericClasses);
 			return objectMapper.readValue(json, javaType);
 		} catch (IOException e) {
-			log.error("解析 json 失败", e);
-			return null;
+			throw new IllegalArgumentException("解析 Json 失败", e);
 		}
 	}
 	
@@ -268,20 +265,30 @@ public final class SystemUtils extends StringUtils {
 		while (clazz != null && clazz != Object.class) {
 			Type[] types = clazz.getGenericInterfaces();
 			for (Type type : types) {
-				if (type.getTypeName().startsWith(targetInterfaceClass.getName())) {
-					ParameterizedType pt = (ParameterizedType) type;
-					return (Class<?>) pt.getActualTypeArguments()[genericIndex];
+				if (type.getTypeName().contains(targetInterfaceClass.getName())) {
+					Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
+					if (genericIndex >= typeArguments.length) {
+						return null;
+					}
+					Type typeArgument = typeArguments[genericIndex];
+					if (typeArgument instanceof Class) {
+						return (Class<?>) typeArgument;
+					}
+					return null;
 				}
 			}
 			Class<?>[] interfaces = clazz.getInterfaces();
 			if (interfaces != null) {
 				for (Class<?> inter : interfaces) {
-					return getInterfaceGenericClass(inter, targetInterfaceClass, genericIndex);
+					Class<?> result = getInterfaceGenericClass(inter, targetInterfaceClass, genericIndex);
+					if (result != null) {
+						return result;
+					}
 				}
 			}
 			clazz = clazz.getSuperclass();
 		}
-		throw new RuntimeException("get interface generic class failed.");
+		return null;
 	}
 	
 	/**
@@ -300,11 +307,16 @@ public final class SystemUtils extends StringUtils {
 	}
 	
 	public static void putTaskFuture(Long taskId, Future<?> future) {
-		TASK_FUTURE_MAP.put(taskId, future);
+		if (taskId != null && future != null) {
+			TASK_FUTURE_MAP.put(taskId, future);
+		}
 	}
 	
 	public static Future<?> removeTaskFuture(Long taskId) {
-		return TASK_FUTURE_MAP.remove(taskId);
+		if (taskId != null) {
+			return TASK_FUTURE_MAP.remove(taskId);
+		}
+		return null;
 	}
 	
 	private static JavaType parse(Class<?> targetClass, Class<?>... genericClasses) {

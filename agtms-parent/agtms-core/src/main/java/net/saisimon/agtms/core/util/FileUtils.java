@@ -39,9 +39,7 @@ import net.saisimon.agtms.core.enums.ImageFormats;
  */
 public final class FileUtils {
 	
-	private FileUtils() {
-		throw new IllegalAccessError();
-	}
+	private FileUtils() {}
 	
 	/**
 	 * 将指定数据写入指定XLS文件

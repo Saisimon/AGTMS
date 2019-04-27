@@ -33,7 +33,7 @@ public class JpaConfig {
 	
 	@Bean
 	@ConditionalOnClass(name= {"com.mysql.jdbc.Driver"})
-	public Dialect mysqlDdlService() {
+	public Dialect mysqlDialect() {
 		if (log.isDebugEnabled()) {
 			log.debug("User Mysql Dialect");
 		}
@@ -42,7 +42,7 @@ public class JpaConfig {
 	
 	@Bean
 	@ConditionalOnClass(name= {"com.microsoft.sqlserver.jdbc.SQLServerDriver"})
-	public Dialect sqlServerDdlService() {
+	public Dialect sqlServerDialect() {
 		if (log.isDebugEnabled()) {
 			log.debug("User SqlServer Dialect");
 		}
@@ -69,7 +69,7 @@ public class JpaConfig {
 	
 	@Bean
 	@ConditionalOnMissingBean
-	public Dialect h2DdlService() {
+	public Dialect h2Dialect() {
 		if (log.isDebugEnabled()) {
 			log.debug("User H2 Dialect");
 		}

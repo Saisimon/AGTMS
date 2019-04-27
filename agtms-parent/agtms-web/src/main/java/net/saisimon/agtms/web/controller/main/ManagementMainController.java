@@ -97,7 +97,7 @@ import net.saisimon.agtms.web.selection.FileTypeSelection;
 @RequestMapping("/management/main/{key}")
 @ControllerInfo("management")
 @Slf4j
-// TODO
+// TODO Task URI
 public class ManagementMainController extends AbstractMainController {
 	
 	@Value("${extra.max-size.export:65535}")
@@ -106,8 +106,6 @@ public class ManagementMainController extends AbstractMainController {
 	private int importMaxSize;
 	@Value("${extra.file.path}")
 	private String filePath;
-	@Value("${server.port}")
-	private int port;
 	
 	@Autowired
 	private FileTypeSelection fileTypeSelection;
@@ -203,6 +201,10 @@ public class ManagementMainController extends AbstractMainController {
 				continue;
 			}
 			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
+			int size = TemplateUtils.fieldSizeOverflow(field, fieldValue);
+			if (size > 0) {
+				return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), size);
+			}
 			if (fieldValue != null) {
 				map.put(fieldName, fieldValue);
 			}
@@ -262,6 +264,9 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
+		if (filter == null) {
+			filter = FilterRequest.build();
+		}
 		filter.and(Constant.OPERATORID, userId);
 		Long total = generateService.count(filter);
 		if (total > exportMaxSize) {
@@ -280,7 +285,6 @@ public class ManagementMainController extends AbstractMainController {
 		exportTask.setTaskType(Functions.EXPORT.getFunction());
 		exportTask.setTaskParam(SystemUtils.toJson(body));
 		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
-		exportTask.setPort(port);
 		TaskService taskService = TaskServiceFactory.get();
 		taskService.saveOrUpdate(exportTask);
 		try {
@@ -625,7 +629,6 @@ public class ManagementMainController extends AbstractMainController {
 		exportTask.setTaskType(Functions.IMPORT.getFunction());
 		exportTask.setTaskParam(SystemUtils.toJson(body));
 		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
-		exportTask.setPort(port);
 		TaskServiceFactory.get().saveOrUpdate(exportTask);
 		return exportTask;
 	}

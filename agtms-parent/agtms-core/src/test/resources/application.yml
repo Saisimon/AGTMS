@@ -1,7 +1,3 @@
 extra:
   class:
     path: /tmp/classes
-  max-size:
-    task: 5
-    export: 65535
-    import: 65535

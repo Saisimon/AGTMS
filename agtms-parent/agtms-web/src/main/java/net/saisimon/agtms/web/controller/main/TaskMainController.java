@@ -109,6 +109,9 @@ public class TaskMainController extends AbstractMainController {
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
 		if (!userToken.isAdmin()) {
+			if (filter == null) {
+				filter = FilterRequest.build();
+			}
 			filter.and(Constant.OPERATORID, userId);
 		}
 		FilterPageable pageable = FilterPageable.build(param);
@@ -192,9 +195,11 @@ public class TaskMainController extends AbstractMainController {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
+		if (!cancelTask(task)) {
+			return ErrorMessage.Task.TASK_CANCEL_FAILED;
+		}
 		task.setHandleStatus(HandleStatuses.CANCELING.getStatus());
 		taskService.saveOrUpdate(task);
-		cancelTask(task);
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -210,7 +215,9 @@ public class TaskMainController extends AbstractMainController {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
-		cancelTask(task);
+		if (!cancelTask(task)) {
+			return ErrorMessage.Task.TASK_CANCEL_FAILED;
+		}
 		taskService.delete(task);
 		return ResultUtils.simpleSuccess();
 	}
@@ -316,11 +323,12 @@ public class TaskMainController extends AbstractMainController {
 		return FUNCTIONS;
 	}
 	
-	private void cancelTask(Task task) {
+	private boolean cancelTask(Task task) {
 		Future<?> future = SystemUtils.removeTaskFuture(task.getId());
 		if (future != null) {
-			future.cancel(true);
+			return future.cancel(true);
 		}
+		return false;
 	}
 
 }

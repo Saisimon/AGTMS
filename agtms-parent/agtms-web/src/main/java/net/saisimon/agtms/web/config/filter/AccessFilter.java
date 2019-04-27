@@ -79,9 +79,9 @@ public class AccessFilter implements Filter {
 	
 	private boolean needCheck(HttpServletRequest httpRequest) {
 		String uri = httpRequest.getRequestURI();
-		if (whiteList != null && whiteList.getUrls().contains(uri)) {
+		if (whiteList != null && whiteList.getUrls() != null && whiteList.getUrls().contains(uri)) {
 			return false;
-		} else if (whitePrefix != null) {
+		} else if (whitePrefix != null && whitePrefix.getUrls() != null) {
 			for (String prefix : whitePrefix.getUrls()) {
 				if (uri.startsWith(prefix)) {
 					return false;
@@ -99,8 +99,10 @@ public class AccessFilter implements Filter {
 		httpResponse.setStatus(401);
 		String requestOrigin = httpRequest.getHeader(HttpHeaders.ORIGIN);
 		String allowOrigin = corsConfiguration.checkOrigin(requestOrigin);
-		httpResponse.addHeader("Access-Control-Allow-Credentials", "true");
-		httpResponse.addHeader("Access-Control-Allow-Origin", allowOrigin);
+		if (SystemUtils.isNotBlank(allowOrigin)) {
+			httpResponse.addHeader("Access-Control-Allow-Credentials", "true");
+			httpResponse.addHeader("Access-Control-Allow-Origin", allowOrigin);
+		}
 		try (PrintWriter out = httpResponse.getWriter()) {
 			out.append("{'code': 401, 'message': 'Access Denied'}");
 		}
