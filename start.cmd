@@ -24,7 +24,7 @@ for /f "tokens=5" %%i in ('netstat -ano ^| findstr 7891') do (
 :zuul
 
 @REM Maven 打包
-CALL mvnw.cmd clean install
+CALL mvnw.cmd clean install -DskipTests
 
 @REM 启动 agtms-eureka
 START /b java.exe -jar -Xms1g -Xms1g agtms-eureka/target/agtms-eureka.jar > data/logs/eureka.log 2>&1

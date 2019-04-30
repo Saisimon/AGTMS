@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.map.MapUtil;
@@ -36,6 +37,7 @@ import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
+import net.saisimon.agtms.remote.exception.RemoteException;
 import net.saisimon.agtms.remote.service.ApiService;
 
 @Import(FeignClientsConfiguration.class)
@@ -55,9 +57,8 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public Long count(FilterRequest filter) {
 		Template template = template();
-		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
-			return null;
-		}
+		Assert.notNull(template.getService(), "template service name can not be null");
+		Assert.notNull(template.getKey(), "template key can not be null");
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> filterMap = null;
 		if (filter != null) {
@@ -66,17 +67,15 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		try {
 			return apiService.count(template.getKey(), filterMap);
 		} catch (Exception e) {
-			log.error(String.format("remote count failed. %s, %s", template.getService(), template.getKey()));
-			return null;
+			throw new RemoteException(String.format("remote count failed. %s, %s", template.getService(), template.getKey()), e);
 		}
 	}
 
 	@Override
 	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
-			return null;
-		}
+		Assert.notNull(template.getService(), "template service name can not be null");
+		Assert.notNull(template.getKey(), "template key can not be null");
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = new HashMap<>();
 		Map<String, Object> filterMap = null;
@@ -97,17 +96,15 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			log.error("find list error", e);
 			return new ArrayList<>(0);
 		} catch (Exception e) {
-			log.error(String.format("remote findList failed. %s, %s", template.getService(), template.getKey()));
-			return null;
+			throw new RemoteException(String.format("remote findList failed. %s, %s", template.getService(), template.getKey()), e);
 		}
 	}
 	
 	@Override
 	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
 		Template template = template();
-		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
-			return null;
-		}
+		Assert.notNull(template.getService(), "template service name can not be null");
+		Assert.notNull(template.getKey(), "template key can not be null");
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = MapUtil.newHashMap(3);
 		Map<String, Object> filterMap = null;
@@ -128,8 +125,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			log.error("find list error", e);
 			return new ArrayList<>(0);
 		} catch (Exception e) {
-			log.error(String.format("remote findList failed. %s, %s", template.getService(), template.getKey()));
-			return null;
+			throw new RemoteException(String.format("remote findList failed. %s, %s", template.getService(), template.getKey()), e);
 		}
 	}
 
@@ -137,9 +133,8 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	@Override
 	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
 		Template template = template();
-		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
-			return null;
-		}
+		Assert.notNull(template.getService(), "template service name can not be null");
+		Assert.notNull(template.getKey(), "template key can not be null");
 		if (pageable == null) {
 			pageable = FilterPageable.build(null);
 		}
@@ -168,17 +163,15 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			log.error("find page error", e);
 			return new PageImpl<>(new ArrayList<>(0), springPageable, 0L);
 		} catch (Exception e) {
-			log.error(String.format("remote findPage failed. %s, %s", template.getService(), template.getKey()));
-			return null;
+			throw new RemoteException(String.format("remote findPage failed. %s, %s", template.getService(), template.getKey()), e);
 		}
 	}
 
 	@Override
 	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
 		Template template = template();
-		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
-			return Optional.empty();
-		}
+		Assert.notNull(template.getService(), "template service name can not be null");
+		Assert.notNull(template.getKey(), "template key can not be null");
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = MapUtil.newHashMap(3);
 		Map<String, Object> filterMap = null;
@@ -199,17 +192,15 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			log.error("find one error", e);
 			return Optional.empty();
 		} catch (Exception e) {
-			log.error(String.format("remote findOne failed. %s, %s", template.getService(), template.getKey()));
-			return Optional.empty();
+			throw new RemoteException(String.format("remote findOne failed. %s, %s", template.getService(), template.getKey()), e);
 		}
 	}
 	
 	@Override
 	public Long delete(FilterRequest filter) {
 		Template template = template();
-		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
-			return null;
-		}
+		Assert.notNull(template.getService(), "template service name can not be null");
+		Assert.notNull(template.getKey(), "template key can not be null");
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
 			return null;
 		}
@@ -221,25 +212,28 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		try {
 			return apiService.delete(template.getKey(), filterMap);
 		} catch (Exception e) {
-			log.error(String.format("remote delete failed. %s, %s", template.getService(), template.getKey()));
-			return null;
+			throw new RemoteException(String.format("remote delete failed. %s, %s", template.getService(), template.getKey()), e);
 		}
 	}
 	
 	@Override
 	public void delete(Domain entity) {
-		Template template = template();
-		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
+		if (entity == null) {
 			return;
 		}
+		Template template = template();
+		Assert.notNull(template.getService(), "template service name can not be null");
+		Assert.notNull(template.getKey(), "template key can not be null");
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
 			return;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		try {
-			apiService.deleteEntity(template.getKey(), SystemUtils.toJson(entity));
+			@SuppressWarnings("unchecked")
+			Map<String, Object> body = SystemUtils.fromJson(SystemUtils.toJson(entity), HashMap.class, String.class, Object.class);
+			apiService.deleteEntity(template.getKey(), body);
 		} catch (Exception e) {
-			log.error(String.format("remote delete failed. %s, %s", template.getService(), template.getKey()));
+			throw new RemoteException(String.format("remote delete failed. %s, %s", template.getService(), template.getKey()), e);
 		}
 	}
 	
@@ -249,22 +243,22 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			return null;
 		}
 		Template template = template();
-		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
-			return null;
-		}
+		Assert.notNull(template.getService(), "template service name can not be null");
+		Assert.notNull(template.getKey(), "template key can not be null");
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.CREATE, Functions.EDIT, Functions.BATCH_EDIT)) {
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
-		Map<String, Object> map = apiService.saveOrUpdate(template.getKey(), SystemUtils.toJson(entity));
+		@SuppressWarnings("unchecked")
+		Map<String, Object> body = SystemUtils.fromJson(SystemUtils.toJson(entity), HashMap.class, String.class, Object.class);
+		Map<String, Object> map = apiService.saveOrUpdate(template.getKey(), body);
 		try {
 			return conversion(map);
 		} catch (GenerateException e) {
 			log.error("saveOrUpdate error", e);
 			return null;
 		} catch (Exception e) {
-			log.error(String.format("remote saveOrUpdate failed. %s, %s", template.getService(), template.getKey()));
-			return null;
+			throw new RemoteException(String.format("remote saveOrUpdate failed. %s, %s", template.getService(), template.getKey()), e);
 		}
 	}
 	
@@ -274,9 +268,8 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			return;
 		}
 		Template template = template();
-		if (SystemUtils.isBlank(template.getService()) || SystemUtils.isBlank(template.getKey())) {
-			return;
-		}
+		Assert.notNull(template.getService(), "template service name can not be null");
+		Assert.notNull(template.getKey(), "template key can not be null");
 		if (!TemplateUtils.hasOneOfFunctions(template, Functions.BATCH_EDIT)) {
 			return;
 		}
@@ -291,7 +284,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		try {
 			apiService.batchUpdate(template.getKey(), body);
 		} catch (Exception e) {
-			log.error(String.format("remote batchUpdate failed. %s, %s", template.getService(), template.getKey()));
+			throw new RemoteException(String.format("remote batchUpdate failed. %s, %s", template.getService(), template.getKey()), e);
 		}
 	}
 

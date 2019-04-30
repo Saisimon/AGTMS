@@ -4,7 +4,7 @@
 mkdir -p data/logs
 
 # Maven 打包
-bash mvnw clean package
+bash mvnw clean install -DskipTests
 if [ $? -gt 0 ]; then
     echo "maven 构建失败."
     exit

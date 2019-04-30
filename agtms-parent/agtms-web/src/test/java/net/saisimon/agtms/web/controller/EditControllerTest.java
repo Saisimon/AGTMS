@@ -2,12 +2,14 @@ package net.saisimon.agtms.web.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +25,11 @@ import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.dto.PageResult;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.FileTypes;
+import net.saisimon.agtms.core.enums.Views;
+import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.dto.req.ExportParam;
 import net.saisimon.agtms.web.dto.req.NavigationParam;
@@ -437,6 +443,11 @@ public class EditControllerTest extends AbstractControllerTest {
 		selectionParam.setType(0);
 		sendPost("/selection/edit/save", selectionParam, testToken);
 		
+		Map<String, String> valueTextMap = SelectionUtils.getSelectionValueTextMap("1", testToken.getUserId(), new HashSet<>(Arrays.asList("1")));
+		Assert.assertEquals("Text-1", valueTextMap.get("1"));
+		Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap("1", testToken.getUserId(), new HashSet<>(Arrays.asList("Text-1")));
+		Assert.assertEquals("1", textValueMap.get("Text-1"));
+		
 		param = new HashMap<>();
 		param.put("sign", "1");
 		sendPost("/selection/edit/search", param, testToken);
@@ -517,7 +528,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/management/edit/1/grid", param, testToken);
 		
 		TemplateInfo templateInfo = null;
-		Template testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 2, 1);
+		Template testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 2, 4);
 		sendPost("/template/edit/save", testTemplate, testToken);
 		
 		param = new HashMap<>();
@@ -561,7 +572,13 @@ public class EditControllerTest extends AbstractControllerTest {
 			
 			body = new HashMap<>();
 			body.put("column0field0", "column0field0");
+			body.put("column0field1", 99L);
+			body.put("column0field2", 99.99D);
+			body.put("column0field3", new Date());
 			body.put("column1field0", "column1field0");
+			body.put("column1field1", 99L);
+			body.put("column1field2", 99.99D);
+			body.put("column1field3", new Date());
 			sendPost(editSaveUri, body, testToken);
 			
 			param = new HashMap<>();
@@ -588,20 +605,38 @@ public class EditControllerTest extends AbstractControllerTest {
 			
 			body = new HashMap<>();
 			body.put("id", 10L);
-			body.put("column0field0", "column0field0-1");
-			body.put("column1field0", "column1field0-1");
+			body.put("column0field0", "column0field0");
+			body.put("column0field1", 99L);
+			body.put("column0field2", 99.99D);
+			body.put("column0field3", new Date());
+			body.put("column1field0", "column1field0");
+			body.put("column1field1", 99L);
+			body.put("column1field2", 99.99D);
+			body.put("column1field3", new Date());
 			sendPost(editSaveUri, body, testToken);
 			
 			body = new HashMap<>();
 			body.put("id", 1L);
-			body.put("column0field0", "column0field0-1");
-			body.put("column1field0", "column1field0-1");
+			body.put("column0field0", "column0field0");
+			body.put("column0field1", 199L);
+			body.put("column0field2", 199.99D);
+			body.put("column0field3", new Date());
+			body.put("column1field0", "column1field0");
+			body.put("column1field1", 199L);
+			body.put("column1field2", 199.99D);
+			body.put("column1field3", new Date());
 			sendPost(editSaveUri, body, testToken);
 			
 			for (int i = 0; i < 5; i++) {
 				body = new HashMap<>();
 				body.put("column0field0", "Test-" + i);
+				body.put("column0field1", 199L);
+				body.put("column0field2", 199.99D);
+				body.put("column0field3", new Date());
 				body.put("column1field0", "Test-" + i);
+				body.put("column1field1", 199L);
+				body.put("column1field2", 199.99D);
+				body.put("column1field3", new Date());
 				sendPost(editSaveUri, body, testToken);
 			}
 			
@@ -616,12 +651,13 @@ public class EditControllerTest extends AbstractControllerTest {
 			body = new HashMap<>();
 			body.put("ids", Arrays.asList(2L, 3L, 4L, 100L));
 			body.put("column0field0", "column0field0-test");
+			body.put("column0field3", new Date());
 			sendPost(mainBatchSaveUri, null, body, testToken);
 			
 			ExportParam exportParam = new ExportParam();
 			sendPost(mainBatchExportUri, exportParam, testToken);
 			
-			List<String> exportFields = Arrays.asList("column0field0", "column1field0");
+			List<String> exportFields = Arrays.asList("column0field0", "column0field1", "column0field2", "column0field3", "column1field0", "column1field1", "column1field2", "column1field3");
 			exportParam = new ExportParam();
 			exportParam.setExportFields(exportFields);
 			exportParam.setExportFileType(FileTypes.XLS.getType());
@@ -630,6 +666,18 @@ public class EditControllerTest extends AbstractControllerTest {
 			param = new HashMap<>();
 			param.put("id", "1");
 			sendPost("/task/main/cancel", param, testToken);
+			
+			param = new HashMap<>();
+			param.put("taskId", "100");
+			param.put("X-UID", testToken.getUserId().toString());
+			param.put("X-TOKEN", testToken.getToken());
+			sendGet("/api/cancel/task", param);
+			
+			param = new HashMap<>();
+			param.put("taskId", "1");
+			param.put("X-UID", testToken.getUserId().toString());
+			param.put("X-TOKEN", testToken.getToken());
+			sendGet("/api/cancel/task", param);
 			
 			exportParam = new ExportParam();
 			exportParam.setExportFields(exportFields);
@@ -659,6 +707,12 @@ public class EditControllerTest extends AbstractControllerTest {
 			param.put("id", "10");
 			returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
 			
+			Thread.sleep(1000);
+			
+			param = new HashMap<>();
+			param.put("id", "2");
+			returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+			
 			param = new HashMap<>();
 			param.put("id", "1");
 			sendPost("/task/main/remove", param, testToken);
@@ -677,6 +731,18 @@ public class EditControllerTest extends AbstractControllerTest {
 			importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
 			ClassPathResource classPathResource = new ClassPathResource("test.csv");
 			MockMultipartFile file = new MockMultipartFile("importFile", classPathResource.getInputStream());
+			sendMultipart(mainBatchImportUri, importParam, testToken, file);
+			
+			importParam.put("importFileType", FileTypes.XLS.getType());
+			importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
+			classPathResource = new ClassPathResource("test.xls");
+			file = new MockMultipartFile("importFile", classPathResource.getInputStream());
+			sendMultipart(mainBatchImportUri, importParam, testToken, file);
+			
+			importParam.put("importFileType", FileTypes.XLSX.getType());
+			importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
+			classPathResource = new ClassPathResource("test.xlsx");
+			file = new MockMultipartFile("importFile", classPathResource.getInputStream());
 			sendMultipart(mainBatchImportUri, importParam, testToken, file);
 			
 			param = new HashMap<>();
@@ -705,7 +771,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		template.setOperatorId(userId);
 		template.setFunctions(127);
 		template.setColumnIndex(columnSize);
-		template.setSource("jpa");
+		template.setSource(GenerateServiceFactory.getSigns().get(0).getName());
 		Set<TemplateColumn> templateColumns = new HashSet<>();
 		for (int i = 0; i < columnSize; i++) {
 			TemplateColumn templateColumn = new TemplateColumn();
@@ -718,14 +784,22 @@ public class EditControllerTest extends AbstractControllerTest {
 				TemplateField templateField = new TemplateField();
 				templateField.setFieldName("field" + j);
 				templateField.setFieldTitle("TestField-" + j);
-				templateField.setFieldType("string");
+				if (j == 1) {
+					templateField.setFieldType(Classes.LONG.getName());
+				} else if (j == 2) {
+					templateField.setFieldType(Classes.DOUBLE.getName());
+				} else if (j == 3) {
+					templateField.setFieldType(Classes.DATE.getName());
+				} else {
+					templateField.setFieldType(Classes.STRING.getName());
+				}
 				templateField.setFilter(true);
 				templateField.setHidden(false);
 				templateField.setOrdered(j);
 				templateField.setRequired(false);
 				templateField.setSorted(false);
 				templateField.setUniqued(false);
-				templateField.setViews("text");
+				templateField.setViews(Views.TEXT.getView());
 				templateField.setDefaultValue("");
 				templateFields.add(templateField);
 			}

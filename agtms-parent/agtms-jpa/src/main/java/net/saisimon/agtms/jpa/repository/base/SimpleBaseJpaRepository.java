@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -116,6 +118,15 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 			for (Tuple tuple : tuples) {
 				ids.add((ID) tuple.get(0));
 			}
+			if (ArrayUtil.isNotEmpty(properties)) {
+				Set<String> propertySet = new HashSet<>(idNames);
+				for (String property : properties) {
+					if (property != null) {
+						propertySet.add(property);
+					}
+				}
+				properties = propertySet.toArray(new String[propertySet.size()]);
+			}
 			String idName = idNames.get(0);
 			List<T> domains = findList(FilterRequest.build().and(idName, ids, Constant.Operator.IN), properties);
 			return sortDomains(domains, ids, idName);
@@ -202,9 +213,9 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 	private T buildDomain(Class<?> domainClass, Tuple tuple, String... properties) {
 		T domain = (T) ReflectUtil.newInstance(domainClass);
 		for (int i = 0; i < properties.length; i++) {
-			String idName = properties[i];
-			Object idValue = tuple.get(i);
-			ReflectUtil.setFieldValue(domain, idName, idValue);
+			String propertyName = properties[i];
+			Object propertyValue = tuple.get(i);
+			ReflectUtil.setFieldValue(domain, propertyName, propertyValue);
 		}
 		return domain;
 	}

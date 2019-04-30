@@ -21,7 +21,10 @@
 		<poi.version>3.17</poi.version>
 		<commons-beanutils.version>1.9.3</commons-beanutils.version>
 		<hutool.version>4.1.21</hutool.version>
+		<embedded-redis.version>0.7.2</embedded-redis.version>
+		<wiremock.version>2.23.2</wiremock.version>
 		<maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
+		<jacoco-maven-plugin.version>0.8.3</jacoco-maven-plugin.version>
 	</properties>
 
 	<modules>
@@ -32,6 +35,7 @@
 		<module>agtms-gateway</module>
 		<module>agtms-parent</module>
 		<module>agtms-zuul</module>
+		<module>agtms-record</module>
 	</modules>
 
 	<dependencyManagement>
@@ -91,6 +95,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>net.saisimon</groupId>
+				<artifactId>agtms-web</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>javax.persistence</groupId>
 				<artifactId>javax.persistence-api</artifactId>
 				<version>${jpa.version}</version>
@@ -114,6 +123,16 @@
 				<groupId>cn.hutool</groupId>
 				<artifactId>hutool-core</artifactId>
 				<version>${hutool.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>it.ozimov</groupId>
+				<artifactId>embedded-redis</artifactId>
+				<version>${embedded-redis.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.tomakehurst</groupId>
+				<artifactId>wiremock-jre8</artifactId>
+				<version>${wiremock.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -153,25 +172,21 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.3</version>
+				<version>${jacoco-maven-plugin.version}</version>
 				<configuration>
 					<excludes>
+						<exclude>**/constant/**/*</exclude>
 						<exclude>**/domain/**/*</exclude>
 						<exclude>**/dto/**/*</exclude>
-						<exclude>**/constant/**/*</exclude>
+						<exclude>**/exception/**/*</exclude>
+						<exclude>**/order/**/*</exclude>
 					</excludes>
 				</configuration>
 				<executions>
 					<execution>
+						<id>prepare-agent</id>
 						<goals>
 							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>report</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report</goal>
 						</goals>
 					</execution>
 				</executions>

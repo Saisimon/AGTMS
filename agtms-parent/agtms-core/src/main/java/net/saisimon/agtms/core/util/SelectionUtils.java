@@ -96,6 +96,7 @@ public class SelectionUtils {
 	 * 处理自定义对象集合中的下拉列表属性
 	 * 
 	 * @param fieldInfoMap 自定义属性与模板的映射
+	 * @param service 服务名称
 	 * @param domains 自定义对象集合
 	 * @param operatorId 用户ID
 	 * @return 处理后的自定义对象集合

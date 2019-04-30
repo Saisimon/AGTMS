@@ -1,6 +1,7 @@
 package net.saisimon.agtms.mongodb.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -15,7 +16,7 @@ import net.saisimon.agtms.mongodb.repository.GenerateMongodbRepository;
 @Service
 public class GenerateMongodbService implements GenerateService {
 	
-	private static final Sign MONGODB_SIGN = Sign.builder().name("mongodb").text("MONGODB").build();
+	private static final Sign MONGODB_SIGN = Sign.builder().name("mongodb").text("MONGODB").order(Ordered.HIGHEST_PRECEDENCE).build();
 	
 	@Autowired
 	private GenerateMongodbRepository generateMongoRepository;

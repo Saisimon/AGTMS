@@ -1,6 +1,5 @@
 package net.saisimon.agtms.mongodb.util;
 
-import static net.saisimon.agtms.core.constant.Constant.Operator.ALL;
 import static net.saisimon.agtms.core.constant.Constant.Operator.EXISTS;
 import static net.saisimon.agtms.core.constant.Constant.Operator.GT;
 import static net.saisimon.agtms.core.constant.Constant.Operator.GTE;
@@ -28,8 +27,14 @@ import net.saisimon.agtms.core.util.SystemUtils;
 
 public class MongodbFilterUtils {
 	
+	private MongodbFilterUtils() {}
+	
 	public static Query query(FilterRequest filterRequest) {
-		return Query.query(criteria(filterRequest));
+		Criteria criteria = criteria(filterRequest);
+		if (criteria != null) {
+			return Query.query(criteria);
+		}
+		return new Query();
 	}
 	
 	private static Criteria criteria(FilterRequest filterRequest) {
@@ -110,22 +115,13 @@ public class MongodbFilterUtils {
 					criteria.is(value);
 				}
 				break;
-			case ALL:
-				if (value.getClass().isArray()) {
-					criteria.all((Object[]) value);
-				} else if (value instanceof Collection<?>) {
-					criteria.all((Collection<?>) value);
-				} else {
-					criteria.is(value);
-				}
-				break;
 			case NIN:
 				if (value.getClass().isArray()) {
 					criteria.nin((Object[]) value);
 				} else if (value instanceof Collection<?>) {
 					criteria.nin((Collection<?>) value);
 				} else {
-					criteria.is(value);
+					criteria.ne(value);
 				}
 				break;
 			default:

@@ -10,6 +10,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -266,11 +267,11 @@ public abstract class AbstractMainController extends BaseController {
 		if (pageableMap == null) {
 			return;
 		}
-		String index = pageableMap.get("index");
+		String index = pageableMap.get(Constant.Param.INDEX);
 		if (index != null) {
 			pageable.setPageIndex(Integer.parseInt(index) + 1);
 		}
-		String size = pageableMap.get("size");
+		String size = pageableMap.get(Constant.Param.SIZE);
 		if (size != null) {
 			pageable.setPageSize(Integer.parseInt(size));
 		}
@@ -286,7 +287,7 @@ public abstract class AbstractMainController extends BaseController {
 		if (pageableMap == null) {
 			return;
 		}
-		String sort = pageableMap.get("size");
+		String sort = pageableMap.get(Constant.Param.SORT);
 		Map<String, String> sortMap = FilterSort.build(sort).getSortMap();
 		for (Column column : columns) {
 			if (column.getField() != null) {

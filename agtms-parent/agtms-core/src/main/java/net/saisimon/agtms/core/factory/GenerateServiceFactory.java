@@ -35,6 +35,7 @@ public class GenerateServiceFactory implements BeanPostProcessor {
 		if (generateService == null) {
 			throw new IllegalArgumentException("build GenerateService failed");
 		}
+		generateService.remove();
 		generateService.init(template);
 		return generateService;
 	}
@@ -55,7 +56,7 @@ public class GenerateServiceFactory implements BeanPostProcessor {
 		if (!SIGNS.contains(generateService.sign())) {
 			SIGNS.add(generateService.sign());
 			Collections.sort(SIGNS, (s1, s2) -> {
-				return Integer.compare(s1.getOrder(), s1.getOrder());
+				return Integer.compare(s1.getOrder(), s2.getOrder());
 			});
 		}
 		GENERATE_SERVICE_MAP.put(generateService.sign().getName(), generateService);

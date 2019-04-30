@@ -1,5 +1,8 @@
 package net.saisimon.agtms.web.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,7 +22,22 @@ public class UserControllerTest extends AbstractControllerTest {
 	public void testAuth() throws Exception {
 		login("test", null);
 		login("test", "123456");
-		login("test", "test");
+		UserToken userToken = login("test", "test");
+		
+		Map<String, String> param = new HashMap<>();
+		param.put("uid", "a");
+		param.put("token", "token");
+		sendPost("/api/check/token", param, null);
+		
+		param = new HashMap<>();
+		param.put("uid", "100");
+		param.put("token", "token");
+		sendPost("/api/check/token", param, null);
+		
+		param = new HashMap<>();
+		param.put("uid", "2");
+		param.put("token", userToken.getToken());
+		sendPost("/api/check/token", param, null);
 	}
 	
 	@Test
@@ -43,6 +61,8 @@ public class UserControllerTest extends AbstractControllerTest {
 		param.setNewPassword("123456");
 		param.setOldPassword("test");
 		sendPost("/user/password/change", param, token);
+		
+		token = login("test", "123456");
 		
 		param.setOldPassword("123456");
 		param.setNewPassword("test");
@@ -84,7 +104,6 @@ public class UserControllerTest extends AbstractControllerTest {
 	
 	@Test
 	public void testLogout() throws Exception {
-		logout(null);
 		UserToken token = login("test", "test");
 		logout(token);
 	}

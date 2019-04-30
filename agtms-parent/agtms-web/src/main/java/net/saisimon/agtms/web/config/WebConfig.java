@@ -17,6 +17,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import net.saisimon.agtms.web.config.runner.InitRunner;
+import net.sf.ehcache.config.ConfigurationFactory;
 
 /**
  * web 配置
@@ -103,7 +104,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Bean
 	@ConditionalOnMissingBean
 	public CacheManager cacheManager() {
-		return new EhCacheCacheManager();
+		return new EhCacheCacheManager(net.sf.ehcache.CacheManager.create(ConfigurationFactory.parseConfiguration()));
 	}
 	
 	@Bean

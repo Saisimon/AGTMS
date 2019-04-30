@@ -40,6 +40,12 @@ public interface GenerateService {
 		repository.init(template);
 	}
 	
+	default void remove() {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		repository.remove();
+	}
+	
 	default Template template() {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
@@ -165,6 +171,12 @@ public interface GenerateService {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		repository.update(id, updateMap);
+	}
+	
+	default void delete(FilterRequest filter) {
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		repository.delete(filter);
 	}
 	
 }

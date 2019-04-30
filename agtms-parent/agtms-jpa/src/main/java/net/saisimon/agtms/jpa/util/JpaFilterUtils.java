@@ -1,6 +1,5 @@
 package net.saisimon.agtms.jpa.util;
 
-import static net.saisimon.agtms.core.constant.Constant.Operator.ALL;
 import static net.saisimon.agtms.core.constant.Constant.Operator.EXISTS;
 import static net.saisimon.agtms.core.constant.Constant.Operator.GT;
 import static net.saisimon.agtms.core.constant.Constant.Operator.GTE;
@@ -38,6 +37,8 @@ import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.jpa.domain.Statement;
 
 public class JpaFilterUtils {
+	
+	private JpaFilterUtils() {}
 	
 	public static Statement where(FilterRequest filterRequest) {
 		if (filterRequest == null) {
@@ -193,10 +194,9 @@ public class JpaFilterUtils {
 					predicate = criteriaBuilder.notEqual(buildExpression(root, key), value);
 					break;
 				case EXISTS:
-					predicate = criteriaBuilder.isNotEmpty(buildExpression(root, key));
+					predicate = criteriaBuilder.isNotNull(buildExpression(root, key));
 					break;
 				case IN:
-				case ALL:
 					if (value.getClass().isArray()) {
 						predicate = buildExpression(root, key).in(Arrays.asList((Object[])value));
 					} else if (value instanceof Collection<?>) {
@@ -303,7 +303,6 @@ public class JpaFilterUtils {
 					expression.append(key).append(" IS NOT NULL");
 					break;
 				case IN:
-				case ALL:
 					if (value.getClass().isArray()) {
 						StringBuilder in = new StringBuilder();
 						Object[] arr = (Object[]) value;
@@ -314,7 +313,7 @@ public class JpaFilterUtils {
 							}
 							in.append("?");
 						}
-						expression.append(key).append(key).append(" IN (").append(in).append(")");
+						expression.append(key).append(" IN (").append(in).append(")");
 					} else if (value instanceof Collection<?>) {
 						StringBuilder in = new StringBuilder();
 						Collection<?> col = (Collection<?>) value;

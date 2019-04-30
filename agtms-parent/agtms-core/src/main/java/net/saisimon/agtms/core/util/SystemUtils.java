@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
+import cn.hutool.core.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -66,6 +67,20 @@ public final class SystemUtils extends StringUtils {
 
 	public static String toUpperCase(String str) {
 		return toCase(str, false);
+	}
+	
+	/**
+	 * 获取本地可用端口（从 0xA000 ~ 0xFFFF）
+	 * 
+	 * @return 本地可用端口
+	 */
+	public static int getAvailableLocalPort() {
+		for (int i = 0xA000; i <= 0xFFFF; i++) {
+			if (NetUtil.isUsableLocalPort(i)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	/**

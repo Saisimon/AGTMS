@@ -15,7 +15,8 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import net.saisimon.agtms.annotation.FieldInfo;
 import net.saisimon.agtms.annotation.TemplateInfo;
 import net.saisimon.agtms.core.domain.entity.Template;
@@ -153,7 +154,8 @@ public class TemplateScanner {
 		return selectionResolverMap.get(key);
 	}
 	
-	@Data
+	@Getter
+	@Setter
 	public static class TemplateResolver {
 		
 		private final Template template;
@@ -170,7 +172,8 @@ public class TemplateScanner {
 		
 	}
 	
-	@Data
+	@Getter
+	@Setter
 	public static class SelectionResolver {
 		
 		private final Class<? extends net.saisimon.agtms.core.selection.Selection<?>> selectionClass;

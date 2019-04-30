@@ -129,7 +129,7 @@ public class DomainGenerater {
 			}
 		}
 		if (domainName.indexOf('.') > 0) {
-			domainName = domainName.replace("\\.", "_");
+			domainName = domainName.replace(".", "_");
 		}
 		String domainFullName = DEFAULT_PACKAGE + "." + domainName;
 		String domainFullPathName = DEFAULT_PACKAGE_PATH + "/" + domainName;
