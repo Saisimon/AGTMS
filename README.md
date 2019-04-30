@@ -27,6 +27,7 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 │   ├── agtms-redis     Redis 支持类库 (可选)
 │   ├── agtms-remote    远程调用实现支持类库 (可选)
 │   └── agtms-web       Web 服务 (默认端口：7892)
+├── agtms-record        集成测试报告聚合模块
 ├── agtms-vue           前端页面 (默认端口：8080)
 ├── agtms-zuul          Zuul 网关服务 (默认端口：7891)
 ├── README.md           README 文件
@@ -97,15 +98,7 @@ http://localhost:8080
 ```
 
 ## 远程调用示例
-1. 添加远程调用实现支持
-* `agtms-parent/agtms-web/pom.xml`
-```xml
-<dependency>
-    <groupId>net.saisimon</groupId>
-    <artifactId>agtms-remote</artifactId>
-</dependency>
-```
-2. 启动 agtms 服务
+1. 启动 agtms 服务
 ```sh
 # Unix
 ./start
@@ -113,11 +106,11 @@ http://localhost:8080
 # Windows
 start.cmd
 ```
-3. 启动 agtms-example 服务
+2. 启动 agtms-example 服务
 ```sh
 java -jar agtms-example/target/agtms-example.jar
 ```
-4. 访问
+3. 访问
 ```html
 http://localhost:8080
 ```
