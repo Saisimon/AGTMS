@@ -707,12 +707,6 @@ public class EditControllerTest extends AbstractControllerTest {
 			param.put("id", "10");
 			returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
 			
-			Thread.sleep(1000);
-			
-			param = new HashMap<>();
-			param.put("id", "2");
-			returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
-			
 			param = new HashMap<>();
 			param.put("id", "1");
 			sendPost("/task/main/remove", param, testToken);
