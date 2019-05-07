@@ -11,7 +11,7 @@ import net.saisimon.agtms.jpa.repository.GenerateJpaRepository;
 @Service
 public class GenerateJpaService implements GenerateService {
 	
-	private static final Sign JPA_SIGN = Sign.builder().name("jpa").text("JPA").build();
+	private static final Sign JPA_SIGN = Sign.builder().name("jpa").text("JPA").order(0).build();
 	
 	@Autowired
 	private GenerateJpaRepository generateJpaRepository;

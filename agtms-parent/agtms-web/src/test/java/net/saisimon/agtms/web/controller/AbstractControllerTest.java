@@ -33,17 +33,26 @@ public abstract class AbstractControllerTest {
 
 	@Autowired
 	protected MockMvc mockMvc;
+	
+	protected String sendGet(String uri, Map<String, String> param) throws Exception {
+		return send(uri, HttpMethod.GET, param , null, null);
+	}
 
 	protected String sendPost(String uri, Map<String, String> param, UserToken token) throws Exception {
-		return sendPost(uri, param , null, token);
+		return send(uri, HttpMethod.POST, param , null, token);
 	}
 
 	protected String sendPost(String uri, Object body, UserToken token) throws Exception {
-		return sendPost(uri, null , body, token);
+		return send(uri, HttpMethod.POST, null , body, token);
+	}
+	
+	protected String sendPost(String uri, Map<String, String> param, Object body, UserToken token) throws Exception {
+		return send(uri, HttpMethod.POST, param , body, token);
 	}
 
-	protected String sendPost(String uri, Map<String, String> param, Object body, UserToken token) throws Exception {
-		MockHttpServletRequestBuilder builder = post(uri).accept(MediaType.APPLICATION_JSON);
+	protected String send(String uri, HttpMethod method, Map<String, String> param, Object body, UserToken token) throws Exception {
+		MockHttpServletRequestBuilder builder = build(uri, method);
+		builder.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
 		if (token != null) {
 			builder.header("X-UID", token.getUserId());
 			builder.header("X-TOKEN", token.getToken());
@@ -65,30 +74,8 @@ public abstract class AbstractControllerTest {
 	}
 
 	protected void returnBinary(String uri, HttpMethod method, Map<String, String> param, Object body, UserToken token) throws Exception {
-		MockHttpServletRequestBuilder builder = null;
-		switch (method) {
-		case GET:
-			builder = get(uri);
-			break;
-		case OPTIONS:
-			builder = options(uri);
-			break;
-		case HEAD:
-			builder = head(uri);
-			break;
-		case PUT:
-			builder = put(uri);
-			break;
-		case DELETE:
-			builder = delete(uri);
-			break;
-		case PATCH:
-			builder = patch(uri);
-			break;
-		default:
-			builder = post(uri);
-			break;
-		}
+		MockHttpServletRequestBuilder builder = build(uri, method);
+		builder.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
 		if (token != null) {
 			builder.header("X-UID", token.getUserId());
 			builder.header("X-TOKEN", token.getToken());
@@ -109,6 +96,7 @@ public abstract class AbstractControllerTest {
 
 	protected String sendMultipart(String uri, Map<String, Object> param, UserToken token, MockMultipartFile... files) throws Exception {
 		MockMultipartHttpServletRequestBuilder builder = multipart(uri);
+		builder.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
 		if (token != null) {
 			builder.header("X-UID", token.getUserId());
 			builder.header("X-TOKEN", token.getToken());
@@ -168,6 +156,34 @@ public abstract class AbstractControllerTest {
 		@SuppressWarnings("unchecked")
 		SimpleResult<UserToken> simpleResult = SystemUtils.fromJson(json, SimpleResult.class, UserToken.class);
 		return simpleResult.getData();
+	}
+	
+	private MockHttpServletRequestBuilder build(String uri, HttpMethod method) {
+		MockHttpServletRequestBuilder builder = null;
+		switch (method) {
+		case GET:
+			builder = get(uri);
+			break;
+		case OPTIONS:
+			builder = options(uri);
+			break;
+		case HEAD:
+			builder = head(uri);
+			break;
+		case PUT:
+			builder = put(uri);
+			break;
+		case DELETE:
+			builder = delete(uri);
+			break;
+		case PATCH:
+			builder = patch(uri);
+			break;
+		default:
+			builder = post(uri);
+			break;
+		}
+		return builder;
 	}
 
 }

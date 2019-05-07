@@ -39,7 +39,6 @@ public class Constant {
 		public static final String REGEX = "$regex";
 		public static final String IN = "$in";
 		public static final String NIN = "$nin";
-		public static final String ALL = "$all";
 		public static final String EXISTS = "$exists";
 	}
 	

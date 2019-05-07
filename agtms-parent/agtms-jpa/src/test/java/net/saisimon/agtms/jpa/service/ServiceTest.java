@@ -1,6 +1,7 @@
 package net.saisimon.agtms.jpa.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -88,12 +89,16 @@ public class ServiceTest {
 		Assert.assertFalse(templateService.exists(FilterRequest.build()));
 		
 		// findList
-		List<Template> templates = templateService.findList(FilterRequest.build());
+		List<Template> templates = templateService.findList(FilterRequest.build(), "title");
 		Assert.assertNotNull(templates);
 		Assert.assertEquals(0, templates.size());
+		templates = templateService.findList(FilterRequest.build(), FilterSort.build(null), "title");
+		Assert.assertNotNull(templates);
+		Assert.assertEquals(0, templates.size());
+		templates = templateService.findList(FilterRequest.build(), FilterPageable.build(null), "title");
 		
 		// findPage
-		Page<Template> page = templateService.findPage(FilterRequest.build(), null);
+		Page<Template> page = templateService.findPage(FilterRequest.build(), FilterPageable.build(null));
 		Assert.assertNotNull(page);
 		Assert.assertNotNull(page.getContent());
 		Assert.assertEquals(0, page.getContent().size());
@@ -140,7 +145,16 @@ public class ServiceTest {
 		Assert.assertEquals(2L, count.longValue());
 		
 		// findList
-		templates = templateService.findList(FilterRequest.build(), FilterSort.build("title", Direction.DESC));
+		templates = templateService.findList(FilterRequest.build(), FilterSort.build("title", Direction.DESC), "title");
+		Assert.assertEquals(2, templates.size());
+		Assert.assertEquals("bbb", templates.get(0).getTitle());
+		Assert.assertEquals("aaa", templates.get(1).getTitle());
+		templates = templateService.findList(FilterRequest.build(), FilterSort.build("title", Direction.ASC), "title");
+		Assert.assertEquals(2, templates.size());
+		Assert.assertEquals("aaa", templates.get(0).getTitle());
+		Assert.assertEquals("bbb", templates.get(1).getTitle());
+		templates = templateService.findList(FilterRequest.build(), new FilterPageable(0, 10, FilterSort.build("title", Direction.DESC)), "title");
+		Assert.assertEquals(2, templates.size());
 		Assert.assertEquals("bbb", templates.get(0).getTitle());
 		Assert.assertEquals("aaa", templates.get(1).getTitle());
 		
@@ -162,6 +176,48 @@ public class ServiceTest {
 		for (int i = 0; i < addSize; i++) {
 			templateService.saveOrUpdate(buildTestTemplate(title + i, columnSize));
 		}
+		
+		// count
+		count = templateService.count(FilterRequest.build());
+		Assert.assertEquals(32L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", title));
+		Assert.assertEquals(1L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", title, Constant.Operator.NE));
+		Assert.assertEquals(31L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", title, Constant.Operator.REGEX));
+		Assert.assertEquals(31L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", new String[] {title + "0", title + "2"}, Constant.Operator.IN));
+		Assert.assertEquals(2L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", Arrays.asList(title + "0", title + "2"), Constant.Operator.IN));
+		Assert.assertEquals(2L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", title + "0", Constant.Operator.IN));
+		Assert.assertEquals(1L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", new String[] {title + "0", title + "2"}, Constant.Operator.NIN));
+		Assert.assertEquals(30L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", Arrays.asList(title + "0", title + "2"), Constant.Operator.NIN));
+		Assert.assertEquals(30L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", title + "0", Constant.Operator.NIN));
+		Assert.assertEquals(31L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.LTE));
+		Assert.assertEquals(32L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.LT));
+		Assert.assertEquals(32L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.GTE));
+		Assert.assertEquals(0L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.GT));
+		Assert.assertEquals(0L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("functions", 127, Constant.Operator.LTE));
+		Assert.assertEquals(32L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("functions", 127, Constant.Operator.LT));
+		Assert.assertEquals(1L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("functions", 127, Constant.Operator.GTE));
+		Assert.assertEquals(31L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("functions", 127, Constant.Operator.GT));
+		Assert.assertEquals(0L, count.longValue());
+		count = templateService.count(FilterRequest.build().and("title", true, Constant.Operator.EXISTS));
+		Assert.assertEquals(32L, count.longValue());
+		count = templateService.count(FilterRequest.build().or(FilterRequest.build().and("title", title + "0")).or(FilterRequest.build().and("title", title + "40")));
+		Assert.assertEquals(1L, count.longValue());
 		
 		// findPage
 		page = templateService.findPage(FilterRequest.build(), null);
@@ -428,6 +484,21 @@ public class ServiceTest {
 		
 		// count
 		Assert.assertEquals(1L, generateService.count(FilterRequest.build()).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("column0field0", "ccc")).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("column0field0", "c", Constant.Operator.REGEX)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("column0field0", "true", Constant.Operator.EXISTS)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("column0field0", "ccc", Constant.Operator.NE)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("column0field0", "ccc", Constant.Operator.IN)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("column0field0", new String[] {"ccc"}, Constant.Operator.IN)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("column0field0", Arrays.asList("ccc"), Constant.Operator.IN)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("column0field0", "ccc", Constant.Operator.NIN)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("column0field0", new String[] {"ccc"}, Constant.Operator.NIN)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("column0field0", Arrays.asList("ccc"), Constant.Operator.NIN)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.GTE)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.GT)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.LTE)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.LT)).longValue());
+
 		
 		// findList
 		List<Domain> domains = generateService.findList(FilterRequest.build(), (FilterSort) null);
@@ -466,6 +537,15 @@ public class ServiceTest {
 		
 		// delete
 		generateService.delete(domain);
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build()).longValue());
+		
+		domain = generateService.newGenerate();
+		domain.setField("column0field0", "bbb", String.class);
+		domain.setField("column1field0", "ccc", String.class);
+		generateService.saveDomain(domain, 1L);
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build()).longValue());
+		// delete
+		generateService.delete(FilterRequest.build().and("column0field0", "bbb"));
 		Assert.assertEquals(0L, generateService.count(FilterRequest.build()).longValue());
 		
 		templateService.delete(template);

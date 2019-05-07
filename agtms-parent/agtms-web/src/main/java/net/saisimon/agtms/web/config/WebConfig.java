@@ -25,6 +25,7 @@ import net.saisimon.agtms.web.config.filter.AccessFilter;
 import net.saisimon.agtms.web.config.property.WhiteList;
 import net.saisimon.agtms.web.config.property.WhitePrefix;
 import net.saisimon.agtms.web.config.runner.InitRunner;
+import net.sf.ehcache.config.ConfigurationFactory;
 
 /**
  * web 配置
@@ -162,7 +163,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Bean
 	@ConditionalOnMissingBean
 	public CacheManager cacheManager() {
-		return new EhCacheCacheManager();
+		return new EhCacheCacheManager(net.sf.ehcache.CacheManager.create(ConfigurationFactory.parseConfiguration()));
 	}
 	
 	@Bean

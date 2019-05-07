@@ -8,10 +8,25 @@ package net.saisimon.agtms.core.enums;
  */
 public enum ImageFormats {
 	
+	/**
+	 * jpg
+	 */
 	JPG(".jpg"),
+	/**
+	 * gif
+	 */
 	GIF(".gif"),
+	/**
+	 * png
+	 */
 	PNG(".png"),
+	/**
+	 * bmp
+	 */
 	BMP(".bmp"),
+	/**
+	 * 未知类型
+	 */
 	UNKNOWN("");
 	
 	private String suffix;

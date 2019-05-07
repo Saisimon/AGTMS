@@ -12,7 +12,7 @@ for /f "tokens=5" %%i in ('netstat -ano ^| findstr 7892') do (
 :web
 
 @REM Maven 打包
-CALL mvnw.cmd clean install
+CALL mvnw.cmd clean install -DskipTests
 
 @REM 启动 agtms-web
 START /b java.exe -jar -Xms2g -Xms2g agtms-parent/agtms-web/target/agtms-web.jar > data/logs/web.log 2>&1

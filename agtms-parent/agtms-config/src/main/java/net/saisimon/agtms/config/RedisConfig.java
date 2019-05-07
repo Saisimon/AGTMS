@@ -51,8 +51,10 @@ public class RedisConfig {
 		RedisCacheWriter redisCacheWriter = RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory);
 		Jackson2JsonRedisSerializer<?> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
 		ObjectMapper objectMapper = new ObjectMapper();
-		// 解决 Hibernate 懒加载序列化问题
-		objectMapper.registerModule(new Hibernate5Module().enable(Hibernate5Module.Feature.REPLACE_PERSISTENT_COLLECTIONS));
+		if (hasJpa()) {
+			// 解决 Hibernate 懒加载序列化问题
+			objectMapper.registerModule(new Hibernate5Module().enable(Hibernate5Module.Feature.REPLACE_PERSISTENT_COLLECTIONS));
+		}
 		objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
 		objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
@@ -60,6 +62,15 @@ public class RedisConfig {
 		SerializationPair<?> pair = RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer);
 		RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofSeconds(cacheTtl)).serializeValuesWith(pair);
 		return new RedisCacheManager(redisCacheWriter, redisCacheConfiguration);
+	}
+	
+	private boolean hasJpa() {
+		try {
+			Class.forName("net.saisimon.agtms.jpa.repository.base.BaseJpaRepositoryFactoryBean");
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
 	}
 	
 }

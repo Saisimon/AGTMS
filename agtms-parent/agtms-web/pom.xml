@@ -17,6 +17,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
 			<exclusions>
@@ -36,11 +40,19 @@
 		</dependency>
 		<dependency>
 			<groupId>net.saisimon</groupId>
+			<artifactId>agtms-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-config</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 		</dependency>
 		<!-- 
 		<dependency>
@@ -55,15 +67,28 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-mongodb</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>de.flapdoodle.embed</groupId>
+			<artifactId>de.flapdoodle.embed.mongo</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-redis</artifactId>
 		</dependency>
-		-->
+		<dependency>
+			<groupId>it.ozimov</groupId>
+			<artifactId>embedded-redis</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.tomakehurst</groupId>
+			<artifactId>wiremock-jre8</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

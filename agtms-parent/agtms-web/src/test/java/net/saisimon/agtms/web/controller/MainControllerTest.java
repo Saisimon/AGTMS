@@ -1,6 +1,9 @@
 package net.saisimon.agtms.web.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -41,8 +44,72 @@ public class MainControllerTest extends AbstractControllerTest {
 		Map<String, String> param = new HashMap<>();
 		param.put("index", "0");
 		param.put("size", "10");
+		param.put("sort", "");
 		Map<String, Object> body = new HashMap<>();
 		sendPost("/user/main/list", param, body, adminToken);
+		
+		body = new HashMap<>();
+		List<Map<String, Object>> andFilters = new ArrayList<>();
+		Map<String, Object> andFilter = new HashMap<>();
+		andFilter.put("key", "loginName");
+		andFilter.put("operator", "$regex");
+		andFilter.put("type", "string");
+		andFilter.put("value", "admin");
+		andFilters.add(andFilter);
+		body.put("andFilters", andFilters);
+		sendPost("/user/main/list", param, body, adminToken);
+
+		body = new HashMap<>();
+		andFilters = new ArrayList<>();
+		andFilter = new HashMap<>();
+		andFilter.put("key", "loginName");
+		andFilter.put("operator", "$eq");
+		andFilter.put("type", "string");
+		andFilter.put("value", "admin");
+		andFilters.add(andFilter);
+		body.put("andFilters", andFilters);
+		sendPost("/user/main/list", param, body, adminToken);
+
+		body = new HashMap<>();
+		andFilters = new ArrayList<>();
+		andFilter = new HashMap<>();
+		andFilter.put("key", "loginName");
+		andFilter.put("operator", "$in");
+		andFilter.put("type", "string");
+		andFilter.put("value", Arrays.asList("admin", "test"));
+		andFilters.add(andFilter);
+		body.put("andFilters", andFilters);
+		sendPost("/user/main/list", param, body, adminToken);
+
+		body = new HashMap<>();
+		andFilters = new ArrayList<>();
+		andFilter = new HashMap<>();
+		andFilter.put("key", "loginName");
+		andFilter.put("operator", "$in");
+		andFilter.put("type", "string");
+		andFilter.put("value", Arrays.asList("admin", "test"));
+		andFilters.add(andFilter);
+		body.put("andFilters", andFilters);
+		sendPost("/user/main/list", param, body, adminToken);
+
+		body = new HashMap<>();
+		andFilters = new ArrayList<>();
+		Map<String, Object> gte = new HashMap<>();
+		gte.put("key", "createTime");
+		gte.put("operator", "$gte");
+		gte.put("type", "date");
+		gte.put("value", "2019-04-01T00:00:00.000Z");
+		andFilters.add(gte);
+		Map<String, Object> lte = new HashMap<>();
+		lte.put("key", "createTime");
+		lte.put("operator", "$lte");
+		lte.put("type", "date");
+		lte.put("value", "2019-04-30T00:00:00.000Z");
+		andFilters.add(lte);
+		body.put("andFilters", andFilters);
+		sendPost("/user/main/list", param, body, adminToken);
+
+		sendPost("/user/main/grid", null, adminToken);
 	}
 
 	@Test

@@ -57,7 +57,7 @@ public interface BaseService<T, ID> {
 	 * @return 实体对象列表
 	 */
 	default List<T> findList(FilterRequest filter, String... properties) {
-		return findList(filter, null, properties);
+		return findList(filter, (FilterSort)null, properties);
 	}
 	
 	/**
@@ -72,6 +72,20 @@ public interface BaseService<T, ID> {
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
 		return repository.findList(filter, sort, properties);
+	}
+	
+	/**
+	 * 根据指定条件查询列表
+	 * 
+	 * @param filter 指定过滤条件
+	 * @param pageable 指定分页条件
+	 * @param properties 属性名称数组
+	 * @return 实体对象列表
+	 */
+	default List<T> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
+		BaseRepository<T, ID> repository = getRepository();
+		Assert.notNull(repository, "need repository");
+		return repository.findList(filter, pageable, properties);
 	}
 	
 	/**
