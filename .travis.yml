@@ -15,7 +15,7 @@ before_install:
 install: true
 
 script:
-  - ./mvnw clean install
+  - ./mvnw clean install -Ddockerfile.skip=true
 
 env:
   global:
