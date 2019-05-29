@@ -8,30 +8,30 @@ spring:
     show-sql: true
     generate-ddl: true
   datasource:
-# Postgresql
-#    url: jdbc:postgresql://mysqlserver:5432/agtms
-#    username: agtms
-#    password: 1qaz1QAZ
-#    driver-class-name: org.postgresql.Driver
-# Sqlserver
-#    url: jdbc:sqlserver://mysqlserver:1433;databaseName=agtms
-#    username: agtms
-#    password: 1qaz1QAZ
-#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-# Mysql
-#    url: jdbc:mysql://mysqlserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true
-#    username: root
-#    password: 1qaz1QAZ
-#    driver-class-name: com.mysql.jdbc.Driver
-# Oracle
-#    url: jdbc:oracle:thin:@mysqlserver:1521:ORCL
-#    username: agtms
-#    password: 1qaz1QAZ
-#    driver-class-name: oracle.jdbc.OracleDriver
     hikari:
       minimum-idle: 10
       maximum-pool-size: 100
       max-lifetime: 1800000
+# Postgresql
+#    url: jdbc:postgresql://dbserver:5432/agtms
+#    username: agtms
+#    password: 1qaz1QAZ
+#    driver-class-name: org.postgresql.Driver
+# Sqlserver
+#    url: jdbc:sqlserver://dbserver:1433;databaseName=agtms
+#    username: agtms
+#    password: 1qaz1QAZ
+#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+# Mysql
+#    url: jdbc:mysql://dbserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+#    username: root
+#    password: 1qaz1QAZ
+#    driver-class-name: com.mysql.jdbc.Driver
+# Oracle
+#    url: jdbc:oracle:thin:@dbserver:1521:ORCL
+#    username: agtms
+#    password: 1qaz1QAZ
+#    driver-class-name: oracle.jdbc.OracleDriver
   data:
     mongodb:
       host: mongodbserver
@@ -44,6 +44,8 @@ spring:
     host: redisserver
     port: 6379
     password: 1qaz1QAZ
+    embedded:
+      enabled: false
 
 ribbon:
   ReadTimeout: 5000

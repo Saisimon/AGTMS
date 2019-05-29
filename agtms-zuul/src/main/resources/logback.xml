@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
 <configuration>
-	<property name="LOG_HOME" value="${user.dir}/data/web/logs" />
+	<property name="LOG_HOME" value="${user.dir}/data/zuul/logs" />
 	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${LOG_HOME}/agtms-web.log</file>
+		<file>${LOG_HOME}/agtms-zuul.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<FileNamePattern>${LOG_HOME}/agtms-web.%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
+			<FileNamePattern>${LOG_HOME}/agtms-zuul.%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
 			<MaxHistory>30</MaxHistory>
 			<cleanHistoryOnStart>true</cleanHistoryOnStart>
 			<totalSizeCap>500MB</totalSizeCap>

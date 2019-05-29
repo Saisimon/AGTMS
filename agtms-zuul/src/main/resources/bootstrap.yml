@@ -7,10 +7,14 @@ eureka:
     prefer-ip-address: true
     hostname: ${spring.application.name}
     instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10
   client:
     registry-fetch-interval-seconds: 5
     serviceUrl:
       defaultZone: http://agtms:agtms7890@eurekaserver:7890/eureka/
+    healthcheck:
+      enabled: true
 
 server:
   port: 7891

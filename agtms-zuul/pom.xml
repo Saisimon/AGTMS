@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>net.saisimon</groupId>
 		<artifactId>agtms</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 	
 	<artifactId>agtms-zuul</artifactId>
@@ -34,6 +34,10 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-zuul</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 	</dependencies>
 	
 	<build>
@@ -42,6 +46,23 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>${dockerfile-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>default</id>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<repository>agtms/agtms-zuul</repository>
+					<tag>${revision}</tag>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>net.saisimon</groupId>
 		<artifactId>agtms</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 	
 	<artifactId>agtms-record</artifactId>
@@ -57,6 +57,29 @@
 						<phase>verify</phase>
 						<goals>
 							<goal>report-aggregate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>${exec-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>prune-images</id>
+						<phase>package</phase>
+						<configuration>
+							<executable>docker</executable>
+							<arguments>
+								<argument>image</argument>
+								<argument>prune</argument>
+								<argument>-f</argument>
+							</arguments>
+							<skip>${dockerfile.skip}</skip>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
 						</goals>
 					</execution>
 				</executions>

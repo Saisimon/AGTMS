@@ -2,7 +2,7 @@ import { signIn, signOut, passwordChange, profileSave, profileInfo } from '@/api
 import { uploadImage } from '@/api/upload'
 
 const state = {
-    urlPrefix: '///' + window.location.hostname + ':7891/agtms',
+    urlPrefix: '/agtms',
     progress: 100,
     intervalId: -1,
     user: JSON.parse(getCookie('user', null)),

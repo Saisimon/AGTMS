@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0"
@@ -9,30 +9,15 @@
 		<groupId>net.saisimon</groupId>
 		<artifactId>agtms</artifactId>
 		<version>${revision}</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>agtms-eureka</artifactId>
-	<packaging>jar</packaging>
-	<name>agtms-eureka</name>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-		</dependency>
-	</dependencies>
-
+	<artifactId>agtms-vue</artifactId>
+	<packaging>pom</packaging>
+	<name>agtms-vue</name>
+	
 	<build>
-		<finalName>agtms-eureka</finalName>
 		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>dockerfile-maven-plugin</artifactId>
@@ -46,7 +31,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<repository>agtms/agtms-eureka</repository>
+					<repository>agtms/agtms-vue</repository>
 					<tag>${revision}</tag>
 				</configuration>
 			</plugin>

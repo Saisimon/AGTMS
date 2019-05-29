@@ -12,7 +12,7 @@ public class SequenceService {
 	@Autowired
 	private SequenceRepository sequenceRepository;
 	
-	public Long nextId(String collection) {
+	public synchronized Long nextId(String collection) {
 		Sequence sequence = sequenceRepository.findByCollection(collection);
 		if (sequence == null) {
 			sequence = new Sequence();

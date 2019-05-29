@@ -8,5 +8,13 @@ module.exports = {
         'Quill': 'quill/dist/quill.js'
       }),
     ]
+  },
+  devServer: {
+    proxy: {
+      '/agtms': {
+        target: 'http://0.0.0.0:7891',
+        changeOrigin: true
+      }
+    }
   }
 }

@@ -24,5 +24,15 @@
 /nbdist/
 /.nb-gradle/
 
+### Mac OS ###
 .DS_Store
-data
+
+data/web/logs
+data/web/libs/*
+data/web/*.pid
+data/eureka
+data/zuul
+data/gateway
+data/redis
+data/mysql
+data/mongodb

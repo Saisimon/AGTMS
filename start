@@ -1,47 +1,49 @@
 #!/bin/sh
 
 # 创建日志文件夹
-mkdir -p data/logs
+mkdir -p data/eureka
+mkdir -p data/web
+mkdir -p data/zuul
 
 # Maven 打包
-bash mvnw clean install -DskipTests
+bash mvnw clean install -DskipTests -Ddockerfile.skip=true
 if [ $? -gt 0 ]; then
     echo "maven 构建失败."
     exit
 fi
 
 # 启动 agtms-eureka
-if [ -f data/eureka.pid ]; then
-    kill -9 `cat data/eureka.pid`
-    rm data/eureka.pid
+if [ -f data/eureka/eureka.pid ]; then
+    kill -9 `cat data/eureka/eureka.pid`
+    rm data/eureka/eureka.pid
     echo "agtms-eureka 已停止."
 fi
-java -jar -Xms1g -Xms1g agtms-eureka/target/agtms-eureka.jar > data/logs/eureka.log 2>&1 &
-echo $! > data/eureka.pid
+java -jar -Xms512m -Xmx512m -Xmn192m -Xss256k agtms-eureka/target/agtms-eureka.jar > data/eureka/logs/agtms-eureka.log 2>&1 &
+echo $! > data/eureka/eureka.pid
 echo "agtms-eureka 启动中..."
 sleep 10
 echo "agtms-eureka 已启动."
 
 # 启动 agtms-web
-if [ -f data/web.pid ]; then
-    kill -9 `cat data/web.pid`
-    rm data/web.pid
+if [ -f data/web/web.pid ]; then
+    kill -9 `cat data/web/web.pid`
+    rm data/web/web.pid
     echo "agtms-web 已停止."
 fi
-java -jar -Xms2g -Xms2g agtms-parent/agtms-web/target/agtms-web.jar > data/logs/web.log 2>&1 &
-echo $! > data/web.pid
+java -jar -Xms1g -Xmx1g -Xmn384m -Xss256k agtms-parent/agtms-web/target/agtms-web.jar > data/web/logs/agtms-web.log 2>&1 &
+echo $! > data/web/web.pid
 echo "agtms-web 启动中..."
 sleep 10
 echo "agtms-web 已启动."
 
 # 启动 agtms-zuul
-if [ -f data/zuul.pid ]; then
-    kill -9 `cat data/zuul.pid`
-    rm data/zuul.pid
+if [ -f data/zuul/zuul.pid ]; then
+    kill -9 `cat data/zuul/zuul.pid`
+    rm data/zuul/zuul.pid
     echo "agtms-zuul 已停止."
 fi
-java -jar -Xms1g -Xms1g agtms-zuul/target/agtms-zuul.jar > data/logs/zuul.log 2>&1 &
-echo $! > data/zuul.pid
+java -jar -Xms512m -Xmx512m -Xmn192m -Xss256k agtms-zuul/target/agtms-zuul.jar > data/zuul/logs/agtms-zuul.log 2>&1 &
+echo $! > data/zuul/zuul.pid
 echo "agtms-zuul 启动中..."
 sleep 10
 echo "agtms-zuul 已启动."
