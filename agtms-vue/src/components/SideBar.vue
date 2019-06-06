@@ -46,8 +46,8 @@ export default {
                 var value = tree[key];
                 if (key == "childrens" && value && value.length > 0) {
                     var childrenMenuTrees = new Array();
-                    for (var i = 0; i < value.length; i++) {
-                        var childrenMenuTree = this.filterTree(search, value[i]);
+                    for (var a = 0; a < value.length; a++) {
+                        var childrenMenuTree = this.filterTree(search, value[a]);
                         if (childrenMenuTree) {
                             childrenMenuTrees.push(childrenMenuTree);
                         }
@@ -55,9 +55,9 @@ export default {
                     menuTree[key] = childrenMenuTrees;
                 } else if (key == "links" && value && value.length > 0) {
                     var menuLinks = new Array();
-                    for (var i = 0; i < value.length; i++) {
+                    for (var b = 0; b < value.length; b++) {
                         var menuLink = {};
-                        var link = value[i];
+                        var link = value[b];
                         if (link["name"].toLowerCase().indexOf(search) !== -1) {
                             needPush = true;
                             menuLink["name"] = link["name"];

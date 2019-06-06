@@ -9,6 +9,7 @@ module.exports = {
       }),
     ]
   },
+
   devServer: {
     proxy: {
       '/agtms': {
@@ -16,5 +17,7 @@ module.exports = {
         changeOrigin: true
       }
     }
-  }
+  },
+
+  lintOnSave: false
 }

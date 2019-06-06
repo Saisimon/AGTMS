@@ -210,8 +210,8 @@ export default {
                     if (selectionGrid && selectionGrid.template) {
                         var valueOptions = selectionGrid.template.value.options;
                         if (valueOptions && valueOptions.length > 0) {
-                            for (var i = 0; i < valueOptions.length; i++) {
-                                var valueOption = valueOptions[i];
+                            for (var a = 0; a < valueOptions.length; a++) {
+                                var valueOption = valueOptions[a];
                                 if (valueOption.disable) {
                                     valueOption["$isDisabled"] = true;
                                 }
@@ -219,8 +219,8 @@ export default {
                         }
                         var textOptions = selectionGrid.template.text.options;
                         if (textOptions && textOptions.length > 0) {
-                            for (var i = 0; i < textOptions.length; i++) {
-                                var textOption = textOptions[i];
+                            for (var b = 0; b < textOptions.length; b++) {
+                                var textOption = textOptions[b];
                                 if (textOption.disable) {
                                     textOption["$isDisabled"] = true;
                                 }
@@ -322,13 +322,15 @@ export default {
             selection['title'] = title;
             var type = this.selectionGrid.type.value.value;
             selection['type'] = type;
+            var value;
+            var text;
             if (type === 0) {
                 var options = [];
                 var values = [];
                 var texts = [];
                 for (var i = 0; i < this.selectionGrid.options.length; i++) {
                     var option = this.selectionGrid.options[i];
-                    var value = option.value.value;
+                    value = option.value.value;
                     if (value == null || value == '') {
                         pass = false;
                         option.value.state = false;
@@ -339,7 +341,7 @@ export default {
                         values.push(value);
                         option.value.state = null;
                     }
-                    var text = option.text.value;
+                    text = option.text.value;
                     if (text == null || text == '') {
                         pass = false;
                         option.text.state = false;
@@ -364,7 +366,7 @@ export default {
                     this.selectionGrid.template.template.state = false;
                 } else {
                     template['id'] = templateId;
-                    var value = this.selectionGrid.template.value.value;
+                    value = this.selectionGrid.template.value.value;
                     if (value == null || value.value == null) {
                         pass = false;
                         this.selectionGrid.template.value.state = false;
@@ -372,7 +374,7 @@ export default {
                     if (value != null) {
                         template['value'] = value.value;
                     }
-                    var text = this.selectionGrid.template.text.value;
+                    text = this.selectionGrid.template.text.value;
                     if (text == null || text.value == null) {
                         pass = false;
                         this.selectionGrid.template.text.state = false;
