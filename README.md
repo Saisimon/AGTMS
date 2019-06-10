@@ -23,6 +23,11 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 │   └── agtms-web       Web 服务 (默认端口：7892)
 ├── agtms-record        集成测试报告聚合模块
 ├── agtms-vue           前端页面 (默认端口：8080)
+├── data                Docker 相关数据
+│   └── web
+|       ├── config      Web 服务额外配置
+|       └── libs        Web 服务额外 jar 库路径
+├── docker-compose.yml  Docker Compose 配置
 ├── README.md           README 文件
 ├── start.cmd           一键启动脚本 (Windows)
 └── start               一键启动脚本 (Unix)
@@ -33,10 +38,16 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 2. [Node.js](https://nodejs.org/)
 3. RAM 2G+
 
-## 最小安装并启动
-* `默认使用 H2 内存数据库，每次重启数据会重制。要想保存数据，请自行配置数据库连接`
+## 安装并启动
 ### 一键启动
-1. 执行启动脚本
+`默认使用 H2 内存数据库，每次重启数据会重制。要想保存数据，请自行配置数据库连接`
+1. 配置 hosts
+* `/etc/hosts` (Unix)
+* `c:\windows\system32\drivers\etc\hosts` (Windows)
+```
+127.0.0.1   eurekaserver
+```
+2. 执行启动脚本
 * **`start.cmd 默认会杀掉占用 7892端口的进程，请确认以后再执行操作`**
 ```sh
 # Unix
@@ -45,37 +56,82 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 # Windows
 start.cmd
 ```
-2. 访问
+3. 访问
 ```html
 http://localhost:8080
 ```
-3. 日志
+4. 日志
 ```
 data
-└── logs 
-    └── web.log    Web 服务日志
+└── web 
+    └── agtms-web.log     Web 服务日志
 ```
 
 ### 分步启动
-1. 打包
+`默认使用 H2 内存数据库，每次重启数据会重制。要想保存数据，请自行配置数据库连接`
+1. 配置 hosts
+* `/etc/hosts` (Unix)
+* `c:\windows\system32\drivers\etc\hosts` (Windows)
+```
+127.0.0.1   eurekaserver
+```
+2. 打包
 ```sh
 # Unix
-./mvnw clean package
+./mvnw clean package -Ddockerfile.skip=true
 
 # Windows
-mvnw.cmd clean package
+mvnw.cmd clean package -Ddockerfile.skip=true
 ```
-2. 启动Web 服务 (agtms-web)
+3. 启动Web 服务 (agtms-web)
 ```sh
 java -jar agtms-parent/agtms-web/target/agtms-web.jar
 ```
-3. 启动前端页面 (agtms-vue)
+4. 启动前端页面 (agtms-vue)
 ```sh
 cd agtms-vue
 npm install
 npm run serve
 ```
-4. 访问
+5. 访问
+```html
+http://localhost:8080
+```
+6. 日志
+```
+data
+└── web 
+    └── agtms-web.log     Web 服务日志
+```
+
+### Docker 容器启动
+1. 安装 [Docker CE](https://docs.docker.com/install/) 或者 [Docker EE](https://docs.docker.com/ee/supported-platforms/)，请参考官方文档下载安装
+2. 安装 [Docker Compose](https://docs.docker.com/compose/install/)，请参考官方文档下载安装
+3. 编译 Java 项目并生成 Docker 镜像
+```sh
+# Unix
+./mvnw clean package
+# Windows
+mvnw.cmd clean package
+```
+4. data/web/libs 路径下添加对应数据库驱动 jar 包
+* 默认使用 MySQL 5.7
+```sh
+# mysql-connector-java-5.1.47.jar
+wget -P data/web/libs http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.47/mysql-connector-java-5.1.47.jar
+```
+5. 启动容器
+* DATA_HOME：数据目录，默认为 ./data
+* WEB_CONFIG_HOME：Web 服务额外配置，默认为 ./data/web/config
+* WEB_LIBS_HOME：Web 服务额外 jar 库路径，默认为 ./data/web/libs
+* REVISION:：版本号，默认为 latest
+```sh
+# Docker Compose
+docker-compose up -d
+# Docker Swarm
+docker stack deploy -c docker-compose.yml agtms
+```
+6. 访问
 ```html
 http://localhost:8080
 ```
@@ -113,7 +169,6 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 8. 完善自动化测试
 9. 系统引导
 10. 数据可视化
-11. Gradle
-12. Docker
-13. ~~Standalone Branch~~
-14. ...
+11. ~~Docker~~
+12. ~~Standalone Branch~~
+13. ...
