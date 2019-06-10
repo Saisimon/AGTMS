@@ -260,33 +260,7 @@ export default {
     },
     computed: {
         templateGrid: function() {
-            var templateGrid = this.$store.state.template.templateGrid;
-            var functionSelect = templateGrid.functionSelect;
-            if (functionSelect) {
-                this.functionField['options'] = functionSelect.options;
-                this.functionField['value'] = functionSelect.selected;
-            }
-            var navigationSelect = templateGrid.navigationSelect;
-            if (navigationSelect) {
-                this.navigationField['options'] = navigationSelect.options;
-                this.navigationField['value'] = navigationSelect.selected;
-                var nid = this.$route.query.nid;
-                if (nid && nid > 0) {
-                    for (var i = 0; i < navigationSelect.options.length; i++) {
-                        var option = navigationSelect.options[i];
-                        if (option.value == nid) {
-                            this.navigationField['value'] = option;
-                            break;
-                        }
-                    }
-                }
-            }
-            var dataSourceSelect = templateGrid.dataSourceSelect;
-            if (dataSourceSelect) {
-                this.dataSourceField['options'] = dataSourceSelect.options;
-                this.dataSourceField['value'] = dataSourceSelect.selected;
-            }
-            return templateGrid;
+            return this.$store.state.template.templateGrid;
         },
         columns: function() {
             var columns = this.templateGrid.table.columns;
@@ -459,12 +433,12 @@ export default {
                         break;
                     }
                 }
-                for (var i = idx + 1; i < this.columns.length; i++) {
-                    this.columns[i]['ordered'] = i - 2;
+                for (var a = idx + 1; a < this.columns.length; a++) {
+                    this.columns[a]['ordered'] = a - 2;
                 }
                 this.columns.splice(idx, 1);
-                for (var i = 0; i < this.rows.length; i++) {
-                    delete this.rows[i][key];
+                for (var b = 0; b < this.rows.length; b++) {
+                    delete this.rows[b][key];
                 }
                 this.rows.push();
             }
@@ -547,16 +521,16 @@ export default {
             template['source'] = this.dataSourceField.value.value;
             var functions = this.functionField.value;
             var func = new Number(0);
-            for (var i = 0; i < functions.length; i++) {
-                func += new Number(functions[i].value);
+            for (var a = 0; a < functions.length; a++) {
+                func += new Number(functions[a].value);
             }
             template['functions'] = func;
             template['columnIndex'] = this.templateGrid.table.idx;
             var templateColumns = new Array(this.columns.length - 1);
             var columnNameRow = this.rows[0];
             var tableRow = this.rows[1];
-            for (var i = 1; i < this.columns.length; i++) {
-                var column = this.columns[i];
+            for (var b = 1; b < this.columns.length; b++) {
+                var column = this.columns[b];
                 var templateColumn = {
                     columnName: column.field,
                     title: columnNameRow[column.field].value,
@@ -591,7 +565,7 @@ export default {
                 }
                 templateColumn['fields'] = templateFields;
                 templateColumn['fieldIndex'] = fieldTable.idx;
-                templateColumns[i - 1] = templateColumn;
+                templateColumns[b - 1] = templateColumn;
             }
             if (templateColumns.length < 1) {
                 this.$store.commit('showAlert', {
@@ -716,18 +690,45 @@ export default {
         }
     },
     watch: {
-        rows(curVal, oldVal) {
+        rows() {
             var templateTable = document.getElementById("templateTable");
             var outWidth = templateTable.offsetWidth;
             var table = templateTable.getElementsByTagName("table")[0];
             var inWidth = table.offsetWidth;
             this.draggableClass = outWidth < inWidth ? 'd-inline-flex' : 'd-flex';
         },
-        draggable(curVal, oldVal) {
+        draggable(curVal) {
             if (curVal) {
                 this.toDraggable();
             } else {
                 this.toTable();
+            }
+        },
+        templateGrid() {
+            var functionSelect = this.templateGrid.functionSelect;
+            if (functionSelect) {
+                this.functionField['options'] = functionSelect.options;
+                this.functionField['value'] = functionSelect.selected;
+            }
+            var navigationSelect = this.templateGrid.navigationSelect;
+            if (navigationSelect) {
+                this.navigationField['options'] = navigationSelect.options;
+                this.navigationField['value'] = navigationSelect.selected;
+                var nid = this.$route.query.nid;
+                if (nid && nid > 0) {
+                    for (var i = 0; i < navigationSelect.options.length; i++) {
+                        var option = navigationSelect.options[i];
+                        if (option.value == nid) {
+                            this.navigationField['value'] = option;
+                            break;
+                        }
+                    }
+                }
+            }
+            var dataSourceSelect = this.templateGrid.dataSourceSelect;
+            if (dataSourceSelect) {
+                this.dataSourceField['options'] = dataSourceSelect.options;
+                this.dataSourceField['value'] = dataSourceSelect.selected;
             }
         }
     }

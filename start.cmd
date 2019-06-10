@@ -2,7 +2,7 @@
 chcp 65001
 
 @REM 创建日志文件夹
-md data\logs
+md data\web
 
 for /f "tokens=5" %%i in ('netstat -ano ^| findstr 7892') do (
     taskkill /f /pid %%i
@@ -12,10 +12,10 @@ for /f "tokens=5" %%i in ('netstat -ano ^| findstr 7892') do (
 :web
 
 @REM Maven 打包
-CALL mvnw.cmd clean install -DskipTests
+CALL mvnw.cmd clean install -DskipTests -Ddockerfile.skip=true
 
 @REM 启动 agtms-web
-START /b java.exe -jar -Xms2g -Xms2g agtms-parent/agtms-web/target/agtms-web.jar > data/logs/web.log 2>&1
+START /b java.exe -jar -Xms1g -Xmx1g -Xmn384m -Xss256k agtms-parent/agtms-web/target/agtms-web.jar > data/web/logs/agtms-web.log 2>&1
 echo "agtms-web 启动中..."
 ping 192.0.2.2 -n 1 -w 10000 > nul
 echo "agtms-web 已启动."

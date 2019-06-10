@@ -131,8 +131,8 @@ export default {
                 var fieldKey = "field" + idx;
                 var ordered = this.columns.length - 1;
                 this.columns.splice(this.columns.length - 1, 0, { field: fieldKey, sortable: false, ordered: ordered});
-                for (var i = 0; i < this.rows.length; i++) {
-                    var row = this.rows[i];
+                for (var a = 0; a < this.rows.length; a++) {
+                    var row = this.rows[a];
                     if (row.editor == 'input') {
                         row[fieldKey] = {value: "", className: fieldKey};
                     } else if (row.editor == 'select') {
@@ -161,20 +161,19 @@ export default {
                 if (this.columns.length <= 2) {
                     return;
                 }
-                var idx = 0;
+                var columnIdx = 0;
                 var key = pcolumn['field'];
-                for (;idx < this.columns.length; idx++) {
-                    if (this.columns[idx]['field'] == key) {
+                for (;columnIdx < this.columns.length; columnIdx++) {
+                    if (this.columns[columnIdx]['field'] == key) {
                         break;
                     }
                 }
-                for (var i = idx + 1; i < this.columns.length; i++) {
-                    this.columns[i]['ordered'] = i - 2;
+                for (var b = columnIdx + 1; b < this.columns.length; b++) {
+                    this.columns[b]['ordered'] = b - 2;
                 }
-                this.columns.splice(idx, 1);
-                for (var i = 0; i < this.rows.length; i++) {
-                    var row = this.rows[i];
-                    delete row[key];
+                this.columns.splice(columnIdx, 1);
+                for (var c = 0; c < this.rows.length; c++) {
+                    delete this.rows[c][key];
                 }
                 this.rows.push();
                 this.table.columns = this.columns;

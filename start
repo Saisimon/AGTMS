@@ -1,23 +1,23 @@
 #!/bin/sh
 
 # 创建日志文件夹
-mkdir -p data/logs
+mkdir -p data/web
 
 # Maven 打包
-bash mvnw clean install -DskipTests
+bash mvnw clean install -DskipTests -Ddockerfile.skip=true
 if [ $? -gt 0 ]; then
     echo "maven 构建失败."
     exit
 fi
 
 # 启动 agtms-web
-if [ -f data/web.pid ]; then
-    kill -9 `cat data/web.pid`
-    rm data/web.pid
+if [ -f data/web/web.pid ]; then
+    kill -9 `cat data/web/web.pid`
+    rm data/web/web.pid
     echo "agtms-web 已停止."
 fi
-java -jar -Xms2g -Xms2g agtms-parent/agtms-web/target/agtms-web.jar > data/logs/web.log 2>&1 &
-echo $! > data/web.pid
+java -jar -Xms1g -Xmx1g -Xmn384m -Xss256k agtms-parent/agtms-web/target/agtms-web.jar > data/web/logs/agtms-web.log 2>&1 &
+echo $! > data/web/web.pid
 echo "agtms-web 启动中..."
 sleep 10
 echo "agtms-web 已启动."

@@ -1,0 +1,111 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=1qaz1QAZ
+      - MYSQL_USER=agtms
+      - MYSQL_PASSWORD=1qaz1QAZ
+      - MYSQL_DATABASE=agtms
+    networks: 
+      back:
+        aliases:
+          - dbserver
+    volumes:
+      - ${DATA_HOME:-./data}/mysql/data:/var/lib/mysql
+    deploy:
+      mode: global
+      labels:
+        "name": "DB"
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      placement:
+        constraints: [node.role == manager]
+  redis:
+    image: redis:5.0-alpine
+    command: redis-server --requirepass 1qaz1QAZ --appendonly yes
+    networks: 
+      back:
+        aliases:
+          - redisserver
+    volumes:
+      - ${DATA_HOME-./data}/redis/data:/data
+    deploy:
+      mode: global
+      labels:
+        "name": "REDIS"
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      placement:
+        constraints: [node.role == manager]
+  mongodb:
+    image: bitnami/mongodb:3.6
+    environment:
+      - MONGODB_ROOT_PASSWORD=root
+      - MONGODB_USERNAME=agtms
+      - MONGODB_PASSWORD=1qaz1QAZ
+      - MONGODB_DATABASE=agtms
+    networks: 
+      back:
+        aliases:
+          - mongodbserver
+    volumes:
+      - ${DATA_HOME-./data}/mongodb/data:/bitnami/mongodb/data
+    deploy:
+      mode: global
+      labels:
+        "name": "mongodb"
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      placement:
+        constraints: [node.role == manager]
+  agtms-web:
+    image: agtms/agtms-web:${REVISION-latest}
+    environment:
+      - JAVA_OPTS=-Xms1g -Xmx1g -Xmn384m -Xss256k -Dloader.path=/libs
+    networks: 
+      front:
+        aliases:
+          - webserver
+      back:
+    volumes:
+      - ${WEB_CONFIG_HOME-./data/web/config}:/config
+      - ${WEB_LIBS_HOME-./data/web/libs}:/libs
+    entrypoint: ./waiting.sh -d dbserver:3306,redisserver:6379,mongodbserver:27017 -c 'java -Xms1g -Xmx1g -Xmn384m -Xss256k -Dloader.path=/libs -Djava.security.egd=file:/dev/./urandom -jar agtms-web.jar'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        "name": "web"
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+      resources:
+          limits:
+            memory: 2G
+  agtms-vue:
+    image: agtms/agtms-vue:${REVISION-latest}
+    ports:
+      - 8080:80
+    networks: 
+      front:
+    volumes:
+      - ${WEB_CONFIG_HOME-./data/web/config}/nginx.conf:/etc/nginx/nginx.conf
+    entrypoint: /app/waiting.sh -d webserver -c 'nginx -g "daemon off;"'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        "name": "vue"
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+networks: 
+  front:
+  back: 

@@ -15,7 +15,7 @@
 
 <script>
 import {quillEditor, Quill} from 'vue-quill-editor'
-import {container, ImageExtend, QuillWatch} from 'quill-image-extend-module'
+import {ImageExtend, QuillWatch} from 'quill-image-extend-module'
 import { ImageDrop } from 'quill-image-drop-module'
 import ImageResize from 'quill-image-resize-module'
 

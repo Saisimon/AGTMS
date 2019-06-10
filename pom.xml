@@ -6,16 +6,17 @@
 
 	<groupId>net.saisimon</groupId>
 	<artifactId>agtms</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 	<name>agtms</name>
 
 	<properties>
+		<revision>standalone-0.8.0</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<java.version>1.8</java.version>
-		<spring-boot.version>2.0.1.RELEASE</spring-boot.version>
+		<spring-boot.version>2.0.8.RELEASE</spring-boot.version>
 		<jpa.version>2.2</jpa.version>
 		<poi.version>3.17</poi.version>
 		<commons-beanutils.version>1.9.3</commons-beanutils.version>
@@ -24,11 +25,15 @@
 		<wiremock.version>2.23.2</wiremock.version>
 		<maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
 		<jacoco-maven-plugin.version>0.8.3</jacoco-maven-plugin.version>
+		<exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+		<dockerfile-maven-plugin.version>1.4.10</dockerfile-maven-plugin.version>
+		<frontend-maven-plugin.version>1.7.6</frontend-maven-plugin.version>
 	</properties>
 
 	<modules>
 		<module>agtms-autotest</module>
 		<module>agtms-parent</module>
+		<module>agtms-vue</module>
 		<module>agtms-record</module>
 	</modules>
 
@@ -44,32 +49,32 @@
 			<dependency>
 				<groupId>net.saisimon</groupId>
 				<artifactId>agtms-core</artifactId>
-				<version>${project.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.saisimon</groupId>
 				<artifactId>agtms-config</artifactId>
-				<version>${project.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.saisimon</groupId>
 				<artifactId>agtms-redis</artifactId>
-				<version>${project.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.saisimon</groupId>
 				<artifactId>agtms-mongodb</artifactId>
-				<version>${project.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.saisimon</groupId>
 				<artifactId>agtms-jpa</artifactId>
-				<version>${project.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.saisimon</groupId>
 				<artifactId>agtms-web</artifactId>
-				<version>${project.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.persistence</groupId>

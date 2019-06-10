@@ -335,11 +335,6 @@ export default {
             return this.$store.state.list.filters;
         },
         columns: function() {
-            if (this.batches.length > 0) {
-                this.selectOptions.enabled = true;
-            } else {
-                this.selectOptions.enabled = false;
-            }
             return this.$store.state.list.columns;
         },
         actions: function() {
@@ -359,6 +354,15 @@ export default {
         },
         total: function() {
             return this.$store.state.list.total;
+        }
+    },
+    watch: {
+        batches() {
+            if (this.batches.length > 0) {
+                this.selectOptions.enabled = true;
+            } else {
+                this.selectOptions.enabled = false;
+            }
         }
     },
     created: function() {
@@ -477,7 +481,7 @@ export default {
             }
             this.selects = selects;
         },
-        columnCellClass: function(rowIndex, columnName, rowData) {
+        columnCellClass: function(rowIndex, columnName) {
             if (columnName === 'action') {
                 return 'table-actions-cell';
             }
@@ -498,7 +502,7 @@ export default {
             this.$store.commit('setSort', params);
             this.searchByFilters();
         },
-        searchByFilters: function(key) {
+        searchByFilters: function() {
             this.$store.dispatch('getDatas', {
                 url: this.$route.path,
                 filters: this.searchFilters(),
