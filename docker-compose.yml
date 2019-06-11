@@ -15,7 +15,8 @@ services:
     volumes:
       - ${DATA_HOME:-./data}/mysql/data:/var/lib/mysql
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       labels:
         "name": "DB"
       restart_policy:
@@ -33,7 +34,8 @@ services:
     volumes:
       - ${DATA_HOME-./data}/redis/data:/data
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       labels:
         "name": "REDIS"
       restart_policy:
@@ -55,7 +57,8 @@ services:
     volumes:
       - ${DATA_HOME-./data}/mongodb/data:/bitnami/mongodb/data
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
       labels:
         "name": "mongodb"
       restart_policy:
