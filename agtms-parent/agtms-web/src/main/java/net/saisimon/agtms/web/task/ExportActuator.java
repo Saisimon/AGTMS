@@ -53,7 +53,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 	private static final Sign EXPORT_SIGN = Sign.builder().name(Functions.EXPORT.getFunction()).text(Functions.EXPORT.getFunction()).build();
 	private static final int PAGE_SIZE = 2000;
 	
-	@Value("${extra.file.path}")
+	@Value("${extra.file.path:/tmp/files}")
 	private String filePath;
 	
 	@Override
@@ -99,7 +99,8 @@ public class ExportActuator implements Actuator<ExportParam> {
 		}
 		String userAgent = request.getHeader("user-agent");
 		StringBuilder exportFilePath = new StringBuilder();
-		exportFilePath.append(filePath).append(Constant.File.EXPORT_PATH)
+		exportFilePath.append(filePath)
+			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId())
 			.append(File.separatorChar).append(param.getExportFileUUID());
 		File file = null;
@@ -144,7 +145,8 @@ public class ExportActuator implements Actuator<ExportParam> {
 	
 	private File createExportFile(ExportParam param) throws IOException {
 		StringBuilder exportFilePath = new StringBuilder();
-		exportFilePath.append(filePath).append(Constant.File.EXPORT_PATH)
+		exportFilePath.append(filePath)
+			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId());
 		return FileUtils.createFile(exportFilePath.toString(), param.getExportFileUUID(), "." + param.getExportFileType());
 	}

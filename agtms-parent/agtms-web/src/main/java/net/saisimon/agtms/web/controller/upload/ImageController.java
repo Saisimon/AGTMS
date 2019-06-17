@@ -36,7 +36,7 @@ import net.saisimon.agtms.web.controller.base.BaseController;
 @Slf4j
 public class ImageController extends BaseController {
 	
-	@Value("${extra.file.path}")
+	@Value("${extra.file.path:/tmp/files}")
 	private String filePath;
 	
 	@Operate(type=OperateTypes.UPLOAD)
@@ -52,7 +52,8 @@ public class ImageController extends BaseController {
 			String second = md5.substring(2, 4);
 			String third = md5.substring(4) + imageFormat.getSuffix();
 			StringBuilder uploadFilePath = new StringBuilder();
-			uploadFilePath.append(filePath).append(Constant.File.UPLOAD_PATH)
+			uploadFilePath.append(filePath)
+				.append(File.separatorChar).append(Constant.File.UPLOAD_PATH)
 				.append(File.separatorChar).append("image")
 				.append(File.separatorChar).append(first)
 				.append(File.separatorChar).append(second)
@@ -76,7 +77,8 @@ public class ImageController extends BaseController {
 	@GetMapping("/res/{first}/{second}/{third}")
 	public void res(@PathVariable("first") String first, @PathVariable("second") String second, @PathVariable("third") String third) throws IOException {
 		StringBuilder uploadFilePath = new StringBuilder();
-		uploadFilePath.append(filePath).append(Constant.File.UPLOAD_PATH)
+		uploadFilePath.append(filePath)
+			.append(File.separatorChar).append(Constant.File.UPLOAD_PATH)
 			.append(File.separatorChar).append("image")
 			.append(File.separatorChar).append(first)
 			.append(File.separatorChar).append(second)

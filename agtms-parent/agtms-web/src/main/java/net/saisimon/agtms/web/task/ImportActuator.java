@@ -61,7 +61,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 	
 	@Autowired
 	private MessageSource messageSource;
-	@Value("${extra.file.path}")
+	@Value("${extra.file.path:/tmp/files}")
 	private String filePath;
 	
 	@Override
@@ -122,7 +122,8 @@ public class ImportActuator implements Actuator<ImportParam> {
 		}
 		String userAgent = request.getHeader("user-agent");
 		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(filePath).append(Constant.File.IMPORT_PATH)
+		importFilePath.append(filePath)
+			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId())
 			.append(File.separatorChar).append(param.getImportFileUUID());
 		File file = null;
@@ -167,7 +168,8 @@ public class ImportActuator implements Actuator<ImportParam> {
 	
 	private File createImportFile(ImportParam param) {
 		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(filePath).append(Constant.File.IMPORT_PATH)
+		importFilePath.append(filePath)
+			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId())
 			.append(File.separatorChar).append(param.getImportFileUUID()).append('.').append(param.getImportFileType());
 		File file = new File(importFilePath.toString());

@@ -36,20 +36,3 @@ feign:
         connectTimeout: 2000
         readTimeout: 5000
         loggerLevel: full
-
-extra:
-  file:
-    path: /tmp/files
-  class:
-    path: /tmp/classes
-  admin:
-    username: admin
-    password: 123456
-  default:
-    password: 123456
-  max-size:
-    task: 1024
-    export: 65535
-    import: 65535
-    cache:
-      ttl: 600

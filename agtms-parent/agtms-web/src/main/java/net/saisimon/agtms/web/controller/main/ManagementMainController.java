@@ -103,7 +103,7 @@ public class ManagementMainController extends AbstractMainController {
 	private int exportMaxSize;
 	@Value("${extra.max-size.import:65535}")
 	private int importMaxSize;
-	@Value("${extra.file.path}")
+	@Value("${extra.file.path:/tmp/files}")
 	private String filePath;
 	@Value("${spring.cloud.client.ip-address}")
 	private String ip;
@@ -338,7 +338,7 @@ public class ManagementMainController extends AbstractMainController {
 		body.setTemplateId(template.sign());
 		body.setUserId(userId);
 		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(filePath).append(Constant.File.IMPORT_PATH).append(File.separatorChar).append(userId);
+		importFilePath.append(filePath).append(File.separatorChar).append(Constant.File.IMPORT_PATH).append(File.separatorChar).append(userId);
 		try (FileOutputStream output = new FileOutputStream(FileUtils.createFile(importFilePath.toString(), body.getImportFileUUID(), "." + importFileType))) {
 			int size = 0;
 			switch (importFileType) {

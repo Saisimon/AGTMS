@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 
 services:
   db:
@@ -67,7 +67,7 @@ services:
       placement:
         constraints: [node.role == manager]
   agtms-eureka:
-    image: agtms/agtms-eureka:${REVISION-latest}
+    image: agtms/agtms-eureka:${REVISION-0.8.0}
     environment:
       - JAVA_OPTS=-Xms512m -Xmx512m -Xmn192m -Xss256k
     ports:
@@ -89,7 +89,7 @@ services:
           limits:
             memory: 1G
   agtms-zuul:
-    image: agtms/agtms-zuul:${REVISION-latest}
+    image: agtms/agtms-zuul:${REVISION-0.8.0}
     environment:
       - JAVA_OPTS=-Xms512m -Xmx512m -Xmn192m -Xss256k
     networks: 
@@ -110,7 +110,7 @@ services:
           limits:
             memory: 1G
   agtms-web:
-    image: agtms/agtms-web:${REVISION-latest}
+    image: agtms/agtms-web:${REVISION-0.8.0}
     environment:
       - JAVA_OPTS=-Xms1g -Xmx1g -Xmn384m -Xss256k -Dloader.path=/libs
     networks: 
@@ -118,6 +118,7 @@ services:
     volumes:
       - ${WEB_CONFIG_HOME-./data/web/config}:/config
       - ${WEB_LIBS_HOME-./data/web/libs}:/libs
+      - ${WEB_FILES_HOME-./data/web/files}:/tmp/files
     entrypoint: ./waiting.sh -d dbserver:3306,redisserver:6379,mongodbserver:27017 -c 'java -Xms1g -Xmx1g -Xmn384m -Xss256k -Dloader.path=/libs -Djava.security.egd=file:/dev/./urandom -jar agtms-web.jar'
     deploy:
       mode: replicated
@@ -132,17 +133,19 @@ services:
           limits:
             memory: 2G
   agtms-vue:
-    image: agtms/agtms-vue:${REVISION-latest}
+    image: agtms/agtms-vue:${REVISION-0.8.0}
     ports:
-      - 8080:80
+      - target: 80
+        published: 8080
+        protocol: tcp
+        mode: host
     networks: 
       front:
     volumes:
       - ${WEB_CONFIG_HOME-./data/web/config}/nginx.conf:/etc/nginx/nginx.conf
     entrypoint: /app/waiting.sh -d zuulserver -c 'nginx -g "daemon off;"'
     deploy:
-      mode: replicated
-      replicas: 1
+      mode: global
       labels:
         "name": "vue"
       restart_policy:
