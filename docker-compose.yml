@@ -13,7 +13,7 @@ services:
         aliases:
           - dbserver
     volumes:
-      - ${DATA_HOME:-./data}/mysql/data:/var/lib/mysql
+      - dbdata:/var/lib/mysql
     deploy:
       mode: replicated
       replicas: 1
@@ -32,7 +32,7 @@ services:
         aliases:
           - redisserver
     volumes:
-      - ${DATA_HOME-./data}/redis/data:/data
+      - redisdata:/data
     deploy:
       mode: replicated
       replicas: 1
@@ -55,7 +55,9 @@ services:
         aliases:
           - mongodbserver
     volumes:
-      - ${DATA_HOME-./data}/mongodb/data:/bitnami/mongodb/data
+      - mongodbdata:/bitnami/mongodb/data
+    depends_on:
+      - fix-mongodb-permissions
     deploy:
       mode: replicated
       replicas: 1
@@ -66,6 +68,12 @@ services:
         max_attempts: 3
       placement:
         constraints: [node.role == manager]
+  fix-mongodb-permissions:
+    image: busybox
+    user: root
+    command: chown -R 1001:1001 /bitnami
+    volumes:
+    - mongodbdata:/bitnami
   agtms-eureka:
     image: agtms/agtms-eureka:${REVISION-0.8.0}
     environment:
@@ -135,10 +143,7 @@ services:
   agtms-vue:
     image: agtms/agtms-vue:${REVISION-0.8.0}
     ports:
-      - target: 80
-        published: 8080
-        protocol: tcp
-        mode: host
+      - 8080:80
     networks: 
       front:
     volumes:
@@ -155,3 +160,8 @@ services:
 networks: 
   front:
   back:
+
+volumes:
+  dbdata:
+  redisdata:
+  mongodbdata:
