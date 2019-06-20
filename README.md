@@ -33,6 +33,7 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 ├── data                Docker 相关数据
 │   └── web
 |       ├── config      Web 服务额外配置
+|       ├── files       Web 服务文件（图片、导入、导出）路径
 |       └── libs        Web 服务额外 jar 库路径
 ├── docker-compose.yml  Docker Compose 配置
 ├── README.md           README 文件
@@ -145,10 +146,9 @@ mvnw.cmd clean package
 wget -P data/web/libs http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.47/mysql-connector-java-5.1.47.jar
 ```
 5. 启动容器
-* DATA_HOME：数据目录，默认为 ./data
 * WEB_CONFIG_HOME：Web 服务额外配置，默认为 ./data/web/config
 * WEB_LIBS_HOME：Web 服务额外 jar 库路径，默认为 ./data/web/libs
-* REVISION:：版本号，默认为 latest
+* REVISION:：版本号，默认为最新版本
 ```sh
 # Docker Compose
 docker-compose up -d
@@ -220,4 +220,5 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 10. 数据可视化
 11. ~~Docker~~
 12. ~~Standalone Branch~~
-13. ...
+13. ShardingSphere
+14. Mongodb 分片
