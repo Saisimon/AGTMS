@@ -22,7 +22,7 @@
 		<poi.version>3.17</poi.version>
 		<commons-beanutils.version>1.9.3</commons-beanutils.version>
 		<hutool.version>4.1.21</hutool.version>
-		<sharding-sphere.version>4.0.0-RC2-SNAPSHOT</sharding-sphere.version>
+		<sharding-sphere.version>4.0.0-RC1</sharding-sphere.version>
 		<embedded-redis.version>0.7.2</embedded-redis.version>
 		<wiremock.version>2.23.2</wiremock.version>
 		<maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
