@@ -220,5 +220,4 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 10. 数据可视化
 11. ~~Docker~~
 12. ~~Standalone Branch~~
-13. ShardingSphere
-14. Mongodb 分片
+13. ~~ShardingSphere~~
