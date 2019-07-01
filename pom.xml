@@ -11,7 +11,7 @@
 	<name>agtms</name>
 
 	<properties>
-		<revision>0.8.0</revision>
+		<revision>0.8.1</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -22,6 +22,7 @@
 		<poi.version>3.17</poi.version>
 		<commons-beanutils.version>1.9.3</commons-beanutils.version>
 		<hutool.version>4.1.21</hutool.version>
+		<sharding-sphere.version>4.0.0-RC2-SNAPSHOT</sharding-sphere.version>
 		<embedded-redis.version>0.7.2</embedded-redis.version>
 		<wiremock.version>2.23.2</wiremock.version>
 		<maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
@@ -138,6 +139,11 @@
 				<groupId>com.github.tomakehurst</groupId>
 				<artifactId>wiremock-jre8</artifactId>
 				<version>${wiremock.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.shardingsphere</groupId>
+				<artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+				<version>${sharding-sphere.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

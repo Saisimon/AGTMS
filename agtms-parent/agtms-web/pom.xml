@@ -72,6 +72,8 @@
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-config</artifactId>
 		</dependency>
+		
+		<!-- JPA -->
 		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-jpa</artifactId>
@@ -93,7 +95,13 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.shardingsphere</groupId>
+			<artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+		</dependency>
 		-->
+		
+		<!-- MongoDB -->
 		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-mongodb</artifactId>
@@ -101,7 +109,9 @@
 		<dependency>
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.mongo</artifactId>
-		</dependency>
+		</dependency> 
+		
+		<!-- Redis -->
 		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-redis</artifactId>
@@ -110,6 +120,7 @@
 			<groupId>it.ozimov</groupId>
 			<artifactId>embedded-redis</artifactId>
 		</dependency>
+		
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>
 			<artifactId>wiremock-jre8</artifactId>

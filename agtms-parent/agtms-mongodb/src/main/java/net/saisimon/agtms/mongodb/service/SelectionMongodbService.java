@@ -38,12 +38,12 @@ public class SelectionMongodbService implements SelectionService, MongodbOrder {
 	}
 	
 	@Override
-	public List<SelectionOption> getSelectionOptions(Long selectionId) {
+	public List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId) {
 		return selectionOptionMongodbRepository.findBySelectionId(selectionId, null);
 	}
 	
 	@Override
-	public List<SelectionOption> getSelectionOptions(Long selectionId, Set<String> values, boolean isValue) {
+	public List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId, Set<String> values, boolean isValue) {
 		if (isValue) {
 			return selectionOptionMongodbRepository.findBySelectionIdAndValueIn(selectionId, values);
 		} else {
@@ -52,7 +52,7 @@ public class SelectionMongodbService implements SelectionService, MongodbOrder {
 	}
 	
 	@Override
-	public List<SelectionOption> searchSelectionOptions(Long selectionId, String keyword, Integer size) {
+	public List<SelectionOption> searchSelectionOptions(Long selectionId, Long operatorId, String keyword, Integer size) {
 		Pageable pageable = PageRequest.of(0, size);
 		if (SystemUtils.isBlank(keyword)) {
 			return selectionOptionMongodbRepository.findBySelectionId(selectionId, pageable);
@@ -62,12 +62,12 @@ public class SelectionMongodbService implements SelectionService, MongodbOrder {
 	}
 
 	@Override
-	public void removeSelectionOptions(Long selectionId) {
+	public void removeSelectionOptions(Long selectionId, Long operatorId) {
 		selectionOptionMongodbRepository.deleteBySelectionId(selectionId);
 	}
 	
 	@Override
-	public void saveSelectionOptions(List<SelectionOption> options) {
+	public void saveSelectionOptions(List<SelectionOption> options, Long operatorId) {
 		if (CollectionUtils.isEmpty(options)) {
 			return;
 		}
@@ -81,17 +81,17 @@ public class SelectionMongodbService implements SelectionService, MongodbOrder {
 	}
 	
 	@Override
-	public SelectionTemplate getSelectionTemplate(Long selectionId) {
+	public SelectionTemplate getSelectionTemplate(Long selectionId, Long operatorId) {
 		return selectionTemplateMongodbRepository.findBySelectionId(selectionId);
 	}
 
 	@Override
-	public void removeSelectionTemplate(Long selectionId) {
+	public void removeSelectionTemplate(Long selectionId, Long operatorId) {
 		selectionTemplateMongodbRepository.deleteBySelectionId(selectionId);
 	}
 
 	@Override
-	public void saveSelectionTemplate(SelectionTemplate template) {
+	public void saveSelectionTemplate(SelectionTemplate template, Long operatorId) {
 		if (template == null) {
 			return;
 		}

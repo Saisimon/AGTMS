@@ -13,7 +13,6 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.data.domain.Page;
@@ -119,7 +118,7 @@ public class NavigationMainController extends AbstractMainController {
 			trees.add(0, NavigationTree.USER_MODULE_TREE);
 		}
 		NavigationTree root = new NavigationTree();
-		root.setId(-1L);
+		root.setId("-1");
 		root.setChildrens(internationNavigationTrees(trees));
 		List<NavigationLink> links = new ArrayList<>();
 		TemplateService templateService = TemplateServiceFactory.get();
@@ -160,7 +159,16 @@ public class NavigationMainController extends AbstractMainController {
 		List<NavigationInfo> results = new ArrayList<>(page.getContent().size());
 		Map<Long, String> userMap = userSelection.select();
 		for (Navigation navigation : page.getContent()) {
-			NavigationInfo result = buildNavigationResult(navigation);
+			NavigationInfo result = new NavigationInfo();
+			result.setId(navigation.getId().toString());
+			if (navigation.getParentId() != null) {
+				result.setParentId(navigation.getParentId().toString());
+			}
+			result.setCreateTime(navigation.getCreateTime());
+			result.setUpdateTime(navigation.getUpdateTime());
+			result.setIcon(navigation.getIcon());
+			result.setPriority(navigation.getPriority());
+			result.setTitle(navigation.getTitle());
 			result.setOperator(userMap.get(navigation.getOperatorId()));
 			result.setAction(NAVIGATION);
 			results.add(result);
@@ -337,15 +345,6 @@ public class NavigationMainController extends AbstractMainController {
 		return FUNCTIONS;
 	}
 	
-	private NavigationInfo buildNavigationResult(Navigation navigation) {
-		if (navigation == null) {
-			return null;
-		}
-		NavigationInfo result = new NavigationInfo();
-		BeanUtils.copyProperties(navigation, result);
-		return result;
-	}
-	
 	private void recursiveRemove(Navigation navigation, Long userId) {
 		NavigationService navigationService = NavigationServiceFactory.get();
 		List<Navigation> list = navigationService.getChildrenNavigations(navigation.getId(), userId);
@@ -382,7 +381,7 @@ public class NavigationMainController extends AbstractMainController {
 		TemplateService templateService = TemplateServiceFactory.get();
 		for (Navigation current : currents) {
 			NavigationTree tree = new NavigationTree();
-			tree.setId(current.getId());
+			tree.setId(current.getId().toString());
 			tree.setTitle(current.getTitle());
 			tree.setIcon(current.getIcon());
 			tree.setPriority(current.getPriority());

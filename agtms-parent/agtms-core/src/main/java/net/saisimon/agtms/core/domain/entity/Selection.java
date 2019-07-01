@@ -23,11 +23,13 @@ import lombok.Data;
  */
 @Data
 @Entity
-@Table(name="agtms_selection")
-@Document(collection="agtms_selection")
+@Table(name=Selection.TABLE_NAME)
+@Document(collection=Selection.TABLE_NAME)
 public class Selection implements Serializable {
 	
 	private static final long serialVersionUID = -2277466227128266669L;
+	
+	public static final String TABLE_NAME = "agtms_selection";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -54,7 +56,7 @@ public class Selection implements Serializable {
 	/**
 	 * 下拉列表创建人员ID
 	 */
-	@Column
+	@Column(nullable=false)
 	private Long operatorId;
 	
 	/**

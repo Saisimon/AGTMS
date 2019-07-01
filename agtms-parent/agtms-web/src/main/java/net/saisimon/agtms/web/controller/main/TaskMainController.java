@@ -126,7 +126,7 @@ public class TaskMainController extends AbstractMainController {
 		Map<Long, String> userMap = userSelection.select();
 		for (Task task : page.getContent()) {
 			TaskInfo result = new TaskInfo();
-			result.setId(task.getId());
+			result.setId(task.getId().toString());
 			Actuator<?> actuator = ActuatorFactory.get(task.getTaskType());
 			result.setTaskContent(actuator.taskContent(task));
 			result.setTaskType(taskTypeMap.get(task.getTaskType().toString()));

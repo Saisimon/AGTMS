@@ -114,7 +114,7 @@ public class SelectionMainController extends AbstractMainController {
 		Map<Long, String> userMap = userSelection.select();
 		for (Selection selection : page.getContent()) {
 			SelectionInfo result = new SelectionInfo();
-			result.setId(selection.getId());
+			result.setId(selection.getId().toString());
 			result.setCreateTime(selection.getCreateTime());
 			result.setTitle(selection.getTitle());
 			result.setType(selectTypeMap.get(selection.getType()));
@@ -142,9 +142,9 @@ public class SelectionMainController extends AbstractMainController {
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
-			selectionService.removeSelectionOptions(selection.getId());
+			selectionService.removeSelectionOptions(selection.getId(), userId);
 		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
-			selectionService.removeSelectionTemplate(selection.getId());
+			selectionService.removeSelectionTemplate(selection.getId(), userId);
 		}
 		selectionService.delete(selection);
 		return ResultUtils.simpleSuccess();
@@ -165,9 +165,9 @@ public class SelectionMainController extends AbstractMainController {
 				continue;
 			}
 			if (SelectTypes.OPTION.getType().equals(selection.getType())) {
-				selectionService.removeSelectionOptions(selection.getId());
+				selectionService.removeSelectionOptions(selection.getId(), userId);
 			} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
-				selectionService.removeSelectionTemplate(selection.getId());
+				selectionService.removeSelectionTemplate(selection.getId(), userId);
 			}
 			selectionService.delete(selection);
 		}

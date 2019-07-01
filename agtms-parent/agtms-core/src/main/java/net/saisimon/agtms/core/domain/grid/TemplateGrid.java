@@ -22,7 +22,7 @@ public class TemplateGrid {
 	
 	private MultipleSelect<Integer> functionSelect;
 	
-	private SingleSelect<Long> navigationSelect;
+	private SingleSelect<String> navigationSelect;
 	
 	private SingleSelect<String> dataSourceSelect;
 	

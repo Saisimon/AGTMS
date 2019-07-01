@@ -91,8 +91,8 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 					return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
 				}
 			}
-			Map<Long, String> navigationMap = navigationSelection.selectWithParent(oldNavigation.getId());
-			if (!navigationMap.containsKey(body.getParentId())) {
+			Map<String, String> navigationMap = navigationSelection.selectWithParent(oldNavigation.getId());
+			if (!navigationMap.containsKey(body.getParentId().toString())) {
 				return ErrorMessage.Common.PARAM_ERROR;
 			}
 			oldNavigation.setParentId(body.getParentId());
@@ -105,8 +105,8 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 			if (navigationService.exists(body.getTitle(), userId)) {
 				return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
 			}
-			Map<Long, String> navigationMap = navigationSelection.selectWithParent(null);
-			if (!navigationMap.containsKey(body.getParentId())) {
+			Map<String, String> navigationMap = navigationSelection.selectWithParent(null);
+			if (!navigationMap.containsKey(body.getParentId().toString())) {
 				return ErrorMessage.Common.PARAM_ERROR;
 			}
 			Date time = new Date();
@@ -139,13 +139,13 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 	@Override
 	protected List<Field<?>> fields(Navigation navigation, Object key) {
 		List<Field<?>> fields = new ArrayList<>();
-		List<Option<Long>> options = Select.buildOptions(navigationSelection.selectWithParent(navigation == null ? null : navigation.getId()));
-		Field<Option<Long>> parentIdField = Field.<Option<Long>>builder().name("parentId").text(getMessage("parent.navigation")).required(true).views(Views.SELECTION.getView()).options(options).build();
+		List<Option<String>> options = Select.buildOptions(navigationSelection.selectWithParent(navigation == null ? null : navigation.getId()));
+		Field<Option<String>> parentIdField = Field.<Option<String>>builder().name("parentId").text(getMessage("parent.navigation")).required(true).views(Views.SELECTION.getView()).options(options).build();
 		Field<String> iconField = Field.<String>builder().name("icon").text(getMessage("icon")).type(Classes.STRING.getName()).required(true).views(Views.ICON.getView()).build();
 		Field<String> titleField = Field.<String>builder().name("title").text(getMessage("title")).type(Classes.STRING.getName()).required(true).build();
 		Field<Long> priorityField = Field.<Long>builder().name("priority").text(getMessage("priority")).type(Classes.LONG.getName()).build();
 		if (navigation != null) {
-			parentIdField.setValue(Select.getOption(options, navigation.getParentId()));
+			parentIdField.setValue(Select.getOption(options, navigation.getParentId().toString()));
 			iconField.setValue(navigation.getIcon());
 			titleField.setValue(navigation.getTitle());
 			priorityField.setValue(navigation.getPriority());

@@ -27,11 +27,13 @@ import lombok.ToString;
 @Getter
 @ToString(exclude={"password", "salt", "remark"})
 @Entity
-@Table(name="agtms_user")
-@Document(collection="agtms_user")
+@Table(name=User.TABLE_NAME)
+@Document(collection=User.TABLE_NAME)
 public class User implements Serializable {
 	
 	private static final long serialVersionUID = 7086947167059509219L;
+	
+	public static final String TABLE_NAME = "agtms_user";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

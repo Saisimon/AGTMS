@@ -30,7 +30,7 @@ public class SelectionGrid {
 	@Data
 	public static class TemplateField {
 		
-		private Field<Option<Long>> template;
+		private Field<Option<String>> template;
 		
 		private Field<Option<String>> value;
 		

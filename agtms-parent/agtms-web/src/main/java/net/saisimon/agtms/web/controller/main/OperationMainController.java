@@ -94,7 +94,7 @@ public class OperationMainController extends AbstractMainController {
 		Map<Long, String> userMap = userSelection.select();
 		for (Operation operation : page.getContent()) {
 			OperationInfo result = new OperationInfo();
-			result.setId(operation.getId());
+			result.setId(operation.getId().toString());
 			result.setOperateTime(operation.getOperateTime());
 			result.setOperateType(operateTypeMap.get(operation.getOperateType()));
 			result.setOperateIp(operation.getOperateIp());

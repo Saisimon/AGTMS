@@ -44,10 +44,7 @@ public class RedisToken implements RedisOrder, Token {
 			setToken(uid, token);
 		}
 		User user = userOptional.get();
-		token.setStatus(user.getStatus());
 		token.setAdmin(user.isAdmin());
-		token.setLoginName(user.getLoginName());
-		token.setAvatar(user.getAvatar());
 		return token;
 	}
 

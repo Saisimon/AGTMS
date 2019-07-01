@@ -3,6 +3,7 @@ package net.saisimon.agtms.web.task;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -78,20 +79,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 		if (!file.exists()) {
 			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
 		}
-		List<List<Object>> resultDatas = importDatas(param, template, file);
-		switch (param.getImportFileType()) {
-			case Constant.File.XLS:
-				FileUtils.toXLS(file, resultDatas, false);
-				break;
-			case Constant.File.CSV:
-				FileUtils.toCSV(file, resultDatas, ",", false);
-				break;
-			case Constant.File.XLSX:
-				FileUtils.toXLSX(file, resultDatas, false);
-				break;
-			default:
-				break;
-		}
+		importDatas(param, template, file);
 		return ResultUtils.simpleSuccess();
 	}
 
@@ -101,7 +89,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 			return null;
 		}
 		ImportParam param = SystemUtils.fromJson(task.getTaskParam(), ImportParam.class);
-		return param.getImportFileName();
+		return param == null ? null : param.getImportFileName();
 	}
 	
 	@Override
@@ -120,45 +108,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		String userAgent = request.getHeader("user-agent");
-		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(filePath)
-			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
-			.append(File.separatorChar).append(param.getUserId())
-			.append(File.separatorChar).append(param.getImportFileUUID());
-		File file = null;
-		String filename = param.getImportFileName();
-		switch (param.getImportFileType()) {
-			case Constant.File.XLS:
-				response.setContentType("application/vnd.ms-excel");
-				importFilePath.append(Constant.File.XLS_SUFFIX);
-				file = new File(importFilePath.toString());
-				filename += Constant.File.XLS_SUFFIX;
-				break;
-			case Constant.File.CSV:
-				response.setContentType("application/CSV");
-				importFilePath.append(Constant.File.CSV_SUFFIX);
-				file = new File(importFilePath.toString());
-				filename += Constant.File.CSV_SUFFIX;
-				break;
-			case Constant.File.XLSX:
-				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				importFilePath.append(Constant.File.XLSX_SUFFIX);
-				file = new File(importFilePath.toString());
-				filename += Constant.File.XLSX_SUFFIX;
-				break;
-			default:
-				break;
-		}
-		if (file == null || !file.exists()) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(userAgent, filename));
-			IOUtils.copy(in, response.getOutputStream());
-			response.flushBuffer();
-		}
+		download(param, request, response);
 	}
 
 	@Override
@@ -176,15 +126,17 @@ public class ImportActuator implements Actuator<ImportParam> {
 		return file;
 	}
 
-	private List<List<Object>> importDatas(ImportParam param, Template template, File file) throws InterruptedException, GenerateException, IOException {
+	private void importDatas(ImportParam param, Template template, File file) throws InterruptedException, GenerateException, IOException {
 		List<List<String>> datas = parseFile(file, param.getImportFileType());
 		List<List<Object>> resultDatas = new ArrayList<>(datas.size());
 		if (datas.size() == 0) {
-			return resultDatas;
+			fillDatas(file, resultDatas, param.getImportFileType());
+			return;
 		}
 		resultDatas.add(buildHead(datas));
 		if (datas.size() == 1) {
-			return resultDatas;
+			fillDatas(file, resultDatas, param.getImportFileType());
+			return;
 		}
 		GenerateService generateService = GenerateServiceFactory.build(template);
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
@@ -193,10 +145,10 @@ public class ImportActuator implements Actuator<ImportParam> {
 			if (Thread.currentThread().isInterrupted()) {
 				throw new InterruptedException("Task Cancel");
 			}
-			Domain domain = generateService.newGenerate();
 			List<String> data = datas.get(i);
 			List<Object> resultData = new ArrayList<>();
 			List<String> missRequireds = new ArrayList<>();
+			Domain domain = generateService.newGenerate();
 			for (int j = 0; j < param.getImportFields().size(); j++) {
 				if (j < data.size()) {
 					String fieldName = param.getImportFields().get(j);
@@ -245,7 +197,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 			}
 			resultDatas.add(resultData);
 		}
-		return resultDatas;
+		fillDatas(file, resultDatas, param.getImportFileType());
 	}
 
 	private List<Object> buildHead(List<List<String>> datas) {
@@ -256,6 +208,22 @@ public class ImportActuator implements Actuator<ImportParam> {
 		}
 		headList.add(getMessage("result"));
 		return headList;
+	}
+	
+	private void fillDatas(File file, List<List<Object>> datas, String fileType) throws IOException {
+		switch (fileType) {
+			case Constant.File.XLS:
+				FileUtils.toXLS(file, datas, false);
+				break;
+			case Constant.File.CSV:
+				FileUtils.toCSV(file, datas, ",", false);
+				break;
+			case Constant.File.XLSX:
+				FileUtils.toXLSX(file, datas, false);
+				break;
+			default:
+				break;
+		}
 	}
 	
 	private List<List<String>> parseFile(File file, String fileType) throws IOException {
@@ -293,6 +261,47 @@ public class ImportActuator implements Actuator<ImportParam> {
 			}
 		}
 		return datas;
+	}
+	
+	private void download(ImportParam param, HttpServletRequest request, HttpServletResponse response) throws IOException, FileNotFoundException {
+		StringBuilder importFilePath = new StringBuilder();
+		importFilePath.append(filePath)
+			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
+			.append(File.separatorChar).append(param.getUserId())
+			.append(File.separatorChar).append(param.getImportFileUUID());
+		File file = null;
+		String filename = param.getImportFileName();
+		switch (param.getImportFileType()) {
+			case Constant.File.XLS:
+				response.setContentType("application/vnd.ms-excel");
+				importFilePath.append(Constant.File.XLS_SUFFIX);
+				file = new File(importFilePath.toString());
+				filename += Constant.File.XLS_SUFFIX;
+				break;
+			case Constant.File.CSV:
+				response.setContentType("application/CSV");
+				importFilePath.append(Constant.File.CSV_SUFFIX);
+				file = new File(importFilePath.toString());
+				filename += Constant.File.CSV_SUFFIX;
+				break;
+			case Constant.File.XLSX:
+				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+				importFilePath.append(Constant.File.XLSX_SUFFIX);
+				file = new File(importFilePath.toString());
+				filename += Constant.File.XLSX_SUFFIX;
+				break;
+			default:
+				break;
+		}
+		if (file == null || !file.exists()) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(request.getHeader("user-agent"), filename));
+			IOUtils.copy(in, response.getOutputStream());
+			response.flushBuffer();
+		}
 	}
 	
 	private String getMessage(String code, Object... args) {

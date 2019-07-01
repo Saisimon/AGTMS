@@ -22,7 +22,7 @@ public class NavigationTree implements Serializable, Cloneable {
 		return n1.getId().compareTo(n2.getId());
 	};
 	
-	private Long id;
+	private String id;
 	
 	private String title;
 	
@@ -36,7 +36,7 @@ public class NavigationTree implements Serializable, Cloneable {
 	
 	private static NavigationTree getUserModuleTree() {
 		NavigationTree userModule = new NavigationTree();
-		userModule.setId(0L);
+		userModule.setId("0");
 		userModule.setIcon("users");
 		userModule.setTitle("user.module");
 		List<NavigationLink> links = new ArrayList<>();
@@ -47,7 +47,7 @@ public class NavigationTree implements Serializable, Cloneable {
 	
 	private static NavigationTree getSystemModuleTree() {
 		NavigationTree systemModule = new NavigationTree();
-		systemModule.setId(0L);
+		systemModule.setId("0");
 		systemModule.setIcon("cogs");
 		systemModule.setTitle("system.module");
 		List<NavigationLink> links = new ArrayList<>();

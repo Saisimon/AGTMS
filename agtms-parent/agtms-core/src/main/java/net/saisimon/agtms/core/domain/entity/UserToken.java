@@ -16,11 +16,13 @@ import lombok.Setter;
 @Setter
 @Getter
 @Entity
-@Table(name="agtms_user_token")
-@Document(collection="agtms_user_token")
+@Table(name=UserToken.TABLE_NAME)
+@Document(collection=UserToken.TABLE_NAME)
 public class UserToken implements Serializable {
 	
 	private static final long serialVersionUID = -481086455612777941L;
+	
+	public static final String TABLE_NAME = "agtms_user_token";
 
 	/**
 	 * 用户 ID
@@ -43,18 +45,6 @@ public class UserToken implements Serializable {
 	
 	@Transient
 	@javax.persistence.Transient
-	private Integer status;
-	
-	@Transient
-	@javax.persistence.Transient
 	private boolean admin;
-	
-	@Transient
-	@javax.persistence.Transient
-	private String loginName;
-	
-	@Transient
-	@javax.persistence.Transient
-	private String avatar;
 	
 }

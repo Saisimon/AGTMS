@@ -22,11 +22,13 @@ import lombok.Data;
  */
 @Data
 @Entity
-@Table(name="agtms_task")
-@Document(collection="agtms_task")
+@Table(name=Task.TABLE_NAME)
+@Document(collection=Task.TABLE_NAME)
 public class Task implements Serializable {
 	
 	private static final long serialVersionUID = 3283171487096285213L;
+	
+	public static final String TABLE_NAME = "agtms_task";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -74,7 +76,7 @@ public class Task implements Serializable {
 	/**
 	 * 任务创建人员ID
 	 */
-	@Column
+	@Column(nullable=false)
 	private Long operatorId;
 	
 	@Column(length=50)
