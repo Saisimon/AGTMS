@@ -18,7 +18,7 @@ public class NavigationInfo extends BaseInfo {
 	
 	private Long priority;
 	
-	private Long parentId;
+	private String parentId;
 	
 	private String operator;
 	

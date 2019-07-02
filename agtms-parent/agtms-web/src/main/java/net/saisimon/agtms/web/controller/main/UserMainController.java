@@ -11,7 +11,6 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -103,7 +102,15 @@ public class UserMainController extends AbstractMainController {
 		List<UserInfo> results = new ArrayList<>(page.getContent().size());
 		Map<Integer, String> userStatusMap = userStatusSelection.select();
 		for (User user : page.getContent()) {
-			UserInfo result = buildUserResult(user);
+			UserInfo result = new UserInfo();
+			result.setAvatar(user.getAvatar());
+			result.setCellphone(user.getCellphone());
+			result.setCreateTime(user.getCreateTime());
+			result.setEmail(user.getEmail());
+			result.setId(user.getId().toString());
+			result.setLoginName(user.getLoginName());
+			result.setNickname(user.getNickname());
+			result.setUpdateTime(user.getUpdateTime());
 			result.setStatus(userStatusMap.get(user.getStatus()));
 			result.setAction(USER);
 			if (user.getId().equals(AuthUtils.getUid())) {
@@ -189,15 +196,6 @@ public class UserMainController extends AbstractMainController {
 		return ResultUtils.simpleSuccess();
 	}
 	
-	private UserInfo buildUserResult(User user) {
-		if (user == null) {
-			return null;
-		}
-		UserInfo result = new UserInfo();
-		BeanUtils.copyProperties(user, result);
-		return result;
-	}
-
 	@Override
 	protected Header header(Object key) {
 		return Header.builder().title(getMessage("user.management")).createUrl("/user/edit").build();

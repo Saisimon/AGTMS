@@ -21,11 +21,13 @@ import lombok.Data;
  */
 @Data
 @Entity
-@Table(name="agtms_selection_option")
-@Document(collection="agtms_selection_option")
+@Table(name=SelectionOption.TABLE_NAME)
+@Document(collection=SelectionOption.TABLE_NAME)
 public class SelectionOption implements Serializable {
 	
 	private static final long serialVersionUID = 5282506945802919316L;
+	
+	public static final String TABLE_NAME = "agtms_selection_option";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

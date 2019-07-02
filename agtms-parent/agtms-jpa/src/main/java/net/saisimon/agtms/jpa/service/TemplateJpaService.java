@@ -1,6 +1,7 @@
 package net.saisimon.agtms.jpa.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.stereotype.Service;
 
 import net.saisimon.agtms.core.domain.entity.Template;
@@ -11,6 +12,7 @@ import net.saisimon.agtms.jpa.repository.TemplateJapRepository;
 import net.saisimon.agtms.jpa.service.ddl.DdlService;
 
 @Service
+@ConditionalOnMissingClass("org.apache.shardingsphere.api.hint.HintManager")
 public class TemplateJpaService implements TemplateService, JpaOrder {
 	
 	@Autowired

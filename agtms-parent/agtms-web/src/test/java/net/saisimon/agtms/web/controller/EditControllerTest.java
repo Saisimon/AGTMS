@@ -478,7 +478,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		if (templateInfo != null) {
 			selectionParam = new SelectionParam();
 			selectionTemplateParam = new SelectionTemplateParam();
-			selectionTemplateParam.setId(templateInfo.getId());
+			selectionTemplateParam.setId(Long.valueOf(templateInfo.getId()));
 			selectionTemplateParam.setValue("id");
 			selectionTemplateParam.setText("column0field0");
 			selectionParam.setTemplate(selectionTemplateParam);

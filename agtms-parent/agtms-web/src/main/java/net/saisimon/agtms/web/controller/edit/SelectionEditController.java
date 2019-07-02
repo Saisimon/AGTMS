@@ -78,8 +78,8 @@ public class SelectionEditController extends BaseController {
 		Field<String> titleField = Field.<String>builder().name("title").text(getMessage("title")).type(Classes.STRING.getName()).required(true).build();
 		List<Option<Integer>> selectTypeOptions = Select.buildOptions(selectTypeSelection.select());
 		Field<Option<Integer>> typeField = Field.<Option<Integer>>builder().name("type").text(getMessage("type")).required(true).type("select").options(selectTypeOptions).build();
-		List<Option<Long>> templateOptions = Select.buildOptions(templateSelection.select());
-		Field<Option<Long>> templateField = Field.<Option<Long>>builder().name("template").text(getMessage("template")).required(true).type("select").options(templateOptions).build();
+		List<Option<String>> templateOptions = Select.buildOptions(templateSelection.select());
+		Field<Option<String>> templateField = Field.<Option<String>>builder().name("template").text(getMessage("template")).required(true).type("select").options(templateOptions).build();
 		Field<Option<String>> templateValue = Field.<Option<String>>builder().type("select").build();
 		Field<Option<String>> templateText = Field.<Option<String>>builder().type("select").build();
 		List<SelectionGrid.OptionField> options = new ArrayList<>();
@@ -89,7 +89,7 @@ public class SelectionEditController extends BaseController {
 			titleField.setValue(selection.getTitle());
 			SelectionService selectionService = SelectionServiceFactory.get();
 			if (SelectTypes.OPTION.getType().equals(selection.getType())) {
-				List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection.getId());
+				List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection.getId(), userId);
 				for (SelectionOption selectionOption : selectionOptions) {
 					SelectionGrid.OptionField option = new SelectionGrid.OptionField();
 					option.setValue(Field.builder().type(Classes.STRING.getName()).value(selectionOption.getValue()).build());
@@ -100,12 +100,12 @@ public class SelectionEditController extends BaseController {
 				templateValue.setOptions(new ArrayList<>());
 				templateText.setOptions(new ArrayList<>());
 			} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
-				SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId());
+				SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId(), userId);
 				Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), userId);
 				if (template == null) {
 					return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 				}
-				templateField.setValue(Select.getOption(templateOptions, selectionTemplate.getTemplateId()));
+				templateField.setValue(Select.getOption(templateOptions, selectionTemplate.getTemplateId().toString()));
 				List<Option<String>> domainFieldOptions = buildSelectionOptions(template);
 				templateValue.setOptions(domainFieldOptions);
 				templateValue.setValue(Select.getOption(domainFieldOptions, selectionTemplate.getValueFieldName()));
@@ -201,7 +201,7 @@ public class SelectionEditController extends BaseController {
 				return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 			}
 			selectionService.saveOrUpdate(selection);
-			selectionService.removeSelectionOptions(selection.getId());
+			selectionService.removeSelectionOptions(selection.getId(), userId);
 			List<SelectionOption> selectionOptions = new ArrayList<>(body.getOptions().size());
 			Set<String> values = new HashSet<>();
 			Set<String> texts = new HashSet<>();
@@ -218,7 +218,7 @@ public class SelectionEditController extends BaseController {
 				selectionOption.setSelectionId(selection.getId());
 				selectionOptions.add(selectionOption);
 			}
-			selectionService.saveSelectionOptions(selectionOptions);
+			selectionService.saveSelectionOptions(selectionOptions, userId);
 		} else if (type == SelectTypes.TEMPLATE) {
 			if (body.getTemplate() == null) {
 				return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
@@ -228,13 +228,13 @@ public class SelectionEditController extends BaseController {
 				return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 			}
 			selectionService.saveOrUpdate(selection);
-			selectionService.removeSelectionTemplate(selection.getId());
+			selectionService.removeSelectionTemplate(selection.getId(), userId);
 			SelectionTemplate selectionTemplate = new SelectionTemplate();
 			selectionTemplate.setTemplateId(body.getTemplate().getId());
 			selectionTemplate.setTextFieldName(body.getTemplate().getText());
 			selectionTemplate.setValueFieldName(body.getTemplate().getValue());
 			selectionTemplate.setSelectionId(selection.getId());
-			selectionService.saveSelectionTemplate(selectionTemplate);
+			selectionService.saveSelectionTemplate(selectionTemplate, userId);
 		}
 		return ResultUtils.simpleSuccess();
 	}

@@ -9,31 +9,168 @@ spring:
   jpa:
     show-sql: true
     generate-ddl: true
+  shardingsphere:
+    datasource:
+      names: agtms0,agtms1
+      agtms0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        jdbc-url: jdbc:mysql://dbserver:3306/agtms0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+        username: root
+        password: 1qaz1QAZ
+      agtms1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        jdbc-url: jdbc:mysql://dbserver:3306/agtms1?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+        username: root
+        password: 1qaz1QAZ
+    props:
+      sql:
+        show: true
+    sharding:
+      default-data-source-name: agtms0
+      bindingTables:
+        - agtms_selection, agtms_selection_option
+        - agtms_selection, agtms_selection_template
+        - agtms_template, agtms_template_column, agtms_template_field
+      tables:
+        agtms_navigation:
+          actual-data-nodes: agtms$->{0..1}.agtms_navigation$->{0..1}
+          database-strategy:
+            inline:
+              sharding-column: operator_id
+              algorithm-expression: agtms$->{operator_id % 2}
+          table-strategy: 
+            inline:
+              sharding-column: id
+              algorithm-expression: agtms_navigation$->{id % 2}
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_operation:
+          actual-data-nodes: agtms$->{0..1}.agtms_operation$->{0..9}
+          database-strategy:
+            inline:
+              sharding-column: operator_id
+              algorithm-expression: agtms$->{operator_id % 2}
+          table-strategy: 
+            inline:
+              sharding-column: id
+              algorithm-expression: agtms_operation$->{id % 10}
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_selection:
+          actual-data-nodes: agtms$->{0..1}.agtms_selection$->{0..1}
+          database-strategy:
+            inline:
+              sharding-column: operator_id
+              algorithm-expression: agtms$->{operator_id % 2}
+          table-strategy: 
+            inline:
+              sharding-column: id
+              algorithm-expression: agtms_selection$->{id % 2}
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_selection_option:
+          actual-data-nodes: agtms$->{0..1}.agtms_selection_option$->{0..1}
+          database-strategy:
+            hint:
+              algorithm-class-name: net.saisimon.agtms.jpa.sharding.DefaultShardingAlgorithm
+          table-strategy: 
+            inline:
+              sharding-column: selection_id
+              algorithm-expression: agtms_selection_option$->{selection_id % 2}
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_selection_template:
+          actual-data-nodes: agtms$->{0..1}.agtms_selection_template$->{0..1}
+          database-strategy:
+            hint:
+              algorithm-class-name: net.saisimon.agtms.jpa.sharding.DefaultShardingAlgorithm
+          table-strategy: 
+            inline:
+              sharding-column: selection_id
+              algorithm-expression: agtms_selection_template$->{selection_id % 2}
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_task:
+          actual-data-nodes: agtms$->{0..1}.agtms_task$->{0..4}
+          database-strategy:
+            inline:
+              sharding-column: operator_id
+              algorithm-expression: agtms$->{operator_id % 2}
+          table-strategy: 
+            inline:
+              sharding-column: id
+              algorithm-expression: agtms_task$->{id % 5}
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_template:
+          actual-data-nodes: agtms$->{0..1}.agtms_template
+          database-strategy:
+            inline:
+              sharding-column: operator_id
+              algorithm-expression: agtms$->{operator_id % 2}
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_template_column:
+          actual-data-nodes: agtms$->{0..1}.agtms_template_column
+          database-strategy:
+            hint:
+              algorithm-class-name: net.saisimon.agtms.jpa.sharding.DefaultShardingAlgorithm
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_template_field:
+          actual-data-nodes: agtms$->{0..1}.agtms_template_field
+          database-strategy:
+            hint:
+              algorithm-class-name: net.saisimon.agtms.jpa.sharding.DefaultShardingAlgorithm
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_user:
+          actual-data-nodes: agtms$->{0..1}.agtms_user
+          database-strategy:
+            inline:
+              sharding-column: id
+              algorithm-expression: agtms$->{id % 2}
+          key-generator:
+            column: id
+            type: SNOWFLAKE
+        agtms_user_token:
+          actual-data-nodes: agtms$->{0..1}.agtms_user_token
+          database-strategy:
+            inline:
+              sharding-column: user_id
+              algorithm-expression: agtms$->{user_id % 2}
   datasource:
-    hikari:
-      minimum-idle: 10
-      maximum-pool-size: 100
-      max-lifetime: 1800000
-# Postgresql
-#    url: jdbc:postgresql://dbserver:5432/agtms
-#    username: agtms
-#    password: 1qaz1QAZ
-#    driver-class-name: org.postgresql.Driver
-# Sqlserver
-#    url: jdbc:sqlserver://dbserver:1433;databaseName=agtms
-#    username: agtms
-#    password: 1qaz1QAZ
-#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-# Mysql
-#    url: jdbc:mysql://dbserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=true
-#    username: root
-#    password: 1qaz1QAZ
-#    driver-class-name: com.mysql.jdbc.Driver
-# Oracle
-#    url: jdbc:oracle:thin:@dbserver:1521:ORCL
-#    username: agtms
-#    password: 1qaz1QAZ
-#    driver-class-name: oracle.jdbc.OracleDriver
+    # Postgresql
+    url: jdbc:postgresql://dbserver:5432/agtms
+    username: agtms
+    password: 1qaz1QAZ
+    driver-class-name: org.postgresql.Driver
+    # Sqlserver
+    url: jdbc:sqlserver://dbserver:1433;databaseName=agtms
+    username: agtms
+    password: 1qaz1QAZ
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    # Mysql
+    url: jdbc:mysql://dbserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: root
+    password: 1qaz1QAZ
+    driver-class-name: com.mysql.jdbc.Driver
+    # Oracle
+    url: jdbc:oracle:thin:@dbserver:1521:ORCL
+    username: agtms
+    password: 1qaz1QAZ
+    driver-class-name: oracle.jdbc.OracleDriver
   data:
     mongodb:
       host: mongodbserver
@@ -48,6 +185,8 @@ spring:
     password: 1qaz1QAZ
     embedded:
       enabled: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration
 
 server:
   port: 7892

@@ -187,13 +187,13 @@ public class SelectionUtils {
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
-			List<SelectionOption> selectionOptions = selectionService.searchSelectionOptions(selection.getId(), keyword, OPTION_SIZE);
+			List<SelectionOption> selectionOptions = selectionService.searchSelectionOptions(selection.getId(), operatorId, keyword, OPTION_SIZE);
 			for (SelectionOption selectionOption : selectionOptions) {
 				Option<Object> option = new Option<>(selectionOption.getValue(), selectionOption.getText());
 				options.add(option);
 			}
 		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
-			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId());
+			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId(), operatorId);
 			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorId);
 			if (template == null) {
 				return options;
@@ -239,7 +239,7 @@ public class SelectionUtils {
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
-			List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection.getId(), values, valueKey);
+			List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection.getId(), operatorId, values, valueKey);
 			if (selectionOptions == null) {
 				return selectionMap;
 			}
@@ -251,7 +251,7 @@ public class SelectionUtils {
 				}
 			}
 		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
-			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId());
+			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId(), operatorId);
 			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorId);
 			GenerateService generateService = GenerateServiceFactory.build(template);
 			FilterRequest filter = FilterRequest.build();

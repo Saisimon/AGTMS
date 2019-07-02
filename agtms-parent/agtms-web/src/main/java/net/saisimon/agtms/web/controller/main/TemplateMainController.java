@@ -111,12 +111,12 @@ public class TemplateMainController extends AbstractMainController {
 		TemplateService templateService = TemplateServiceFactory.get();
 		Page<Template> page = templateService.findPage(filter, pageable);
 		List<TemplateInfo> results = new ArrayList<>(page.getContent().size());
-		Map<Long, String> navigationMap = navigationSelection.select();
-		Map<Long, String> userMap = userSelection.select();
+		Map<String, String> navigationMap = navigationSelection.select();
+		Map<String, String> userMap = userSelection.select();
 		for (Template template : page.getContent()) {
 			TemplateInfo result = buildTemplateInfo(template);
-			result.setNavigationName(navigationMap.get(template.getNavigationId()));
-			result.setOperator(userMap.get(template.getOperatorId()));
+			result.setNavigationName(navigationMap.get(template.getNavigationId().toString()));
+			result.setOperator(userMap.get(template.getOperatorId().toString()));
 			result.setAction(TEMPLATE);
 			results.add(result);
 		}
@@ -201,10 +201,10 @@ public class TemplateMainController extends AbstractMainController {
 		List<String> keyValues = Arrays.asList("navigationId");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("navigation")));
 		Map<String, FieldFilter> value = new HashMap<>(4);
-		Map<Long, String> navigationMap = navigationSelection.selectWithParent(null);
-		List<Long> navigationValues = new ArrayList<>(navigationMap.size());
+		Map<String, String> navigationMap = navigationSelection.selectWithParent(null);
+		List<String> navigationValues = new ArrayList<>(navigationMap.size());
 		List<String> navigationTexts = new ArrayList<>(navigationMap.size());
-		for (Entry<Long, String> entry : navigationMap.entrySet()) {
+		for (Entry<String, String> entry : navigationMap.entrySet()) {
 			navigationValues.add(entry.getKey());
 			navigationTexts.add(entry.getValue());
 		}
@@ -233,10 +233,10 @@ public class TemplateMainController extends AbstractMainController {
 		keyValues = Arrays.asList("operatorId");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
-		Map<Long, String> userMap = userSelection.select();
-		List<Long> userValues = new ArrayList<>(userMap.size());
+		Map<String, String> userMap = userSelection.select();
+		List<String> userValues = new ArrayList<>(userMap.size());
 		List<String> userTexts = new ArrayList<>(userMap.size());
-		for (Entry<Long, String> entry : userMap.entrySet()) {
+		for (Entry<String, String> entry : userMap.entrySet()) {
 			userValues.add(entry.getKey());
 			userTexts.add(entry.getValue());
 		}
@@ -253,7 +253,7 @@ public class TemplateMainController extends AbstractMainController {
 	
 	private TemplateInfo buildTemplateInfo(Template template) {
 		TemplateInfo templateInfo = new TemplateInfo();
-		templateInfo.setId(template.getId());
+		templateInfo.setId(template.getId().toString());
 		templateInfo.setTitle(template.getTitle());
 		if (template.getFunctions() != null && template.getFunctions() != 0) {
 			List<String> funcs = TemplateUtils.getFunctions(template);

@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 
 services:
   db:
@@ -13,7 +13,7 @@ services:
         aliases:
           - dbserver
     volumes:
-      - ${DATA_HOME:-./data}/mysql/data:/var/lib/mysql
+      - dbdata:/var/lib/mysql
     deploy:
       mode: replicated
       replicas: 1
@@ -32,7 +32,7 @@ services:
         aliases:
           - redisserver
     volumes:
-      - ${DATA_HOME-./data}/redis/data:/data
+      - redisdata:/data
     deploy:
       mode: replicated
       replicas: 1
@@ -55,7 +55,9 @@ services:
         aliases:
           - mongodbserver
     volumes:
-      - ${DATA_HOME-./data}/mongodb/data:/bitnami/mongodb/data
+      - mongodbdata:/bitnami/mongodb/data
+    depends_on:
+      - fix-mongodb-permissions
     deploy:
       mode: replicated
       replicas: 1
@@ -66,8 +68,14 @@ services:
         max_attempts: 3
       placement:
         constraints: [node.role == manager]
+  fix-mongodb-permissions:
+    image: busybox
+    user: root
+    command: chown -R 1001:1001 /bitnami
+    volumes:
+    - mongodbdata:/bitnami
   agtms-web:
-    image: agtms/agtms-web:${REVISION-latest}
+    image: agtms/agtms-web:${REVISION-standalone-0.8.1}
     environment:
       - JAVA_OPTS=-Xms1g -Xmx1g -Xmn384m -Xss256k -Dloader.path=/libs
     networks: 
@@ -78,6 +86,7 @@ services:
     volumes:
       - ${WEB_CONFIG_HOME-./data/web/config}:/config
       - ${WEB_LIBS_HOME-./data/web/libs}:/libs
+      - ${WEB_FILES_HOME-./data/web/files}:/tmp/files
     entrypoint: ./waiting.sh -d dbserver:3306,redisserver:6379,mongodbserver:27017 -c 'java -Xms1g -Xmx1g -Xmn384m -Xss256k -Dloader.path=/libs -Djava.security.egd=file:/dev/./urandom -jar agtms-web.jar'
     deploy:
       mode: replicated
@@ -92,7 +101,7 @@ services:
           limits:
             memory: 2G
   agtms-vue:
-    image: agtms/agtms-vue:${REVISION-latest}
+    image: agtms/agtms-vue:${REVISION-standalone-0.8.1}
     ports:
       - 8080:80
     networks: 
@@ -112,3 +121,8 @@ services:
 networks: 
   front:
   back: 
+
+volumes:
+  dbdata:
+  redisdata:
+  mongodbdata:

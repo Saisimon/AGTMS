@@ -11,33 +11,11 @@ spring:
   jpa:
     show-sql: true
     generate-ddl: true
-  datasource:
-    hikari:
-      minimum-idle: 10
-      maximum-pool-size: 100
-      max-lifetime: 1800000
 
 server:
   port: 7892
   compression:
     enabled: true
-
-extra:
-  file:
-    path: /tmp/files
-  class:
-    path: /tmp/classes
-  admin:
-    username: admin
-    password: 123456
-  default:
-    password: 123456
-  max-size:
-    task: 1024
-    export: 65535
-    import: 65535
-    cache:
-      ttl: 600
 
 white:
   list:

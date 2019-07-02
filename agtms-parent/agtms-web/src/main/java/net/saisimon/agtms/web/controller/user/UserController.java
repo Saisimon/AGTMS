@@ -30,6 +30,7 @@ import net.saisimon.agtms.web.dto.req.UserAuthParam;
 import net.saisimon.agtms.web.dto.req.UserPasswordChangeParam;
 import net.saisimon.agtms.web.dto.req.UserProfileSaveParam;
 import net.saisimon.agtms.web.dto.resp.ProfileInfo;
+import net.saisimon.agtms.web.dto.resp.UserTokenInfo;
 
 /**
  * 用户信息控制器
@@ -68,7 +69,7 @@ public class UserController extends BaseController {
 		userService.saveOrUpdate(user);
 		UserToken token = buildToken(user);
 		TokenFactory.get().setToken(user.getId(), token);
-		return ResultUtils.simpleSuccess(token);
+		return ResultUtils.simpleSuccess(buildTokenInfo(user, token));
 	}
 	
 	/**
@@ -190,11 +191,19 @@ public class UserController extends BaseController {
 		token.setExpireTime(AuthUtils.getExpireTime());
 		token.setToken(AuthUtils.createToken());
 		token.setUserId(user.getId());
-		token.setStatus(user.getStatus());
 		token.setAdmin(user.isAdmin());
-		token.setLoginName(user.getLoginName());
-		token.setAvatar(user.getAvatar());
 		return token;
+	}
+	
+	private UserTokenInfo buildTokenInfo(User user, UserToken token) {
+		UserTokenInfo tokenInfo = new UserTokenInfo();
+		tokenInfo.setUserId(user.getId().toString());
+		tokenInfo.setExpireTime(token.getExpireTime());
+		tokenInfo.setToken(token.getToken());
+		tokenInfo.setStatus(user.getStatus());
+		tokenInfo.setLoginName(user.getLoginName());
+		tokenInfo.setAvatar(user.getAvatar());
+		return tokenInfo;
 	}
 	
 }

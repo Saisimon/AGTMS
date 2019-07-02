@@ -80,6 +80,7 @@ public class ServiceTest {
 	@Test
 	public void baseServiceTest() {
 		// count
+		Assert.assertEquals(0L, templateService.count(null).longValue());
 		Long count = templateService.count(FilterRequest.build());
 		Assert.assertEquals(0L, count.longValue());
 		
@@ -113,6 +114,7 @@ public class ServiceTest {
 		Assert.assertFalse(optional.isPresent());
 		
 		// saveOrUpdate
+		Assert.assertNull(templateService.saveOrUpdate(null));
 		String title = "xxx";
 		int columnSize = 2;
 		Template template = buildTestTemplate(title, columnSize);
@@ -365,12 +367,12 @@ public class ServiceTest {
 		Assert.assertNotNull(SelectionUtils.getSelection(optionSelection.getId(), 1L));
 		
 		// saveSelectionOptions
-		selectionService.saveSelectionOptions(null);
+		selectionService.saveSelectionOptions(null, optionSelection.getOperatorId());
 		List<SelectionOption> options = buildTestSelectionOptions(optionSelection.getId());
-		selectionService.saveSelectionOptions(options);
+		selectionService.saveSelectionOptions(options, optionSelection.getOperatorId());
 		
 		// getSelectionOptions
-		options = selectionService.getSelectionOptions(optionSelection.getId());
+		options = selectionService.getSelectionOptions(optionSelection.getId(), optionSelection.getOperatorId());
 		Assert.assertEquals(2, options.size());
 		
 		// saveOrUpdate
@@ -379,13 +381,13 @@ public class ServiceTest {
 		Assert.assertNotNull(templateSelection.getId());
 		
 		// saveSelectionTemplate
-		selectionService.saveSelectionTemplate(null);
+		selectionService.saveSelectionTemplate(null, optionSelection.getOperatorId());
 		SelectionTemplate template = buildTestSelectionTemplate(templateSelection.getId());
-		selectionService.saveSelectionTemplate(template);
+		selectionService.saveSelectionTemplate(template, optionSelection.getOperatorId());
 		Assert.assertNotNull(template.getId());
 		
 		// getSelectionTemplate
-		template = selectionService.getSelectionTemplate(templateSelection.getId());
+		template = selectionService.getSelectionTemplate(templateSelection.getId(), optionSelection.getOperatorId());
 		Assert.assertNotNull(template);
 		Assert.assertEquals("column0field0", template.getTextFieldName());
 		Assert.assertEquals("id", template.getValueFieldName());
@@ -494,10 +496,19 @@ public class ServiceTest {
 		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("column0field0", "ccc", Constant.Operator.NIN)).longValue());
 		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("column0field0", new String[] {"ccc"}, Constant.Operator.NIN)).longValue());
 		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("column0field0", Arrays.asList("ccc"), Constant.Operator.NIN)).longValue());
-		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.GTE)).longValue());
-		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.GT)).longValue());
-		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.LTE)).longValue());
-		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("createTime", new Date(), Constant.Operator.LT)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("column0field0", "c", Constant.Operator.GTE)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and("column0field0", "c", Constant.Operator.GT)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("column0field0", "c", Constant.Operator.LTE)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and("column0field0", "c", Constant.Operator.LT)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and(Constant.CREATETIME, new Date(), Constant.Operator.GTE)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and(Constant.CREATETIME, new Date(), Constant.Operator.GT)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and(Constant.CREATETIME, new Date(), Constant.Operator.LTE)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and(Constant.CREATETIME, new Date(), Constant.Operator.LT)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and(Constant.OPERATORID, 2, Constant.Operator.GTE)).longValue());
+		Assert.assertEquals(0L, generateService.count(FilterRequest.build().and(Constant.OPERATORID, 2, Constant.Operator.GT)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and(Constant.OPERATORID, 2, Constant.Operator.LTE)).longValue());
+		Assert.assertEquals(1L, generateService.count(FilterRequest.build().and(Constant.OPERATORID, 2, Constant.Operator.LT)).longValue());
+
 		
 		// findList
 		List<Domain> domains = generateService.findList(FilterRequest.build(), (FilterSort) null);

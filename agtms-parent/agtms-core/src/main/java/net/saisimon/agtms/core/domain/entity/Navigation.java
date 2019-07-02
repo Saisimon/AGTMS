@@ -22,11 +22,14 @@ import lombok.Data;
  */
 @Data
 @Entity
-@Table(name="agtms_navigation")
-@Document(collection="agtms_navigation")
+@Table(name=Navigation.TABLE_NAME)
+@Document(collection=Navigation.TABLE_NAME)
 public class Navigation implements Serializable {
 	
 	private static final long serialVersionUID = 67267818886928615L;
+	
+	public static final String TABLE_NAME = "agtms_navigation";
+	
 	/**
 	 * 导航默认图标
 	 */

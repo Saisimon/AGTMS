@@ -13,16 +13,16 @@ import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 
 @Component
-public class TemplateSelection extends AbstractSelection<Long> {
+public class TemplateSelection extends AbstractSelection<String> {
 	
 	@Override
-	public Map<Long, String> select() {
+	public Map<String, String> select() {
 		TemplateService templateService = TemplateServiceFactory.get();
 		List<Template> templates = templateService.getTemplates(AuthUtils.getUid());
-		Map<Long, String> templateMap = MapUtil.newHashMap(templates.size() + 1, true);
-		templateMap.put(-1L, "");
+		Map<String, String> templateMap = MapUtil.newHashMap(templates.size() + 1, true);
+		templateMap.put("-1", "");
 		for (Template template : templates) {
-			templateMap.put(template.getId(), template.getTitle());
+			templateMap.put(template.getId().toString(), template.getTitle());
 		}
 		return templateMap;
 	}

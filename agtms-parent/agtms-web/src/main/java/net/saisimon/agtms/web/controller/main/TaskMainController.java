@@ -120,10 +120,10 @@ public class TaskMainController extends AbstractMainController {
 		List<TaskInfo> results = new ArrayList<>(page.getContent().size());
 		Map<Integer, String> handleStatusMap = handleStatusSelection.select();
 		Map<String, String> taskTypeMap = taskTypeSelection.select();
-		Map<Long, String> userMap = userSelection.select();
+		Map<String, String> userMap = userSelection.select();
 		for (Task task : page.getContent()) {
 			TaskInfo result = new TaskInfo();
-			result.setId(task.getId());
+			result.setId(task.getId().toString());
 			Actuator<?> actuator = ActuatorFactory.get(task.getTaskType());
 			result.setTaskContent(actuator.taskContent(task));
 			result.setTaskType(taskTypeMap.get(task.getTaskType().toString()));
@@ -133,7 +133,7 @@ public class TaskMainController extends AbstractMainController {
 				result.setHandleResult(getMessage(task.getHandleResult()));
 			}
 			result.setHandleTime(task.getHandleTime());
-			result.setOperator(userMap.get(task.getOperatorId()));
+			result.setOperator(userMap.get(task.getOperatorId().toString()));
 			result.setAction(TASK);
 			// download
 			if (HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
@@ -282,10 +282,10 @@ public class TaskMainController extends AbstractMainController {
 		keyValues = Arrays.asList("operatorId");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
-		Map<Long, String> userMap = userSelection.select();
-		List<Long> userValues = new ArrayList<>(userMap.size());
+		Map<String, String> userMap = userSelection.select();
+		List<String> userValues = new ArrayList<>(userMap.size());
 		List<String> userTexts = new ArrayList<>(userMap.size());
-		for (Entry<Long, String> entry : userMap.entrySet()) {
+		for (Entry<String, String> entry : userMap.entrySet()) {
 			userValues.add(entry.getKey());
 			userTexts.add(entry.getValue());
 		}

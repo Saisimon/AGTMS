@@ -94,7 +94,7 @@ public class TemplateEditController extends BaseController {
 		grid.setTable(buildTable(grid, template));
 		MultipleSelect<Integer> functionSelect = new MultipleSelect<>();
 		functionSelect.setOptions(Select.buildOptions(functionSelection.select()));
-		SingleSelect<Long> navigationSelect = new SingleSelect<>();
+		SingleSelect<String> navigationSelect = new SingleSelect<>();
 		navigationSelect.setOptions(Select.buildOptions(navigationSelection.select()));
 		SingleSelect<String> dataSourceSelect = new SingleSelect<>();
 		dataSourceSelect.setOptions(Select.buildOptions(dataSourceSelection.select()));
@@ -106,7 +106,7 @@ public class TemplateEditController extends BaseController {
 			} else {
 				functionSelect.setSelected(Select.getOption(functionSelect.getOptions(), functionCodes));
 			}
-			navigationSelect.setSelected(Select.getOption(navigationSelect.getOptions(), template.getNavigationId()));
+			navigationSelect.setSelected(Select.getOption(navigationSelect.getOptions(), template.getNavigationId().toString()));
 			dataSourceSelect.setSelected(Select.getOption(dataSourceSelect.getOptions(), template.getSource()));
 		} else {
 			grid.setTitle(new Editor<>("", "title"));

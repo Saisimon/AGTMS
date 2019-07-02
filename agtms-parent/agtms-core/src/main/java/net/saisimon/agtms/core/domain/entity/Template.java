@@ -34,11 +34,13 @@ import lombok.Setter;
 @Setter
 @Getter
 @Entity
-@Table(name="agtms_template")
-@Document(collection="agtms_template")
+@Table(name=Template.TABLE_NAME)
+@Document(collection=Template.TABLE_NAME)
 public class Template implements Cloneable, Serializable {
 	
 	private static final long serialVersionUID = 2550898797755828181L;
+	
+	public static final String TABLE_NAME = "agtms_template";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -89,7 +91,7 @@ public class Template implements Cloneable, Serializable {
 	/**
 	 * 模板创建人员ID
 	 */
-	@Column
+	@Column(nullable=false)
 	private Long operatorId;
 	
 	/**
@@ -147,6 +149,8 @@ public class Template implements Cloneable, Serializable {
 	public static class TemplateColumn implements Cloneable, Serializable {
 		
 		private static final long serialVersionUID = 2196263141511063585L;
+		
+		public static final String TABLE_NAME = "agtms_template_column";
 
 		@Id
 		@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -261,6 +265,8 @@ public class Template implements Cloneable, Serializable {
 	public static class TemplateField implements Cloneable, Serializable {
 		
 		private static final long serialVersionUID = 2985059236957444563L;
+		
+		public static final String TABLE_NAME = "agtms_template_field";
 
 		@Id
 		@GeneratedValue(strategy=GenerationType.IDENTITY)

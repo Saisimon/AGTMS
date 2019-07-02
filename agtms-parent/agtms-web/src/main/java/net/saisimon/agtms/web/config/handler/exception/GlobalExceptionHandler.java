@@ -1,4 +1,4 @@
-package net.saisimon.agtms.web.config.handler;
+package net.saisimon.agtms.web.config.handler.exception;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GlobalExceptionHandler {
 	
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(Exception.class)
 	public void exception(HttpServletRequest request, Exception exception) {
 		log.error(request.getRequestURI(), exception);

@@ -16,36 +16,36 @@ import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
 
 @Component
-public class NavigationSelection extends AbstractSelection<Long> {
+public class NavigationSelection extends AbstractSelection<String> {
 	
 	@Override
-	public Map<Long, String> select() {
+	public Map<String, String> select() {
 		NavigationService navigationService = NavigationServiceFactory.get();
 		List<Navigation> navigations = navigationService.getNavigations(AuthUtils.getUid());
-		Map<Long, String> navigationMap = MapUtil.newHashMap(navigations.size() + 1, true);
-		navigationMap.put(-1L, "/");
+		Map<String, String> navigationMap = MapUtil.newHashMap(navigations.size() + 1, true);
+		navigationMap.put("-1", "/");
 		for (Navigation navigation : navigations) {
-			navigationMap.put(navigation.getId(), navigation.getTitle());
+			navigationMap.put(navigation.getId().toString(), navigation.getTitle());
 		}
 		return navigationMap;
 	}
 	
-	public Map<Long, String> selectWithParent(Long excludeId) {
+	public Map<String, String> selectWithParent(Long excludeId) {
 		NavigationService navigationService = NavigationServiceFactory.get();
 		List<Navigation> navigations = navigationService.getNavigations(AuthUtils.getUid());
-		LinkedHashMap<Long, String> navigationMap = new LinkedHashMap<>();
+		LinkedHashMap<String, String> navigationMap = new LinkedHashMap<>();
 		parse(navigations, -1L, navigationMap, excludeId);
-		LinkedHashMap<Long, String> map = new LinkedHashMap<>(navigations.size() + 1);
-		map.put(-1L, "/");
+		LinkedHashMap<String, String> map = new LinkedHashMap<>(navigations.size() + 1);
+		map.put("-1", "/");
 		map.putAll(navigationMap);
 		return map;
 	}
 	
-	private void parse(List<Navigation> navigations, Long parentId, LinkedHashMap<Long, String> map, Long excludeId) {
+	private void parse(List<Navigation> navigations, Long parentId, LinkedHashMap<String, String> map, Long excludeId) {
 		if (CollectionUtils.isEmpty(navigations)) {
 			return;
 		}
-		if (parentId != -1 && !map.containsKey(parentId)) {
+		if (parentId != -1 && !map.containsKey(parentId.toString())) {
 			return;
 		}
 		List<Navigation> currents = new ArrayList<>();
@@ -60,7 +60,7 @@ public class NavigationSelection extends AbstractSelection<Long> {
 			}
 		}
 		for (Navigation pn : currents) {
-			map.put(pn.getId(), map.getOrDefault(parentId, "") + "/" + pn.getTitle());
+			map.put(pn.getId().toString(), map.getOrDefault(parentId, "") + "/" + pn.getTitle());
 			parse(rests, pn.getId(), map, excludeId);
 		}
 	}

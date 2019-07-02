@@ -22,11 +22,13 @@ import lombok.Data;
  */
 @Data
 @Entity
-@Table(name="agtms_operation")
-@Document(collection="agtms_operation")
+@Table(name=Operation.TABLE_NAME)
+@Document(collection=Operation.TABLE_NAME)
 public class Operation implements Serializable {
 	
 	private static final long serialVersionUID = -7685951999912873569L;
+	
+	public static final String TABLE_NAME = "agtms_operation";
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -35,7 +37,7 @@ public class Operation implements Serializable {
 	/**
 	 * 操作人ID
 	 */
-	@Column
+	@Column(nullable=false)
 	private Long operatorId;
 	
 	/**

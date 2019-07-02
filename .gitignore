@@ -29,13 +29,14 @@
 
 data/web/logs
 data/web/libs/*
+data/web/files/*
 data/web/*.pid
 data/eureka
 data/zuul
 data/gateway
 data/redis
 data/mysql
-data/mongodb 
+data/mongodb
 
 agtms-autoconfigure/
 agtms-eureka/

@@ -59,21 +59,21 @@ public interface SelectionService extends BaseService<Selection, Long>, Ordered 
 		return selectionMap;
 	}
 	
-	List<SelectionOption> getSelectionOptions(Long selectionId);
+	List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId);
 	
-	void removeSelectionOptions(Long selectionId);
+	void removeSelectionOptions(Long selectionId, Long operatorId);
 	
-	void removeSelectionTemplate(Long selectionId);
+	void removeSelectionTemplate(Long selectionId, Long operatorId);
 	
-	List<SelectionOption> getSelectionOptions(Long selectionId, Set<String> values, boolean isValue);
+	List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId, Set<String> values, boolean isValue);
 	
-	List<SelectionOption> searchSelectionOptions(Long selectionId, String keyword, Integer size);
+	List<SelectionOption> searchSelectionOptions(Long selectionId, Long operatorId, String keyword, Integer size);
 	
-	SelectionTemplate getSelectionTemplate(Long selectionId);
+	SelectionTemplate getSelectionTemplate(Long selectionId, Long operatorId);
 	
-	void saveSelectionOptions(List<SelectionOption> options);
+	void saveSelectionOptions(List<SelectionOption> options, Long operatorId);
 	
-	void saveSelectionTemplate(SelectionTemplate template);
+	void saveSelectionTemplate(SelectionTemplate template, Long operatorId);
 	
 	@Override
 	@Cacheable(cacheNames="selection", key="#p0")

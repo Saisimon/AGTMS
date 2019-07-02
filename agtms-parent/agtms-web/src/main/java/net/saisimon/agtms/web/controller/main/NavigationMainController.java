@@ -13,7 +13,6 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
@@ -113,7 +112,7 @@ public class NavigationMainController extends AbstractMainController {
 			trees.add(0, NavigationTree.USER_MODULE_TREE);
 		}
 		NavigationTree root = new NavigationTree();
-		root.setId(-1L);
+		root.setId("-1");
 		root.setChildrens(internationNavigationTrees(trees));
 		List<NavigationLink> links = new ArrayList<>();
 		TemplateService templateService = TemplateServiceFactory.get();
@@ -149,10 +148,19 @@ public class NavigationMainController extends AbstractMainController {
 		NavigationService navigationService = NavigationServiceFactory.get();
 		Page<Navigation> page = navigationService.findPage(filter, pageable);
 		List<NavigationInfo> results = new ArrayList<>(page.getContent().size());
-		Map<Long, String> userMap = userSelection.select();
+		Map<String, String> userMap = userSelection.select();
 		for (Navigation navigation : page.getContent()) {
-			NavigationInfo result = buildNavigationResult(navigation);
-			result.setOperator(userMap.get(navigation.getOperatorId()));
+			NavigationInfo result = new NavigationInfo();
+			result.setId(navigation.getId().toString());
+			if (navigation.getParentId() != null) {
+				result.setParentId(navigation.getParentId().toString());
+			}
+			result.setCreateTime(navigation.getCreateTime());
+			result.setUpdateTime(navigation.getUpdateTime());
+			result.setIcon(navigation.getIcon());
+			result.setPriority(navigation.getPriority());
+			result.setTitle(navigation.getTitle());
+			result.setOperator(userMap.get(navigation.getOperatorId().toString()));
 			result.setAction(NAVIGATION);
 			results.add(result);
 		}
@@ -310,10 +318,10 @@ public class NavigationMainController extends AbstractMainController {
 		keyValues = Arrays.asList("operatorId");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
-		Map<Long, String> userMap = userSelection.select();
-		List<Long> userValues = new ArrayList<>(userMap.size());
+		Map<String, String> userMap = userSelection.select();
+		List<String> userValues = new ArrayList<>(userMap.size());
 		List<String> userTexts = new ArrayList<>(userMap.size());
-		for (Entry<Long, String> entry : userMap.entrySet()) {
+		for (Entry<String, String> entry : userMap.entrySet()) {
 			userValues.add(entry.getKey());
 			userTexts.add(entry.getValue());
 		}
@@ -326,15 +334,6 @@ public class NavigationMainController extends AbstractMainController {
 	@Override
 	protected List<String> functions(Object key) {
 		return FUNCTIONS;
-	}
-	
-	private NavigationInfo buildNavigationResult(Navigation navigation) {
-		if (navigation == null) {
-			return null;
-		}
-		NavigationInfo result = new NavigationInfo();
-		BeanUtils.copyProperties(navigation, result);
-		return result;
 	}
 	
 	private void recursiveRemove(Navigation navigation, Long userId) {
@@ -373,7 +372,7 @@ public class NavigationMainController extends AbstractMainController {
 		TemplateService templateService = TemplateServiceFactory.get();
 		for (Navigation current : currents) {
 			NavigationTree tree = new NavigationTree();
-			tree.setId(current.getId());
+			tree.setId(current.getId().toString());
 			tree.setTitle(current.getTitle());
 			tree.setIcon(current.getIcon());
 			tree.setPriority(current.getPriority());
