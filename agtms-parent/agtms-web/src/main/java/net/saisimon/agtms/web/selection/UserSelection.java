@@ -16,25 +16,28 @@ import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
 
 @Component
-public class UserSelection extends AbstractSelection<Long> {
+public class UserSelection extends AbstractSelection<String> {
 
 	@Override
-	public Map<Long, String> select() {
+	public Map<String, String> select() {
 		UserService userService = UserServiceFactory.get();
 		Long userId = AuthUtils.getUid();
+		if (userId == null) {
+			return MapUtil.newHashMap(0);
+		}
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
 		if (userToken != null && userToken.isAdmin()) {
 			List<User> users = userService.findList(null, "id", "loginName");
-			Map<Long, String> userMap = MapUtil.newHashMap(users.size(), true);
+			Map<String, String> userMap = MapUtil.newHashMap(users.size(), true);
 			for (User user : users) {
-				userMap.put(user.getId(), user.getLoginName());
+				userMap.put(user.getId().toString(), user.getLoginName());
 			}
 			return userMap;
 		} else {
-			Map<Long, String> userMap = MapUtil.newHashMap(1, true);
+			Map<String, String> userMap = MapUtil.newHashMap(1, true);
 			Optional<User> optional = userService.findById(userId);
 			if (optional.isPresent()) {
-				userMap.put(userId, optional.get().getLoginName());
+				userMap.put(userId.toString(), optional.get().getLoginName());
 			}
 			return userMap;
 		}

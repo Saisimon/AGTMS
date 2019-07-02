@@ -111,7 +111,7 @@ public class SelectionMainController extends AbstractMainController {
 		Page<Selection> page = selectionService.findPage(filter, pageable);
 		List<SelectionInfo> results = new ArrayList<>(page.getContent().size());
 		Map<Integer, String> selectTypeMap = selectTypeSelection.select();
-		Map<Long, String> userMap = userSelection.select();
+		Map<String, String> userMap = userSelection.select();
 		for (Selection selection : page.getContent()) {
 			SelectionInfo result = new SelectionInfo();
 			result.setId(selection.getId().toString());
@@ -119,7 +119,7 @@ public class SelectionMainController extends AbstractMainController {
 			result.setTitle(selection.getTitle());
 			result.setType(selectTypeMap.get(selection.getType()));
 			result.setUpdateTime(selection.getUpdateTime());
-			result.setOperator(userMap.get(selection.getOperatorId()));
+			result.setOperator(userMap.get(selection.getOperatorId().toString()));
 			result.setAction(SELECTION);
 			results.add(result);
 		}
@@ -226,10 +226,10 @@ public class SelectionMainController extends AbstractMainController {
 		keyValues = Arrays.asList("operatorId");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
-		Map<Long, String> userMap = userSelection.select();
-		List<Long> userValues = new ArrayList<>(userMap.size());
+		Map<String, String> userMap = userSelection.select();
+		List<String> userValues = new ArrayList<>(userMap.size());
 		List<String> userTexts = new ArrayList<>(userMap.size());
-		for (Entry<Long, String> entry : userMap.entrySet()) {
+		for (Entry<String, String> entry : userMap.entrySet()) {
 			userValues.add(entry.getKey());
 			userTexts.add(entry.getValue());
 		}

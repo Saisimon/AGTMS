@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +91,7 @@ public class OperationMainController extends AbstractMainController {
 		Page<Operation> page = operationService.findPage(filter, pageable);
 		List<OperationInfo> results = new ArrayList<>(page.getContent().size());
 		Map<Integer, String> operateTypeMap = operateTypeSelection.select();
-		Map<Long, String> userMap = userSelection.select();
+		Map<String, String> userMap = userSelection.select();
 		for (Operation operation : page.getContent()) {
 			OperationInfo result = new OperationInfo();
 			result.setId(operation.getId().toString());
@@ -101,7 +101,7 @@ public class OperationMainController extends AbstractMainController {
 			if (operation.getOperateContent() != null) {
 				result.setOperateContent(Arrays.stream(operation.getOperateContent().split(",")).map(msg -> { return getMessage(msg);}).collect(Collectors.joining(" / ")));
 			}
-			result.setOperator(userMap.get(operation.getOperatorId()));
+			result.setOperator(userMap.get(operation.getOperatorId().toString()));
 			result.setAction(OPERATION);
 			results.add(result);
 		}
@@ -142,10 +142,10 @@ public class OperationMainController extends AbstractMainController {
 		keyValues = Arrays.asList("operatorId");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
-		Map<Long, String> userMap = userSelection.select();
-		List<Long> userValues = new ArrayList<>(userMap.size());
+		Map<String, String> userMap = userSelection.select();
+		List<String> userValues = new ArrayList<>(userMap.size());
 		List<String> userTexts = new ArrayList<>(userMap.size());
-		for (Entry<Long, String> entry : userMap.entrySet()) {
+		for (Entry<String, String> entry : userMap.entrySet()) {
 			userValues.add(entry.getKey());
 			userTexts.add(entry.getValue());
 		}
