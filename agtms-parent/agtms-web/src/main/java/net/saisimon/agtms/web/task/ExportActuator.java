@@ -32,7 +32,6 @@ import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
-import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -127,13 +126,12 @@ public class ExportActuator implements Actuator<ExportParam> {
 			fields.add(exportField);
 		}
 		fillHead(file, heads, param.getExportFileType(), false);
-		GenerateService generateService = GenerateServiceFactory.build(template);
 		FilterRequest filter = FilterRequest.build(param.getFilter(), TemplateUtils.getFilters(template));
 		if (filter == null) {
 			filter = FilterRequest.build();
 		}
 		filter.and(Constant.OPERATORID, param.getUserId());
-		Long count = generateService.count(filter);
+		Long count = GenerateServiceFactory.build(template).count(filter);
 		long pageCount = (count - 1) / PAGE_SIZE + 1;
 		List<List<Object>> datas = new ArrayList<>();
 		for (int page = 0; page < pageCount; page++) {
@@ -141,7 +139,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 				throw new InterruptedException("Task Cancel");
 			}
 			FilterPageable pageable = new FilterPageable(page, PAGE_SIZE, null);
-			List<Domain> domains = generateService.findList(filter, pageable, fields.toArray(new String[fields.size()]));
+			List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, pageable, fields.toArray(new String[fields.size()]));
 			List<Map<String, Object>> domainList = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), domains, param.getUserId());
 			for (Map<String, Object> domainMap : domainList) {
 				if (Thread.currentThread().isInterrupted()) {

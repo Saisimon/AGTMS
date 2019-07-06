@@ -28,6 +28,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.util.CollectionUtils;
 
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+
 import cn.hutool.core.date.DateUtil;
 import net.saisimon.agtms.core.enums.ImageFormats;
 
@@ -166,7 +170,7 @@ public final class FileUtils {
 	 * @return 数据集合大小
 	 * @throws IOException 解析读取异常
 	 */
-	public static int sizeCSV(InputStream in, String separator) throws IOException {
+	public static int sizeCSV(InputStream in) throws IOException {
 		int size = 0;
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
 			String line = null;
@@ -214,29 +218,24 @@ public final class FileUtils {
 	 * 解析输入CSV文件流，获取数据集合
 	 * 
 	 * @param in CSV文件流
-	 * @param separator 分隔符，默认为逗号
 	 * @return 数据集合
 	 * @throws IOException 解析读取异常
 	 */
-	public static List<List<String>> fromCSV(FileInputStream in, String separator) throws IOException {
+	public static List<List<String>> fromCSV(FileInputStream in) throws IOException {
+		CSVReader reader = new CSVReaderBuilder(new InputStreamReader(in)).withCSVParser(new CSVParserBuilder().build()).build();
 		List<List<String>> result = new ArrayList<>();
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-			if (separator == null) {
-				separator = ",";
+		String[] nextLineAsTokens = null;
+		do {
+			nextLineAsTokens = reader.readNext();
+			if (nextLineAsTokens == null) {
+				break;
 			}
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				if (SystemUtils.isBlank(line)) {
-					continue;
-				}
-				String[] dataArray = line.split(separator);
-				List<String> datas = new ArrayList<>(dataArray.length);
-				for (String data : dataArray) {
-					datas.add(data);
-				}
-				result.add(datas);
+			List<String> datas = new ArrayList<>(nextLineAsTokens.length);
+			for (String data : nextLineAsTokens) {
+				datas.add(data);
 			}
-		}
+			result.add(datas);
+		} while (true);
 		return result;
 	}
 	

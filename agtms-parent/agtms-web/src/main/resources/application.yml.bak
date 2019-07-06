@@ -12,13 +12,13 @@ spring:
       names: agtms0,agtms1
       agtms0:
         type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.jdbc.Driver
+        driver-class-name: com.mysql.cj.jdbc.Driver
         jdbc-url: jdbc:mysql://dbserver:3306/agtms0?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
         username: root
         password: 1qaz1QAZ
       agtms1:
         type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.jdbc.Driver
+        driver-class-name: com.mysql.cj.jdbc.Driver
         jdbc-url: jdbc:mysql://dbserver:3306/agtms1?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
         username: root
         password: 1qaz1QAZ
@@ -163,7 +163,7 @@ spring:
     url: jdbc:mysql://dbserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
     username: root
     password: 1qaz1QAZ
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     # Oracle
     url: jdbc:oracle:thin:@dbserver:1521:ORCL
     username: agtms

@@ -37,7 +37,6 @@ import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -68,8 +67,7 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 		}
 		Domain domain = null;
 		if (id != null) {
-			GenerateService generateService = GenerateServiceFactory.build(template);
-			domain = generateService.findById(id, userId);
+			domain = GenerateServiceFactory.build(template).findById(id, userId);
 			if (domain == null) {
 				return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
 			}
@@ -93,8 +91,7 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		try {
-			GenerateService generateService = GenerateServiceFactory.build(template);
-			Domain domain = generateService.newGenerate();
+			Domain domain = GenerateServiceFactory.build(template).newGenerate();
 			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 			for (Map.Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
 				String fieldName = entry.getKey();
@@ -119,21 +116,21 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 				}
 			}
 			if (idObj == null) {
-				if (generateService.checkExist(domain, userId)) {
+				if (GenerateServiceFactory.build(template).checkExist(domain, userId)) {
 					return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
 				}
-				generateService.saveDomain(domain, userId);
+				GenerateServiceFactory.build(template).saveDomain(domain, userId);
 			} else {
 				Long id = Long.valueOf(idObj.toString());
-				Domain oldDomain = generateService.findById(id, userId);
+				Domain oldDomain = GenerateServiceFactory.build(template).findById(id, userId);
 				if (oldDomain == null) {
 					return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
 				}
 				domain.setField(Constant.ID, id, Long.class);
-				if (generateService.checkExist(domain, userId)) {
+				if (GenerateServiceFactory.build(template).checkExist(domain, userId)) {
 					return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
 				}
-				generateService.updateDomain(domain, oldDomain, userId);
+				GenerateServiceFactory.build(template).updateDomain(domain, oldDomain, userId);
 			}
 			return ResultUtils.simpleSuccess();
 		} catch (GenerateException e) {

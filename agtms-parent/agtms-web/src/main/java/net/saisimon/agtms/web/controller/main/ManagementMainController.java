@@ -71,7 +71,6 @@ import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.task.Actuator;
@@ -134,8 +133,7 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		FilterRequest filter = FilterRequest.build(body, TemplateUtils.getFilters(template));
 		FilterPageable pageable = FilterPageable.build(param);
-		GenerateService generateService = GenerateServiceFactory.build(template);
-		Page<Domain> page = generateService.findPage(filter, pageable);
+		Page<Domain> page = GenerateServiceFactory.build(template).findPage(filter, pageable);
 		request.getSession().setAttribute(key + "_filters", body);
 		request.getSession().setAttribute(key + "_pageable", param);
 		if (TemplateUtils.hasSelection(template)) {
@@ -159,10 +157,9 @@ public class ManagementMainController extends AbstractMainController {
 		if (!TemplateUtils.hasFunction(template, Functions.REMOVE)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
-		GenerateService generateService = GenerateServiceFactory.build(template);
-		Domain domain = generateService.findById(id, userId);
+		Domain domain = GenerateServiceFactory.build(template).findById(id, userId);
 		if (domain != null) {
-			generateService.delete(domain);
+			GenerateServiceFactory.build(template).delete(domain);
 		}
 		return ResultUtils.simpleSuccess();
 	}
@@ -216,14 +213,13 @@ public class ManagementMainController extends AbstractMainController {
 			return ResultUtils.simpleSuccess();
 		}
 		Long userId = AuthUtils.getUid();
-		GenerateService generateService = GenerateServiceFactory.build(template);
 		for (Integer id : ids) {
-			Domain domain = generateService.findById(id.longValue(), userId);
+			Domain domain = GenerateServiceFactory.build(template).findById(id.longValue(), userId);
 			if (domain == null) {
 				continue;
 			}
 			map.put(Constant.UPDATETIME, new Date());
-			generateService.updateDomain(id.longValue(), map);
+			GenerateServiceFactory.build(template).updateDomain(id.longValue(), map);
 		}
 		return ResultUtils.simpleSuccess();
 	}
@@ -240,13 +236,12 @@ public class ManagementMainController extends AbstractMainController {
 		if (!TemplateUtils.hasFunction(template, Functions.BATCH_REMOVE)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
-		GenerateService generateService = GenerateServiceFactory.build(template);
 		for (Long id : ids) {
-			Domain domain = generateService.findById(id, userId);
+			Domain domain = GenerateServiceFactory.build(template).findById(id, userId);
 			if (domain == null) {
 				continue;
 			}
-			generateService.delete(domain);
+			GenerateServiceFactory.build(template).delete(domain);
 		}
 		return ResultUtils.simpleSuccess();
 	}
@@ -265,13 +260,12 @@ public class ManagementMainController extends AbstractMainController {
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
-		GenerateService generateService = GenerateServiceFactory.build(template);
 		FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
 		if (filter == null) {
 			filter = FilterRequest.build();
 		}
 		filter.and(Constant.OPERATORID, userId);
-		Long total = generateService.count(filter);
+		Long total = GenerateServiceFactory.build(template).count(filter);
 		if (total > exportMaxSize) {
 			Result result = ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
 			result.setMessageArgs(new Object[]{ exportMaxSize });
@@ -346,7 +340,7 @@ public class ManagementMainController extends AbstractMainController {
 					size = FileUtils.sizeXLS(importFile.getInputStream());
 					break;
 				case Constant.File.CSV:
-					size = FileUtils.sizeCSV(importFile.getInputStream(), ",");
+					size = FileUtils.sizeCSV(importFile.getInputStream());
 					break;
 				case Constant.File.XLSX:
 					size = FileUtils.sizeXLSX(importFile.getInputStream());
