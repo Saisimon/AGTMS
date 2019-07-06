@@ -15,6 +15,7 @@
                             select-label=""
                             deselect-label=""
                             selected-label=""
+                            :limit="3"
                             :searchable="false"
                             :multiple="true"
                             :options="batchEdit.editFieldOptions"

@@ -28,7 +28,6 @@ export default {
 
 <style scoped>
 .text-nowrap {
-    max-width: 200px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

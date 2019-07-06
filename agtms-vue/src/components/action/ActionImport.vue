@@ -26,6 +26,7 @@
                                 selected-label=""
                                 group-values="options" 
                                 group-label="group" 
+                                :limit="3"
                                 :group-select="true"
                                 :searchable="false"
                                 :multiple="true"
