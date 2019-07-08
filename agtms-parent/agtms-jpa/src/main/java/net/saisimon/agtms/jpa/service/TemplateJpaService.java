@@ -40,9 +40,4 @@ public class TemplateJpaService implements TemplateService, JpaOrder {
 		return ddlService.dropTable(template);
 	}
 
-	@Override
-	public Template saveOrUpdate(Template entity) {
-		return TemplateService.super.saveOrUpdate(entity);
-	}
-	
 }
