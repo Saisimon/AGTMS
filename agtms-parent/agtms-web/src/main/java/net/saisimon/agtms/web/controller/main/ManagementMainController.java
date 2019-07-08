@@ -102,6 +102,8 @@ public class ManagementMainController extends AbstractMainController {
 	private int exportMaxSize;
 	@Value("${extra.max-size.import:65535}")
 	private int importMaxSize;
+	@Value("${extra.max-size.import-file:10}")
+	private int importFileMaxSize;
 	@Value("${extra.file.path:/tmp/files}")
 	private String filePath;
 	@Value("${spring.cloud.client.ip-address}")
@@ -307,7 +309,12 @@ public class ManagementMainController extends AbstractMainController {
 			@RequestParam(name="importFileName", required=false) String importFileName, 
 			@RequestParam("importFileType") String importFileType, 
 			@RequestParam("importFields") List<String> importFields, 
-			@RequestParam("importFile") MultipartFile importFile) {
+			@RequestParam("importFiles") MultipartFile[] importFiles) {
+		if (importFiles.length > importFileMaxSize) {
+			Result result = ErrorMessage.Task.Import.TASK_IMPORT_FILE_MAX_SIZE_LIMIT;
+			result.setMessageArgs(new Object[]{ importFileMaxSize });
+			return result;
+		}
 		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
@@ -324,57 +331,62 @@ public class ManagementMainController extends AbstractMainController {
 				}
 			}
 		}
-		ImportParam body = new ImportParam();
-		body.setImportFields(importFields);
-		body.setImportFileName(importFileName);
-		body.setImportFileType(importFileType);
-		body.setImportFileUUID(UUID.randomUUID().toString());
-		body.setTemplateId(template.sign());
-		body.setUserId(userId);
-		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(filePath).append(File.separatorChar).append(Constant.File.IMPORT_PATH).append(File.separatorChar).append(userId);
-		try (FileOutputStream output = new FileOutputStream(FileUtils.createFile(importFilePath.toString(), body.getImportFileUUID(), "." + importFileType))) {
-			int size = 0;
-			switch (importFileType) {
-				case Constant.File.XLS:
-					size = FileUtils.sizeXLS(importFile.getInputStream());
-					break;
-				case Constant.File.CSV:
-					size = FileUtils.sizeCSV(importFile.getInputStream());
-					break;
-				case Constant.File.XLSX:
-					size = FileUtils.sizeXLSX(importFile.getInputStream());
-					break;
-				default:
-					break;
+		for (MultipartFile importFile : importFiles) {
+			if (importFile.isEmpty()) {
+				continue;
 			}
-			if (size == 0) {
-				return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
+			ImportParam body = new ImportParam();
+			body.setImportFields(importFields);
+			body.setImportFileName(importFileName + "-" + importFile.getOriginalFilename());
+			body.setImportFileType(importFileType);
+			body.setImportFileUUID(UUID.randomUUID().toString());
+			body.setTemplateId(template.sign());
+			body.setUserId(userId);
+			StringBuilder importFilePath = new StringBuilder();
+			importFilePath.append(filePath).append(File.separatorChar).append(Constant.File.IMPORT_PATH).append(File.separatorChar).append(userId);
+			try (FileOutputStream output = new FileOutputStream(FileUtils.createFile(importFilePath.toString(), body.getImportFileUUID(), "." + importFileType))) {
+				int size = 0;
+				switch (importFileType) {
+					case Constant.File.XLS:
+						size = FileUtils.sizeXLS(importFile.getInputStream());
+						break;
+					case Constant.File.CSV:
+						size = FileUtils.sizeCSV(importFile.getInputStream());
+						break;
+					case Constant.File.XLSX:
+						size = FileUtils.sizeXLSX(importFile.getInputStream());
+						break;
+					default:
+						break;
+				}
+				if (size == 0) {
+					return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
+				}
+				if (size > importMaxSize) {
+					Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
+					result.setMessageArgs(new Object[]{ importMaxSize });
+					return result;
+				}
+				IOUtils.copy(importFile.getInputStream(), output);
+				output.flush();
+			} catch (IOException e) {
+				log.error("导入异常", e);
+				return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
 			}
-			if (size > importMaxSize) {
-				Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
-				result.setMessageArgs(new Object[]{ importMaxSize });
-				return result;
+			Task exportTask = createExportTask(body);
+			try {
+				submitTask(exportTask);
+			} catch (TaskRejectedException e) {
+				exportTask.setHandleTime(new Date());
+				exportTask.setHandleResult(ErrorMessage.Task.TASK_MAX_SIZE_LIMIT.getMessage());
+				exportTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
+				TaskServiceFactory.get().saveOrUpdate(exportTask);
+				return ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
 			}
-			IOUtils.copy(importFile.getInputStream(), output);
-			output.flush();
-		} catch (IOException e) {
-			log.error("导入异常", e);
-			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
 		}
-		Task exportTask = createExportTask(body);
-		try {
-			submitTask(exportTask);
-			Result result = ResultUtils.simpleSuccess();
-			result.setMessage(getMessage("import.task.created"));
-			return result;
-		} catch (TaskRejectedException e) {
-			exportTask.setHandleTime(new Date());
-			exportTask.setHandleResult(ErrorMessage.Task.TASK_MAX_SIZE_LIMIT.getMessage());
-			exportTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
-			TaskServiceFactory.get().saveOrUpdate(exportTask);
-			return ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
-		}
+		Result result = ResultUtils.simpleSuccess();
+		result.setMessage(getMessage("import.task.created"));
+		return result;
 	}
 	
 	@Override

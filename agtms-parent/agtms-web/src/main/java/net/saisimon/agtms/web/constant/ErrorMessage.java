@@ -65,6 +65,7 @@ public class ErrorMessage {
 			public static final Result TASK_IMPORT_FAILED = ResultUtils.error(5201, "import.failed");
 			public static final Result TASK_IMPORT_MAX_SIZE_LIMIT = ResultUtils.error(5202, "import.max.size.limit");
 			public static final Result TASK_IMPORT_SIZE_EMPTY = ResultUtils.error(5203, "import.size.empty");
+			public static final Result TASK_IMPORT_FILE_MAX_SIZE_LIMIT = ResultUtils.error(5204, "import.file.max.size.limit");
 		}
 	}
 	
