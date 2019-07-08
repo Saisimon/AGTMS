@@ -1,4 +1,4 @@
-package net.saisimon.agtms.zuul.config;
+package net.saisimon.agtms.zuul.config.property;
 
 import java.util.List;
 

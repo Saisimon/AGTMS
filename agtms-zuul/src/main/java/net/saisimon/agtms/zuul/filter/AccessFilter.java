@@ -12,8 +12,8 @@ import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 
 import net.saisimon.agtms.api.UserInterface;
-import net.saisimon.agtms.zuul.config.WhiteList;
-import net.saisimon.agtms.zuul.config.WhitePrefix;
+import net.saisimon.agtms.zuul.config.property.WhiteList;
+import net.saisimon.agtms.zuul.config.property.WhitePrefix;
 
 @RefreshScope
 @Component
