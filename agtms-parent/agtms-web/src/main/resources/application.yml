@@ -1,12 +1,13 @@
 spring:
   main:
-    banner-mode: 'off'
+    bannerMode: 'off'
   servlet:
     multipart:
-      max-file-size: 10MB
+      maxFileSize: 20MB
+      maxRequestSize: 100MB
   jpa:
-    show-sql: true
-    generate-ddl: true
+    showSql: true
+    generateDdl: true
 
 ribbon:
   ReadTimeout: 5000
