@@ -1,6 +1,6 @@
 {
   "name": "agtms-vue",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -27,7 +27,8 @@
     "vue-router": "^3.0.6",
     "vuedraggable": "2.17.0",
     "vuejs-datepicker": "1.5.3",
-    "vuex": "^3.1.1"
+    "vuex": "^3.1.1",
+    "lodash.defaultsdeep": ">=4.6.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.8.0",
