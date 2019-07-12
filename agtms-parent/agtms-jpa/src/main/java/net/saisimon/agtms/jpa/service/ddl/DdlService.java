@@ -44,7 +44,7 @@ public class DdlService {
 		try {
 			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 			String tableName = TemplateUtils.getTableName(template);
-			String sql = dialect.buildCreateSql(fieldInfoMap, tableName);
+			String sql = dialect.buildCreateSQL(fieldInfoMap, tableName);
 			if (log.isDebugEnabled()) {
 				log.debug("DDL: {}", sql);
 			}
@@ -78,12 +78,12 @@ public class DdlService {
 				if (commonFieldName.contains(fieldName)) {
 					continue;
 				}
-				String sql = dialect.buildAlterDropSql(tableName, fieldName);
+				String sql = dialect.buildAlterDropSQL(tableName, fieldName);
 				if (log.isDebugEnabled()) {
 					log.debug("DDL: {}", sql);
 				}
 				jdbcTemplate.execute(sql);
-				String rollbackSql = dialect.buildAlterAddSql(oldFieldInfoMap.get(fieldName), tableName, fieldName);
+				String rollbackSql = dialect.buildAlterAddSQL(oldFieldInfoMap.get(fieldName), tableName, fieldName);
 				rollbackMap.put(sql, rollbackSql);
 				sqlSet.add(sql);
 			}
@@ -93,22 +93,22 @@ public class DdlService {
 				if (commonFieldName.contains(fieldName)) {
 					TemplateField oldField = oldFieldInfoMap.get(fieldName);
 					if (!oldField.getFieldType().equals(field.getFieldType())) {
-						String sql = dialect.buildAlterModifySql(field, tableName, fieldName);
+						String sql = dialect.buildAlterModifySQL(field, tableName, fieldName);
 						if (log.isDebugEnabled()) {
 							log.debug("DDL: {}", sql);
 						}
 						jdbcTemplate.execute(sql);
-						String rollbackSql = dialect.buildAlterModifySql(oldField, tableName, fieldName);
+						String rollbackSql = dialect.buildAlterModifySQL(oldField, tableName, fieldName);
 						rollbackMap.put(sql, rollbackSql);
 						sqlSet.add(sql);
 					}
 				} else {
-					String sql = dialect.buildAlterAddSql(field, tableName, fieldName);
+					String sql = dialect.buildAlterAddSQL(field, tableName, fieldName);
 					if (log.isDebugEnabled()) {
 						log.debug("DDL: {}", sql);
 					}
 					jdbcTemplate.execute(sql);
-					String rollbackSql = dialect.buildAlterDropSql(tableName, fieldName);
+					String rollbackSql = dialect.buildAlterDropSQL(tableName, fieldName);
 					rollbackMap.put(sql, rollbackSql);
 					sqlSet.add(sql);
 				}
@@ -140,7 +140,7 @@ public class DdlService {
 			return false;
 		}
 		try {
-			String sql = dialect.buildDropSql(TemplateUtils.getTableName(template));
+			String sql = dialect.buildDropSQL(TemplateUtils.getTableName(template));
 			if (log.isDebugEnabled()) {
 				log.debug("DDL: {}", sql);
 			}

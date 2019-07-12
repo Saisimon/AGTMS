@@ -3,7 +3,7 @@ package net.saisimon.agtms.jpa.repository.base;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +30,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.data.repository.support.PageableExecutionUtils;
 import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.util.ArrayUtil;
@@ -61,7 +60,7 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 	}
 
 	@Override
-	public List<T> findList(final FilterRequest filter, FilterSort sort, String... properties) {
+	public List<T> findList(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Sort s = getSort(sort);
 		if (ArrayUtil.isEmpty(properties)) {
 			return findAll(JpaFilterUtils.specification(filter, properties), s);
@@ -78,24 +77,29 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<T> findList(final FilterRequest filter, FilterPageable pageable, String... properties) {
-		// 分页为空
-		if (pageable == null) {
-			return findList(filter, (FilterSort)null, properties);
+	public List<T> findList(final FilterRequest filter, final FilterPageable pageable, String... properties) {
+		FilterPageable filterPageable = pageable;
+		if (filterPageable == null) {
+			filterPageable = FilterPageable.build(null);
 		}
-		Pageable springPageable = pageable.getPageable();
+		FilterRequest filterRequest = filter;
+		if (filterRequest == null) {
+			filterRequest = FilterRequest.build();
+		}
+		filterRequest.and(filterPageable.getParam());
+		Pageable springPageable = filterPageable.getPageable();
 		Class<T> domainClass = getDomainClass();
 		// 如果是复合ID，直接查出指定属性，否则先查出ID集合再根据ID查指定属性
 		if (entityInformation.hasCompositeId()) {
 			if (ArrayUtil.isEmpty(properties)) {
-				TypedQuery<T> query = getQuery(JpaFilterUtils.specification(filter, properties), springPageable);
+				TypedQuery<T> query = getQuery(JpaFilterUtils.specification(filterRequest, properties), springPageable);
 				if (springPageable.isPaged()) {
 					query.setFirstResult((int) springPageable.getOffset());
 					query.setMaxResults(springPageable.getPageSize());
 				}
 				return query.getResultList();
 			} else {
-				TypedQuery<Tuple> query = getTupleQuery(filter, domainClass, springPageable, properties);
+				TypedQuery<Tuple> query = getTupleQuery(filterRequest, domainClass, springPageable, properties);
 				List<Tuple> tuples = query.getResultList();
 				List<T> domains = new ArrayList<>(tuples.size());
 				for (Tuple tuple : tuples) {
@@ -109,7 +113,7 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 			for (String idName : it) {
 				idNames.add(idName);
 			}
-			TypedQuery<Tuple> query = getTupleQuery(filter, domainClass, springPageable, idNames.toArray(new String[idNames.size()]));
+			TypedQuery<Tuple> query = getTupleQuery(filterRequest, domainClass, springPageable, idNames.toArray(new String[idNames.size()]));
 			List<Tuple> tuples = query.getResultList();
 			if (CollectionUtils.isEmpty(tuples)) {
 				return new ArrayList<>(0);
@@ -129,26 +133,33 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 			}
 			String idName = idNames.get(0);
 			List<T> domains = findList(FilterRequest.build().and(idName, ids, Constant.Operator.IN), properties);
-			return sortDomains(domains, ids, idName);
+			return JpaFilterUtils.sortDomains(domains, ids, idName);
 		}
-	}
-
-	@Override
-	public Page<T> findPage(final FilterRequest filter, FilterPageable pageable, String... properties) {
-		if (pageable == null) {
-			pageable = FilterPageable.build(null);
-		}
-		Pageable springPageable = pageable.getPageable();
-		long count = count(filter);
-		if (count == 0) {
-			return new PageImpl<>(new ArrayList<>(), springPageable, 0);
-		}
-		List<T> domains = findList(filter, pageable, properties);
-		return PageableExecutionUtils.getPage(domains, springPageable, () -> count);
 	}
 	
 	@Override
-	public Optional<T> findOne(final FilterRequest filter, FilterSort sort, String... properties) {
+	public Page<T> findPage(final FilterRequest filter, final FilterPageable pageable, boolean count, String... properties) {
+		FilterPageable filterPageable = pageable;
+		if (filterPageable == null) {
+			filterPageable = FilterPageable.build(null);
+		}
+		Pageable springPageable = filterPageable.getPageable();
+		long total = 0;
+		if (count) {
+			total = count(filter);
+			if (total == 0) {
+				return new PageImpl<>(Collections.emptyList(), springPageable, 0);
+			}
+		}
+		List<T> domains = findList(filter, filterPageable, properties);
+		if (CollectionUtils.isEmpty(domains)) {
+			return new PageImpl<>(new ArrayList<>(0), springPageable, 0);
+		}
+		return new PageImpl<>(domains, springPageable, count ? total : domains.size());
+	}
+	
+	@Override
+	public Optional<T> findOne(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Sort s = getSort(sort);
 		try {
 			if (ArrayUtil.isEmpty(properties)) {
@@ -193,7 +204,7 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 
 	@Transactional(rollbackOn = Exception.class)
 	@Override
-	public void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
+	public void batchUpdate(final FilterRequest filter, Map<String, Object> updateMap) {
 		List<T> list = findList(filter);
 		if (CollectionUtils.isEmpty(list)) {
 			return;
@@ -250,20 +261,6 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 		} else {
 			return Sort.unsorted();
 		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	private List<T> sortDomains(List<T> domains, List<ID> ids, String idName) {
-		Map<ID, T> domainMap = new HashMap<>();
-		for (T domain : domains) {
-			ID id = (ID) ReflectUtil.getFieldValue(domain, idName);
-			domainMap.put(id, domain);
-		}
-		List<T> results = new ArrayList<>(domains.size());
-		for (ID id : ids) {
-			results.add(domainMap.get(id));
-		}
-		return results;
 	}
 	
 }

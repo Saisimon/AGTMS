@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.map.MapUtil;
@@ -24,6 +23,7 @@ import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
+import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.domain.tag.Option;
@@ -204,9 +204,9 @@ public class SelectionUtils {
 			} else {
 				filter.and(selectionTemplate.getTextFieldName(), keyword, Operator.REGEX);
 			}
-			FilterPageable pageable = new FilterPageable(0, OPTION_SIZE, null);
-			Page<Domain> page = GenerateServiceFactory.build(template).findPage(filter, pageable, selectionTemplate.getValueFieldName(), selectionTemplate.getTextFieldName());
-			for (Domain domain : page.getContent()) {
+			FilterPageable pageable = new FilterPageable(new FilterParam(Constant.ID, null, Operator.LT), OPTION_SIZE, null);
+			List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, pageable, selectionTemplate.getValueFieldName(), selectionTemplate.getTextFieldName());
+			for (Domain domain : domains) {
 				String text = domain.getField(selectionTemplate.getTextFieldName()).toString();
 				Option<Object> option = new Option<>(domain.getField(selectionTemplate.getValueFieldName()), text);
 				options.add(option);

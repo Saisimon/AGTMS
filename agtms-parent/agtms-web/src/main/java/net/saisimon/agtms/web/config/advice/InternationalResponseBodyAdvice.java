@@ -57,7 +57,7 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 			pageResult.setCode(result.getCode());
 			pageResult.setMessage(messageSource.getMessage(result.getMessage(), result.getMessageArgs(), LocaleContextHolder.getLocale()));
 			pageResult.setRows(result.getRows());
-			pageResult.setTotal(result.getTotal());
+			pageResult.setMore(result.getMore());
 			resultObj = pageResult;
 		} else if (resultObj instanceof Result) {
 			Result result = (Result) resultObj;

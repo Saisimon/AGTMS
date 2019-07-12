@@ -57,14 +57,13 @@ public class ResultUtils {
 	 * @param total 总数
 	 * @return 分页结果对象
 	 */
-	public static <T> Result pageSuccess(Iterable<T> rows, long total) {
+	public static <T> Result pageSuccess(Iterable<T> rows, boolean more) {
 		PageResult<T> pageResult = new PageResult<>();
 		pageResult.setCode(SUCCESS_CODE);
 		pageResult.setMessage(SUCCESS_MESSAGE);
 		if (rows != null) {
 			pageResult.setRows(rows);
 		}
-		pageResult.setTotal(total);
 		return pageResult;
 	}
 	

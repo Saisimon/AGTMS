@@ -10,16 +10,16 @@ public interface Dialect {
 	
 	String columnType(TemplateField field);
 	
-	String buildCreateSql(Map<String, TemplateField> fieldInfoMap, String tableName);
+	String buildCreateSQL(Map<String, TemplateField> fieldInfoMap, String tableName);
 	
-	String buildDropSql(String tableName);
+	String buildDropSQL(String tableName);
 	
-	String buildAlterAddSql(TemplateField field, String tableName, String columnName);
+	String buildAlterAddSQL(TemplateField field, String tableName, String columnName);
 	
-	String buildAlterModifySql(TemplateField field, String tableName, String columnName);
+	String buildAlterModifySQL(TemplateField field, String tableName, String columnName);
 	
-	String buildAlterDropSql(String tableName, String columnName);
+	String buildAlterDropSQL(String tableName, String columnName);
 	
-	void wrapPageSql(StringBuilder sql, Pageable pageable);
+	void wrapPageSQL(StringBuilder sql, Pageable pageable);
 	
 }

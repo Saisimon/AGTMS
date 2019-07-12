@@ -5,28 +5,21 @@ mkdir -p data/eureka
 mkdir -p data/web
 mkdir -p data/zuul
 
-# Maven 打包
-bash mvnw clean install -DskipTests -Ddockerfile.skip=true
-if [ $? -gt 0 ]; then
-    echo "maven 构建失败."
-    exit
-fi
-
+c=0
+v=0
 if [ $# -eq 0 ]; then
     arr=("eureka" "web" "zuul" "vue")
 else
-    c=0
-    v=0
     for p in "$@"; do
         if [ "$p" == "eureka" ]; then
             arr[c]=$p
-            c=$c+1
+            c=$(( $c + 1 ))
         elif [ "$p" == "web" ]; then
             arr[c]=$p
-            c=$c+1
+            c=$(( $c + 1 ))
         elif [ "$p" == "zuul" ]; then
             arr[c]=$p
-            c=$c+1
+            c=$(( $c + 1 ))
         elif [ "$p" == "vue" ]; then
             v=1
         else
@@ -36,6 +29,15 @@ else
     # agtms-vue 最后启动
     if [ $v -eq 1 ]; then
         arr[c]="vue"
+    fi
+fi
+
+if [ $v -eq 0 ] || [ $c -gt 0 ]; then
+    # Maven 打包
+    bash mvnw clean install -DskipTests -Ddockerfile.skip=true
+    if [ $? -gt 0 ]; then
+        echo "maven 构建失败."
+        exit
     fi
 fi
 

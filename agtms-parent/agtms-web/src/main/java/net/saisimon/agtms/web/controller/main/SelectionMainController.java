@@ -1,18 +1,21 @@
 package net.saisimon.agtms.web.controller.main;
 
+import static net.saisimon.agtms.core.constant.Constant.Param.FILTER;
+import static net.saisimon.agtms.core.constant.Constant.Param.PAGEABLE;
+import static net.saisimon.agtms.core.constant.Constant.Param.PARAM;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -66,8 +69,8 @@ import net.saisimon.agtms.web.selection.UserSelection;
 public class SelectionMainController extends AbstractMainController {
 	
 	public static final String SELECTION = "selection";
-	private static final String SELECTION_FILTERS = SELECTION + "_filters";
-	private static final String SELECTION_PAGEABLE = SELECTION + "_pageable";
+	private static final String SELECTION_FILTERS = SELECTION + FILTER_SUFFIX;
+	private static final String SELECTION_PAGEABLE = SELECTION + PAGEABLE_SUFFIX;
 	private static final List<String> FUNCTIONS = Arrays.asList(
 			Functions.VIEW.getFunction(),
 			Functions.CREATE.getFunction(),
@@ -96,8 +99,10 @@ public class SelectionMainController extends AbstractMainController {
 	
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
-	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		FilterRequest filter = FilterRequest.build(body, SELECTION_FILTER_FIELDS);
+	public Result list(@RequestBody Map<String, Object> body) {
+		Map<String, Object> filterMap = get(body, FILTER);
+		Map<String, Object> pageableMap = get(body, PAGEABLE);
+		FilterRequest filter = FilterRequest.build(filterMap, SELECTION_FILTER_FIELDS);
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
 		if (!userToken.isAdmin()) {
@@ -106,13 +111,16 @@ public class SelectionMainController extends AbstractMainController {
 			}
 			filter.and(Constant.OPERATORID, userId);
 		}
-		FilterPageable pageable = FilterPageable.build(param);
+		if (pageableMap != null) {
+			pageableMap.remove(PARAM);
+		}
+		FilterPageable pageable = FilterPageable.build(pageableMap);
 		SelectionService selectionService = SelectionServiceFactory.get();
-		Page<Selection> page = selectionService.findPage(filter, pageable);
-		List<SelectionInfo> results = new ArrayList<>(page.getContent().size());
+		List<Selection> list = selectionService.findPage(filter, pageable, false).getContent();
+		List<SelectionInfo> results = new ArrayList<>(list.size());
 		Map<Integer, String> selectTypeMap = selectTypeSelection.select();
 		Map<String, String> userMap = userSelection.select();
-		for (Selection selection : page.getContent()) {
+		for (Selection selection : list) {
 			SelectionInfo result = new SelectionInfo();
 			result.setId(selection.getId().toString());
 			result.setCreateTime(selection.getCreateTime());
@@ -123,9 +131,9 @@ public class SelectionMainController extends AbstractMainController {
 			result.setAction(SELECTION);
 			results.add(result);
 		}
-		request.getSession().setAttribute(SELECTION_FILTERS, body);
-		request.getSession().setAttribute(SELECTION_PAGEABLE, param);
-		return ResultUtils.pageSuccess(results, page.getTotalElements());
+		request.getSession().setAttribute(SELECTION_FILTERS, filterMap);
+		request.getSession().setAttribute(SELECTION_PAGEABLE, pageableMap);
+		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	
 	@Operate(type=OperateTypes.REMOVE)

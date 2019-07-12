@@ -1,5 +1,8 @@
 package net.saisimon.agtms.web.controller.main;
 
+import static net.saisimon.agtms.core.constant.Constant.Param.FILTER;
+import static net.saisimon.agtms.core.constant.Constant.Param.PAGEABLE;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,7 +14,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.transaction.Transactional;
 
@@ -19,7 +28,6 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskRejectedException;
-import org.springframework.data.domain.Page;
 import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
@@ -36,6 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Navigation;
 import net.saisimon.agtms.core.domain.entity.Task;
@@ -116,6 +125,8 @@ public class ManagementMainController extends AbstractMainController {
 	@Autowired
 	private SchedulingTaskExecutor taskThreadPool;
 	
+	private static final Executor executor = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
+	
 	@PostMapping("/grid")
 	public Result grid(@PathVariable("key") String key) {
 		Template template = TemplateUtils.getTemplate(key, AuthUtils.getUid());
@@ -127,23 +138,31 @@ public class ManagementMainController extends AbstractMainController {
 	
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
-	public Result list(@PathVariable("key") String key, @RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
+	public Result list(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
 		Long userId = AuthUtils.getUid();
 		Template template = TemplateUtils.getTemplate(key, userId);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		FilterRequest filter = FilterRequest.build(body, TemplateUtils.getFilters(template));
-		FilterPageable pageable = FilterPageable.build(param);
-		Page<Domain> page = GenerateServiceFactory.build(template).findPage(filter, pageable);
-		request.getSession().setAttribute(key + "_filters", body);
-		request.getSession().setAttribute(key + "_pageable", param);
+		Map<String, Object> filterMap = get(body, FILTER);
+		Map<String, Object> pageableMap = get(body, PAGEABLE);
+		FilterRequest filter = FilterRequest.build(filterMap, TemplateUtils.getFilters(template));
+		FilterPageable pageable = FilterPageable.build(pageableMap);
+		List<Domain> domains = GenerateServiceFactory.build(template).findPage(filter, pageable, false).getContent();
+		if (pageable.getParam() != null && Operator.GT.equals(pageable.getParam().getOperator())) {
+			List<Domain> reverseDomains = new ArrayList<>(domains);
+			Collections.reverse(reverseDomains);
+			domains = reverseDomains;
+		}
+		boolean more = domains.size() < pageable.getSize();
+		request.getSession().setAttribute(key + FILTER_SUFFIX, filterMap);
+		request.getSession().setAttribute(key + PAGEABLE_SUFFIX, pageableMap);
 		if (TemplateUtils.hasSelection(template)) {
 			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-			List<Map<String, Object>> datas = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), page.getContent(), userId);
-			return ResultUtils.pageSuccess(datas, page.getTotalElements());
+			List<Map<String, Object>> datas = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), domains, userId);
+			return ResultUtils.pageSuccess(datas, more);
 		} else {
-			return ResultUtils.pageSuccess(page.getContent(), page.getTotalElements());
+			return ResultUtils.pageSuccess(domains, more);
 		}
 	}
 
@@ -278,16 +297,7 @@ public class ManagementMainController extends AbstractMainController {
 		if (SystemUtils.isBlank(body.getExportFileName())) {
 			body.setExportFileName(template.getTitle());
 		}
-		Task exportTask = new Task();
-		exportTask.setOperatorId(userId);
-		exportTask.setTaskTime(new Date());
-		exportTask.setTaskType(Functions.EXPORT.getFunction());
-		exportTask.setTaskParam(SystemUtils.toJson(body));
-		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
-		exportTask.setIp(ip);
-		exportTask.setPort(port);
-		TaskService taskService = TaskServiceFactory.get();
-		taskService.saveOrUpdate(exportTask);
+		Task exportTask = createExportTask(body);
 		try {
 			submitTask(exportTask);
 			Result result = ResultUtils.simpleSuccess();
@@ -298,7 +308,7 @@ public class ManagementMainController extends AbstractMainController {
 			exportTask.setHandleTime(new Date());
 			exportTask.setHandleResult(result.getMessage());
 			exportTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
-			taskService.saveOrUpdate(exportTask);
+			TaskServiceFactory.get().saveOrUpdate(exportTask);
 			return result;
 		}
 	}
@@ -373,20 +383,28 @@ public class ManagementMainController extends AbstractMainController {
 				log.error("导入异常", e);
 				return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
 			}
-			Task exportTask = createExportTask(body);
+			Task importTask = createImportTask(body);
 			try {
-				submitTask(exportTask);
+				submitTask(importTask);
 			} catch (TaskRejectedException e) {
-				exportTask.setHandleTime(new Date());
-				exportTask.setHandleResult(ErrorMessage.Task.TASK_MAX_SIZE_LIMIT.getMessage());
-				exportTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
-				TaskServiceFactory.get().saveOrUpdate(exportTask);
+				importTask.setHandleTime(new Date());
+				importTask.setHandleResult(ErrorMessage.Task.TASK_MAX_SIZE_LIMIT.getMessage());
+				importTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
+				TaskServiceFactory.get().saveOrUpdate(importTask);
 				return ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
 			}
 		}
 		Result result = ResultUtils.simpleSuccess();
 		result.setMessage(getMessage("import.task.created"));
 		return result;
+	}
+	
+	@Override
+	protected boolean large(Object key) {
+		if (!(key instanceof Template)) {
+			return false;
+		}
+		return count((Template) key, 500) == null;
 	}
 	
 	@Override
@@ -633,17 +651,30 @@ public class ManagementMainController extends AbstractMainController {
 		return columns;
 	}
 	
-	private Task createExportTask(ImportParam body) {
+	private Task createExportTask(ExportParam body) {
 		Task exportTask = new Task();
 		exportTask.setOperatorId(body.getUserId());
 		exportTask.setTaskTime(new Date());
-		exportTask.setTaskType(Functions.IMPORT.getFunction());
+		exportTask.setTaskType(Functions.EXPORT.getFunction());
 		exportTask.setTaskParam(SystemUtils.toJson(body));
 		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
 		exportTask.setIp(ip);
 		exportTask.setPort(port);
 		TaskServiceFactory.get().saveOrUpdate(exportTask);
 		return exportTask;
+	}
+	
+	private Task createImportTask(ImportParam body) {
+		Task importTask = new Task();
+		importTask.setOperatorId(body.getUserId());
+		importTask.setTaskTime(new Date());
+		importTask.setTaskType(Functions.IMPORT.getFunction());
+		importTask.setTaskParam(SystemUtils.toJson(body));
+		importTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
+		importTask.setIp(ip);
+		importTask.setPort(port);
+		TaskServiceFactory.get().saveOrUpdate(importTask);
+		return importTask;
 	}
 	
 	private <P> void submitTask(final Task task) {
@@ -701,6 +732,17 @@ public class ManagementMainController extends AbstractMainController {
 			}
 		});
 		SystemUtils.putTaskFuture(task.getId(), future);
+	}
+	
+	private Long count(Template template, long timeout) {
+		CompletableFuture<Long> future = CompletableFuture.supplyAsync(() -> {
+			return GenerateServiceFactory.build(template).count(null);
+		}, executor);
+		try {
+			return future.get(timeout, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			return null;
+		}
 	}
 	
 }

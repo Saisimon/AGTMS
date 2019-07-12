@@ -14,8 +14,7 @@ const state = {
     batchEdit: null,
     batchExport: null,
     batchImport: null,
-    datas: [],
-    total: 0
+    datas: []
 };
 
 const mutations = {
@@ -33,7 +32,6 @@ const mutations = {
         state.batchExport = null;
         state.batchImport = null;
         state.datas = [];
-        state.total = 0;
     },
     setHeader(state, header) {
         if (header) {
@@ -56,6 +54,12 @@ const mutations = {
                     }
                 }
             }
+        }
+    },
+    clearSort(state) {
+        for (var i in state.columns) {
+            var column = state.columns[i];
+            column.orderBy = null;
         }
     },
     setShowFilters(state, showFilters) {
@@ -127,7 +131,6 @@ const mutations = {
     setDatas(state, datas) {
         if (datas) {
             state.datas = datas.rows;
-            state.total = datas.total;
             state.selects = [];
         }
     },

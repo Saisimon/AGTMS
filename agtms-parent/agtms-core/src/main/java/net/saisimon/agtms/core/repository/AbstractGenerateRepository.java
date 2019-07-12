@@ -36,7 +36,7 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 	 * 
 	 * @param template 模版对象
 	 */
-	public void init(Template template) {
+	public void init(final Template template) {
 		local.set(template);
 	}
 	

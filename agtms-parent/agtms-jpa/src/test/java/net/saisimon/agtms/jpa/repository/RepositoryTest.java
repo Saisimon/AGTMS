@@ -48,20 +48,18 @@ public class RepositoryTest {
 		}
 		// Spring findAll
 		Page<TestLong> testLongAll = testRepository.findAll(PageRequest.of(0, 10, Sort.by(Order.desc(Constant.ID))));
-		// AGTMS findPage
-		Page<TestLong> testLongPage = testRepository.findPage(null, new FilterPageable(0, 10, FilterSort.build(Constant.ID, Direction.DESC)));
-		Assert.assertEquals(testLongAll.getTotalElements(), testLongPage.getTotalElements());
-		Assert.assertEquals(testLongAll.getContent().size(), testLongPage.getContent().size());
-		Assert.assertEquals(testLongAll.getContent().get(0).getId(), testLongPage.getContent().get(0).getId());
-		Assert.assertEquals(testLongAll.getContent().get(0).getName(), testLongPage.getContent().get(0).getName());
-		Assert.assertEquals(testLongAll.getContent().get(0).getAge(), testLongPage.getContent().get(0).getAge());
-		// AGTMS findPage
-		testLongPage = testRepository.findPage(null, new FilterPageable(0, 10, FilterSort.build(Constant.ID, Direction.DESC)), "id", "name", "idCard", "remark");
-		Assert.assertEquals(testLongAll.getTotalElements(), testLongPage.getTotalElements());
-		Assert.assertEquals(testLongAll.getContent().size(), testLongPage.getContent().size());
-		Assert.assertEquals(testLongAll.getContent().get(0).getId(), testLongPage.getContent().get(0).getId());
-		Assert.assertEquals(testLongAll.getContent().get(0).getName(), testLongPage.getContent().get(0).getName());
-		Assert.assertNull(testLongPage.getContent().get(0).getAge());
+		// AGTMS findList
+		List<TestLong> testLongs = testRepository.findList(null, new FilterPageable(null, 10, FilterSort.build(Constant.ID, Direction.DESC)));
+		Assert.assertEquals(testLongAll.getContent().size(), testLongs.size());
+		Assert.assertEquals(testLongAll.getContent().get(0).getId(), testLongs.get(0).getId());
+		Assert.assertEquals(testLongAll.getContent().get(0).getName(), testLongs.get(0).getName());
+		Assert.assertEquals(testLongAll.getContent().get(0).getAge(), testLongs.get(0).getAge());
+		// AGTMS findList
+		testLongs = testRepository.findList(null, new FilterPageable(null, 10, FilterSort.build(Constant.ID, Direction.DESC)), "id", "name", "idCard", "remark");
+		Assert.assertEquals(testLongAll.getContent().size(), testLongs.size());
+		Assert.assertEquals(testLongAll.getContent().get(0).getId(), testLongs.get(0).getId());
+		Assert.assertEquals(testLongAll.getContent().get(0).getName(), testLongs.get(0).getName());
+		Assert.assertNull(testLongs.get(0).getAge());
 		// AGTMS findOne
 		Optional<TestLong> optional = testRepository.findOne(FilterRequest.build().and("name", "TestLong-14"));
 		Assert.assertTrue(optional.isPresent());
@@ -82,7 +80,7 @@ public class RepositoryTest {
 		Assert.assertNull(testLong.getAge());
 		Assert.assertEquals("-", testLong.getRemark());
 		// AGTMS findList
-		List<TestLong> testLongs = testRepository.findList(null);
+		testLongs = testRepository.findList(null);
 		Assert.assertEquals(size, testLongs.size());
 		testLong = testLongs.get(0);
 		Assert.assertEquals("TestLong-0", testLong.getName());
@@ -107,20 +105,18 @@ public class RepositoryTest {
 		}
 		// Spring findAll
 		Page<TestIdClass> testIdClassAll = testIdClassRepository.findAll(PageRequest.of(0, 10, Sort.by(Order.desc("name"), Order.desc("idCard"))));
+		// AGTMS findList
+		List<TestIdClass> testIdClasses = testIdClassRepository.findList(null, new FilterPageable(null, 10, FilterSort.build("name", Direction.DESC).desc("idCard")));
+		Assert.assertEquals(testIdClassAll.getContent().size(), testIdClasses.size());
+		Assert.assertEquals(testIdClassAll.getContent().get(0).getIdCard(), testIdClasses.get(0).getIdCard());
+		Assert.assertEquals(testIdClassAll.getContent().get(0).getName(), testIdClasses.get(0).getName());
+		Assert.assertEquals(testIdClassAll.getContent().get(0).getAge(), testIdClasses.get(0).getAge());
 		// AGTMS findPage
-		Page<TestIdClass> testIdClassPage = testIdClassRepository.findPage(null, new FilterPageable(0, 10, FilterSort.build("name", Direction.DESC).desc("idCard")));
-		Assert.assertEquals(testIdClassAll.getTotalElements(), testIdClassPage.getTotalElements());
-		Assert.assertEquals(testIdClassAll.getContent().size(), testIdClassPage.getContent().size());
-		Assert.assertEquals(testIdClassAll.getContent().get(0).getIdCard(), testIdClassPage.getContent().get(0).getIdCard());
-		Assert.assertEquals(testIdClassAll.getContent().get(0).getName(), testIdClassPage.getContent().get(0).getName());
-		Assert.assertEquals(testIdClassAll.getContent().get(0).getAge(), testIdClassPage.getContent().get(0).getAge());
-		// AGTMS findPage
-		testIdClassPage = testIdClassRepository.findPage(null, new FilterPageable(0, 10, FilterSort.build("name", Direction.DESC).desc("idCard")), "name", "idCard", "remark");
-		Assert.assertEquals(testIdClassAll.getTotalElements(), testIdClassPage.getTotalElements());
-		Assert.assertEquals(testIdClassAll.getContent().size(), testIdClassPage.getContent().size());
-		Assert.assertEquals(testIdClassAll.getContent().get(0).getIdCard(), testIdClassPage.getContent().get(0).getIdCard());
-		Assert.assertEquals(testIdClassAll.getContent().get(0).getName(), testIdClassPage.getContent().get(0).getName());
-		Assert.assertNull(testIdClassPage.getContent().get(0).getAge());
+		testIdClasses = testIdClassRepository.findList(null, new FilterPageable(null, 10, FilterSort.build("name", Direction.DESC).desc("idCard")), "name", "idCard", "remark");
+		Assert.assertEquals(testIdClassAll.getContent().size(), testIdClasses.size());
+		Assert.assertEquals(testIdClassAll.getContent().get(0).getIdCard(), testIdClasses.get(0).getIdCard());
+		Assert.assertEquals(testIdClassAll.getContent().get(0).getName(), testIdClasses.get(0).getName());
+		Assert.assertNull(testIdClasses.get(0).getAge());
 		// AGTMS findOne
 		Optional<TestIdClass> optional = testIdClassRepository.findOne(FilterRequest.build().and("name", "TestIdClass-14"));
 		Assert.assertTrue(optional.isPresent());
@@ -141,7 +137,7 @@ public class RepositoryTest {
 		Assert.assertNull(testIdClass.getAge());
 		Assert.assertEquals("-", testIdClass.getRemark());
 		// AGTMS findList
-		List<TestIdClass> testIdClasses = testIdClassRepository.findList(null);
+		testIdClasses = testIdClassRepository.findList(null);
 		Assert.assertEquals(size, testIdClasses.size());
 		testIdClass = testIdClasses.get(0);
 		Assert.assertEquals("TestIdClass-0", testIdClass.getName());
@@ -166,20 +162,18 @@ public class RepositoryTest {
 		}
 		// Spring findAll
 		Page<TestEmbeddable> testEmbeddableAll = testEmbeddableRepository.findAll(PageRequest.of(0, 10, Sort.by(Order.desc("pk"))));
-		// AGTMS findPage
-		Page<TestEmbeddable> testEmbeddablePage = testEmbeddableRepository.findPage(null, new FilterPageable(0, 10, FilterSort.build("pk", Direction.DESC)));
-		Assert.assertEquals(testEmbeddableAll.getTotalElements(), testEmbeddablePage.getTotalElements());
-		Assert.assertEquals(testEmbeddableAll.getContent().size(), testEmbeddablePage.getContent().size());
-		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getPk().getIdCard(), testEmbeddablePage.getContent().get(0).getPk().getIdCard());
-		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getPk().getName(), testEmbeddablePage.getContent().get(0).getPk().getName());
-		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getAge(), testEmbeddablePage.getContent().get(0).getAge());
-		// AGTMS findPage
-		testEmbeddablePage = testEmbeddableRepository.findPage(null, new FilterPageable(0, 10, FilterSort.build("pk", Direction.DESC)), "pk", "remark");
-		Assert.assertEquals(testEmbeddableAll.getTotalElements(), testEmbeddablePage.getTotalElements());
-		Assert.assertEquals(testEmbeddableAll.getContent().size(), testEmbeddablePage.getContent().size());
-		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getPk().getIdCard(), testEmbeddablePage.getContent().get(0).getPk().getIdCard());
-		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getPk().getName(), testEmbeddablePage.getContent().get(0).getPk().getName());
-		Assert.assertNull(testEmbeddablePage.getContent().get(0).getAge());
+		// AGTMS findList
+		List<TestEmbeddable> testEmbeddables = testEmbeddableRepository.findList(null, new FilterPageable(null, 10, FilterSort.build("pk", Direction.DESC)));
+		Assert.assertEquals(testEmbeddableAll.getContent().size(), testEmbeddables.size());
+		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getPk().getIdCard(), testEmbeddables.get(0).getPk().getIdCard());
+		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getPk().getName(), testEmbeddables.get(0).getPk().getName());
+		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getAge(), testEmbeddables.get(0).getAge());
+		// AGTMS findList
+		testEmbeddables = testEmbeddableRepository.findList(null, new FilterPageable(null, 10, FilterSort.build("pk", Direction.DESC)), "pk", "remark");
+		Assert.assertEquals(testEmbeddableAll.getContent().size(), testEmbeddables.size());
+		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getPk().getIdCard(), testEmbeddables.get(0).getPk().getIdCard());
+		Assert.assertEquals(testEmbeddableAll.getContent().get(0).getPk().getName(), testEmbeddables.get(0).getPk().getName());
+		Assert.assertNull(testEmbeddables.get(0).getAge());
 		// AGTMS findOne
 		TestEmbeddablePK pk = new TestEmbeddablePK();
 		pk.setIdCard("300-14");

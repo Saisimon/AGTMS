@@ -213,7 +213,7 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 3. ~~管理员重置密码~~
 4. ~~图片编辑上传~~
 5. ~~富文本编辑~~
-6. 导入导出优化
+6. ~~导入导出优化~~
 7. 图片上传优化
 8. 完善自动化测试
 9. 系统引导
@@ -222,3 +222,4 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 12. ~~Standalone Branch~~
 13. ~~ShardingSphere~~
 14. 自动添加索引
+15. ~~修改分页~~

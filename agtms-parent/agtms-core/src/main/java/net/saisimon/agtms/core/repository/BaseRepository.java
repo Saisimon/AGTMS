@@ -80,7 +80,7 @@ public interface BaseRepository<T, ID> {
 	 * @param properties 属性名称数组
 	 * @return 实体对象分页对象
 	 */
-	Page<T> findPage(FilterRequest filter, FilterPageable pageable, String... properties);
+	Page<T> findPage(FilterRequest filter, FilterPageable pageable, boolean count, String... properties);
 	
 	/**
 	 * 根据指定条件查询一条记录

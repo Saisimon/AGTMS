@@ -1,6 +1,7 @@
 package net.saisimon.agtms.mongodb.repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,7 +39,18 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	private MongoTemplate mongoTemplate;
 	
 	@Override
-	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
+	public Long count(final FilterRequest filter) {
+		Query query = null;
+		if (filter != null) {
+			query = MongodbFilterUtils.query(filter);
+		} else {
+			query = new Query();
+		}
+		return mongoTemplate.count(query, collectionName(template()));
+	}
+	
+	@Override
+	public List<Domain> findList(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Query query = null;
 		if (filter != null) {
 			query = MongodbFilterUtils.query(filter);
@@ -61,17 +73,18 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	}
 	
 	@Override
-	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
-		Query query = null;
-		if (filter != null) {
-			query = MongodbFilterUtils.query(filter);
-		} else {
-			query = new Query();
+	public List<Domain> findList(final FilterRequest filter, final FilterPageable pageable, String... properties) {
+		FilterPageable filterPageable = pageable;
+		if (filterPageable == null) {
+			filterPageable = FilterPageable.build(null);
 		}
-		if (pageable != null) {
-			Pageable springPageable = pageable.getPageable();
-			query.with(springPageable);
+		FilterRequest filterRequest = filter;
+		if (filterRequest == null) {
+			filterRequest = FilterRequest.build();
 		}
+		filterRequest.and(filterPageable.getParam());
+		Query query = MongodbFilterUtils.query(filterRequest);
+		query.with(filterPageable.getPageable());
 		Template template = template();
 		Document fields = getFieldMap(template, properties);
 		BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), fields);
@@ -85,36 +98,43 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	}
 	
 	@Override
-	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
-		Query query = null;
-		if (filter != null) {
-			query = MongodbFilterUtils.query(filter);
-		} else {
-			query = new Query();
+	public Page<Domain> findPage(final FilterRequest filter, final FilterPageable pageable, boolean count, String... properties) {
+		FilterPageable filterPageable = pageable;
+		if (filterPageable == null) {
+			filterPageable = FilterPageable.build(null);
 		}
+		Pageable springPageable = filterPageable.getPageable();
+		FilterRequest filterRequest = filter;
+		if (filterRequest == null) {
+			filterRequest = FilterRequest.build();
+		}
+		filterRequest.and(filterPageable.getParam());
+		Query query = MongodbFilterUtils.query(filterRequest);
 		Template template = template();
 		String collectionName = collectionName(template);
-		long total = mongoTemplate.count(query, collectionName);
-		if (pageable == null) {
-			pageable = FilterPageable.build(null);
+		long total = 0;
+		if (count) {
+			total = mongoTemplate.count(query, collectionName);
+			if (total == 0) {
+				return new PageImpl<>(Collections.emptyList(), springPageable, 0);
+			}
 		}
-		Pageable springPageable = pageable.getPageable();
 		query.with(springPageable);
 		Document fields = getFieldMap(template, properties);
 		BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), fields);
 		basicQuery.setSortObject(query.getSortObject());
 		try {
 			List<Domain> domains = conversions(mongoTemplate.find(basicQuery, Map.class, collectionName));
-			return new PageImpl<>(domains, springPageable, total);
+			return new PageImpl<>(domains, springPageable, count ? total : domains.size());
 		} catch (GenerateException e) {
 			log.error("find page error", e);
-			return new PageImpl<>(new ArrayList<>(0), springPageable, 0L);
+			return new PageImpl<>(Collections.emptyList(), springPageable, 0);
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
+	public Optional<Domain> findOne(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Query query = null;
 		if (filter != null) {
 			query = MongodbFilterUtils.query(filter);
@@ -145,7 +165,7 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	}
 	
 	@Override
-	public void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
+	public void batchUpdate(final FilterRequest filter, Map<String, Object> updateMap) {
 		if (!CollectionUtils.isEmpty(updateMap)) {
 			Update update = new Update();
 			for (String key : updateMap.keySet()) {
@@ -162,18 +182,7 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 	}
 	
 	@Override
-	public Long count(FilterRequest filter) {
-		Query query = null;
-		if (filter != null) {
-			query = MongodbFilterUtils.query(filter);
-		} else {
-			query = new Query();
-		}
-		return mongoTemplate.count(query, collectionName(template()));
-	}
-
-	@Override
-	public Long delete(FilterRequest filter) {
+	public Long delete(final FilterRequest filter) {
 		Query query = null;
 		if (filter != null) {
 			query = MongodbFilterUtils.query(filter);

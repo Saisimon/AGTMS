@@ -171,6 +171,11 @@ public class AgtmsController {
 		if (repository == null) {
 			return null;
 		}
+		Object countObj = (Object) body.get(Constant.Param.COUNT);
+		boolean count = false;
+		if (countObj != null) {
+			count = Boolean.parseBoolean(countObj.toString());
+		}
 		Map<String, Object> filterMap = (Map<String, Object>) body.get(Constant.Param.FILTER);
 		Map<String, Object> pageableMap = (Map<String, Object>) body.get(Constant.Param.PAGEABLE);
 		Set<String> filters = TemplateUtils.getFilters(templateResolver.getTemplate());
@@ -182,12 +187,12 @@ public class AgtmsController {
 		if (propertiesStr != null) {
 			properties = propertiesStr.toString().split(",");
 		}
-		Page<?> page = repository.findPage(filter, pageable, properties);
+		Page<?> page = repository.findPage(filter, pageable, count, properties);
 		List<?> entities = page.getContent();
 		Map<String, Object> result = MapUtil.newHashMap();
 		if (CollectionUtils.isEmpty(entities)) {
 			result.put("rows", new ArrayList<>(0));
-			result.put("total", 0L);
+			result.put("more", false);
 			return result;
 		}
 		List<Map<String, Object>> list = new ArrayList<>();
@@ -197,7 +202,7 @@ public class AgtmsController {
 			list.add(toMap(entity, templateResolver.getEntityClass(), fieldNames));
 		}
 		result.put("rows", list);
-		result.put("total", page.getTotalElements());
+		result.put("more", entities.size() < pageable.getSize());
 		return result;
 	}
 	

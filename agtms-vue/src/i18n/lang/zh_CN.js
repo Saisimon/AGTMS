@@ -122,5 +122,7 @@ export default {
     nickname: '昵称',
     remark: '说明',
     update_profile: '更新个人资料',
-    save_success: '保存成功'
+    save_success: '保存成功',
+    large_table_sort_disabled: '数据量过大，排序被禁用',
+    page_index: '第 {index} 页'
 }

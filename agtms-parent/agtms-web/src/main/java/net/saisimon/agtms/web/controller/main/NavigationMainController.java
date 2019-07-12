@@ -1,5 +1,9 @@
 package net.saisimon.agtms.web.controller.main;
 
+import static net.saisimon.agtms.core.constant.Constant.Param.FILTER;
+import static net.saisimon.agtms.core.constant.Constant.Param.PARAM;
+import static net.saisimon.agtms.core.constant.Constant.Param.PAGEABLE;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,7 +19,6 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -78,8 +81,8 @@ import net.saisimon.agtms.web.selection.UserSelection;
 public class NavigationMainController extends AbstractMainController {
 	
 	public static final String NAVIGATION = "navigation";
-	private static final String NAVIGATION_FILTERS = NAVIGATION + "_filters";
-	private static final String NAVIGATION_PAGEABLE = NAVIGATION + "_pageable";
+	private static final String NAVIGATION_FILTERS = NAVIGATION + FILTER_SUFFIX;
+	private static final String NAVIGATION_PAGEABLE = NAVIGATION + PAGEABLE_SUFFIX;
 	private static final List<String> FUNCTIONS = Arrays.asList(
 			Functions.VIEW.getFunction(),
 			Functions.CREATE.getFunction(),
@@ -143,8 +146,10 @@ public class NavigationMainController extends AbstractMainController {
 	
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
-	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		FilterRequest filter = FilterRequest.build(body, NAVIGATION_FILTER_FIELDS);
+	public Result list(@RequestBody Map<String, Object> body) {
+		Map<String, Object> filterMap = get(body, FILTER);
+		Map<String, Object> pageableMap = get(body, PAGEABLE);
+		FilterRequest filter = FilterRequest.build(filterMap, NAVIGATION_FILTER_FIELDS);
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
 		if (!userToken.isAdmin()) {
@@ -153,12 +158,15 @@ public class NavigationMainController extends AbstractMainController {
 			}
 			filter.and(Constant.OPERATORID, userId);
 		}
-		FilterPageable pageable = FilterPageable.build(param);
+		if (pageableMap != null) {
+			pageableMap.remove(PARAM);
+		}
+		FilterPageable pageable = FilterPageable.build(pageableMap);
 		NavigationService navigationService = NavigationServiceFactory.get();
-		Page<Navigation> page = navigationService.findPage(filter, pageable);
-		List<NavigationInfo> results = new ArrayList<>(page.getContent().size());
+		List<Navigation> list = navigationService.findPage(filter, pageable, false).getContent();
+		List<NavigationInfo> results = new ArrayList<>(list.size());
 		Map<String, String> userMap = userSelection.select();
-		for (Navigation navigation : page.getContent()) {
+		for (Navigation navigation : list) {
 			NavigationInfo result = new NavigationInfo();
 			result.setId(navigation.getId().toString());
 			if (navigation.getParentId() != null) {
@@ -173,9 +181,9 @@ public class NavigationMainController extends AbstractMainController {
 			result.setAction(NAVIGATION);
 			results.add(result);
 		}
-		request.getSession().setAttribute(NAVIGATION_FILTERS, body);
-		request.getSession().setAttribute(NAVIGATION_PAGEABLE, param);
-		return ResultUtils.pageSuccess(results, page.getTotalElements());
+		request.getSession().setAttribute(NAVIGATION_FILTERS, filterMap);
+		request.getSession().setAttribute(NAVIGATION_PAGEABLE, pageableMap);
+		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	
 	@Operate(type=OperateTypes.REMOVE)

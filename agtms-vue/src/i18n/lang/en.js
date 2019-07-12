@@ -122,5 +122,7 @@ export default {
     nickname: 'Nickname',
     remark: 'Remark',
     update_profile: 'Update profile',
-    save_success: 'Successfully saved'
+    save_success: 'Successfully saved',
+    large_table_sort_disabled: 'Table data is too large, sorting is disabled',
+    page_index: 'Page {index}'
 }

@@ -21,11 +21,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Task;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
+import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
@@ -131,14 +133,13 @@ public class ExportActuator implements Actuator<ExportParam> {
 			filter = FilterRequest.build();
 		}
 		filter.and(Constant.OPERATORID, param.getUserId());
-		Long count = GenerateServiceFactory.build(template).count(filter);
-		long pageCount = (count - 1) / PAGE_SIZE + 1;
 		List<List<Object>> datas = new ArrayList<>();
-		for (int page = 0; page < pageCount; page++) {
+		Long lastId = null;
+		do {
 			if (Thread.currentThread().isInterrupted()) {
 				throw new InterruptedException("Task Cancel");
 			}
-			FilterPageable pageable = new FilterPageable(page, PAGE_SIZE, null);
+			FilterPageable pageable = new FilterPageable(new FilterParam(Constant.ID, lastId, Operator.LT), PAGE_SIZE, null);
 			List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, pageable, fields.toArray(new String[fields.size()]));
 			List<Map<String, Object>> domainList = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), domains, param.getUserId());
 			for (Map<String, Object> domainMap : domainList) {
@@ -152,10 +153,14 @@ public class ExportActuator implements Actuator<ExportParam> {
 					data.add(value == null ? "" : value);
 				}
 				datas.add(data);
+				lastId = (Long) domainMap.get(Constant.ID);
 			}
 			fillDatas(file, datas, param.getExportFileType(), true);
 			datas.clear();
-		}
+			if (lastId == null || domains.size() < PAGE_SIZE) {
+				break;
+			}
+		} while (true);
 	}
 	
 	private void fillHead(File file, List<Object> heads, String fileType, boolean append) throws IOException {

@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Navigation;
 import net.saisimon.agtms.core.domain.entity.Selection;
@@ -32,6 +33,7 @@ import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
+import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.enums.Classes;
@@ -100,12 +102,10 @@ public class ServiceTest {
 		Assert.assertNotNull(templates);
 		Assert.assertEquals(0, templates.size());
 		
-		// findPage
-		Page<Template> page = templateService.findPage(FilterRequest.build(), FilterPageable.build(null));
-		Assert.assertNotNull(page);
-		Assert.assertNotNull(page.getContent());
-		Assert.assertEquals(0, page.getContent().size());
-		Assert.assertEquals(0, page.getTotalElements());
+		// findList
+		List<Template> list = templateService.findList(FilterRequest.build(), FilterPageable.build(null), "title");
+		Assert.assertNotNull(list);
+		Assert.assertEquals(0, list.size());
 		
 		// findOne
 		Optional<Template> optional = templateService.findOne(FilterRequest.build());
@@ -157,7 +157,7 @@ public class ServiceTest {
 		Assert.assertEquals(2, templates.size());
 		Assert.assertEquals("aaa", templates.get(0).getTitle());
 		Assert.assertEquals("bbb", templates.get(1).getTitle());
-		templates = templateService.findList(FilterRequest.build(), new FilterPageable(0, 10, FilterSort.build("title", Direction.DESC)), "title");
+		templates = templateService.findList(FilterRequest.build(), new FilterPageable(null, 10, FilterSort.build("title", Direction.DESC)), "title");
 		Assert.assertEquals(2, templates.size());
 		Assert.assertEquals("bbb", templates.get(0).getTitle());
 		Assert.assertEquals("aaa", templates.get(1).getTitle());
@@ -223,22 +223,18 @@ public class ServiceTest {
 		count = templateService.count(FilterRequest.build().or(FilterRequest.build().and("title", title + "0")).or(FilterRequest.build().and("title", title + "40")));
 		Assert.assertEquals(1L, count.longValue());
 		
-		// findPage
-		page = templateService.findPage(FilterRequest.build(), null);
-		Assert.assertNotNull(page);
-		Assert.assertNotNull(page.getContent());
-		Assert.assertEquals(10, page.getContent().size());
-		Assert.assertEquals(addSize + 2, page.getTotalElements());
-		Assert.assertEquals(title, page.getContent().get(0).getTitle());
+		// findList
+		list = templateService.findList(FilterRequest.build(), (FilterPageable) null);
+		Assert.assertNotNull(list);
+		Assert.assertEquals(10, list.size());
+		Assert.assertEquals(title + (addSize - 1), list.get(0).getTitle());
 		
-		// findPage
-		FilterPageable pageable = new FilterPageable(1, 10, null);
-		page = templateService.findPage(FilterRequest.build(), pageable);
-		Assert.assertNotNull(page);
-		Assert.assertNotNull(page.getContent());
-		Assert.assertEquals(10, page.getContent().size());
-		Assert.assertEquals(addSize + 2, page.getTotalElements());
-		Assert.assertEquals(title + 8, page.getContent().get(0).getTitle());
+		// findList
+		FilterPageable pageable = new FilterPageable(FilterParam.build(Constant.ID, list.get(list.size() - 1).getId(), Operator.LT), 10, null);
+		list = templateService.findList(FilterRequest.build(), pageable);
+		Assert.assertNotNull(list);
+		Assert.assertEquals(10, list.size());
+		Assert.assertEquals(title + (addSize - 11), list.get(0).getTitle());
 		
 		// delete
 		templateService.delete(template);
@@ -517,12 +513,18 @@ public class ServiceTest {
 		Assert.assertEquals(1, domains.size());
 		
 		// findPage
-		Page<Domain> page = generateService.findPage(FilterRequest.build(), null);
+		Page<Domain> page = generateService.findPage(FilterRequest.build(), null, true);
 		Assert.assertNotNull(page);
 		Assert.assertNotNull(page.getContent());
 		Assert.assertEquals(1, page.getContent().size());
 		Assert.assertEquals(1, page.getTotalElements());
 		Assert.assertEquals("ccc", page.getContent().get(0).getField("column0field0"));
+		
+		// findList
+		List<Domain> list = generateService.findList(FilterRequest.build(), (FilterPageable) null);
+		Assert.assertNotNull(list);
+		Assert.assertEquals(1, list.size());
+		Assert.assertEquals("ccc", list.get(0).getField("column0field0"));
 		
 		// findOne
 		FilterRequest filter = FilterRequest.build().and("column0field0", "ccc");

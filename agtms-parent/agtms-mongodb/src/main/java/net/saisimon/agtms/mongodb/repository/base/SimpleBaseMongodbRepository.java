@@ -1,6 +1,7 @@
 package net.saisimon.agtms.mongodb.repository.base;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,7 +53,7 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 	}
 
 	@Override
-	public List<T> findList(final FilterRequest filter, FilterSort sort, String... properties) {
+	public List<T> findList(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Query query = MongodbFilterUtils.query(filter);
 		if (sort != null) {
 			query.with(sort.getSort());
@@ -66,11 +67,18 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 	}
 	
 	@Override
-	public List<T> findList(final FilterRequest filter, FilterPageable pageable, String... properties) {
-		Query query = MongodbFilterUtils.query(filter);
-		if (pageable != null) {
-			query.with(pageable.getPageable());
+	public List<T> findList(final FilterRequest filter, final FilterPageable pageable, String... properties) {
+		FilterPageable filterPageable = pageable;
+		if (filterPageable == null) {
+			filterPageable = FilterPageable.build(null);
 		}
+		FilterRequest filterRequest = filter;
+		if (filterRequest == null) {
+			filterRequest = FilterRequest.build();
+		}
+		filterRequest.and(filterPageable.getParam());
+		Query query = MongodbFilterUtils.query(filterRequest);
+		query.with(filterPageable.getPageable());
 		if (properties != null && properties.length > 0) {
 			BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), getFieldMap(properties));
 			basicQuery.setSortObject(query.getSortObject());
@@ -80,29 +88,32 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 	}
 
 	@Override
-	public Page<T> findPage(final FilterRequest filter, FilterPageable pageable, String... properties) {
+	public Page<T> findPage(final FilterRequest filter, final FilterPageable pageable, boolean count, String... properties) {
 		Query query = MongodbFilterUtils.query(filter);
-		long total = mongoOperations.count(query, entityClass, collectionName);
-		if (total > 0) {
-			if (pageable == null) {
-				pageable = FilterPageable.build(null);
-			}
-			Pageable springPageable = pageable.getPageable();
-			query.with(springPageable);
-			if (properties != null && properties.length > 0) {
-				BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), getFieldMap(properties));
-				basicQuery.setSortObject(query.getSortObject());
-				query = basicQuery;
-			}
-			List<T> domains = mongoOperations.find(query, entityClass, collectionName);
-			return new PageImpl<>(domains, springPageable, total);
-		} else {
-			return Page.empty(Pageable.unpaged());
+		FilterPageable filterPageable = pageable;
+		if (filterPageable == null) {
+			filterPageable = FilterPageable.build(null);
 		}
+		Pageable springPageable = filterPageable.getPageable();
+		long total = 0;
+		if (count) {
+			total = mongoOperations.count(query, entityClass, collectionName);
+			if (total == 0) {
+				return new PageImpl<>(Collections.emptyList(), springPageable, total);
+			}
+		}
+		query.with(springPageable);
+		if (properties != null && properties.length > 0) {
+			BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), getFieldMap(properties));
+			basicQuery.setSortObject(query.getSortObject());
+			query = basicQuery;
+		}
+		List<T> domains = mongoOperations.find(query, entityClass, collectionName);
+		return new PageImpl<>(domains, springPageable, count ? total : domains.size());
 	}
 
 	@Override
-	public Optional<T> findOne(final FilterRequest filter, FilterSort sort, String... properties) {
+	public Optional<T> findOne(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Query query = MongodbFilterUtils.query(filter);
 		if (sort != null) {
 			query.with(sort.getSort());
@@ -134,7 +145,7 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 	}
 	
 	@Override
-	public void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
+	public void batchUpdate(final FilterRequest filter, Map<String, Object> updateMap) {
 		if (!CollectionUtils.isEmpty(updateMap)) {
 			Update update = new Update();
 			for (String key : updateMap.keySet()) {

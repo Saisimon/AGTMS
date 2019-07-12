@@ -17,7 +17,7 @@ public class PageResult<S> extends Result {
 	/**
 	 * 总数
 	 */
-	private Long total;
+	private Boolean more;
 	
 	/**
 	 * 列表集合

@@ -131,7 +131,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
+	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, boolean count, String... properties) {
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
@@ -139,11 +139,12 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			pageable = FilterPageable.build(null);
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
-		Map<String, Object> body = MapUtil.newHashMap(3);
+		Map<String, Object> body = MapUtil.newHashMap(4);
 		Map<String, Object> filterMap = null;
 		if (filter != null) {
 			filterMap = filter.toMap();
 		}
+		body.put(Constant.Param.COUNT, count);
 		body.put(Constant.Param.FILTER, filterMap);
 		body.put(Constant.Param.PAGEABLE, pageable.toMap());
 		if (properties != null && properties.length > 0) {
