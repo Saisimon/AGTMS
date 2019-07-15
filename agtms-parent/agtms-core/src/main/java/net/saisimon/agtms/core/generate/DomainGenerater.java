@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.asm.ClassWriter;
@@ -16,8 +17,11 @@ import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.format.FastDateFormat;
 import cn.hutool.core.io.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.classloader.GenerateClassLoader;
@@ -25,6 +29,7 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.generate.Generate;
 import net.saisimon.agtms.core.enums.Classes;
+import net.saisimon.agtms.core.exception.AGTMSException;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -270,16 +275,21 @@ public class DomainGenerater {
 	
 	public static Object parseFieldValue(Object fieldValue, String fieldType) {
 		if (fieldValue != null && fieldType != null) {
+			if (StringUtils.isEmpty(fieldValue)) {
+				return null;
+			}
 			try {
 				if (Classes.LONG.getName().equals(fieldType)) {
 					return Long.valueOf(fieldValue.toString());
 				} else if (Classes.DOUBLE.getName().equals(fieldType)) {
 					return Double.valueOf(fieldValue.toString());
 				} else if (Classes.DATE.getName().equals(fieldType)) {
-					return DateUtil.parseDate(fieldValue.toString()).toJdkDate();
+					String fieldValueStr = fieldValue.toString();
+					fieldValueStr = fieldValueStr.replaceAll("T", " ").replaceAll("Z", "");
+					return DateUtil.parse(fieldValueStr, FastDateFormat.getInstance(DatePattern.NORM_DATETIME_MS_PATTERN, TimeZone.getTimeZone("UTC"))).toJdkDate();
 				}
 			} catch (Exception e) {
-				return null;
+				throw new AGTMSException(String.format("Convert %s to %s type failed", fieldValue, fieldType), e);
 			}
 		}
 		return fieldValue;
