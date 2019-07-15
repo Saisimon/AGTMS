@@ -64,6 +64,7 @@ public class ResultUtils {
 		if (rows != null) {
 			pageResult.setRows(rows);
 		}
+		pageResult.setMore(more);
 		return pageResult;
 	}
 	

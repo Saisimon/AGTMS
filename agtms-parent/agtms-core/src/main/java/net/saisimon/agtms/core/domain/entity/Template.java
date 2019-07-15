@@ -100,12 +100,6 @@ public class Template implements Cloneable, Serializable {
 	@Column(length=50, nullable=false)
 	private String source;
 	
-	/**
-	 * 模板大致数据量
-	 */
-	@Column
-	private Long tableSize;
-	
 	@Transient
 	@javax.persistence.Transient
 	private String service;
