@@ -58,15 +58,18 @@ export default {
             if (this.pageIndex <= 1) {
                 return;
             }
-            if (this.datas == null || this.datas.length == 0) {
+            if (this.datas == null) {
                 return;
             }
-            var first = this.datas[0];
-            this.$emit('on-previous', {
-                key: 'id',
-                value: first.id,
-                operator: '$gt'
-            });
+            var param = null;
+            if (this.datas.length > 0) {
+                param = {
+                    key: 'id',
+                    value: this.datas[0].id,
+                    operator: '$gt'
+                };
+            }
+            this.$emit('on-previous', param);
         },
         next: function() {
             if (this.datas == null || this.datas.length < this.pageSize) {
