@@ -275,18 +275,28 @@ public class DomainGenerater {
 	
 	public static Object parseFieldValue(Object fieldValue, String fieldType) {
 		if (fieldValue != null && fieldType != null) {
-			if (StringUtils.isEmpty(fieldValue)) {
-				return null;
-			}
 			try {
 				if (Classes.LONG.getName().equals(fieldType)) {
+					if (StringUtils.isEmpty(fieldValue)) {
+						return null;
+					}
 					return Long.valueOf(fieldValue.toString());
 				} else if (Classes.DOUBLE.getName().equals(fieldType)) {
+					if (StringUtils.isEmpty(fieldValue)) {
+						return null;
+					}
 					return Double.valueOf(fieldValue.toString());
 				} else if (Classes.DATE.getName().equals(fieldType)) {
-					String fieldValueStr = fieldValue.toString();
-					fieldValueStr = fieldValueStr.replaceAll("T", " ").replaceAll("Z", "");
-					return DateUtil.parse(fieldValueStr, FastDateFormat.getInstance(DatePattern.NORM_DATETIME_MS_PATTERN, TimeZone.getTimeZone("UTC"))).toJdkDate();
+					if (StringUtils.isEmpty(fieldValue)) {
+						return null;
+					}
+					if (fieldValue instanceof Long) {
+						return new Date((Long) fieldValue);
+					} else if (fieldValue instanceof String) {
+						String fieldValueStr = fieldValue.toString();
+						fieldValueStr = fieldValueStr.replaceAll("T", " ").replaceAll("Z", "");
+						return DateUtil.parse(fieldValueStr, FastDateFormat.getInstance(DatePattern.NORM_DATETIME_MS_PATTERN, TimeZone.getTimeZone("UTC"))).toJdkDate();
+					}
 				}
 			} catch (Exception e) {
 				throw new AGTMSException(String.format("Convert %s to %s type failed", fieldValue, fieldType), e);

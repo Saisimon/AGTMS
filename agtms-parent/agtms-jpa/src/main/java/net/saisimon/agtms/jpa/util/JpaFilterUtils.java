@@ -161,12 +161,9 @@ public class JpaFilterUtils {
 		}
 		Predicate predicate = null;
 		String key = param.getKey();
-		Object value = param.getValue();
-		String operator = param.getOperator();
-		String type = param.getType();
-		value = DomainGenerater.parseFieldValue(value, type);
+		Object value = DomainGenerater.parseFieldValue(param.getValue(), param.getType());
 		if (value != null) {
-			switch (operator) {
+			switch (param.getOperator()) {
 				case LT:
 					if (value instanceof Date) {
 						predicate = criteriaBuilder.lessThan(buildExpression(root, key), (Date) value);
@@ -288,13 +285,10 @@ public class JpaFilterUtils {
 			return statement;
 		}
 		String key = param.getKey();
-		Object value = param.getValue();
-		String operator = param.getOperator();
-		String type = param.getType();
-		value = DomainGenerater.parseFieldValue(value, type);
+		Object value = DomainGenerater.parseFieldValue(param.getValue(), param.getType());
 		if (value != null) {
 			StringBuilder expression = new StringBuilder();
-			switch (operator) {
+			switch (param.getOperator()) {
 				case LT:
 					expression.append(key).append(" < ?");
 					statement.addArgs(value);

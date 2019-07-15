@@ -78,13 +78,10 @@ public class MongodbFilterUtils {
 		if (Constant.ID.equalsIgnoreCase(key)) {
 			key = Constant.MONGODBID;
 		}
-		Object value = param.getValue();
-		String operator = param.getOperator();
-		String type = param.getType();
+		Object value = DomainGenerater.parseFieldValue(param.getValue(), param.getType());
 		if (SystemUtils.isNotBlank(key) && value != null) {
 			criteria = Criteria.where(key);
-			value = DomainGenerater.parseFieldValue(value, type);
-			switch (operator) {
+			switch (param.getOperator()) {
 			case LT:
 				criteria.lt(value);
 				break;
