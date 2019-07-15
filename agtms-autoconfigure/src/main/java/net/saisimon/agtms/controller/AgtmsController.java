@@ -1,11 +1,13 @@
 package net.saisimon.agtms.controller;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
@@ -15,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cn.hutool.core.map.MapUtil;
@@ -24,6 +25,7 @@ import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
+import net.saisimon.agtms.core.exception.AGTMSException;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.selection.Selection;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -192,7 +194,7 @@ public class AgtmsController {
 		Map<String, Object> result = MapUtil.newHashMap();
 		if (CollectionUtils.isEmpty(entities)) {
 			result.put("rows", new ArrayList<>(0));
-			result.put("more", false);
+			result.put("total", page.getTotalElements());
 			return result;
 		}
 		List<Map<String, Object>> list = new ArrayList<>();
@@ -202,7 +204,7 @@ public class AgtmsController {
 			list.add(toMap(entity, templateResolver.getEntityClass(), fieldNames));
 		}
 		result.put("rows", list);
-		result.put("more", entities.size() < pageable.getSize());
+		result.put("total", page.getTotalElements());
 		return result;
 	}
 	
@@ -264,7 +266,7 @@ public class AgtmsController {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@PostMapping("/{key}/deleteEntity")
-	public void delete(@PathVariable("key") String key, @RequestParam(name="body") String body) {
+	public void deleteEntity(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
 		if (SystemUtils.isBlank(key)) {
 			return;
 		}
@@ -276,13 +278,12 @@ public class AgtmsController {
 		if (repository == null) {
 			return;
 		}
-		Object entity = SystemUtils.fromJson(body, templateResolver.getEntityClass());
-		repository.delete(entity);
+		repository.delete(buildEntity(templateResolver.getEntityClass(), body));
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@PostMapping("/{key}/saveOrUpdate")
-	public Map<String, Object> saveOrUpdate(@PathVariable("key") String key, @RequestParam(name="body") String body) {
+	public Map<String, Object> saveOrUpdate(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
 		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
@@ -294,8 +295,7 @@ public class AgtmsController {
 		if (repository == null) {
 			return null;
 		}
-		Object entity = SystemUtils.fromJson(body, templateResolver.getEntityClass());
-		entity = repository.saveOrUpdate(entity);
+		Object entity = repository.saveOrUpdate(buildEntity(templateResolver.getEntityClass(), body));
 		if (entity == null) {
 			return null;
 		}
@@ -338,6 +338,18 @@ public class AgtmsController {
 			}
 		});
 		return map;
+	}
+	
+	private Object buildEntity(Class<?> entityClass, Map<String, Object> body) {
+		try {
+			Object entity = entityClass.newInstance();
+			BeanUtils.populate(entity, body);
+			return entity;
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new AGTMSException(String.format("Build %s failed", entityClass), e);
+		} catch (InvocationTargetException e) {
+			throw new AGTMSException(String.format("Populate %s failed", entityClass), e);
+		}
 	}
 	
 }

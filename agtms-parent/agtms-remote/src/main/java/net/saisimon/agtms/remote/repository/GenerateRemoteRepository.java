@@ -157,9 +157,16 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 				return new PageImpl<>(new ArrayList<>(0), springPageable, 0L);
 			}
 			List<Map<String, Object>> list = (List<Map<String, Object>>) map.get(Constant.Param.ROWS);
-			Object total = map.get(Constant.Param.TOTAL);
+			if (CollectionUtils.isEmpty(list)) {
+				return new PageImpl<>(new ArrayList<>(0), springPageable, 0L);
+			}
+			long total = list.size();
+			Object totalObj = map.get(Constant.Param.TOTAL);
+			if (totalObj != null) {
+				totalObj = Long.parseLong(totalObj.toString());
+			}
 			List<Domain> domains = conversions(list);
-			return new PageImpl<>(domains, springPageable, Long.parseLong(total.toString()));
+			return new PageImpl<>(domains, springPageable, total);
 		} catch (GenerateException e) {
 			log.error("find page error", e);
 			return new PageImpl<>(new ArrayList<>(0), springPageable, 0L);

@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import net.saisimon.agtms.core.domain.entity.UserToken;
-import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.domain.SimpleEntity;
 
 @RunWith(SpringRunner.class)
@@ -80,7 +79,6 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 		Map<String, Object> body = new HashMap<>();
 		sendPost("/agtms/simpleEntity/findOne", body, token);
 		
-		Map<String, String> param = new HashMap<>();
 		SimpleEntity entity = new SimpleEntity();
 		entity.setAge(11);
 		entity.setBirthday(new Date());
@@ -88,8 +86,8 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 		entity.setGender(1);
 		entity.setHome("/");
 		entity.setName("Test");
-		param.put("body", SystemUtils.toJson(entity));
-		sendPost("/agtms/simpleEntity/saveOrUpdate", param, token);
+		body.put("body", entity);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
 		
 		body = new HashMap<>();
 		sendPost("/agtms/simpleEntity/findOne", body, token);
@@ -105,17 +103,17 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 	@Test
 	public void testDeleteEntity() throws Exception {
 		UserToken token = login("test", "test");
-		Map<String, String> param = new HashMap<>();
+		Map<String, Object> param = new HashMap<>();
 		SimpleEntity entity = new SimpleEntity();
 		entity.setId(1);
-		param.put("body", SystemUtils.toJson(entity));
+		param.put("body", entity);
 		sendPost("/agtms/simpleEntity/deleteEntity", param, token);
 	}
 	
 	@Test
 	public void testSaveOrUpdate() throws Exception {
 		UserToken token = login("test", "test");
-		Map<String, String> param = new HashMap<>();
+		Map<String, Object> body = new HashMap<>();
 		SimpleEntity entity = new SimpleEntity();
 		entity.setAge(11);
 		entity.setBirthday(new Date());
@@ -123,15 +121,15 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 		entity.setGender(1);
 		entity.setHome("/");
 		entity.setName("Test");
-		param.put("body", SystemUtils.toJson(entity));
-		sendPost("/agtms/simpleEntity/saveOrUpdate", param, token);
+		body.put("body", entity);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
 		
 		entity = new SimpleEntity();
 		entity.setId(1);
 		entity.setAge(18);
 		entity.setGender(0);
-		param.put("body", SystemUtils.toJson(entity));
-		sendPost("/agtms/simpleEntity/saveOrUpdate", param, token);
+		body.put("body", entity);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
 	}
 	
 	@Test
@@ -140,7 +138,6 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 		Map<String, Object> body = new HashMap<>();
 		sendPost("/agtms/simpleEntity/batchUpdate", body, token);
 		
-		Map<String, String> param = new HashMap<>();
 		SimpleEntity entity = new SimpleEntity();
 		entity.setAge(11);
 		entity.setBirthday(new Date());
@@ -148,9 +145,9 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 		entity.setGender(1);
 		entity.setHome("/");
 		entity.setName("Test");
-		param.put("body", SystemUtils.toJson(entity));
-		sendPost("/agtms/simpleEntity/saveOrUpdate", param, token);
-		sendPost("/agtms/simpleEntity/saveOrUpdate", param, token);
+		body.put("body", entity);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
 		
 		body = new HashMap<>();
 		sendPost("/agtms/simpleEntity/findList", body, token);
