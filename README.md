@@ -117,8 +117,8 @@ mvnw.cmd clean package
 4. data/web/libs 路径下添加对应数据库驱动 jar 包
 * 默认使用 MySQL 5.7
 ```sh
-# mysql-connector-java-5.1.47.jar
-wget -P data/web/libs http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.47/mysql-connector-java-5.1.47.jar
+# mysql-connector-java-8.0.16.jar
+wget -P data/web/libs http://central.maven.org/maven2/mysql/mysql-connector-java/8.0.16/mysql-connector-java-8.0.16.jar
 ```
 5. 启动容器
 * DATA_HOME：数据目录，默认为 ./data
@@ -157,18 +157,3 @@ auto.test.firefox.driver=/Users/saisimon/Downloads/geckodriver
 ```
 3. 运行测试用例
 * `agtms-autotest/src/test/java/net/saisimon/agtms/autotest/FirefoxTest`
-
-## 待完成
-1. ~~用户初次登录修改密码~~
-2. ~~用户信息编辑~~
-3. ~~管理员重置密码~~
-4. ~~图片编辑上传~~
-5. ~~富文本编辑~~
-6. 导入导出优化
-7. 图片上传优化
-8. 完善自动化测试
-9. 系统引导
-10. 数据可视化
-11. ~~Docker~~
-12. ~~Standalone Branch~~
-13. ~~ShardingSphere~~

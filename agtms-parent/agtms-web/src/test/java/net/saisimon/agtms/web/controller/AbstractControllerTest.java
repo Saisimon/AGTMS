@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -33,6 +35,8 @@ public abstract class AbstractControllerTest {
 
 	@Autowired
 	protected MockMvc mockMvc;
+	@Autowired
+	protected MessageSource messageSource;
 	
 	protected String sendGet(String uri, Map<String, String> param) throws Exception {
 		return send(uri, HttpMethod.GET, param , null, null);
@@ -184,6 +188,10 @@ public abstract class AbstractControllerTest {
 			break;
 		}
 		return builder;
+	}
+	
+	protected String getMessage(String code, Object... args) {
+		return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
 	}
 
 }

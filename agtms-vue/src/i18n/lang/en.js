@@ -88,7 +88,9 @@ export default {
     datasource: 'Data Source',
     rows: ' rows',
     total: 'Total ',
-    upload_file_max_size_limit: 'Please do not upload file larger than 10M',
+    upload_max_size_limit: 'Please do not upload file larger than {size}MB',
+    upload_file_max_size_limit: 'Please do not upload more than {count} files',
+    files_selected: '{count} files selected',
     title_not_blank: 'Title can not be blank',
     column_not_blank: 'Column can not be blank',
     refresh: 'Refresh',
@@ -120,5 +122,7 @@ export default {
     nickname: 'Nickname',
     remark: 'Remark',
     update_profile: 'Update profile',
-    save_success: 'Successfully saved'
+    save_success: 'Successfully saved',
+    large_table_sort_disabled: 'Table data is too large, sorting is disabled',
+    page_index: 'Page {index}'
 }

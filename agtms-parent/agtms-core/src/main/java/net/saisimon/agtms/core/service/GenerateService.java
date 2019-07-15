@@ -34,7 +34,7 @@ public interface GenerateService {
 	
 	Sign sign();
 	
-	default void init(Template template) {
+	default void init(final Template template) {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		repository.init(template);
@@ -58,7 +58,7 @@ public interface GenerateService {
 		return repository.newGenerate();
 	}
 	
-	default Long count(FilterRequest filter) {
+	default Long count(final FilterRequest filter) {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		return repository.count(filter);
@@ -95,28 +95,28 @@ public interface GenerateService {
 		return false;
 	}
 	
-	default Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
+	default Optional<Domain> findOne(final FilterRequest filter, final FilterSort sort, String... properties) {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		return repository.findOne(filter, sort, properties);
 	}
 	
-	default List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
+	default List<Domain> findList(final FilterRequest filter, final FilterSort sort, String... properties) {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		return repository.findList(filter, sort, properties);
 	}
 	
-	default List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
+	default List<Domain> findList(final FilterRequest filter, final FilterPageable pageable, String... properties) {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		return repository.findList(filter, pageable, properties);
 	}
 	
-	default Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
+	default Page<Domain> findPage(final FilterRequest filter, final FilterPageable pageable, boolean count, String... properties) {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		return repository.findPage(filter, pageable, properties);
+		return repository.findPage(filter, pageable, count, properties);
 	}
 	
 	default void delete(Domain entity) {
@@ -173,7 +173,7 @@ public interface GenerateService {
 		repository.update(id, updateMap);
 	}
 	
-	default void delete(FilterRequest filter) {
+	default void delete(final FilterRequest filter) {
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		repository.delete(filter);

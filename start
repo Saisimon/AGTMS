@@ -3,28 +3,55 @@
 # 创建日志文件夹
 mkdir -p data/web
 
-# Maven 打包
-bash mvnw clean install -DskipTests -Ddockerfile.skip=true
-if [ $? -gt 0 ]; then
-    echo "maven 构建失败."
-    exit
+c=0
+v=0
+if [ $# -eq 0 ]; then
+    arr=("web" "vue")
+else
+    for p in "$@"; do
+        if [ "$p" == "web" ]; then
+            arr[c]=$p
+            c=$(( $c + 1 ))
+        elif [ "$p" == "vue" ]; then
+            v=1
+        else
+            echo "未知参数，参数只支持:eureka、web、zuul、vue"
+        fi
+    done
+    # agtms-vue 最后启动
+    if [ $v -eq 1 ]; then
+        arr[c]="vue"
+    fi
 fi
 
-# 启动 agtms-web
-if [ -f data/web/web.pid ]; then
-    kill -9 `cat data/web/web.pid`
-    rm data/web/web.pid
-    echo "agtms-web 已停止."
+if [ $v -eq 0 ] || [ $c -gt 0 ]; then
+    # Maven 打包
+    bash mvnw clean install -DskipTests -Ddockerfile.skip=true
+    if [ $? -gt 0 ]; then
+        echo "maven 构建失败."
+        exit
+    fi
 fi
-java -jar -Xms1g -Xmx1g -Xmn384m -Xss256k agtms-parent/agtms-web/target/agtms-web.jar > data/web/logs/agtms-web.log 2>&1 &
-echo $! > data/web/web.pid
-echo "agtms-web 启动中..."
-sleep 10
-echo "agtms-web 已启动."
 
-# 启动 agtms-vue
-cd agtms-vue
-echo "agtms-vue 启动中..."
-npm install
-npm run serve
-cd ../
+for i in "${arr[@]}"; do
+    if [ "$i" == "web" ]; then
+        # 启动 agtms-web
+        if [ -f data/web/web.pid ]; then
+            kill -9 `cat data/web/web.pid`
+            rm data/web/web.pid
+            echo "agtms-web 已停止."
+        fi
+        echo "agtms-web 启动中..."
+        java -jar -Xms1g -Xmx1g -Xmn384m -Xss256k agtms-parent/agtms-web/target/agtms-web.jar > data/web/logs/agtms-web.log 2>&1 &
+        echo $! > data/web/web.pid
+    elif [ "$i" == "vue" ]; then
+        # 启动 agtms-vue
+        cd agtms-vue
+        echo "agtms-vue 启动中..."
+        npm install
+        npm run serve
+        cd ../
+    fi
+    sleep 10
+    echo "agtms-$i 已启动."
+done 

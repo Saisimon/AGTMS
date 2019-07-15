@@ -1,5 +1,9 @@
 package net.saisimon.agtms.web.controller.main;
 
+import static net.saisimon.agtms.core.constant.Constant.Param.FILTER;
+import static net.saisimon.agtms.core.constant.Constant.Param.PAGEABLE;
+import static net.saisimon.agtms.core.constant.Constant.Param.PARAM;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +18,6 @@ import java.util.concurrent.Future;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -74,8 +77,8 @@ import net.saisimon.agtms.web.selection.UserSelection;
 public class TaskMainController extends AbstractMainController {
 	
 	public static final String TASK = "task";
-	private static final String TASK_FILTERS = TASK + "_filters";
-	private static final String TASK_PAGEABLE = TASK + "_pageable";
+	private static final String TASK_FILTERS = TASK + FILTER_SUFFIX;
+	private static final String TASK_PAGEABLE = TASK + PAGEABLE_SUFFIX;
 	private static final List<String> FUNCTIONS = Arrays.asList(
 			Functions.VIEW.getFunction(),
 			Functions.REMOVE.getFunction(),
@@ -104,8 +107,10 @@ public class TaskMainController extends AbstractMainController {
 	
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
-	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		FilterRequest filter = FilterRequest.build(body, TASK_FILTER_FIELDS);
+	public Result list(@RequestBody Map<String, Object> body) {
+		Map<String, Object> filterMap = get(body, FILTER);
+		Map<String, Object> pageableMap = get(body, PAGEABLE);
+		FilterRequest filter = FilterRequest.build(filterMap, TASK_FILTER_FIELDS);
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
 		if (!userToken.isAdmin()) {
@@ -114,14 +119,17 @@ public class TaskMainController extends AbstractMainController {
 			}
 			filter.and(Constant.OPERATORID, userId);
 		}
-		FilterPageable pageable = FilterPageable.build(param);
+		if (pageableMap != null) {
+			pageableMap.remove(PARAM);
+		}
+		FilterPageable pageable = FilterPageable.build(pageableMap);
 		TaskService taskService = TaskServiceFactory.get();
-		Page<Task> page = taskService.findPage(filter, pageable);
-		List<TaskInfo> results = new ArrayList<>(page.getContent().size());
+		List<Task> list = taskService.findPage(filter, pageable, false).getContent();
+		List<TaskInfo> results = new ArrayList<>(list.size());
 		Map<Integer, String> handleStatusMap = handleStatusSelection.select();
 		Map<String, String> taskTypeMap = taskTypeSelection.select();
 		Map<String, String> userMap = userSelection.select();
-		for (Task task : page.getContent()) {
+		for (Task task : list) {
 			TaskInfo result = new TaskInfo();
 			result.setId(task.getId().toString());
 			Actuator<?> actuator = ActuatorFactory.get(task.getTaskType());
@@ -151,9 +159,9 @@ public class TaskMainController extends AbstractMainController {
 			result.getDisableActions().add(Boolean.FALSE);
 			results.add(result);
 		}
-		request.getSession().setAttribute(TASK_FILTERS, body);
-		request.getSession().setAttribute(TASK_PAGEABLE, param);
-		return ResultUtils.pageSuccess(results, page.getTotalElements());
+		request.getSession().setAttribute(TASK_FILTERS, filterMap);
+		request.getSession().setAttribute(TASK_PAGEABLE, pageableMap);
+		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	
 	@Operate(type=OperateTypes.QUERY, value="download")
@@ -215,7 +223,7 @@ public class TaskMainController extends AbstractMainController {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
-		if (!cancelTask(task)) {
+		if (HandleStatuses.PROCESSING.getStatus().equals(task.getHandleStatus()) && !cancelTask(task)) {
 			return ErrorMessage.Task.TASK_CANCEL_FAILED;
 		}
 		taskService.delete(task);

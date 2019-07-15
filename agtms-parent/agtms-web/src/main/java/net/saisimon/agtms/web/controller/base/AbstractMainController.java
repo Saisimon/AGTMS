@@ -44,6 +44,9 @@ import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
 @Slf4j
 public abstract class AbstractMainController extends BaseController {
 	
+	protected static final String FILTER_SUFFIX = "_filter";
+	protected static final String PAGEABLE_SUFFIX = "_pageable";
+	
 	/**
 	 * 前端头信息配置
 	 * 
@@ -144,19 +147,23 @@ public abstract class AbstractMainController extends BaseController {
 		mainGrid.setHeader(header(key));
 		mainGrid.setBreadcrumbs(breadcrumbs(key));
 		List<Column> columns = columns(key);
-		previousSort(columns, sign + "_pageable");
+		previousSort(columns, sign + PAGEABLE_SUFFIX);
 		mainGrid.setColumns(columns);
 		List<Action> actions = actions(key);
 		mainGrid.setActions(actions);
 		List<Filter> filters = filters(key);
-		boolean showFilters = previousFilter(filters, sign + "_filters");
+		boolean showFilters = previousFilter(filters, sign + FILTER_SUFFIX);
 		mainGrid.setShowFilters(showFilters);
 		mainGrid.setFilters(internationFilters(filters));
 		Pageable pageable = pageable();
-		previousPageable(pageable, sign + "_pageable");
+		previousPageable(pageable, sign + PAGEABLE_SUFFIX);
 		mainGrid.setPageable(pageable);
 		mainGrid.setFunctions(functions(key));
 		return mainGrid;
+	}
+	
+	protected boolean large(Object key) {
+		return false;
 	}
 	
 	protected String sign(Object key) {
@@ -263,17 +270,17 @@ public abstract class AbstractMainController extends BaseController {
 			return;
 		}
 		HttpSession session = request.getSession();
-		Map<String, String> pageableMap = (Map<String, String>) session.getAttribute(sessionKey);
+		Map<String, Object> pageableMap = (Map<String, Object>) session.getAttribute(sessionKey);
 		if (pageableMap == null) {
 			return;
 		}
-		String index = pageableMap.get(Constant.Param.INDEX);
+		Integer index = (Integer) pageableMap.get(Constant.Param.INDEX);
 		if (index != null) {
-			pageable.setPageIndex(Integer.parseInt(index) + 1);
+			pageable.setPageIndex(index + 1);
 		}
-		String size = pageableMap.get(Constant.Param.SIZE);
+		Integer size = (Integer) pageableMap.get(Constant.Param.SIZE);
 		if (size != null) {
-			pageable.setPageSize(Integer.parseInt(size));
+			pageable.setPageSize(size);
 		}
 	}
 	
@@ -375,6 +382,14 @@ public abstract class AbstractMainController extends BaseController {
 			}
 		}
 		return true;
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected <T> T get(Map<String, Object> map, String key) {
+		if (map == null) {
+			return null;
+		}
+		return (T) map.get(key);
 	}
 	
 }

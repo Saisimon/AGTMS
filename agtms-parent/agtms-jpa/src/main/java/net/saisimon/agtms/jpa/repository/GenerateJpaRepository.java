@@ -50,7 +50,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	private Dialect dialect;
 	
 	@Override
-	public Long count(FilterRequest filter) {
+	public Long count(final FilterRequest filter) {
 		Template template = template();
 		StringBuilder sql = buildCountSql(template);
 		Object[] args = null;
@@ -74,7 +74,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 
 	@Override
-	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
+	public List<Domain> findList(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Template template = template();
 		Set<String> columnNames = getColumnNames(template, properties);
 		StringBuilder sql = buildSql(template, columnNames);
@@ -107,23 +107,28 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 	
 	@Override
-	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
+	public List<Domain> findList(final FilterRequest filter, final FilterPageable pageable, String... properties) {
 		Template template = template();
 		StringBuilder idSql = buildIdSql(template);
+		FilterPageable filterPageable = pageable;
+		if (filterPageable == null) {
+			filterPageable = FilterPageable.build(null);
+		}
+		FilterRequest filterRequest = filter;
+		if (filterRequest == null) {
+			filterRequest = FilterRequest.build();
+		}
+		filterRequest.and(filterPageable.getParam());
 		List<Object> args = new ArrayList<>();
-		if (filter != null) {
-			Statement where = JpaFilterUtils.where(filter);
-			if (where.isNotEmpty()) {
-				idSql.append(" WHERE ").append(where.getExpression());
-				if (where.getArgs() != null) {
-					args = where.getArgs();
-				}
+		Statement where = JpaFilterUtils.where(filterRequest);
+		if (where.isNotEmpty()) {
+			idSql.append(" WHERE ").append(where.getExpression());
+			if (where.getArgs() != null) {
+				args = where.getArgs();
 			}
 		}
-		if (pageable != null) {
-			idSql.append(" ORDER BY ").append(JpaFilterUtils.orderby(pageable.getSort()));
-			dialect.wrapPageSql(idSql, pageable.getPageable());
-		}
+		idSql.append(" ORDER BY ").append(JpaFilterUtils.orderby(filterPageable.getSort()));
+		dialect.wrapPageSQL(idSql, filterPageable.getPageable());
 		if (log.isDebugEnabled()) {
 			log.debug("Generate SQL: " + idSql.toString());
 		}
@@ -138,61 +143,33 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 				ids.add(Long.valueOf(idObj.toString()));
 			}
 		}
-		return findList(FilterRequest.build().and(Constant.ID, ids, Constant.Operator.IN), properties);
+		List<Domain> domains = findList(FilterRequest.build().and(Constant.ID, ids, Constant.Operator.IN), properties);
+		return JpaFilterUtils.sortDomains(domains, ids, "id");
 	}
-
+	
 	@Override
-	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
-		Template template = template();
-		StringBuilder countSql = buildCountSql(template);
-		List<Object> args = new ArrayList<>();
-		Statement where = JpaFilterUtils.where(filter);
-		if (where != null && where.isNotEmpty()) {
-			countSql.append(" WHERE ").append(where.getExpression());
-			if (where.getArgs() != null) {
-				args = where.getArgs();
+	public Page<Domain> findPage(final FilterRequest filter, final FilterPageable pageable, boolean count, String... properties) {
+		FilterPageable filterPageable = pageable;
+		if (filterPageable == null) {
+			filterPageable = FilterPageable.build(null);
+		}
+		Pageable springPageable = filterPageable.getPageable();
+		long total = 0;
+		if (count) {
+			total = count(filter);
+			if (total == 0) {
+				return new PageImpl<>(new ArrayList<>(0), springPageable, 0);
 			}
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + countSql.toString());
-		}
-		Long total = jdbcTemplate.queryForObject(countSql.toString(), args.toArray(), Long.class);
-		if (pageable == null) {
-			pageable = FilterPageable.build(null);
-		}
-		Pageable springPageable = pageable.getPageable();
-		if (total == null || total == 0) {
+		List<Domain> domains = findList(filter, filterPageable, properties);
+		if (CollectionUtils.isEmpty(domains)) {
 			return new PageImpl<>(new ArrayList<>(0), springPageable, 0);
 		}
-		StringBuilder idSql = buildIdSql(template);
-		if (where != null && where.isNotEmpty()) {
-			idSql.append(" WHERE ").append(where.getExpression());
-		}
-		idSql.append(" ORDER BY ").append(JpaFilterUtils.orderby(pageable.getSort()));
-		dialect.wrapPageSql(idSql, springPageable);
-		if (log.isDebugEnabled()) {
-			log.debug("Generate SQL: " + idSql.toString());
-		}
-		List<Map<String, Object>> list = jdbcTemplate.queryForList(idSql.toString(), args.toArray());
-		if (CollectionUtils.isEmpty(list)) {
-			return new PageImpl<>(new ArrayList<>(0), springPageable, total);
-		}
-		List<Long> ids = new ArrayList<>(list.size());
-		for (Map<String, Object> map : list) {
-			Object idObj = map.get(Constant.ID);
-			if (idObj != null) {
-				ids.add(Long.valueOf(idObj.toString()));
-			}
-		}
-		List<Domain> domains = findList(FilterRequest.build().and(Constant.ID, ids, Constant.Operator.IN), properties);
-		if (CollectionUtils.isEmpty(domains)) {
-			return new PageImpl<>(new ArrayList<>(0), springPageable, 0L);
-		}
-		return new PageImpl<>(domains, springPageable, total);
+		return new PageImpl<>(domains, springPageable, count ? total : domains.size());
 	}
 
 	@Override
-	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
+	public Optional<Domain> findOne(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Template template = template();
 		Set<String> columnNames = getColumnNames(template, properties);
 		StringBuilder sql = buildSql(template, columnNames);
@@ -248,7 +225,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 
 	@Override
 	@Transactional(rollbackOn = Exception.class)
-	public Long delete(FilterRequest filter) {
+	public Long delete(final FilterRequest filter) {
 		StringBuilder sql = buildDeleteSql();
 		Object[] args = null;
 		if (filter != null) {
@@ -283,7 +260,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 
 	@Override
 	@Transactional(rollbackOn = Exception.class)
-	public void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
+	public void batchUpdate(final FilterRequest filter, Map<String, Object> updateMap) {
 		if (filter == null) {
 			return;
 		}
@@ -409,7 +386,7 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 	}
 	
 	private List<Domain> conversions(List<Map<String, Object>> list) throws GenerateException {
-		List<Domain> domains = new ArrayList<>();
+		List<Domain> domains = new ArrayList<>(list.size());
 		for (Map<String, Object> map : list) {
 			Domain domain = conversion(map);
 			if (domain != null) {

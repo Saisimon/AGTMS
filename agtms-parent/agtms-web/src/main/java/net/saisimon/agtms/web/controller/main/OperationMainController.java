@@ -1,5 +1,8 @@
 package net.saisimon.agtms.web.controller.main;
 
+import static net.saisimon.agtms.core.constant.Constant.Param.FILTER;
+import static net.saisimon.agtms.core.constant.Constant.Param.PAGEABLE;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,11 +14,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.saisimon.agtms.core.constant.Constant;
@@ -55,8 +56,8 @@ import net.saisimon.agtms.web.selection.UserSelection;
 public class OperationMainController extends AbstractMainController {
 	
 	public static final String OPERATION = "operation";
-	private static final String OPERATION_FILTERS = OPERATION + "_filters";
-	private static final String OPERATION_PAGEABLE = OPERATION + "_pageable";
+	private static final String OPERATION_FILTERS = OPERATION + FILTER_SUFFIX;
+	private static final String OPERATION_PAGEABLE = OPERATION + PAGEABLE_SUFFIX;
 	private static final Set<String> OPERATION_FILTER_FIELDS = new HashSet<>();
 	static {
 		OPERATION_FILTER_FIELDS.add("operateType");
@@ -76,8 +77,10 @@ public class OperationMainController extends AbstractMainController {
 	}
 	
 	@PostMapping("/list")
-	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		FilterRequest filter = FilterRequest.build(body, OPERATION_FILTER_FIELDS);
+	public Result list(@RequestBody Map<String, Object> body) {
+		Map<String, Object> filterMap = get(body, FILTER);
+		Map<String, Object> pageableMap = get(body, PAGEABLE);
+		FilterRequest filter = FilterRequest.build(filterMap, OPERATION_FILTER_FIELDS);
 		Long userId = AuthUtils.getUid();
 		UserToken userToken = TokenFactory.get().getToken(userId, false);
 		if (!userToken.isAdmin()) {
@@ -86,13 +89,13 @@ public class OperationMainController extends AbstractMainController {
 			}
 			filter.and(Constant.OPERATORID, userId);
 		}
-		FilterPageable pageable = FilterPageable.build(param);
+		FilterPageable pageable = FilterPageable.build(pageableMap);
 		OperationService operationService = OperationServiceFactory.get();
-		Page<Operation> page = operationService.findPage(filter, pageable);
-		List<OperationInfo> results = new ArrayList<>(page.getContent().size());
+		List<Operation> list = operationService.findPage(filter, pageable, false).getContent();
+		List<OperationInfo> results = new ArrayList<>(list.size());
 		Map<Integer, String> operateTypeMap = operateTypeSelection.select();
 		Map<String, String> userMap = userSelection.select();
-		for (Operation operation : page.getContent()) {
+		for (Operation operation : list) {
 			OperationInfo result = new OperationInfo();
 			result.setId(operation.getId().toString());
 			result.setOperateTime(operation.getOperateTime());
@@ -105,9 +108,9 @@ public class OperationMainController extends AbstractMainController {
 			result.setAction(OPERATION);
 			results.add(result);
 		}
-		request.getSession().setAttribute(OPERATION_FILTERS, body);
-		request.getSession().setAttribute(OPERATION_PAGEABLE, param);
-		return ResultUtils.pageSuccess(results, page.getTotalElements());
+		request.getSession().setAttribute(OPERATION_FILTERS, filterMap);
+		request.getSession().setAttribute(OPERATION_PAGEABLE, pageableMap);
+		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	
 	@Override
@@ -160,7 +163,7 @@ public class OperationMainController extends AbstractMainController {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("operateContent").label(getMessage("operate.content")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("operateType").label(getMessage("operate.type")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("operateTime").label(getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operateTime").label(getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).orderBy("").build());
 		columns.add(Column.builder().field("operateIp").label(getMessage("operate.ip")).views(Views.TEXT.getView()).width(200).build());
 		columns.add(Column.builder().field("operator").label(getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
 		return columns;

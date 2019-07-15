@@ -21,18 +21,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Task;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
+import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
-import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -127,21 +128,19 @@ public class ExportActuator implements Actuator<ExportParam> {
 			fields.add(exportField);
 		}
 		fillHead(file, heads, param.getExportFileType(), false);
-		GenerateService generateService = GenerateServiceFactory.build(template);
 		FilterRequest filter = FilterRequest.build(param.getFilter(), TemplateUtils.getFilters(template));
 		if (filter == null) {
 			filter = FilterRequest.build();
 		}
 		filter.and(Constant.OPERATORID, param.getUserId());
-		Long count = generateService.count(filter);
-		long pageCount = (count - 1) / PAGE_SIZE + 1;
+		Long lastId = null;
 		List<List<Object>> datas = new ArrayList<>();
-		for (int page = 0; page < pageCount; page++) {
+		do {
 			if (Thread.currentThread().isInterrupted()) {
 				throw new InterruptedException("Task Cancel");
 			}
-			FilterPageable pageable = new FilterPageable(page, PAGE_SIZE, null);
-			List<Domain> domains = generateService.findList(filter, pageable, fields.toArray(new String[fields.size()]));
+			FilterPageable pageable = new FilterPageable(new FilterParam(Constant.ID, lastId, Operator.LT), PAGE_SIZE, null);
+			List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, pageable, fields.toArray(new String[fields.size()]));
 			List<Map<String, Object>> domainList = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), domains, param.getUserId());
 			for (Map<String, Object> domainMap : domainList) {
 				if (Thread.currentThread().isInterrupted()) {
@@ -154,10 +153,14 @@ public class ExportActuator implements Actuator<ExportParam> {
 					data.add(value == null ? "" : value);
 				}
 				datas.add(data);
+				lastId = (Long) domainMap.get(Constant.ID);
 			}
 			fillDatas(file, datas, param.getExportFileType(), true);
 			datas.clear();
-		}
+			if (lastId == null || domains.size() < PAGE_SIZE) {
+				break;
+			}
+		} while (true);
 	}
 	
 	private void fillHead(File file, List<Object> heads, String fileType, boolean append) throws IOException {

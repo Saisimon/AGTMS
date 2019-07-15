@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.jpa.dialect.Dialect;
 import net.saisimon.agtms.jpa.dialect.H2Dialect;
-import net.saisimon.agtms.jpa.dialect.MysqlDialect;
+import net.saisimon.agtms.jpa.dialect.MySQLDialect;
 import net.saisimon.agtms.jpa.dialect.OracleDialect;
-import net.saisimon.agtms.jpa.dialect.PostgresqlDialect;
-import net.saisimon.agtms.jpa.dialect.SqlServerDialect;
+import net.saisimon.agtms.jpa.dialect.PostgreSQLDialect;
+import net.saisimon.agtms.jpa.dialect.SQLServerDialect;
 import net.saisimon.agtms.jpa.repository.base.BaseJpaRepositoryFactoryBean;
 
 /**
@@ -35,18 +35,18 @@ public class JpaConfig {
 	@ConditionalOnClass(name= {"com.mysql.jdbc.Driver"})
 	public Dialect mysqlDialect() {
 		if (log.isDebugEnabled()) {
-			log.debug("User Mysql Dialect");
+			log.debug("User MySQL Dialect");
 		}
-		return new MysqlDialect();
+		return new MySQLDialect();
 	}
 	
 	@Bean
 	@ConditionalOnClass(name= {"com.microsoft.sqlserver.jdbc.SQLServerDriver"})
 	public Dialect sqlServerDialect() {
 		if (log.isDebugEnabled()) {
-			log.debug("User SqlServer Dialect");
+			log.debug("User SQL Server Dialect");
 		}
-		return new SqlServerDialect();
+		return new SQLServerDialect();
 	}
 	
 	@Bean
@@ -62,9 +62,9 @@ public class JpaConfig {
 	@ConditionalOnClass(name= {"org.postgresql.Driver"})
 	public Dialect postgresqlDialect() {
 		if (log.isDebugEnabled()) {
-			log.debug("User Postgresql Dialect");
+			log.debug("User PostgreSQL Dialect");
 		}
-		return new PostgresqlDialect();
+		return new PostgreSQLDialect();
 	}
 	
 	@Bean

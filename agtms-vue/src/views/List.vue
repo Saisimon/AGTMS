@@ -74,7 +74,7 @@
                         </b-button>
                         <!-- 清除 -->
                         <b-button variant="secondary" size="sm" 
-                            @click="clearFilters"
+                            @click="clear"
                             class="base-btn float-right ml-1 clear-btn">
                             {{ $t("clear") }}
                         </b-button>
@@ -89,7 +89,7 @@
                         {{ selects.length }} {{ $t('rows_selected') }}
                         </div>
                     </b-col>
-                    <b-col class="col-12 col-md-8 text-right">
+                    <b-col class="col-12 col-md-8 text-right pl-0">
                         <template v-for="(batch, index) in batches" >
                             <b-button :key="index" 
                                 :size="'sm'" 
@@ -114,20 +114,27 @@
                     </b-col>
                 </b-row>
             </div>
+            <div class="pb-1 page-index-container">
+                <div class="float-left">
+                    {{ $t('page_index', {'index': pageIndex}) }}
+                </div>
+                <div v-if="large" class="float-right">
+                    {{ $t('large_table_sort_disabled') }}
+                </div>
+                <div class="clearfix"></div>
+            </div>
             <!-- 列表 -->
             <div class="table-container">
                 <vue-good-table
+                    ref="listTable"
                     mode="remote"
                     styleClass="vgt-table striped bordered"
                     :is-loading="isLoading"
                     :columns="columns"
                     :rows="datas"
-                    :totalRows="total"
                     :sort-options="sortOptions"
                     :select-options="selectOptions"
                     :pagination-options="paginationOptions"
-                    @on-page-change="onPageChange"
-                    @on-per-page-change="onPerPageChange"
                     @on-select-all="selectAll"
                     @on-selected-rows-change="selectChange"
                     @on-sort-change="sortChange" >
@@ -177,6 +184,14 @@
                                 :index="props.row.originalIndex" />
                         </span>
                     </template>
+                    <template slot="pagination-bottom">
+                        <pagination 
+                            :pageIndex="pageIndex"
+                            :pageSize="pageSize"
+                            @on-per-page-change="onPerPageChange"
+                            @on-previous="onPrevious"
+                            @on-next="onNext"></pagination>
+                    </template>
                 </vue-good-table>
             </div>
             <action-batch-remove 
@@ -223,6 +238,7 @@ import ActionBatchRemove from '@/components/action/ActionBatchRemove.vue'
 import ActionBatchEdit from '@/components/action/ActionBatchEdit.vue'
 import ActionExport from '@/components/action/ActionExport.vue'
 import ActionImport from '@/components/action/ActionImport.vue'
+import Pagination from '@/components/Pagination.vue'
 
 export default {
     name: 'list',
@@ -239,14 +255,15 @@ export default {
                     vm.$store.commit('setBreadcrumbs', resp.data.data.breadcrumbs);
                     vm.$store.commit('setColumns', resp.data.data.columns);
                     vm.$store.commit('setActions', resp.data.data.actions);
+                    vm.large = resp.data.data.large;
                     var pageable = resp.data.data.pageable;
                     vm.pageIndex = pageable.pageIndex;
                     vm.pageSize = pageable.pageSize;
-                    vm.paginationOptions.setCurrentPage = pageable.pageIndex;
-                    vm.paginationOptions.perPage = pageable.pageSize;
+                    vm.param = pageable.param;
+                    vm.filterMap = vm.searchFilters();
                     vm.$store.dispatch('getDatas', {
                         url: to.path,
-                        filters: vm.searchFilters(),
+                        filters: vm.filterMap,
                         pageable: vm.searchPageable()
                     });
                 }
@@ -268,7 +285,8 @@ export default {
         'link-cell': LinkCell,
         'image-cell': ImageCell,
         'html-cell': HtmlCell,
-        'text-cell': TextCell
+        'text-cell': TextCell,
+        'pagination': Pagination
     },
     computed: {
         header: function() {
@@ -351,9 +369,6 @@ export default {
         },
         datas: function() {
             return this.$store.state.list.datas;
-        },
-        total: function() {
-            return this.$store.state.list.total;
         }
     },
     watch: {
@@ -378,11 +393,12 @@ export default {
                     vm.$store.commit('setBreadcrumbs', resp.data.data.breadcrumbs);
                     vm.$store.commit('setColumns', resp.data.data.columns);
                     vm.$store.commit('setActions', resp.data.data.actions);
+                    vm.large = resp.data.data.large;
                     var pageable = resp.data.data.pageable;
                     vm.pageIndex = pageable.pageIndex;
                     vm.pageSize = pageable.pageSize;
-                    vm.paginationOptions.setCurrentPage = pageable.pageIndex;
-                    vm.paginationOptions.perPage = pageable.pageSize;
+                    vm.param = pageable.param;
+                    vm.filterMap = vm.searchFilters();
                     vm.searchByFilters();
                 }
                 vm.$store.commit('clearProgress');
@@ -406,7 +422,7 @@ export default {
                 show: false
             },
             sortOptions: {
-                enabled: true
+                enabled: false
             },
             selectOptions: {
                 enabled: false,
@@ -414,20 +430,13 @@ export default {
                 clearSelectionText: '',
             },
             selects: [],
+            large: false,
             pageSize: 10,
             pageIndex: 1,
+            param: null,
+            filterMap: null,
             paginationOptions: {
-                enabled: true,
-                mode: 'pages',
-                perPageDropdown: [10, 20, 50],
-                setCurrentPage: this.pageIndex,
-                perPage: this.pageSize,
-                dropdownAllowAll: false,
-                nextLabel: this.$t('next_page'),
-                prevLabel: this.$t('previous_page'),
-                rowsPerPageLabel: this.$t('rows_pre_page'),
-                ofLabel: "/",
-                pageLabel: ''
+                enabled: true
             }
         }
     },
@@ -486,32 +495,61 @@ export default {
                 return 'table-actions-cell';
             }
         },
-        onPageChange: function(params) {
-            this.pageIndex = params.currentPage;
-            this.searchByFilters();
-        },
         onPerPageChange: function(params) {
             if (this.pageSize == params.currentPerPage) {
                 return;
             }
             this.pageIndex = 1;
             this.pageSize = params.currentPerPage;
+            this.param = null;
+            this.searchByFilters();
+        },
+        onPrevious: function(param) {
+            if (this.pageIndex < 2) {
+                return;
+            }
+            this.pageIndex = this.pageIndex - 1;
+            if (this.large) {
+                this.param = param;
+            }
+            this.searchByFilters();
+        },
+        onNext: function(param) {
+            this.pageIndex = this.pageIndex + 1;
+            if (this.large) {
+                this.param = param;
+            }
             this.searchByFilters();
         },
         sortChange: function(params) {
-            this.$store.commit('setSort', params);
+            if (this.large) {
+                this.$store.commit('clearSort');
+                this.$set(this.$refs["listTable"].$refs["table-header-primary"]._data, "sorts", []);
+            } else {
+                this.$store.commit('setSort', params);
+                this.pageIndex = 1;
+                this.param = null;
+                this.searchByFilters();
+            }
+        },
+        clear: function() {
+            this.$store.commit('clearFilters');
+            this.$store.commit('clearSort');
+            this.$set(this.$refs["listTable"].$refs["table-header-primary"]._data, "sorts", []);
             this.searchByFilters();
         },
         searchByFilters: function() {
+            var newFilterMap = this.searchFilters();
+            if (JSON.stringify(newFilterMap) != JSON.stringify(this.filterMap)) {
+                this.pageIndex = 1;
+                this.param = null;
+            }
+            this.filterMap = newFilterMap;
             this.$store.dispatch('getDatas', {
                 url: this.$route.path,
-                filters: this.searchFilters(),
+                filters: this.filterMap,
                 pageable: this.searchPageable()
             });
-        },
-        clearFilters: function() {
-            this.$store.commit('clearFilters');
-            this.searchByFilters();
         },
         searchPageable: function() {
             var sorts = [];
@@ -519,14 +557,15 @@ export default {
                 var column = this.columns[i];
                 if (column.orderBy && column.field) {
                     if (column.orderBy === 'asc') {
-                        sorts.push('%2B' + column.field);
+                        sorts.push('+' + column.field);
                     } else if (column.orderBy === 'desc') {
-                        sorts.push('%2D' + column.field);
+                        sorts.push('-' + column.field);
                     }
                 }
             }
             return {
-                'index': (this.pageIndex - 1),
+                'param': this.param,
+                'index': this.pageIndex - 1,
                 'size': this.pageSize,
                 'sort': sorts.join(',')
             };
@@ -644,6 +683,17 @@ export default {
 </script>
 
 <style scoped>
+.page-index-container {
+    font-size: 14px;
+    font-weight: bold;
+    color: #606266;
+}
+.selects-hint {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 31px;
+    color: #606266;
+}
 .list-container >>> .vgt-left-align {
     min-width: 130px;
 }
@@ -700,13 +750,6 @@ export default {
 .filter-toggle .form-control {
     height: 40px!important;
     border: 1px solid #e8e8e8!important;
-}
-.selects-hint {
-    font-size: 13px;
-    font-weight: bold;
-    line-height: 31px;
-    color: #606266;
-    padding-left: 0.5em;
 }
 .rows-div {
     font-size: 14px;

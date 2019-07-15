@@ -26,6 +26,7 @@
                                 selected-label=""
                                 group-values="options" 
                                 group-label="group" 
+                                :limit="3"
                                 :group-select="true"
                                 :searchable="false"
                                 :multiple="true"
@@ -56,11 +57,19 @@
                     </b-row>
                     <b-row class="mb-3" v-if="importFieldSelects.length > 0 && importFileType != null">
                         <b-col>
-                            <b-form-file name="importFile" v-model="importFile" :placeholder="$t('choose_import_file')" :accept="'.' + importFileType.value" ></b-form-file>
+                            <b-form-file multiple 
+                                name="importFiles" 
+                                v-model="importFiles"
+                                :placeholder="$t('choose_import_file')" 
+                                :accept="'.' + importFileType.value" >
+                                <template slot="file-name" slot-scope="{ names }">
+                                    {{ $t("files_selected", {count: names.length}) }}
+                                </template>
+                            </b-form-file>
                         </b-col>
                     </b-row>
                 </form>
-                <b-row class="mb-3" v-if="importFieldSelects.length > 0 && importFileType != null && importFile">
+                <b-row class="mb-3" v-if="importFieldSelects.length > 0 && importFileType != null && importFiles.length > 0">
                     <b-col class="text-right">
                         <b-button variant="primary" 
                             @click="save">
@@ -92,30 +101,47 @@ export default {
     },
     data: function() {
         return {
+            submit: false,
             importFieldSelects: [],
             importFileType: null,
-            importFile: null
+            importFiles: []
         }
     },
     methods: {
         save: function() {
-            if (this.importFieldSelects.length == 0 || this.importFileType == null || !this.importFile) {
+            if (this.submit) {
                 return;
             }
-            if (this.importFile.size > 10 * 1024 * 1024) {
-                this.$emit('showAlert', this.$t('upload_file_max_size_limit'), 'danger');
+            this.submit = true;
+            if (this.importFieldSelects.length == 0 || this.importFileType == null || this.importFiles.length == 0) {
+                this.submit = false;
                 return;
+            }
+            if (this.importFiles.length > 10) {
+                this.$emit('showAlert', this.$t('upload_file_max_size_limit', {count: 10}), 'danger');
+                this.submit = false;
+                return;
+            }
+            for (var i = 0; i < this.importFiles.length; i++) {
+                var importFile = this.importFiles[i];
+                if (importFile.size > 20 * 1024 * 1024) {
+                    this.$emit('showAlert', this.$t('upload_max_size_limit', {size: 20}), 'danger');
+                    this.submit = false;
+                    return;
+                }
             }
             var importFields = [];
-            for (var i = 0; i < this.importFieldSelects.length; i++) {
-                var importFieldSelect = this.importFieldSelects[i];
+            for (var j = 0; j < this.importFieldSelects.length; j++) {
+                var importFieldSelect = this.importFieldSelects[j];
                 importFields.push(importFieldSelect.value);
             }
             var formData = new FormData();
             formData.append("importFileType", this.importFileType.value);
             formData.append("importFileName", this.batchImport.importFileName);
             formData.append("importFields", importFields);
-            formData.append("importFile", this.importFile);
+            for (var i = 0; i < this.importFiles.length; i++) {
+                formData.append("importFiles", this.importFiles[i]);
+            }
             this.$store.dispatch('batchImportData', {
                 url: this.$route.path,
                 data: formData
@@ -127,6 +153,9 @@ export default {
                 } else {
                     this.$emit('showAlert', data.message, 'danger');
                 }
+                this.submit = false;
+            }).catch(err => {
+                this.submit = false;
             });
         }
     }

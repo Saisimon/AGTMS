@@ -1,5 +1,9 @@
 package net.saisimon.agtms.web.controller.main;
 
+import static net.saisimon.agtms.core.constant.Constant.Param.FILTER;
+import static net.saisimon.agtms.core.constant.Constant.Param.PAGEABLE;
+import static net.saisimon.agtms.core.constant.Constant.Param.PARAM;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +17,6 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -64,8 +67,8 @@ import net.saisimon.agtms.web.selection.UserStatusSelection;
 public class UserMainController extends AbstractMainController {
 	
 	public static final String USER = "user";
-	private static final String USER_FILTERS = USER + "_filters";
-	private static final String USER_PAGEABLE = USER + "_pageable";
+	private static final String USER_FILTERS = USER + FILTER_SUFFIX;
+	private static final String USER_PAGEABLE = USER + PAGEABLE_SUFFIX;
 	private static final List<String> FUNCTIONS = Arrays.asList(
 			Functions.VIEW.getFunction(),
 			Functions.CREATE.getFunction(),
@@ -94,14 +97,19 @@ public class UserMainController extends AbstractMainController {
 	
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
-	public Result list(@RequestParam Map<String, Object> param, @RequestBody Map<String, Object> body) {
-		FilterRequest filter = FilterRequest.build(body, USER_FILTER_FIELDS);
-		FilterPageable pageable = FilterPageable.build(param);
+	public Result list(@RequestBody Map<String, Object> body) {
+		Map<String, Object> filterMap = get(body, FILTER);
+		Map<String, Object> pageableMap = get(body, PAGEABLE);
+		FilterRequest filter = FilterRequest.build(filterMap, USER_FILTER_FIELDS);
+		if (pageableMap != null) {
+			pageableMap.remove(PARAM);
+		}
+		FilterPageable pageable = FilterPageable.build(pageableMap);
 		UserService userService = UserServiceFactory.get();
-		Page<User> page = userService.findPage(filter, pageable);
-		List<UserInfo> results = new ArrayList<>(page.getContent().size());
+		List<User> list = userService.findPage(filter, pageable, false).getContent();
+		List<UserInfo> results = new ArrayList<>(list.size());
 		Map<Integer, String> userStatusMap = userStatusSelection.select();
-		for (User user : page.getContent()) {
+		for (User user : list) {
 			UserInfo result = new UserInfo();
 			result.setAvatar(user.getAvatar());
 			result.setCellphone(user.getCellphone());
@@ -141,9 +149,9 @@ public class UserMainController extends AbstractMainController {
 			}
 			results.add(result);
 		}
-		request.getSession().setAttribute(USER_FILTERS, body);
-		request.getSession().setAttribute(USER_PAGEABLE, param);
-		return ResultUtils.pageSuccess(results, page.getTotalElements());
+		request.getSession().setAttribute(USER_FILTERS, filterMap);
+		request.getSession().setAttribute(USER_PAGEABLE, pageableMap);
+		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	
 	@Operate(type=OperateTypes.EDIT, value="lock")

@@ -124,6 +124,19 @@ input:active, input:focus {
     background-color: #3c8dbc!important;
     border-color: #3c8dbc!important;
 }
+.btn-primary:hover {
+    background-color: #2d688a!important;
+    border-color: #2d688a!important;
+}
+.btn-outline-primary {
+    color: #3c8dbc!important;
+    border-color: #3c8dbc!important;
+}
+.btn-outline-primary:hover {
+    color: #fff!important;
+    background-color: #3c8dbc!important;
+    border-color: #3c8dbc!important;
+}
 .main-container {
     z-index: 800;
     min-height: 100%;

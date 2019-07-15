@@ -25,6 +25,7 @@
                             selected-label=""
                             group-values="options" 
                             group-label="group" 
+                            :limit="3"
                             :group-select="true"
                             :searchable="false"
                             :multiple="true"
@@ -86,16 +87,22 @@ export default {
     },
     data: function() {
         return {
+            submit: false,
             exportFieldSelects: [],
             exportFileType: null
         }
     },
     methods: {
         save: function() {
+            if (this.submit) {
+                return;
+            }
+            this.submit = true;
             var data = {
                 filter: this.filter
             }
             if (this.exportFieldSelects.length == 0 || this.exportFileType == null) {
+                this.submit = false;
                 return;
             }
             var exportFields = [];
@@ -117,6 +124,9 @@ export default {
                 } else {
                     this.$emit('showAlert', data.message, 'danger');
                 }
+                this.submit = false;
+            }).catch(err => {
+                this.submit = false;
             });
         }
     }

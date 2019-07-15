@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.asm.ClassWriter;
 import org.springframework.asm.MethodVisitor;
@@ -62,7 +63,7 @@ public class DomainGenerater {
 	 * key 为命名空间
 	 * value 为类加载器
 	 */
-	private static final Map<String, GenerateClassLoader> GENERATE_CLASSLOADER_MAP = new HashMap<>();
+	private static final Map<String, GenerateClassLoader> GENERATE_CLASSLOADER_MAP = new ConcurrentHashMap<>();
 	
 	/**
 	 * 构建自定义对象名称

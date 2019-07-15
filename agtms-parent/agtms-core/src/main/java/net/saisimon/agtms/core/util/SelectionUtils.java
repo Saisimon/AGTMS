@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.map.MapUtil;
@@ -21,9 +20,10 @@ import net.saisimon.agtms.core.domain.entity.Selection;
 import net.saisimon.agtms.core.domain.entity.SelectionOption;
 import net.saisimon.agtms.core.domain.entity.SelectionTemplate;
 import net.saisimon.agtms.core.domain.entity.Template;
-import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
+import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.domain.tag.Option;
@@ -32,7 +32,6 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.SelectionServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
-import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.SelectionService;
 import net.saisimon.agtms.core.spring.SpringContext;
@@ -198,16 +197,15 @@ public class SelectionUtils {
 			if (template == null) {
 				return options;
 			}
-			GenerateService generateService = GenerateServiceFactory.build(template);
 			FilterRequest filter = FilterRequest.build().and(selectionTemplate.getValueFieldName(), "", Operator.EXISTS);
 			if (SystemUtils.isBlank(keyword)) {
 				filter.and(selectionTemplate.getTextFieldName(), "", Operator.EXISTS);
 			} else {
 				filter.and(selectionTemplate.getTextFieldName(), keyword, Operator.REGEX);
 			}
-			FilterPageable pageable = new FilterPageable(0, OPTION_SIZE, null);
-			Page<Domain> page = generateService.findPage(filter, pageable, selectionTemplate.getValueFieldName(), selectionTemplate.getTextFieldName());
-			for (Domain domain : page.getContent()) {
+			FilterPageable pageable = new FilterPageable(new FilterParam(Constant.ID, null, Operator.LT), OPTION_SIZE, null);
+			List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, pageable, selectionTemplate.getValueFieldName(), selectionTemplate.getTextFieldName());
+			for (Domain domain : domains) {
 				String text = domain.getField(selectionTemplate.getTextFieldName()).toString();
 				Option<Object> option = new Option<>(domain.getField(selectionTemplate.getValueFieldName()), text);
 				options.add(option);
@@ -253,7 +251,6 @@ public class SelectionUtils {
 		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
 			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId(), operatorId);
 			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorId);
-			GenerateService generateService = GenerateServiceFactory.build(template);
 			FilterRequest filter = FilterRequest.build();
 			if (valueKey) {
 				if (values.size() == 1) {
@@ -268,7 +265,7 @@ public class SelectionUtils {
 					filter.and(selectionTemplate.getTextFieldName(), values, Operator.IN);
 				}
 			}
-			List<Domain> domains = generateService.findList(filter, (FilterSort)null, selectionTemplate.getValueFieldName(), selectionTemplate.getTextFieldName());
+			List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, (FilterSort)null, selectionTemplate.getValueFieldName(), selectionTemplate.getTextFieldName());
 			if (CollectionUtils.isEmpty(domains)) {
 				return selectionMap;
 			}

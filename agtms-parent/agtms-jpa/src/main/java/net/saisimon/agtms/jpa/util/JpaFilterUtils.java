@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,6 +30,7 @@ import javax.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
 
+import cn.hutool.core.util.ReflectUtil;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -37,6 +39,22 @@ import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.jpa.domain.Statement;
 
 public class JpaFilterUtils {
+	
+	private JpaFilterUtils() {}
+
+	@SuppressWarnings("unchecked")
+	public static <T, ID> List<T> sortDomains(List<T> domains, List<ID> ids, String idName) {
+		Map<ID, T> domainMap = new HashMap<>();
+		for (T domain : domains) {
+			ID id = (ID) ReflectUtil.getFieldValue(domain, idName);
+			domainMap.put(id, domain);
+		}
+		List<T> results = new ArrayList<>(domains.size());
+		for (ID id : ids) {
+			results.add(domainMap.get(id));
+		}
+		return results;
+	}
 	
 	public static Statement where(FilterRequest filterRequest) {
 		if (filterRequest == null) {
@@ -247,8 +265,12 @@ public class JpaFilterUtils {
 			}
 			if (filter.getClass() == FilterParam.class) {
 				Statement expression = expression((FilterParam)filter);
-				sql.append(expression.getExpression());
-				statement.addArgs(expression.getArgs());
+				if (expression.isNotEmpty()) {
+					sql.append(expression.getExpression());
+					statement.addArgs(expression.getArgs());
+				} else {
+					sql.append("1 = 1");
+				}
 			} else {
 				Statement where = where(filter);
 				sql.append(where.getExpression());
@@ -265,13 +287,13 @@ public class JpaFilterUtils {
 		if (param == null) {
 			return statement;
 		}
-		StringBuilder expression = new StringBuilder();
 		String key = param.getKey();
 		Object value = param.getValue();
 		String operator = param.getOperator();
 		String type = param.getType();
 		value = DomainGenerater.parseFieldValue(value, type);
 		if (value != null) {
+			StringBuilder expression = new StringBuilder();
 			switch (operator) {
 				case LT:
 					expression.append(key).append(" < ?");
@@ -361,8 +383,8 @@ public class JpaFilterUtils {
 					statement.addArgs(value);
 					break;
 			}
+			statement.setExpression(expression);
 		}
-		statement.setExpression(expression);
 		return statement;
 	}
 	

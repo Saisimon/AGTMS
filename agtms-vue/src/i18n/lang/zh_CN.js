@@ -88,7 +88,9 @@ export default {
     datasource: '数据来源',
     rows: '条记录',
     total: '共',
-    upload_file_max_size_limit: '请不要上传大于10M的文件',
+    upload_max_size_limit: '请不要上传大于{size}MB 的文件',
+    upload_file_max_size_limit: '请不要上传大于{count}个文件',
+    files_selected: '{count}个文件被选中',
     title_not_blank: '标题不能为空',
     column_not_blank: '列不能为空',
     refresh: '刷新',
@@ -120,5 +122,7 @@ export default {
     nickname: '昵称',
     remark: '说明',
     update_profile: '更新个人资料',
-    save_success: '保存成功'
+    save_success: '保存成功',
+    large_table_sort_disabled: '数据量过大，排序被禁用',
+    page_index: '第 {index} 页'
 }

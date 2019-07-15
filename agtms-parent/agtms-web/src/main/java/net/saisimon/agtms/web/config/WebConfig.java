@@ -129,8 +129,9 @@ public class WebConfig implements WebMvcConfigurer {
 	@Bean("taskThreadPool")
 	public SchedulingTaskExecutor taskThreadPool() {
 		ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
-		pool.setCorePoolSize(2 * Runtime.getRuntime().availableProcessors() + 1);
-		pool.setMaxPoolSize(100);
+		int size = 2 * Runtime.getRuntime().availableProcessors() + 1;
+		pool.setCorePoolSize(size);
+		pool.setMaxPoolSize(size);
 		pool.setQueueCapacity(taskMaxSize);
 		pool.setThreadNamePrefix("Task-Pool-");
 		pool.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
@@ -146,7 +147,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Bean("operationThreadPool")
 	public SchedulingTaskExecutor operationThreadPool() {
 		ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
-		int size = Runtime.getRuntime().availableProcessors() + 1;
+		int size = 2 * Runtime.getRuntime().availableProcessors() + 1;
 		pool.setCorePoolSize(size);
 		pool.setMaxPoolSize(size);
 		pool.setThreadNamePrefix("Operation-Pool-");

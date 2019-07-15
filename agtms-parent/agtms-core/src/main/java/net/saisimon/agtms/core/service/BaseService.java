@@ -96,10 +96,10 @@ public interface BaseService<T, ID> {
 	 * @param properties 属性名称数组
 	 * @return 实体对象分页对象
 	 */
-	default Page<T> findPage(FilterRequest filter, FilterPageable pageable, String... properties) {
+	default Page<T> findPage(FilterRequest filter, FilterPageable pageable, boolean count, String... properties) {
 		BaseRepository<T, ID> repository = getRepository();
 		Assert.notNull(repository, "need repository");
-		return repository.findPage(filter, pageable, properties);
+		return repository.findPage(filter, pageable, count, properties);
 	}
 	
 	/**

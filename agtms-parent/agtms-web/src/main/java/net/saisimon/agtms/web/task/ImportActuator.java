@@ -39,7 +39,6 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -72,7 +71,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
+		if (!TemplateUtils.hasFunction(template, Functions.IMPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		File file = createImportFile(param);
@@ -138,7 +137,6 @@ public class ImportActuator implements Actuator<ImportParam> {
 			fillDatas(file, resultDatas, param.getImportFileType());
 			return;
 		}
-		GenerateService generateService = GenerateServiceFactory.build(template);
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		Map<String, Map<String, String>> fieldTextMap = new HashMap<>();
 		for (int i = 1; i < datas.size(); i++) {
@@ -148,7 +146,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 			List<String> data = datas.get(i);
 			List<Object> resultData = new ArrayList<>();
 			List<String> missRequireds = new ArrayList<>();
-			Domain domain = generateService.newGenerate();
+			Domain domain = GenerateServiceFactory.build(template).newGenerate();
 			for (int j = 0; j < param.getImportFields().size(); j++) {
 				if (j < data.size()) {
 					String fieldName = param.getImportFields().get(j);
@@ -189,10 +187,10 @@ public class ImportActuator implements Actuator<ImportParam> {
 			domain.setField(Constant.OPERATORID, param.getUserId(), Long.class);
 			if (missRequireds.size() > 0) {
 				resultData.add(getMessage("missing.required.field") + ": " + missRequireds.stream().collect(Collectors.joining(", ")));
-			} else if (generateService.checkExist(domain, param.getUserId())) {
+			} else if (GenerateServiceFactory.build(template).checkExist(domain, param.getUserId())) {
 				resultData.add(getMessage("domain.already.exists"));
 			} else {
-				generateService.saveDomain(domain, param.getUserId());
+				GenerateServiceFactory.build(template).saveDomain(domain, param.getUserId());
 				resultData.add(getMessage("success"));
 			}
 			resultDatas.add(resultData);
@@ -242,7 +240,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 					}
 					break;
 				case Constant.File.CSV:
-					List<List<String>> dataCSVList = FileUtils.fromCSV(in, ",");
+					List<List<String>> dataCSVList = FileUtils.fromCSV(in);
 					datas.addAll(dataCSVList);
 					break;
 				case Constant.File.XLSX:

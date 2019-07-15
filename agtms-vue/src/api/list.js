@@ -1,7 +1,10 @@
 import request from './request'
 
 export function list(user, payload) {
-    return request(user, payload.url + '/list?index=' + payload.pageable.index + '&size=' + payload.pageable.size + '&sort=' + payload.pageable.sort, payload.filters);
+    return request(user, payload.url + '/list', {
+        "filter": payload.filters,
+        "pageable": payload.pageable
+    });
 }
 
 export function mainGrid(user, url) {

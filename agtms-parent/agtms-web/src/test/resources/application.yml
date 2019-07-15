@@ -27,6 +27,7 @@ extra:
     task: 1024
     export: 65535
     import: 65535
+    import-file: 10
     cache:
       ttl: 600
 

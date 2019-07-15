@@ -13,7 +13,7 @@ spring:
     url: jdbc:mysql://dbserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
     username: agtms
     password: 1qaz1QAZ
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     mongodb:
       host: mongodbserver

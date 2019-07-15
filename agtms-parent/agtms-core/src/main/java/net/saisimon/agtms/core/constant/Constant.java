@@ -24,6 +24,8 @@ public class Constant {
 		public static final String INDEX = "index";
 		public static final String SIZE = "size";
 		public static final String SORT = "sort";
+		public static final String PARAM = "param";
+		public static final String COUNT = "count";
 	}
 	
 	public static class Operator {

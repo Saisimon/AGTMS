@@ -49,13 +49,10 @@ public class FilterParam extends FilterRequest {
 		if (SystemUtils.isBlank(key)) {
 			throw new IllegalArgumentException("key can not be blank");
 		}
-		if (value == null) {
-			throw new IllegalArgumentException("value can not be null");
-		}
 		this.key = key;
 		this.operator = operator;
 		this.value = value;
-		if (SystemUtils.isBlank(type)) {
+		if (SystemUtils.isBlank(type) && value != null) {
 			this.type = value.getClass().getName();
 		} else {
 			this.type = type;
@@ -64,6 +61,17 @@ public class FilterParam extends FilterRequest {
 	
 	public static FilterParam build(String key, Object value, String operator) {
 		return new FilterParam(key, value, operator);
+	}
+	
+	public static FilterParam build(Map<String, Object> map) {
+		try {
+			FilterParam filterParam = new FilterParam();
+			BeanUtils.populate(filterParam, map);
+			return filterParam;
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			log.error("build filter param error", e);
+			return null;
+		}
 	}
 	
 	public static FilterParam build(Map<String, Object> map, Set<String> filterFields) {

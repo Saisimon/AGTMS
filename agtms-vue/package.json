@@ -1,6 +1,6 @@
 {
   "name": "agtms-vue",
-  "version": "0.8.0",
+  "version": "0.8.1-standalone",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -19,7 +19,7 @@
     "vue": "^2.6.10",
     "vue-avatar": "^2.1.7",
     "vue-avatar-cropper": "0.0.28",
-    "vue-good-table": "2.16.0",
+    "vue-good-table": "2.16.5",
     "vue-i18n": "8.1.0",
     "vue-image-crop-upload": "^2.5.0",
     "vue-multiselect": "2.1.3",
@@ -35,7 +35,8 @@
     "@vue/cli-service": "^3.8.0",
     "node-sass": "^4.12.0",
     "sass-loader": "^7.0.1",
-    "vue-template-compiler": "^2.6.10"
+    "vue-template-compiler": "^2.6.10",
+    "lodash.defaultsdeep": ">=4.6.1"
   },
   "eslintConfig": {
     "root": true,

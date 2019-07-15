@@ -18,6 +18,8 @@ public class MainGrid {
 	
 	private boolean showFilters;
 	
+	private boolean large;
+	
 	private List<Filter> filters;
 	
 	private List<String> functions;
