@@ -54,27 +54,6 @@ public interface TemplateService extends BaseService<Template, Long>, Ordered {
 		return findList(filter);
 	}
 	
-	default boolean createTable(Template template) {
-		if (template == null) {
-			return false;
-		}
-		return true;
-	}
-	
-	default boolean alterTable(Template template, Template oldTemplate) {
-		if (template == null || oldTemplate == null) {
-			return false;
-		}
-		return true;
-	}
-	
-	default boolean dropTable(Template template) {
-		if (template == null) {
-			return false;
-		}
-		return true;
-	}
-	
 	@Override
 	@Cacheable(cacheNames="template", key="#p0")
 	default Optional<Template> findById(Long id) {

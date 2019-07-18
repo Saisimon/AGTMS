@@ -31,13 +31,26 @@ public class PostgreSQLDialectTest extends DialectTest {
 	@Test
 	public void buildAlterModifySQLTest() {
 		Assert.assertNull(dialect.buildAlterModifySQL(null, null, null));
-		Assert.assertEquals("ALTER TABLE test ALTER COLUMN column0field0 TYPE  VARCHAR(512)", dialect.buildAlterModifySQL(field(), tableName(), columnName()));
+		Assert.assertEquals("ALTER TABLE test ALTER COLUMN column0field0 TYPE VARCHAR(512)", dialect.buildAlterModifySQL(field(), tableName(), columnName()));
 	}
 	
 	@Test
 	public void buildAlterDropSQLTest() {
 		Assert.assertNull(dialect.buildAlterDropSQL(null, null));
 		Assert.assertEquals("ALTER TABLE test DROP COLUMN column0field0", dialect.buildAlterDropSQL(tableName(), columnName()));
+	}
+	
+	@Test
+	public void buildCreateIndexSQLTest() {
+		Assert.assertNull(dialect.buildCreateIndexSQL(null, null, null, false));
+		Assert.assertEquals("CREATE INDEX IF NOT EXISTS test_column0field0_idx ON test (column0field0)", dialect.buildCreateIndexSQL(tableName(), columnName(), indexName(), false));
+		Assert.assertEquals("CREATE UNIQUE INDEX IF NOT EXISTS test_column0field0_idx ON test (column0field0)", dialect.buildCreateIndexSQL(tableName(), columnName(), indexName(), true));
+	}
+	
+	@Test
+	public void buildDropIndexSQLTest() {
+		Assert.assertNull(dialect.buildDropIndexSQL(null, null));
+		Assert.assertEquals("DROP INDEX IF EXISTS test_column0field0_idx", dialect.buildDropIndexSQL(tableName(), indexName()));
 	}
 	
 	@Test

@@ -55,12 +55,12 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	private Contract contract;
 	
 	@Override
-	public Long count(FilterRequest filter) {
+	public Long count(final FilterRequest filter) {
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
-		Map<String, Object> filterMap = null;
+		Map<String, Object> filterMap = MapUtil.newHashMap(0);
 		if (filter != null) {
 			filterMap = filter.toMap();
 		}
@@ -72,12 +72,12 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	}
 
 	@Override
-	public List<Domain> findList(FilterRequest filter, FilterSort sort, String... properties) {
+	public List<Domain> findList(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
-		Map<String, Object> body = new HashMap<>();
+		Map<String, Object> body = MapUtil.newHashMap(3);
 		Map<String, Object> filterMap = null;
 		if (filter != null) {
 			filterMap = filter.toMap();
@@ -101,7 +101,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	}
 	
 	@Override
-	public List<Domain> findList(FilterRequest filter, FilterPageable pageable, String... properties) {
+	public List<Domain> findList(final FilterRequest filter, final FilterPageable pageable, String... properties) {
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
@@ -131,12 +131,13 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Page<Domain> findPage(FilterRequest filter, FilterPageable pageable, boolean count, String... properties) {
+	public Page<Domain> findPage(final FilterRequest filter, final FilterPageable pageable, boolean count, String... properties) {
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
-		if (pageable == null) {
-			pageable = FilterPageable.build(null);
+		FilterPageable filterPageable = pageable;
+		if (filterPageable == null) {
+			filterPageable = FilterPageable.build(null);
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = MapUtil.newHashMap(4);
@@ -146,11 +147,11 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		}
 		body.put(Constant.Param.COUNT, count);
 		body.put(Constant.Param.FILTER, filterMap);
-		body.put(Constant.Param.PAGEABLE, pageable.toMap());
+		body.put(Constant.Param.PAGEABLE, filterPageable.toMap());
 		if (properties != null && properties.length > 0) {
 			body.put(Constant.Param.PROPERTIES, Stream.of(properties).collect(Collectors.joining(",")));
 		}
-		Pageable springPageable = pageable.getPageable();
+		Pageable springPageable = filterPageable.getPageable();
 		try {
 			Map<String, Object> map = apiService.findPage(template.getKey(), body);
 			if (CollectionUtils.isEmpty(map)) {
@@ -176,7 +177,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	}
 
 	@Override
-	public Optional<Domain> findOne(FilterRequest filter, FilterSort sort, String... properties) {
+	public Optional<Domain> findOne(final FilterRequest filter, final FilterSort sort, String... properties) {
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
@@ -205,7 +206,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	}
 	
 	@Override
-	public Long delete(FilterRequest filter) {
+	public Long delete(final FilterRequest filter) {
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
@@ -213,7 +214,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 			return null;
 		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
-		Map<String, Object> filterMap = null;
+		Map<String, Object> filterMap = MapUtil.newHashMap(0);
 		if (filter != null) {
 			filterMap = filter.toMap();
 		}
@@ -271,7 +272,7 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 	}
 	
 	@Override
-	public void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
+	public void batchUpdate(final FilterRequest filter, Map<String, Object> updateMap) {
 		if (CollectionUtils.isEmpty(updateMap)) {
 			return;
 		}

@@ -154,7 +154,7 @@ public class TemplateEditController extends BaseController {
 					return ErrorMessage.Template.TEMPLATE_ALREADY_EXISTS;
 				}
 			}
-			if (!templateService.alterTable(template, oldTemplate)) {
+			if (!GenerateServiceFactory.build(template).alterTable(oldTemplate)) {
 				TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 				return ErrorMessage.Template.TEMPLATE_MODIFY_FAILED;
 			}
@@ -167,7 +167,7 @@ public class TemplateEditController extends BaseController {
 			checkSource(template, signs);
 			updateNewTemplate(template, userId);
 			templateService.saveOrUpdate(template);
-			if (!templateService.createTable(template)) {
+			if (!GenerateServiceFactory.build(template).createTable()) {
 				TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 				return ErrorMessage.Template.TEMPLATE_CREATE_FAILED;
 			}

@@ -1,18 +1,23 @@
 package net.saisimon.agtms.core.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
@@ -20,6 +25,7 @@ import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
 /**
@@ -178,5 +184,67 @@ public interface GenerateService {
 		Assert.notNull(repository, "repository can not be null");
 		repository.delete(filter);
 	}
+	
+	default void createIndexes(String tableName, Map<String, TemplateField> fieldInfoMap) {
+		if (StringUtils.isEmpty(tableName) || CollectionUtils.isEmpty(fieldInfoMap)) {
+			return;
+		}
+		for (Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
+			String fieldName = entry.getKey();
+			TemplateField field = entry.getValue();
+			if (!field.getFilter() && !field.getSorted() && !field.getUniqued()) {
+				continue;
+			}
+			boolean unique = field.getUniqued();
+			CompletableFuture.runAsync(() -> {
+				createIndex(tableName, fieldName, unique);
+			}, SystemUtils.executor);
+		}
+	}
+	
+	default void alterIndexes(String tableName, Map<String, TemplateField> fieldInfoMap, Map<String, TemplateField> oldFieldInfoMap) {
+		if (StringUtils.isEmpty(tableName)) {
+			return;
+		}
+		Set<String> commonFieldName = new HashSet<>(fieldInfoMap.keySet());
+		commonFieldName.retainAll(oldFieldInfoMap.keySet());
+		for (Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
+			String fieldName = entry.getKey();
+			TemplateField field = entry.getValue();
+			if (commonFieldName.contains(fieldName)) {
+				TemplateField oldField = oldFieldInfoMap.get(fieldName);
+				boolean oldHasIndex = oldField.getFilter() || oldField.getSorted() || oldField.getUniqued();
+				boolean hasIndex = field.getFilter() || field.getSorted() || field.getUniqued();
+				if (oldHasIndex && !hasIndex) {
+					CompletableFuture.runAsync(() -> {
+						dropIndex(tableName, fieldName);
+					}, SystemUtils.executor);
+				} else if (!oldHasIndex && hasIndex) {
+					boolean unique = field.getUniqued();
+					CompletableFuture.runAsync(() -> {
+						createIndex(tableName, fieldName, unique);
+					}, SystemUtils.executor);
+				}
+			} else {
+				if (!field.getFilter() && !field.getSorted() && !field.getUniqued()) {
+					continue;
+				}
+				boolean unique = field.getUniqued();
+				CompletableFuture.runAsync(() -> {
+					createIndex(tableName, fieldName, unique);
+				}, SystemUtils.executor);
+			}
+		}
+	}
+	
+	boolean createTable();
+	
+	boolean alterTable(Template oldTemplate);
+	
+	boolean dropTable();
+	
+	boolean createIndex(String tableName, String columnName, boolean unique);
+	
+	boolean dropIndex(String tableName, String columnName);
 	
 }

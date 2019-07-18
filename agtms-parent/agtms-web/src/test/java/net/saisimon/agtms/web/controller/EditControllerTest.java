@@ -1,5 +1,7 @@
 package net.saisimon.agtms.web.controller;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -740,7 +742,7 @@ public class EditControllerTest extends AbstractControllerTest {
 			
 			param = new HashMap<>();
 			param.put("id", "100");
-			returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+			returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken, status().isNotFound());
 			
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsxExportTask.getHandleStatus())) {
 				param = new HashMap<>();

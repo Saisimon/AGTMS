@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Service;
 
+import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.service.GenerateService;
@@ -25,6 +26,31 @@ public class GenerateRemoteService implements GenerateService {
 	@Override
 	public Sign sign() {
 		return REMOTE_SIGN;
+	}
+
+	@Override
+	public boolean createTable() {
+		throw new UnsupportedOperationException("Remote create table");
+	}
+
+	@Override
+	public boolean alterTable(Template oldTemplate) {
+		throw new UnsupportedOperationException("Remote alter table");
+	}
+
+	@Override
+	public boolean dropTable() {
+		throw new UnsupportedOperationException("Remote drop table");
+	}
+
+	@Override
+	public boolean createIndex(String tableName, String columnName, boolean unique) {
+		throw new UnsupportedOperationException("Remote create index");
+	}
+
+	@Override
+	public boolean dropIndex(String tableName, String columnName) {
+		throw new UnsupportedOperationException("Remote drop index");
 	}
 	
 }

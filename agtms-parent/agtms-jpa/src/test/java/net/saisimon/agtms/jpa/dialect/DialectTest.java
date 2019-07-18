@@ -37,4 +37,8 @@ public abstract class DialectTest {
 		return "column0field0";
 	}
 	
+	protected String indexName() {
+		return tableName() + "_" + columnName() + "_idx";
+	}
+	
 }

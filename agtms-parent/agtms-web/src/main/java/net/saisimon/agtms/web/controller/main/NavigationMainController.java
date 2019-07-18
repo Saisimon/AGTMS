@@ -52,6 +52,7 @@ import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
+import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
@@ -367,7 +368,7 @@ public class NavigationMainController extends AbstractMainController {
 		if (!CollectionUtils.isEmpty(templates)) {
 			for (Template template : templates) {
 				templateService.delete(template);
-				templateService.dropTable(template);
+				GenerateServiceFactory.build(template).dropTable();
 			}
 		}
 	}

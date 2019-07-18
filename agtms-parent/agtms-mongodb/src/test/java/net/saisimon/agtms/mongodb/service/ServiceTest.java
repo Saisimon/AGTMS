@@ -282,29 +282,20 @@ public class ServiceTest {
 		Assert.assertEquals(2, templates.size());
 		
 		// createTable
-		boolean result = templateService.createTable(null);
-		Assert.assertFalse(result);
-		
-		// alterTable
-		result = templateService.alterTable(null, null);
-		Assert.assertFalse(result);
-		
-		// dropTable
-		result = templateService.dropTable(null);
-		Assert.assertFalse(result);
-		
-		// createTable
-		result = templateService.createTable(template);
+		boolean result = GenerateServiceFactory.build(template).createTable();
 		Assert.assertTrue(result);
 		
 		// alterTable
 		newTemplate = buildTestTemplate(title, 1);
 		newTemplate.setId(template.getId());
-		result = templateService.alterTable(newTemplate, template);
+		result = GenerateServiceFactory.build(newTemplate).alterTable(null);
+		Assert.assertFalse(result);
+		
+		result = GenerateServiceFactory.build(newTemplate).alterTable(template);
 		Assert.assertTrue(result);
 		
 		// dropTable
-		result = templateService.dropTable(template);
+		result = GenerateServiceFactory.build(newTemplate).dropTable();
 		Assert.assertTrue(result);
 		
 		templateService.delete(FilterRequest.build());
@@ -450,8 +441,8 @@ public class ServiceTest {
 		int columnSize = 2;
 		Template template = buildTestTemplate(title, columnSize);
 		templateService.saveOrUpdate(template);
-		templateService.createTable(template);
 		GenerateService generateService = GenerateServiceFactory.build(template);
+		generateService.createTable();
 		
 		// checkExist
 		Domain domain = generateService.newGenerate();
@@ -559,7 +550,7 @@ public class ServiceTest {
 		Assert.assertEquals(0L, generateService.count(FilterRequest.build()).longValue());
 		
 		templateService.delete(template);
-		templateService.dropTable(template);
+		generateService.dropTable();
 	}
 	
 	private SelectionTemplate buildTestSelectionTemplate(Long selectionId) {

@@ -10,11 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
-import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
-import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.jpa.dialect.Dialect;
 
 /**
@@ -37,21 +36,19 @@ public class DdlService {
 	 * 
 	 * @param template 模板对象
 	 */
-	public boolean createTable(Template template) {
-		if (template == null) {
+	public boolean createTable(String tableName, Map<String, TemplateField> fieldInfoMap) {
+		if (StringUtils.isEmpty(tableName)) {
 			return false;
 		}
+		String sql = dialect.buildCreateSQL(fieldInfoMap, tableName);
+		if (log.isDebugEnabled()) {
+			log.debug("DDL: {}", sql);
+		}
 		try {
-			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-			String tableName = TemplateUtils.getTableName(template);
-			String sql = dialect.buildCreateSQL(fieldInfoMap, tableName);
-			if (log.isDebugEnabled()) {
-				log.debug("DDL: {}", sql);
-			}
 			jdbcTemplate.execute(sql);
 			return true;
 		} catch (DataAccessException e) {
-			log.error("模板创建表结构失败", e);
+			log.error("模板创建表结构失败, SQL: " + sql, e);
 			return false;
 		}
 	}
@@ -62,16 +59,13 @@ public class DdlService {
 	 * @param template 新模板对象
 	 * @param oldTemplate 老模板对象
 	 */
-	public boolean alterTable(Template template, Template oldTemplate) {
-		if (template == null || oldTemplate == null) {
+	public boolean alterTable(String tableName, Map<String, TemplateField> fieldInfoMap, Map<String, TemplateField> oldFieldInfoMap) {
+		if (StringUtils.isEmpty(tableName)) {
 			return false;
 		}
 		Map<String, String> rollbackMap = new HashMap<>();
 		Set<String> sqlSet = new HashSet<>();
 		try {
-			String tableName = TemplateUtils.getTableName(template);
-			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-			Map<String, TemplateField> oldFieldInfoMap = TemplateUtils.getFieldInfoMap(oldTemplate);
 			Set<String> commonFieldName = new HashSet<>(fieldInfoMap.keySet());
 			commonFieldName.retainAll(oldFieldInfoMap.keySet());
 			for (String fieldName : oldFieldInfoMap.keySet()) {
@@ -135,21 +129,57 @@ public class DdlService {
 	 * 
 	 * @param template 模板对象
 	 */
-	public boolean dropTable(Template template) {
-		if (template == null) {
+	public boolean dropTable(String tableName) {
+		if (StringUtils.isEmpty(tableName)) {
 			return false;
 		}
+		String sql = dialect.buildDropSQL(tableName);
+		if (log.isDebugEnabled()) {
+			log.debug("DDL: {}", sql);
+		}
 		try {
-			String sql = dialect.buildDropSQL(TemplateUtils.getTableName(template));
-			if (log.isDebugEnabled()) {
-				log.debug("DDL: {}", sql);
-			}
 			jdbcTemplate.execute(sql);
 			return true;
 		} catch (DataAccessException e) {
-			log.error("模板删除表结构失败", e);
+			log.error("模板删除表结构失败, SQL: " + sql, e);
 			return false;
 		}
 	}
-
+	
+	public boolean createIndex(String tableName, String columnName, boolean unique) {
+		if (StringUtils.isEmpty(tableName) || StringUtils.isEmpty(columnName)) {
+			return false;
+		}
+		String indexName = tableName + "_" + columnName + "_idx";
+		String sql = dialect.buildCreateIndexSQL(tableName, columnName, indexName, unique);
+		if (log.isDebugEnabled()) {
+			log.debug("DDL: {}", sql);
+		}
+		try {
+			jdbcTemplate.execute(sql);
+			return true;
+		} catch (DataAccessException e) {
+			log.error("模板创建表索引结构失败", e);
+			return false;
+		}
+	}
+	
+	public boolean dropIndex(String tableName, String columnName) {
+		if (StringUtils.isEmpty(tableName) || StringUtils.isEmpty(columnName)) {
+			return false;
+		}
+		String indexName = tableName + "_" + columnName + "_idx";
+		String sql = dialect.buildDropIndexSQL(tableName, indexName);
+		if (log.isDebugEnabled()) {
+			log.debug("DDL: {}", sql);
+		}
+		try {
+			jdbcTemplate.execute(sql);
+			return true;
+		} catch (DataAccessException e) {
+			log.error("模板删除表索引结构失败", e);
+			return false;
+		}
+	}
+	
 }

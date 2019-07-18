@@ -94,7 +94,7 @@ public class AgtmsController {
 	}
 	
 	@PostMapping("/{key}/count")
-	public Long count(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
+	public Long count(@PathVariable("key") String key, @RequestBody(required = false) Map<String, Object> body) {
 		if (SystemUtils.isBlank(key)) {
 			return null;
 		}
@@ -246,7 +246,7 @@ public class AgtmsController {
 	}
 	
 	@PostMapping("/{key}/delete")
-	public Long delete(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
+	public Long delete(@PathVariable("key") String key, @RequestBody(required = false) Map<String, Object> body) {
 		if (SystemUtils.isBlank(key)) {
 			return null;
 		}

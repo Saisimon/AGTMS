@@ -12,11 +12,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.mail.internet.MimeUtility;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,6 +47,8 @@ public final class SystemUtils extends StringUtils {
 	private static final Pattern HUMP_PATTERN = Pattern.compile("[A-Z]");
 	
 	private static final Map<Long, Future<?>> TASK_FUTURE_MAP = new ConcurrentHashMap<>();
+	
+	public static final Executor executor = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
 	
 	private SystemUtils() {}
 	
@@ -215,11 +218,8 @@ public final class SystemUtils extends StringUtils {
 					contentDisposition = "attachment; filename=\"" + newFilename + "\"";
 				} else if (userAgent.indexOf("opera") != -1) {
 					contentDisposition = "attachment; filename*=UTF-8''" + newFilename;
-				} else if (userAgent.indexOf("safari") != -1) {
+				} else if (userAgent.indexOf("safari") != -1 || userAgent.indexOf("applewebkit") != -1) {
 					contentDisposition = "attachment; filename=\"" + new String(filename.getBytes("UTF-8"), "ISO8859-1") + "\"";
-				} else if (userAgent.indexOf("applewebkit") != -1) {
-					newFilename = MimeUtility.encodeText(filename, "UTF8", "B");
-					contentDisposition = "attachment; filename=\"" + newFilename + "\"";
 				} else if (userAgent.indexOf("mozilla") != -1) {
 					contentDisposition = "attachment; filename*=UTF-8''" + newFilename;
 				}

@@ -279,7 +279,7 @@ public final class FileUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	public static ImageFormats imageFormat(String name) throws IOException {
+	public static ImageFormats imageFormat(String name) {
 		if (SystemUtils.isBlank(name)) {
 			return ImageFormats.UNKNOWN;
 		}

@@ -16,8 +16,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -124,8 +122,6 @@ public class ManagementMainController extends AbstractMainController {
 	private FileTypeSelection fileTypeSelection;
 	@Autowired
 	private SchedulingTaskExecutor taskThreadPool;
-	
-	private static final Executor executor = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
 	
 	@PostMapping("/grid")
 	public Result grid(@PathVariable("key") String key) {
@@ -404,7 +400,7 @@ public class ManagementMainController extends AbstractMainController {
 		if (!(key instanceof Template)) {
 			return false;
 		}
-		return count((Template) key, 500) == null;
+		return count((Template) key, 500L) == null;
 	}
 	
 	@Override
@@ -737,11 +733,14 @@ public class ManagementMainController extends AbstractMainController {
 	private Long count(Template template, long timeout) {
 		CompletableFuture<Long> future = CompletableFuture.supplyAsync(() -> {
 			return GenerateServiceFactory.build(template).count(null);
-		}, executor);
+		}, SystemUtils.executor);
 		try {
 			return future.get(timeout, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+		} catch (InterruptedException | TimeoutException e) {
 			return null;
+		} catch (ExecutionException e) {
+			log.error("Query count failed.", e);
+			return -1L;
 		}
 	}
 	

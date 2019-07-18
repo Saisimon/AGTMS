@@ -11,9 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.index.IndexDefinition;
-import org.springframework.data.mongodb.core.index.IndexInfo;
-import org.springframework.data.mongodb.core.index.IndexOperations;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -161,39 +158,6 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 		}
 	}
 
-	@Override
-	public Boolean existCollection() {
-		return mongoOperations.collectionExists(collectionName);
-	}
-
-	@Override
-	public void createCollection() {
-		mongoOperations.createCollection(collectionName);
-	}
-
-	@Override
-	public void dropCollection() {
-		mongoOperations.dropCollection(collectionName);
-	}
-
-	@Override
-	public List<IndexInfo> getIndexes() {
-		IndexOperations indexOperations = mongoOperations.indexOps(collectionName);
-		return indexOperations.getIndexInfo();
-	}
-
-	@Override
-	public String createIndex(IndexDefinition indexDefinition) {
-		IndexOperations indexOperations = mongoOperations.indexOps(collectionName);
-		return indexOperations.ensureIndex(indexDefinition);
-	}
-
-	@Override
-	public void dropIndex(String name) {
-		IndexOperations indexOperations = mongoOperations.indexOps(collectionName);
-		indexOperations.dropIndex(name);
-	}
-	
 	private Document getFieldMap(String... properties) {
 		Document fieldMap = new Document();
 		for (String property : properties) {

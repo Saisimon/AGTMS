@@ -30,7 +30,7 @@ public interface ApiService {
 	LinkedHashMap<?, String> selection(@PathVariable("key") String key, @RequestBody Map<String, Object> body);
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/agtms/{key}/count")
-	Long count(@PathVariable("key") String key, @RequestBody Map<String, Object> body);
+	Long count(@PathVariable("key") String key, @RequestBody(required = false) Map<String, Object> body);
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/agtms/{key}/findList")
 	List<Map<String, Object>> findList(@PathVariable("key") String key, @RequestBody Map<String, Object> body);
@@ -45,7 +45,7 @@ public interface ApiService {
 	public Map<String, Object> findById(@PathVariable("key") String key, @RequestParam(name="id") String id);
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/agtms/{key}/delete")
-	public Long delete(@PathVariable("key") String key, @RequestBody Map<String, Object> body);
+	public Long delete(@PathVariable("key") String key, @RequestBody(required = false) Map<String, Object> body);
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/agtms/{key}/deleteEntity")
 	public void deleteEntity(@PathVariable("key") String key, @RequestBody Map<String, Object> body);

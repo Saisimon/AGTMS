@@ -1,5 +1,6 @@
 package net.saisimon.agtms.core.util;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -357,6 +358,22 @@ public class SystemUtilsTest {
 		Assert.assertNull(SystemUtils.removeTaskFuture(null));
 		Assert.assertNull(SystemUtils.removeTaskFuture(1L));
 		SystemUtils.putTaskFuture(1L, null);
+	}
+	
+	@Test
+	public void testEncodeDownloadContentDisposition() throws UnsupportedEncodingException {
+		Assert.assertNull(SystemUtils.encodeDownloadContentDisposition(null, null));
+		String filename = "测试.xls";
+		String ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142";
+		Assert.assertEquals("attachment; filename=\""+ new String(filename.getBytes("UTF-8"), "ISO8859-1") +"\"", SystemUtils.encodeDownloadContentDisposition(ua, filename));
+		ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.1 Safari/605.1.15";
+		Assert.assertEquals("attachment; filename=\""+ new String(filename.getBytes("UTF-8"), "ISO8859-1") +"\"", SystemUtils.encodeDownloadContentDisposition(ua, filename));
+		ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:67.0) Gecko/20100101 Firefox/67.0";
+		Assert.assertEquals("attachment; filename*=UTF-8''%E6%B5%8B%E8%AF%95.xls", SystemUtils.encodeDownloadContentDisposition(ua, filename));
+		ua = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0)";
+		Assert.assertEquals("attachment; filename=\"%E6%B5%8B%E8%AF%95.xls\"", SystemUtils.encodeDownloadContentDisposition(ua, filename));
+		ua = "Opera/9.27 (Windows NT 5.2; U; zh-cn)";
+		Assert.assertEquals("attachment; filename*=UTF-8''%E6%B5%8B%E8%AF%95.xls", SystemUtils.encodeDownloadContentDisposition(ua, filename));
 	}
 	
 	@Setter

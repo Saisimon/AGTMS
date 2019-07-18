@@ -45,6 +45,7 @@ import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
+import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.service.TemplateService;
@@ -144,7 +145,7 @@ public class TemplateMainController extends AbstractMainController {
 		}
 		TemplateService templateService = TemplateServiceFactory.get();
 		templateService.delete(template);
-		templateService.dropTable(template);
+		GenerateServiceFactory.build(template).dropTable();
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -161,7 +162,7 @@ public class TemplateMainController extends AbstractMainController {
 			Template template = TemplateUtils.getTemplate(id, userId);
 			if (template != null) {
 				templateService.delete(template);
-				templateService.dropTable(template);
+				GenerateServiceFactory.build(template).dropTable();
 			}
 		}
 		return ResultUtils.simpleSuccess();

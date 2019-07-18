@@ -175,10 +175,6 @@ public class TaskMainController extends AbstractMainController {
 			TaskService taskService = TaskServiceFactory.get();
 			Long userId = AuthUtils.getUid();
 			Task task = taskService.getTask(id, userId);
-			if (task == null) {
-				SystemUtils.sendObject(response, ErrorMessage.Task.TASK_NOT_EXIST);
-				return;
-			}
 			if (task == null || !HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
 				response.sendError(HttpStatus.NOT_FOUND.value());
 				return;

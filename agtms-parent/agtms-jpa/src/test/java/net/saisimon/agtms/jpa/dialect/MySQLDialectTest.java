@@ -41,6 +41,19 @@ public class MySQLDialectTest extends DialectTest {
 	}
 	
 	@Test
+	public void buildCreateIndexSQLTest() {
+		Assert.assertNull(dialect.buildCreateIndexSQL(null, null, null, false));
+		Assert.assertEquals("CREATE INDEX test_column0field0_idx ON test (column0field0)", dialect.buildCreateIndexSQL(tableName(), columnName(), indexName(), false));
+		Assert.assertEquals("CREATE UNIQUE INDEX test_column0field0_idx ON test (column0field0)", dialect.buildCreateIndexSQL(tableName(), columnName(), indexName(), true));
+	}
+	
+	@Test
+	public void buildDropIndexSQLTest() {
+		Assert.assertNull(dialect.buildDropIndexSQL(null, null));
+		Assert.assertEquals("DROP INDEX test_column0field0_idx ON test", dialect.buildDropIndexSQL(tableName(), indexName()));
+	}
+	
+	@Test
 	public void wrapPageSQLTest() {
 		StringBuilder sql = null;
 		dialect.wrapPageSQL(sql, null);

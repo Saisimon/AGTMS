@@ -5,6 +5,12 @@ import java.util.List;
 
 import lombok.Data;
 
+/**
+ * 语句
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class Statement {
 	

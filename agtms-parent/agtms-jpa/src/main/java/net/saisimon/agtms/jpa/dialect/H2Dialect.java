@@ -12,6 +12,12 @@ import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Views;
 
+/**
+ * H2 数据库方言
+ * 
+ * @author saisimon
+ *
+ */
 public class H2Dialect implements Dialect {
 
 	@Override
@@ -26,7 +32,7 @@ public class H2Dialect implements Dialect {
 				String fieldname = entry.getKey();
 				TemplateField field = entry.getValue();
 				sql += fieldname;
-				sql += columnType(field) + ", ";
+				sql += " " + columnType(field) + ", ";
 			}
 		}
 		sql += Constant.OPERATORID + " BIGINT NOT NULL, ";
@@ -41,7 +47,7 @@ public class H2Dialect implements Dialect {
 		if (StringUtils.isEmpty(tableName)) {
 			return null;
 		}
-		return "DROP TABLE IF EXISTS " + tableName;
+		return String.format("DROP TABLE IF EXISTS %s", tableName);
 	}
 
 	@Override
@@ -49,7 +55,7 @@ public class H2Dialect implements Dialect {
 		if (field == null || StringUtils.isEmpty(tableName) || StringUtils.isEmpty(columnName)) {
 			return null;
 		}
-		return "ALTER TABLE " + tableName + " ADD " + columnName + columnType(field);
+		return String.format("ALTER TABLE %s ADD %s %s", tableName, columnName, columnType(field));
 	}
 
 	@Override
@@ -57,7 +63,7 @@ public class H2Dialect implements Dialect {
 		if (field == null || StringUtils.isEmpty(tableName) || StringUtils.isEmpty(columnName)) {
 			return null;
 		}
-		return "ALTER TABLE " + tableName + " MODIFY COLUMN " + columnName + columnType(field);
+		return String.format("ALTER TABLE %s MODIFY COLUMN %s %s", tableName, columnName, columnType(field));
 	}
 
 	@Override
@@ -65,7 +71,7 @@ public class H2Dialect implements Dialect {
 		if (StringUtils.isEmpty(tableName) || StringUtils.isEmpty(columnName)) {
 			return null;
 		}
-		return "ALTER TABLE " + tableName + " DROP COLUMN " + columnName;
+		return String.format("ALTER TABLE %s DROP COLUMN %s", tableName, columnName);
 	}
 	
 	@Override
@@ -75,30 +81,46 @@ public class H2Dialect implements Dialect {
 		}
 		String column = "";
 		if (Classes.LONG.getName().equals(field.getFieldType())) {
-			column = " BIGINT";
+			column = "BIGINT";
 		} else if (Classes.DOUBLE.getName().equals(field.getFieldType())) {
-			column = " DOUBLE";
+			column = "DOUBLE";
 		} else if (Classes.DATE.getName().equals(field.getFieldType())) {
-			column = " TIMESTAMP";
+			column = "TIMESTAMP";
 		} else if (Views.TEXTAREA.getView().equals(field.getViews())) {
-			column = " CLOB";
+			column = "CLOB";
 		} else if (Views.PHONE.getView().equals(field.getViews())) {
-			column = " VARCHAR(32)";
+			column = "VARCHAR(32)";
 		} else if (Views.EMAIL.getView().equals(field.getViews())) {
-			column = " VARCHAR(256)";
+			column = "VARCHAR(256)";
 		} else if (Views.LINK.getView().equals(field.getViews())) {
-			column = " VARCHAR(1024)";
+			column = "VARCHAR(1024)";
 		} else if (Views.ICON.getView().equals(field.getViews())) {
-			column = " VARCHAR(64)";
+			column = "VARCHAR(64)";
 		} else if (Views.IMAGE.getView().equals(field.getViews())) {
-			column = " VARCHAR(64)";
+			column = "VARCHAR(64)";
 		} else {
-			column = " VARCHAR(512)";
+			column = "VARCHAR(512)";
 		}
 		if (field.getRequired()) {
 			column += " NOT NULL";
 		}
 		return column;
+	}
+	
+	@Override
+	public String buildCreateIndexSQL(String tableName, String columnName, String indexName, boolean unique) {
+		if (StringUtils.isEmpty(tableName) || StringUtils.isEmpty(columnName) || StringUtils.isEmpty(indexName)) {
+			return null;
+		}
+		return String.format("CREATE%sINDEX IF NOT EXISTS %s ON %s (%s)", unique ? " UNIQUE " : " ", indexName, tableName, columnName);
+	}
+
+	@Override
+	public String buildDropIndexSQL(String tableName, String indexName) {
+		if (StringUtils.isEmpty(tableName) || StringUtils.isEmpty(indexName)) {
+			return null;
+		}
+		return String.format("DROP INDEX IF EXISTS %s", indexName);
 	}
 
 	@Override
