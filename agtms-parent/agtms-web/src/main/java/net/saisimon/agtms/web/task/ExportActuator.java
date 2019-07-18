@@ -3,7 +3,6 @@ package net.saisimon.agtms.web.task;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Component;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.entity.Task;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
@@ -32,7 +30,6 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
-import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.FileUtils;
@@ -75,21 +72,12 @@ public class ExportActuator implements Actuator<ExportParam> {
 	}
 
 	@Override
-	public String taskContent(Task task) {
-		if (task == null) {
-			return null;
-		}
-		ExportParam param = SystemUtils.fromJson(task.getTaskParam(), ExportParam.class);
+	public String taskContent(ExportParam param) {
 		return param == null ? null : param.getExportFileName();
 	}
 	
 	@Override
-	public void download(Task task, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		if (task == null || !HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		ExportParam param = SystemUtils.fromJson(task.getTaskParam(), ExportParam.class);
+	public void download(ExportParam param, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		if (param == null || param.getExportFileUUID() == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
@@ -99,7 +87,56 @@ public class ExportActuator implements Actuator<ExportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		download(param, request, response);
+		StringBuilder exportFilePath = new StringBuilder();
+		exportFilePath.append(filePath)
+			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
+			.append(File.separatorChar).append(param.getUserId())
+			.append(File.separatorChar).append(param.getExportFileUUID());
+		File file = null;
+		String filename = param.getExportFileName();
+		switch (param.getExportFileType()) {
+			case Constant.File.XLS:
+				response.setContentType("application/vnd.ms-excel");
+				exportFilePath.append(Constant.File.XLS_SUFFIX);
+				file = new File(exportFilePath.toString());
+				filename += Constant.File.XLS_SUFFIX;
+				break;
+			case Constant.File.CSV:
+				response.setContentType("application/CSV");
+				exportFilePath.append(Constant.File.CSV_SUFFIX);
+				file = new File(exportFilePath.toString());
+				filename += Constant.File.CSV_SUFFIX;
+				break;
+			case Constant.File.XLSX:
+				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+				exportFilePath.append(Constant.File.XLSX_SUFFIX);
+				file = new File(exportFilePath.toString());
+				filename += Constant.File.XLSX_SUFFIX;
+				break;
+			default:
+				break;
+		}
+		if (file == null || !file.exists()) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(request.getHeader("user-agent"), filename));
+			IOUtils.copy(in, response.getOutputStream());
+			response.flushBuffer();
+		}
+	}
+	
+	@Override
+	public void delete(ExportParam param) throws Exception {
+		if (param == null) {
+			return;
+		}
+		File file = createExportFile(param);
+		if (file == null || !file.exists()) {
+			return;
+		}
+		file.delete();
 	}
 
 	@Override
@@ -182,48 +219,6 @@ public class ExportActuator implements Actuator<ExportParam> {
 				break;
 			default:
 				break;
-		}
-	}
-	
-	private void download(ExportParam param, HttpServletRequest request, HttpServletResponse response)
-			throws IOException, FileNotFoundException {
-		StringBuilder exportFilePath = new StringBuilder();
-		exportFilePath.append(filePath)
-			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
-			.append(File.separatorChar).append(param.getUserId())
-			.append(File.separatorChar).append(param.getExportFileUUID());
-		File file = null;
-		String filename = param.getExportFileName();
-		switch (param.getExportFileType()) {
-			case Constant.File.XLS:
-				response.setContentType("application/vnd.ms-excel");
-				exportFilePath.append(Constant.File.XLS_SUFFIX);
-				file = new File(exportFilePath.toString());
-				filename += Constant.File.XLS_SUFFIX;
-				break;
-			case Constant.File.CSV:
-				response.setContentType("application/CSV");
-				exportFilePath.append(Constant.File.CSV_SUFFIX);
-				file = new File(exportFilePath.toString());
-				filename += Constant.File.CSV_SUFFIX;
-				break;
-			case Constant.File.XLSX:
-				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				exportFilePath.append(Constant.File.XLSX_SUFFIX);
-				file = new File(exportFilePath.toString());
-				filename += Constant.File.XLSX_SUFFIX;
-				break;
-			default:
-				break;
-		}
-		if (file == null || !file.exists()) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(request.getHeader("user-agent"), filename));
-			IOUtils.copy(in, response.getOutputStream());
-			response.flushBuffer();
 		}
 	}
 	

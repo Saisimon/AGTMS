@@ -688,11 +688,10 @@ public class ManagementMainController extends AbstractMainController {
 					taskService.saveOrUpdate(task);
 					return;
 				}
-				Class<P> paramClass = actuator.getParamClass();
-				P param = SystemUtils.fromJson(task.getTaskParam(), paramClass);
 				if (Thread.currentThread().isInterrupted()) {
 					throw new InterruptedException();
 				}
+				P param = SystemUtils.fromJson(task.getTaskParam(), actuator.getParamClass());
 				Result result = actuator.execute(param);
 				if (Thread.currentThread().isInterrupted()) {
 					throw new InterruptedException();

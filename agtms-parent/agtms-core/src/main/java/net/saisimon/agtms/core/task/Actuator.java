@@ -5,7 +5,6 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.saisimon.agtms.core.domain.entity.Task;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -31,19 +30,28 @@ public interface Actuator<P> {
 	/**
 	 * 构建任务内容说明
 	 * 
-	 * @param task 任务
+	 * @param param 输入参数
 	 * @return 任务内容
 	 */
-	String taskContent(Task task);
+	String taskContent(P param);
 	
 	/**
 	 * 任务结果输出
 	 * 
-	 * @param task 任务
+	 * @param param 输入参数
 	 * @param request http 请求
 	 * @param response http 响应
+	 * @throws IOException IO 异常
 	 */
-	void download(Task task, HttpServletRequest request, HttpServletResponse response) throws IOException;
+	void download(P param, HttpServletRequest request, HttpServletResponse response) throws IOException;
+	
+	/**
+	 * 删除任务相关的资源
+	 * 
+	 * @param param 输入参数
+	 * @throws Exception 删除异常
+	 */
+	void delete(P param) throws Exception;
 	
 	/**
 	 * 获取执行器标志

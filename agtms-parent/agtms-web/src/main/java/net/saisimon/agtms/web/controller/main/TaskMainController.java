@@ -110,7 +110,7 @@ public class TaskMainController extends AbstractMainController {
 	
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
-	public Result list(@RequestBody Map<String, Object> body) {
+	public <P> Result list(@RequestBody Map<String, Object> body) {
 		Map<String, Object> filterMap = get(body, FILTER);
 		Map<String, Object> pageableMap = get(body, PAGEABLE);
 		FilterRequest filter = FilterRequest.build(filterMap, TASK_FILTER_FIELDS);
@@ -135,8 +135,10 @@ public class TaskMainController extends AbstractMainController {
 		for (Task task : list) {
 			TaskInfo result = new TaskInfo();
 			result.setId(task.getId().toString());
-			Actuator<?> actuator = ActuatorFactory.get(task.getTaskType());
-			result.setTaskContent(actuator.taskContent(task));
+			@SuppressWarnings("unchecked")
+			Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
+			P param = SystemUtils.fromJson(task.getTaskParam(), actuator.getParamClass());
+			result.setTaskContent(actuator.taskContent(param));
 			result.setTaskType(taskTypeMap.get(task.getTaskType().toString()));
 			result.setTaskTime(task.getTaskTime());
 			result.setHandleStatus(handleStatusMap.get(task.getHandleStatus()));
@@ -170,7 +172,7 @@ public class TaskMainController extends AbstractMainController {
 	@Operate(type=OperateTypes.QUERY, value="download")
 	@Transactional(rollbackOn = Exception.class)
 	@GetMapping("/download")
-	public void download(@RequestParam(name = "id") Long id) {
+	public <P> void download(@RequestParam(name = "id") Long id) {
 		try {
 			TaskService taskService = TaskServiceFactory.get();
 			Long userId = AuthUtils.getUid();
@@ -179,12 +181,14 @@ public class TaskMainController extends AbstractMainController {
 				response.sendError(HttpStatus.NOT_FOUND.value());
 				return;
 			}
-			Actuator<?> actuator = ActuatorFactory.get(task.getTaskType());
+			@SuppressWarnings("unchecked")
+			Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
 			if (actuator == null) {
 				response.sendError(HttpStatus.NOT_FOUND.value());
 				return;
 			}
-			actuator.download(task, request, response);
+			P param = SystemUtils.fromJson(task.getTaskParam(), actuator.getParamClass());
+			actuator.download(param, request, response);
 		} catch (IOException e) {
 			log.error("响应流异常", e);
 		}
@@ -222,9 +226,10 @@ public class TaskMainController extends AbstractMainController {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
-		if (HandleStatuses.PROCESSING.getStatus().equals(task.getHandleStatus()) && !cancelTask(task)) {
-			return ErrorMessage.Task.TASK_CANCEL_FAILED;
+		if (HandleStatuses.PROCESSING.getStatus().equals(task.getHandleStatus())) {
+			cancelTask(task);
 		}
+		deleteTaskFile(task);
 		taskService.delete(task);
 		return ResultUtils.simpleSuccess();
 	}
@@ -240,9 +245,14 @@ public class TaskMainController extends AbstractMainController {
 		TaskService taskService = TaskServiceFactory.get();
 		for (Long id : ids) {
 			Task task = taskService.getTask(id, userId);
-			if (task != null) {
-				taskService.delete(task);
+			if (task == null) {
+				continue;
 			}
+			if (HandleStatuses.PROCESSING.getStatus().equals(task.getHandleStatus())) {
+				cancelTask(task);
+			}
+			deleteTaskFile(task);
+			taskService.delete(task);
 		}
 		return ResultUtils.simpleSuccess();
 	}
@@ -330,6 +340,23 @@ public class TaskMainController extends AbstractMainController {
 		return FUNCTIONS;
 	}
 	
+	private <P> void deleteTaskFile(Task task) {
+		if (task == null) {
+			return;
+		}
+		@SuppressWarnings("unchecked")
+		Actuator<P> actuator = (Actuator<P>) ActuatorFactory.get(task.getTaskType());
+		if (actuator == null) {
+			return;
+		}
+		P param = SystemUtils.fromJson(task.getTaskParam(), actuator.getParamClass());
+		try {
+			actuator.delete(param);
+		} catch (Exception e) {
+			log.error("删除任务相关资源失败", e);
+		}
+	}
+	
 	// TODO
 	private boolean cancelTask(Task task) {
 		if (task == null || SystemUtils.isBlank(task.getIp()) || task.getPort() == null) {
@@ -340,6 +367,7 @@ public class TaskMainController extends AbstractMainController {
 			restTemplate.getForObject(url, Void.class);
 			return true;
 		} catch (RestClientException e) {
+			log.error("取消任务失败", e);
 			return false;
 		}
 	}

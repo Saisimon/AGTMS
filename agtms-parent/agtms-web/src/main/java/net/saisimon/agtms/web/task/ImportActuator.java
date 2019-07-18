@@ -3,7 +3,6 @@ package net.saisimon.agtms.web.task;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -28,13 +27,11 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
-import net.saisimon.agtms.core.domain.entity.Task;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
-import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
@@ -83,21 +80,12 @@ public class ImportActuator implements Actuator<ImportParam> {
 	}
 
 	@Override
-	public String taskContent(Task task) {
-		if (task == null) {
-			return null;
-		}
-		ImportParam param = SystemUtils.fromJson(task.getTaskParam(), ImportParam.class);
+	public String taskContent(ImportParam param) {
 		return param == null ? null : param.getImportFileName();
 	}
 	
 	@Override
-	public void download(Task task, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		if (task == null || !HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		ImportParam param = SystemUtils.fromJson(task.getTaskParam(), ImportParam.class);
+	public void download(ImportParam param, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		if (param == null || param.getImportFileUUID() == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
@@ -107,7 +95,56 @@ public class ImportActuator implements Actuator<ImportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		download(param, request, response);
+		StringBuilder importFilePath = new StringBuilder();
+		importFilePath.append(filePath)
+			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
+			.append(File.separatorChar).append(param.getUserId())
+			.append(File.separatorChar).append(param.getImportFileUUID());
+		File file = null;
+		String filename = param.getImportFileName();
+		switch (param.getImportFileType()) {
+			case Constant.File.XLS:
+				response.setContentType("application/vnd.ms-excel");
+				importFilePath.append(Constant.File.XLS_SUFFIX);
+				file = new File(importFilePath.toString());
+				filename += Constant.File.XLS_SUFFIX;
+				break;
+			case Constant.File.CSV:
+				response.setContentType("application/CSV");
+				importFilePath.append(Constant.File.CSV_SUFFIX);
+				file = new File(importFilePath.toString());
+				filename += Constant.File.CSV_SUFFIX;
+				break;
+			case Constant.File.XLSX:
+				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+				importFilePath.append(Constant.File.XLSX_SUFFIX);
+				file = new File(importFilePath.toString());
+				filename += Constant.File.XLSX_SUFFIX;
+				break;
+			default:
+				break;
+		}
+		if (file == null || !file.exists()) {
+			response.sendError(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(request.getHeader("user-agent"), filename));
+			IOUtils.copy(in, response.getOutputStream());
+			response.flushBuffer();
+		}
+	}
+	
+	@Override
+	public void delete(ImportParam param) throws Exception {
+		if (param == null) {
+			return;
+		}
+		File file = createImportFile(param);
+		if (file == null || !file.exists()) {
+			return;
+		}
+		file.delete();
 	}
 
 	@Override
@@ -259,47 +296,6 @@ public class ImportActuator implements Actuator<ImportParam> {
 			}
 		}
 		return datas;
-	}
-	
-	private void download(ImportParam param, HttpServletRequest request, HttpServletResponse response) throws IOException, FileNotFoundException {
-		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(filePath)
-			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
-			.append(File.separatorChar).append(param.getUserId())
-			.append(File.separatorChar).append(param.getImportFileUUID());
-		File file = null;
-		String filename = param.getImportFileName();
-		switch (param.getImportFileType()) {
-			case Constant.File.XLS:
-				response.setContentType("application/vnd.ms-excel");
-				importFilePath.append(Constant.File.XLS_SUFFIX);
-				file = new File(importFilePath.toString());
-				filename += Constant.File.XLS_SUFFIX;
-				break;
-			case Constant.File.CSV:
-				response.setContentType("application/CSV");
-				importFilePath.append(Constant.File.CSV_SUFFIX);
-				file = new File(importFilePath.toString());
-				filename += Constant.File.CSV_SUFFIX;
-				break;
-			case Constant.File.XLSX:
-				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				importFilePath.append(Constant.File.XLSX_SUFFIX);
-				file = new File(importFilePath.toString());
-				filename += Constant.File.XLSX_SUFFIX;
-				break;
-			default:
-				break;
-		}
-		if (file == null || !file.exists()) {
-			response.sendError(HttpStatus.NOT_FOUND.value());
-			return;
-		}
-		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(request.getHeader("user-agent"), filename));
-			IOUtils.copy(in, response.getOutputStream());
-			response.flushBuffer();
-		}
 	}
 	
 	private String getMessage(String code, Object... args) {
