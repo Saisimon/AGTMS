@@ -146,6 +146,7 @@ public class TemplateMainController extends AbstractMainController {
 		TemplateService templateService = TemplateServiceFactory.get();
 		templateService.delete(template);
 		GenerateServiceFactory.build(template).dropTable();
+		TemplateUtils.removeDomainClass(template);
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -163,6 +164,7 @@ public class TemplateMainController extends AbstractMainController {
 			if (template != null) {
 				templateService.delete(template);
 				GenerateServiceFactory.build(template).dropTable();
+				TemplateUtils.removeDomainClass(template);
 			}
 		}
 		return ResultUtils.simpleSuccess();

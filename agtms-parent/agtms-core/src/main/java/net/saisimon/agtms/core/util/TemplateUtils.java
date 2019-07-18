@@ -260,7 +260,7 @@ public class TemplateUtils {
 	/**
 	 * 根据指定模板获取自定义对象类型
 	 * 
-	 * @param template模板对象
+	 * @param template 模板对象
 	 * @return 自定义对象类型
 	 * @throws GenerateException 生成自定义对象类型异常
 	 */
@@ -274,6 +274,23 @@ public class TemplateUtils {
 		}
 		String generateClassName = DomainGenerater.buildGenerateName(sign);
 		return DomainGenerater.generate(getNamespace(template), buildFieldMap(template), generateClassName);
+	}
+	
+	/**
+	 * 删除自定义对象类型
+	 * 
+	 * @param template 模板对象
+	 */
+	public static void removeDomainClass(Template template) {
+		if (template == null) {
+			return;
+		}
+		String sign = template.sign();
+		if (sign == null) {
+			return;
+		}
+		String generateClassName = DomainGenerater.buildGenerateName(sign);
+		DomainGenerater.removeDomainClass(getNamespace(template), generateClassName);
 	}
 	
 	/**
