@@ -31,6 +31,7 @@ import net.saisimon.agtms.core.domain.grid.SelectionGrid;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.dto.SimpleResult;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.SelectTypes;
@@ -44,6 +45,7 @@ import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.BaseController;
 import net.saisimon.agtms.web.dto.req.SelectionParam;
 import net.saisimon.agtms.web.dto.req.SelectionParam.SelectionOptionParam;
+import net.saisimon.agtms.web.dto.req.SelectionParam.SelectionTemplateParam;
 import net.saisimon.agtms.web.selection.SelectTypeSelection;
 import net.saisimon.agtms.web.selection.TemplateSelection;
 
@@ -164,20 +166,34 @@ public class SelectionEditController extends BaseController {
 		if (body.getTitle().length() > 32) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("title"), 32);
 		}
-		SelectionService selectionService = SelectionServiceFactory.get();
 		Long userId = AuthUtils.getUid();
-		Long id = body.getId();
+		Result buildResult = buildSelection(body, userId);
+		if (!ResultUtils.isSuccess(buildResult)) {
+			return buildResult;
+		}
+		@SuppressWarnings("unchecked")
+		Selection selection = ((SimpleResult<Selection>) buildResult).getData();
+		SelectTypes type = getSelectType(selection);
+		if (type == SelectTypes.OPTION) {
+			return saveSelectionOptions(body.getOptions(), selection, userId);
+		} else if (type == SelectTypes.TEMPLATE) {
+			return saveSelectionTemplate(body.getTemplate(), selection, userId);
+		} else {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+	}
+
+	private Result buildSelection(SelectionParam body, Long userId) {
+		SelectionService selectionService = SelectionServiceFactory.get();
 		Date time = new Date();
 		Selection selection = null;
-		if (null != id && id > 0) {
-			selection = SelectionUtils.getSelection(id, userId);
+		if (null != body.getId() && body.getId() > 0) {
+			selection = SelectionUtils.getSelection(body.getId(), userId);
 			if (selection == null) {
 				return ErrorMessage.Selection.SELECTION_NOT_EXIST;
 			}
-			if (!body.getTitle().equals(selection.getTitle())) {
-				if (selectionService.exists(body.getTitle(), userId)) {
-					return ErrorMessage.Selection.SELECTION_ALREADY_EXISTS;
-				}
+			if (!body.getTitle().equals(selection.getTitle()) && selectionService.exists(body.getTitle(), userId)) {
+				return ErrorMessage.Selection.SELECTION_ALREADY_EXISTS;
 			}
 			selection.setUpdateTime(time);
 			selection.setTitle(body.getTitle());
@@ -192,50 +208,53 @@ public class SelectionEditController extends BaseController {
 			selection.setTitle(body.getTitle());
 			selection.setType(body.getType());
 		}
-		SelectTypes type = getSelectType(selection);
-		if (type == null) {
+		return ResultUtils.simpleSuccess(selection);
+	}
+
+	private Result saveSelectionOptions(List<SelectionOptionParam> body, Selection selection, Long userId) {
+		if (CollectionUtils.isEmpty(body)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		if (type == SelectTypes.OPTION) {
-			if (CollectionUtils.isEmpty(body.getOptions())) {
-				return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		SelectionService selectionService = SelectionServiceFactory.get();
+		selectionService.saveOrUpdate(selection);
+		selectionService.removeSelectionOptions(selection.getId(), userId);
+		List<SelectionOption> selectionOptions = new ArrayList<>(body.size());
+		Set<String> values = new HashSet<>();
+		Set<String> texts = new HashSet<>();
+		for (SelectionOptionParam param : body) {
+			if (values.contains(param.getValue()) || texts.contains(param.getText())) {
+				continue;
+			} else {
+				values.add(param.getValue());
+				texts.add(param.getText());
 			}
-			selectionService.saveOrUpdate(selection);
-			selectionService.removeSelectionOptions(selection.getId(), userId);
-			List<SelectionOption> selectionOptions = new ArrayList<>(body.getOptions().size());
-			Set<String> values = new HashSet<>();
-			Set<String> texts = new HashSet<>();
-			for (SelectionOptionParam param : body.getOptions()) {
-				if (values.contains(param.getValue()) || texts.contains(param.getText())) {
-					continue;
-				} else {
-					values.add(param.getValue());
-					texts.add(param.getText());
-				}
-				SelectionOption selectionOption = new SelectionOption();
-				selectionOption.setText(param.getText());
-				selectionOption.setValue(param.getValue());
-				selectionOption.setSelectionId(selection.getId());
-				selectionOptions.add(selectionOption);
-			}
-			selectionService.saveSelectionOptions(selectionOptions, userId);
-		} else if (type == SelectTypes.TEMPLATE) {
-			if (body.getTemplate() == null) {
-				return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
-			}
-			Template template = TemplateUtils.getTemplate(body.getTemplate().getId(), userId);
-			if (template == null) {
-				return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
-			}
-			selectionService.saveOrUpdate(selection);
-			selectionService.removeSelectionTemplate(selection.getId(), userId);
-			SelectionTemplate selectionTemplate = new SelectionTemplate();
-			selectionTemplate.setTemplateId(body.getTemplate().getId());
-			selectionTemplate.setTextFieldName(body.getTemplate().getText());
-			selectionTemplate.setValueFieldName(body.getTemplate().getValue());
-			selectionTemplate.setSelectionId(selection.getId());
-			selectionService.saveSelectionTemplate(selectionTemplate, userId);
+			SelectionOption selectionOption = new SelectionOption();
+			selectionOption.setText(param.getText());
+			selectionOption.setValue(param.getValue());
+			selectionOption.setSelectionId(selection.getId());
+			selectionOptions.add(selectionOption);
 		}
+		selectionService.saveSelectionOptions(selectionOptions, userId);
+		return ResultUtils.simpleSuccess();
+	}
+
+	private Result saveSelectionTemplate(SelectionTemplateParam body, Selection selection, Long userId) {
+		if (body == null) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		Template template = TemplateUtils.getTemplate(body.getId(), userId);
+		if (template == null) {
+			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
+		}
+		SelectionService selectionService = SelectionServiceFactory.get();
+		selectionService.saveOrUpdate(selection);
+		selectionService.removeSelectionTemplate(selection.getId(), userId);
+		SelectionTemplate selectionTemplate = new SelectionTemplate();
+		selectionTemplate.setTemplateId(body.getId());
+		selectionTemplate.setTextFieldName(body.getText());
+		selectionTemplate.setValueFieldName(body.getValue());
+		selectionTemplate.setSelectionId(selection.getId());
+		selectionService.saveSelectionTemplate(selectionTemplate, userId);
 		return ResultUtils.simpleSuccess();
 	}
 

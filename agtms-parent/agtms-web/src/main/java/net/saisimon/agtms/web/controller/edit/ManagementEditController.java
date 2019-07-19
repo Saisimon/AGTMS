@@ -85,54 +85,25 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
 		Object idObj = body.get(Constant.ID);
-		if (idObj == null && !TemplateUtils.hasFunction(template, Functions.CREATE)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
-		} else if (idObj != null && !TemplateUtils.hasFunction(template, Functions.EDIT)) {
+		Long id = null;
+		if (idObj != null) {
+			id = Long.valueOf(idObj.toString());
+		}
+		if (checkFunction(template, id)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		try {
 			Domain domain = GenerateServiceFactory.build(template).newGenerate();
-			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-			for (Map.Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
-				String fieldName = entry.getKey();
-				TemplateField field = entry.getValue();
-				Object fieldValue = body.get(fieldName);
-				fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
-				int size = TemplateUtils.fieldSizeOverflow(field, fieldValue);
-				if (size > 0) {
-					return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), size);
-				}
-				if (SystemUtils.isEmpty(fieldValue)) {
-					if (field.getRequired()) {
-						return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
-					}
-					if (SystemUtils.isNotBlank(field.getDefaultValue())) {
-						fieldValue = field.getDefaultValue();
-						fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
-					}
-				}
-				if (fieldValue != null) {
-					domain.setField(fieldName, fieldValue, fieldValue.getClass());
-				}
+			Result result = populate(domain, template, body);
+			if (!ResultUtils.isSuccess(result)) {
+				return result;
 			}
-			if (idObj == null) {
-				if (GenerateServiceFactory.build(template).checkExist(domain, userId)) {
-					return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
-				}
-				GenerateServiceFactory.build(template).saveDomain(domain, userId);
+			if (id == null) {
+				result = saveDomain(domain, template, userId);
 			} else {
-				Long id = Long.valueOf(idObj.toString());
-				Domain oldDomain = GenerateServiceFactory.build(template).findById(id, userId);
-				if (oldDomain == null) {
-					return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
-				}
-				domain.setField(Constant.ID, id, Long.class);
-				if (GenerateServiceFactory.build(template).checkExist(domain, userId)) {
-					return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
-				}
-				GenerateServiceFactory.build(template).updateDomain(domain, oldDomain, userId);
+				result = updateDomain(domain, template, id, userId);
 			}
-			return ResultUtils.simpleSuccess();
+			return result;
 		} catch (GenerateException e) {
 			log.error("Domain save failed", e);
 			return ErrorMessage.Domain.DOMAIN_SAVE_FAILED;
@@ -170,8 +141,8 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 		if (!(key instanceof Template)) {
 			return null;
 		}
-		Template template = (Template) key;
 		Long userId = AuthUtils.getUid();
+		Template template = (Template) key;
 		List<Field<?>> fields = new ArrayList<>();
 		if (CollectionUtils.isEmpty(template.getColumns())) {
 			return null;
@@ -181,48 +152,113 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 				continue;
 			}
 			for (TemplateField templateField : templateColumn.getFields()) {
-				String fieldName = templateColumn.getColumnName() + templateField.getFieldName();
-				Field<Object> field = Field.<Object>builder()
-						.name(fieldName)
-						.text(templateField.getFieldTitle())
-						.type(templateField.getFieldType())
-						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
-						.views(templateField.getViews())
-						.searchable(true)
-						.build();
-				if (templateField.getRequired()) {
-					field.setRequired(true);
-				}
-				Object value = domain == null ? null : domain.getField(fieldName);
-				if (Views.SELECTION.getView().equals(templateField.getViews())) {
-					String selectionSign = templateField.selectionSign(template.getService());
-					field.setSign(selectionSign);
-					List<Option<Object>> selectionOptions = SelectionUtils.getSelectionOptions(selectionSign, null, userId);
-					List<Object> options = new ArrayList<>();
-					for (Option<Object> option : selectionOptions) {
-						options.add(option);
-					}
-					field.setOptions(options);
-					if (value != null) {
-						Set<String> values = new HashSet<>();
-						values.add(value.toString());
-						Map<String, String> textMap = SelectionUtils.getSelectionValueTextMap(selectionSign, userId, values);
-						String text = textMap.get(value.toString());
-						if (text != null) {
-							value = new Option<>(value, text);
-						}
-					}
-				}
-				if (value == null) {
-					field.setValue(templateField.getDefaultValue());
-				} else {
-					field.setValue(value);
-				}
-				fields.add(field);
+				fields.add(buildField(domain, templateColumn, templateField, template.getService(), userId));
 			}
 		}
 		Collections.sort(fields, Field.COMPARATOR);
 		return fields;
+	}
+	
+	private Field<Object> buildField(Domain domain, TemplateColumn templateColumn, TemplateField templateField, String service, Long userId) {
+		String fieldName = templateColumn.getColumnName() + templateField.getFieldName();
+		Field<Object> field = Field.<Object>builder()
+				.name(fieldName)
+				.text(templateField.getFieldTitle())
+				.type(templateField.getFieldType())
+				.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
+				.views(templateField.getViews())
+				.searchable(true)
+				.build();
+		field.setRequired(templateField.getRequired());
+		Object value = domain == null ? null : domain.getField(fieldName);
+		if (Views.SELECTION.getView().equals(templateField.getViews())) {
+			String selectionSign = templateField.selectionSign(service);
+			field.setSign(selectionSign);
+			field.setOptions(getFieldOptions(selectionSign, userId));
+			value = getFieldOptionValue(value, selectionSign, userId);
+		}
+		field.setValue(value == null ? templateField.getDefaultValue() : value);
+		return field;
+	}
+
+	private List<Object> getFieldOptions(String selectionSign, Long userId) {
+		List<Option<Object>> selectionOptions = SelectionUtils.getSelectionOptions(selectionSign, null, userId);
+		List<Object> options = new ArrayList<>();
+		for (Option<Object> option : selectionOptions) {
+			options.add(option);
+		}
+		return options;
+	}
+	
+	private Object getFieldOptionValue(Object value, String selectionSign, Long userId) {
+		if (value == null) {
+			return value;
+		}
+		Set<String> values = new HashSet<>();
+		values.add(value.toString());
+		Map<String, String> textMap = SelectionUtils.getSelectionValueTextMap(selectionSign, values, userId);
+		String text = textMap.get(value.toString());
+		if (text != null) {
+			return new Option<>(value, text);
+		}
+		return value;
+	}
+	
+	private boolean checkFunction(Template template, Long id) {
+		if (id == null && !TemplateUtils.hasFunction(template, Functions.CREATE)) {
+			return false;
+		} else if (id != null && !TemplateUtils.hasFunction(template, Functions.EDIT)) {
+			return false;
+		}
+		return true;
+	}
+	
+	private Result populate(Domain domain, Template template, Map<String, Object> body) {
+		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
+		for (Map.Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
+			String fieldName = entry.getKey();
+			TemplateField field = entry.getValue();
+			Object fieldValue = body.get(fieldName);
+			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
+			int size = TemplateUtils.fieldSizeOverflow(field, fieldValue);
+			if (size > 0) {
+				return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), size);
+			}
+			if (SystemUtils.isEmpty(fieldValue)) {
+				if (field.getRequired()) {
+					return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+				}
+				if (SystemUtils.isNotBlank(field.getDefaultValue())) {
+					fieldValue = field.getDefaultValue();
+					fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
+				}
+			}
+			if (fieldValue != null) {
+				domain.setField(fieldName, fieldValue, fieldValue.getClass());
+			}
+		}
+		return ResultUtils.simpleSuccess();
+	}
+	
+	private Result saveDomain(Domain domain, Template template, Long userId) {
+		if (GenerateServiceFactory.build(template).checkExist(domain, userId)) {
+			return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
+		}
+		domain = GenerateServiceFactory.build(template).saveDomain(domain, userId);
+		return domain == null ? ErrorMessage.Domain.DOMAIN_SAVE_FAILED : ResultUtils.simpleSuccess();
+	}
+	
+	private Result updateDomain(Domain domain, Template template, Long id, Long userId) {
+		Domain oldDomain = GenerateServiceFactory.build(template).findById(id, userId);
+		if (oldDomain == null) {
+			return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
+		}
+		domain.setField(Constant.ID, id, Long.class);
+		if (GenerateServiceFactory.build(template).checkExist(domain, userId)) {
+			return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
+		}
+		domain = GenerateServiceFactory.build(template).updateDomain(domain, oldDomain, userId);
+		return domain == null ? ErrorMessage.Domain.DOMAIN_SAVE_FAILED : ResultUtils.simpleSuccess();
 	}
 	
 }

@@ -75,53 +75,76 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 			return null;
 		}
 		if (obj instanceof List) {
-			List<Object> list = (List<Object>) obj;
-			ListIterator<Object> it = list.listIterator();
-			while (it.hasNext()) {
-				Object sub = it.next();
-				sub = international(sub);
-				it.set(sub);
-			}
-			return list;
+			return internationalList((List<Object>) obj);
 		}
 		if (obj instanceof Set) {
-			Set<Object> set = (Set<Object>) obj;
-			try {
-				Set<Object> newSet = set.getClass().newInstance();
-				for (Object sub : set) {
-					newSet.add(international(sub));
-				}
-				return newSet;
-			} catch (InstantiationException | IllegalAccessException e) {
-				log.error("create new set failed.", e);
-				return set;
-			}
+			return internationalSet((Set<Object>) obj);
 		}
 		if (obj.getClass().isArray()) {
-			int len = Array.getLength(obj);
-			for (int i = 0; i < len; i++) {
-				Object sub = Array.get(obj, i);
-				sub = international(sub);
-				Array.set(obj, i, sub);
-			}
-			return obj;
+			return internationalArray(obj);
 		}
 		if (obj instanceof Map) {
-			Map<Object, Object> map = (Map<Object, Object>) obj;
-			for (Object key : map.keySet()) {
-				Object val = map.get(key);
-				val = international(val);
-				map.put(key, val);
-			}
-			return map;
+			return internationalMap((Map<Object, Object>) obj);
 		}
 		if (BeanUtils.isSimpleProperty(obj.getClass())) {
-			if (obj instanceof String) {
-				String code = (String) obj;
-				return messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
-			}
-			return obj;
+			return internationalSimpleProperty(obj);
 		}
+		internationalOther(obj);
+		return obj;
+	}
+	
+	private Object internationalList(List<Object> list) {
+		ListIterator<Object> it = list.listIterator();
+		while (it.hasNext()) {
+			Object sub = it.next();
+			sub = international(sub);
+			it.set(sub);
+		}
+		return list;
+	}
+	
+	private Object internationalSet(Set<Object> set) {
+		try {
+			@SuppressWarnings("unchecked")
+			Set<Object> newSet = set.getClass().newInstance();
+			for (Object sub : set) {
+				newSet.add(international(sub));
+			}
+			return newSet;
+		} catch (InstantiationException | IllegalAccessException e) {
+			log.error("create new set failed.", e);
+			return set;
+		}
+	}
+	
+	private Object internationalArray(Object obj) {
+		int len = Array.getLength(obj);
+		for (int i = 0; i < len; i++) {
+			Object sub = Array.get(obj, i);
+			sub = international(sub);
+			Array.set(obj, i, sub);
+		}
+		return obj;
+	}
+	
+	private Object internationalMap(Map<Object, Object> map) {
+		for (Object key : map.keySet()) {
+			Object val = map.get(key);
+			val = international(val);
+			map.put(key, val);
+		}
+		return map;
+	}
+	
+	private Object internationalSimpleProperty(Object obj) {
+		if (obj instanceof String) {
+			String code = (String) obj;
+			return messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
+		}
+		return obj;
+	}
+
+	private void internationalOther(Object obj) {
 		ReflectionUtils.doWithFields(obj.getClass(), field -> {
 			field.setAccessible(true);
 			Object property = field.get(obj);
@@ -133,7 +156,6 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 			int mod = field.getModifiers();
 			return Modifier.isPrivate(mod) && !Modifier.isFinal(mod) && field.getAnnotation(International.class) != null;
 		});
-		return obj;
 	}
 
 }

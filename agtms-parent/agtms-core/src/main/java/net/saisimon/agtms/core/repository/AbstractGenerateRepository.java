@@ -1,6 +1,5 @@
 package net.saisimon.agtms.core.repository;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -71,41 +70,18 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 		if (CollectionUtils.isEmpty(map)) {
 			return null;
 		}
+		Long id = getId(map);
+		if (id == null) {
+			return null;
+		}
 		Domain domain = newGenerate();
-		Field idField = ReflectionUtils.findField(domain.getClass(), Constant.ID);
-		if (idField == null) {
-			return null;
-		}
-		Object idObj = map.remove("_id");
-		if (idObj == null) {
-			idObj = map.remove(Constant.ID);
-		}
-		if (idObj == null) {
-			return null;
-		}
-		domain.setField(Constant.ID, Long.valueOf(idObj.toString()), Long.class);
+		domain.setField(Constant.ID, id, Long.class);
 		Map<String, Object> caseInsensitiveMap = new CaseInsensitiveMap<>(map);
 		ReflectionUtils.doWithLocalFields(domain.getClass(), field -> {
 			String fieldName = field.getName();
 			Object value = caseInsensitiveMap.get(fieldName);
 			if (value != null) {
-				if (value instanceof BigInteger) {
-					value = ((BigInteger) value).longValue();
-				} else if (value instanceof BigDecimal) {
-					value = ((BigDecimal) value).doubleValue();
-				} else if (value instanceof Integer) {
-					value = ((Integer) value).longValue();
-				} else if (value instanceof Float) {
-					value = ((Float) value).doubleValue();
-				} else if (field.getType().isAssignableFrom(Date.class)) {
-					if (value instanceof Long) {
-						value = new Timestamp((Long) value);
-					} else if (value instanceof String) {
-						value = DateUtil.parseDate(value.toString()).toTimestamp();
-					} else if (value instanceof Date) {
-						value = new Timestamp(((Date) value).getTime());
-					}
-				}
+				value = convertValue(value, field.getType());
 				try {
 					field.setAccessible(true);
 					field.set(domain, value);
@@ -115,6 +91,39 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 			}
 		});
 		return domain;
+	}
+
+	private Long getId(Map<String, Object> map) {
+		Object idObj = map.remove(Constant.MONGODBID);
+		if (idObj == null) {
+			idObj = map.remove(Constant.ID);
+		}
+		if (idObj == null) {
+			return null;
+		}
+		return Long.valueOf(idObj.toString());
+	}
+	
+	private Object convertValue(Object value, Class<?> type) {
+		Object val = value;
+		if (value instanceof BigInteger) {
+			val = ((BigInteger) value).longValue();
+		} else if (value instanceof BigDecimal) {
+			val = ((BigDecimal) value).doubleValue();
+		} else if (value instanceof Integer) {
+			val = ((Integer) value).longValue();
+		} else if (value instanceof Float) {
+			val = ((Float) value).doubleValue();
+		} else if (type.isAssignableFrom(Date.class)) {
+			if (value instanceof Long) {
+				val = new Timestamp((Long) value);
+			} else if (value instanceof String) {
+				val = DateUtil.parseDate(value.toString()).toTimestamp();
+			} else if (value instanceof Date) {
+				val = new Timestamp(((Date) value).getTime());
+			}
+		}
+		return val;
 	}
 	
 }

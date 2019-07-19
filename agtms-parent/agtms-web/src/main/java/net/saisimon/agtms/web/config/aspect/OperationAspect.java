@@ -41,6 +41,9 @@ public class OperationAspect {
 	@Autowired
 	private DefaultOperationHandler defaultOperationHandler;
 	
+	/**
+	 * 操作记录注解切点
+	 */
 	@Pointcut("execution(public * net.saisimon.agtms.web.controller..*.*(..))")
 	public void controllerPointcut() {}
 	

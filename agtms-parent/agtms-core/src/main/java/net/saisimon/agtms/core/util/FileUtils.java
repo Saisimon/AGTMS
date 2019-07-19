@@ -96,9 +96,10 @@ public final class FileUtils {
 		if (file == null) {
 			return;
 		}
+		String s = separator;
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsolutePath(), append))) {
-			if (null == separator) {
-				separator = ",";
+			if (null == s) {
+				s = ",";
 			}
 			if (!CollectionUtils.isEmpty(datas)) {
 				StringBuilder buffer = new StringBuilder();
@@ -108,7 +109,7 @@ public final class FileUtils {
 						Object obj = data.get(j);
 						buffer.append(cellString(obj));
 						if (j != data.size() - 1) {
-							buffer.append(separator);
+							buffer.append(s);
 						}
 					}
 					bw.write(buffer.toString());

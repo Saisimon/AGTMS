@@ -415,9 +415,9 @@ public class EditControllerTest extends AbstractControllerTest {
 		PageResult<TemplateInfo> pageResult = SystemUtils.fromJson(json, PageResult.class, TemplateInfo.class);
 		Iterable<TemplateInfo> it = pageResult.getRows();
 		if (it != null) {
-			for (TemplateInfo ti : it) {
-				templateInfo = ti;
-				break;
+			Iterator<TemplateInfo> iterator = it.iterator();
+			if (iterator.hasNext()) {
+				templateInfo = iterator.next();
 			}
 		}
 		if (templateInfo != null) {
@@ -450,9 +450,9 @@ public class EditControllerTest extends AbstractControllerTest {
 		selectionParam.setType(0);
 		sendPost("/selection/edit/save", selectionParam, testToken);
 		
-		Map<String, String> valueTextMap = SelectionUtils.getSelectionValueTextMap("1", testToken.getUserId(), new HashSet<>(Arrays.asList("1")));
+		Map<String, String> valueTextMap = SelectionUtils.getSelectionValueTextMap("1", new HashSet<>(Arrays.asList("1")), testToken.getUserId());
 		Assert.assertEquals("Text-1", valueTextMap.get("1"));
-		Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap("1", testToken.getUserId(), new HashSet<>(Arrays.asList("Text-1")));
+		Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap("1", new HashSet<>(Arrays.asList("Text-1")), testToken.getUserId());
 		Assert.assertEquals("1", textValueMap.get("Text-1"));
 		
 		param = new HashMap<>();

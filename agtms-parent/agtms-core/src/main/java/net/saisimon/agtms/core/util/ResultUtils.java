@@ -16,6 +16,8 @@ public class ResultUtils {
 	public static final String SUCCESS_MESSAGE = "success";
 	public static final int ERROR_CODE = 500;
 	public static final String ERROR_MESSAGE = "error";
+	
+	private static final Result SUCCESS = simpleSuccess(null);
 
 	/**
 	 * 指定结果对象状态
@@ -33,7 +35,7 @@ public class ResultUtils {
 	 * @return 结果对象
 	 */
 	public static Result simpleSuccess() {
-		return simpleSuccess(null);
+		return SUCCESS;
 	}
 	
 	/**

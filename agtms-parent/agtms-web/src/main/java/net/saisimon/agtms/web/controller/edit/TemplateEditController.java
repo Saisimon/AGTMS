@@ -149,10 +149,8 @@ public class TemplateEditController extends BaseController {
 			if (oldTemplate == null) {
 				return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 			}
-			if (!template.getTitle().equals(oldTemplate.getTitle())) {
-				if (templateService.exists(template.getTitle(), userId)) {
-					return ErrorMessage.Template.TEMPLATE_ALREADY_EXISTS;
-				}
+			if (!template.getTitle().equals(oldTemplate.getTitle()) && templateService.exists(template.getTitle(), userId)) {
+				return ErrorMessage.Template.TEMPLATE_ALREADY_EXISTS;
 			}
 			if (!GenerateServiceFactory.build(template).alterTable(oldTemplate)) {
 				TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();

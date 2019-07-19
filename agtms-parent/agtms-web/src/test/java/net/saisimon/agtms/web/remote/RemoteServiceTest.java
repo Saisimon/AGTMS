@@ -72,7 +72,7 @@ public class RemoteServiceTest {
 	private GenderSelection genderSelection;
 	
 	@Before
-	public void setup() throws IOException {
+	public void setUp() throws IOException {
 		List<Template> templates = templateScanner.getAllTemplates();
 		instanceRule.stubFor(post(urlEqualTo("/agtms/templates"))
 				.willReturn(aResponse()

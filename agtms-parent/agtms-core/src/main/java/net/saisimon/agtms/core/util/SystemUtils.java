@@ -208,19 +208,20 @@ public final class SystemUtils extends StringUtils {
 		if (filename == null) {
 			return null;
 		}
+		String ua = userAgent;
 		String contentDisposition;
 		try {
 			String newFilename = URLEncoder.encode(filename, "UTF8");
 			contentDisposition = "attachment; filename=\"" + newFilename + "\"";
-			if (userAgent != null) {
-				userAgent = userAgent.toLowerCase();
-				if (userAgent.indexOf("msie") != -1) {
+			if (ua != null) {
+				ua = ua.toLowerCase();
+				if (ua.indexOf("msie") != -1) {
 					contentDisposition = "attachment; filename=\"" + newFilename + "\"";
-				} else if (userAgent.indexOf("opera") != -1) {
+				} else if (ua.indexOf("opera") != -1) {
 					contentDisposition = "attachment; filename*=UTF-8''" + newFilename;
-				} else if (userAgent.indexOf("safari") != -1 || userAgent.indexOf("applewebkit") != -1) {
+				} else if (ua.indexOf("safari") != -1 || ua.indexOf("applewebkit") != -1) {
 					contentDisposition = "attachment; filename=\"" + new String(filename.getBytes("UTF-8"), "ISO8859-1") + "\"";
-				} else if (userAgent.indexOf("mozilla") != -1) {
+				} else if (ua.indexOf("mozilla") != -1) {
 					contentDisposition = "attachment; filename*=UTF-8''" + newFilename;
 				}
 			}
@@ -240,30 +241,29 @@ public final class SystemUtils extends StringUtils {
 		if (request == null) {
 			return null;
 		}
-		String ip = null;
-		String unknown = "unknown";
 		String ipAddresses = request.getHeader("X-Forwarded-For");
-		if (ipAddresses == null || ipAddresses.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+		if (!checkIPAddress(ipAddresses)) {
 			ipAddresses = request.getHeader("Proxy-Client-IP");
 		}
-		if (ipAddresses == null || ipAddresses.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+		if (!checkIPAddress(ipAddresses)) {
 			ipAddresses = request.getHeader("WL-Proxy-Client-IP");
 		}
-		if (ipAddresses == null || ipAddresses.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+		if (!checkIPAddress(ipAddresses)) {
 			ipAddresses = request.getHeader("HTTP_CLIENT_IP");
 		}
-		if (ipAddresses == null || ipAddresses.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+		if (!checkIPAddress(ipAddresses)) {
 			ipAddresses = request.getHeader("X-Real-IP");
 		}
-		if (ipAddresses != null && ipAddresses.length() != 0) {
+		String ip = null;
+		if (checkIPAddress(ipAddresses)) {
 			ip = ipAddresses.split(",")[0];
 		}
-		if (ip == null || ip.length() == 0 || unknown.equalsIgnoreCase(ipAddresses)) {
+		if (!checkIPAddress(ip)) {
 			ip = request.getRemoteAddr();
 		}
 		return ip;
 	}
-	
+
 	/**
 	 * 根据子类获取父接口指定的泛型类型，未找到指定泛型时抛出运行时异常
 	 * 
@@ -380,6 +380,10 @@ public final class SystemUtils extends StringUtils {
 			}
 		}
 		return new String(cs);
+	}
+	
+	private static boolean checkIPAddress(String ipAddresses) {
+		return ipAddresses != null && ipAddresses.length() > 0 && !"unknown".equalsIgnoreCase(ipAddresses);
 	}
 	
 }

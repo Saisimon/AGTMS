@@ -7,8 +7,8 @@ export default function request(user, reqUrl, payload) {
         method: 'post',
         url: store.state.base.urlPrefix + reqUrl
     };
-    if (user != undefined && user != null && user.token && user.userId) {
-        if (user.status == -1 && (reqUrl != "/user/password/change" && reqUrl != "/user/logout")) {
+    if (user !== undefined && user !== null && user.token && user.userId) {
+        if (user.status === -1 && (reqUrl !== "/user/password/change" && reqUrl !== "/user/logout")) {
             store.commit('changePasswordModal', true);
             return;
         }
@@ -17,7 +17,7 @@ export default function request(user, reqUrl, payload) {
             'X-UID': user.userId
         };
     }
-    if (payload != undefined && payload != null) {
+    if (payload !== undefined && payload !== null) {
         req.data = payload;
     }
     return new Promise((resolve, reject) => {

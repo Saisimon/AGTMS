@@ -1,6 +1,22 @@
 import { signIn, signOut, passwordChange, profileSave, profileInfo } from '@/api/user'
 import { uploadImage } from '@/api/upload'
 
+function getCookie(name, defaultValue) {
+    var reg = new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+    var arr = document.cookie.match(reg);
+    if (arr) {
+        return unescape(arr[2]); 
+    } else {
+        return defaultValue; 
+    }
+}
+
+function setCookie(name, value, timeout) { 
+    var exdate = new Date();
+    exdate.setMilliseconds(exdate.getMilliseconds() + timeout * 1000);
+    document.cookie = name + "="+ escape(value) + ";expires=" + exdate.toGMTString() + ';path=/'; 
+}
+
 const state = {
     urlPrefix: '/agtms',
     progress: 100,
@@ -151,22 +167,6 @@ const actions = {
         });
     }
 };
-
-function getCookie(name, defaultValue) {
-    var reg = new RegExp("(^| )"+name+"=([^;]*)(;|$)");
-    var arr = document.cookie.match(reg);
-    if (arr) {
-        return unescape(arr[2]); 
-    } else {
-        return defaultValue; 
-    }
-}
-
-function setCookie(name, value, timeout) { 
-    var exdate = new Date();
-    exdate.setMilliseconds(exdate.getMilliseconds() + timeout * 1000);
-    document.cookie = name + "="+ escape(value) + ";expires=" + exdate.toGMTString() + ';path=/'; 
-} 
 
 export default {
     state,

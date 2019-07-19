@@ -129,7 +129,7 @@ public class SelectionUtils {
 		for (Map.Entry<String, Set<String>> entry : valueMap.entrySet()) {
 			String fieldName = entry.getKey();
 			TemplateField templateField = fieldInfoMap.get(fieldName);
-			Map<String, String> textMap = getSelectionValueTextMap(templateField.selectionSign(service), operatorId, entry.getValue());
+			Map<String, String> textMap = getSelectionValueTextMap(templateField.selectionSign(service), entry.getValue(), operatorId);
 			map.put(fieldName, textMap);
 		}
 		for (Map<String, Object> data : datas) {
@@ -155,8 +155,8 @@ public class SelectionUtils {
 	 * @param values 下拉列表选项值集合
 	 * @return 下拉列表的选项映射，key为选项值，value为选项名称
 	 */
-	public static Map<String, String> getSelectionValueTextMap(String sign, Long operatorId, Set<String> values) {
-		return getSelectionMap(sign, operatorId, values, true);
+	public static Map<String, String> getSelectionValueTextMap(String sign, Set<String> values, Long operatorId) {
+		return getSelectionMap(sign, values, true, operatorId);
 	}
 	
 	/**
@@ -167,8 +167,8 @@ public class SelectionUtils {
 	 * @param texts 下拉列表选项名称集合
 	 * @return 下拉列表的选项映射，key为选项名称，value为选项值
 	 */
-	public static Map<String, String> getSelectionTextValueMap(String sign, Long operatorId, Set<String> texts) {
-		return getSelectionMap(sign, operatorId, texts, false);
+	public static Map<String, String> getSelectionTextValueMap(String sign, Set<String> texts, Long operatorId) {
+		return getSelectionMap(sign, texts, false, operatorId);
 	}
 	
 	/**
@@ -227,7 +227,7 @@ public class SelectionUtils {
 		return options;
 	}
 	
-	private static Map<String, String> getSelectionMap(String sign, Long operatorId, Set<String> values, boolean valueKey) {
+	private static Map<String, String> getSelectionMap(String sign, Set<String> values, boolean valueKey, Long operatorId) {
 		Map<String, String> selectionMap = MapUtil.newHashMap();
 		if (CollectionUtils.isEmpty(values)) {
 			return selectionMap;

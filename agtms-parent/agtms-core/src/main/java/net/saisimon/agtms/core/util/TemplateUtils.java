@@ -15,9 +15,9 @@ import cn.hutool.core.util.NumberUtil;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
-import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
+import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
@@ -26,7 +26,6 @@ import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.service.RemoteService;
-import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.spring.SpringContext;
 
 /**
@@ -52,22 +51,9 @@ public class TemplateUtils {
 		}
 		String sign = key.toString();
 		if (!NumberUtil.isLong(sign)) {
-			RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
-			if (remoteService == null) {
-				return null;
-			}
-			String[] strs = sign.split("-");
-			if (strs.length != 2) {
-				return null;
-			}
-			Template template = remoteService.template(strs[0], strs[1]);
-			if (template != null) {
-				template.setService(strs[0]);
-			}
-			return template;
+			return getRemoteTemplate(sign);
 		}
-		TemplateService templateService = TemplateServiceFactory.get();
-		Optional<Template> optional = templateService.findById(Long.valueOf(sign));
+		Optional<Template> optional = TemplateServiceFactory.get().findById(Long.valueOf(sign));
 		if (!optional.isPresent()) {
 			return null;
 		}
@@ -80,6 +66,28 @@ public class TemplateUtils {
 			return template;
 		}
 		return null;
+	}
+	
+	/**
+	 * 获取远程模板对象
+	 * 
+	 * @param sign 模板唯一标识
+	 * @return 模板对象
+	 */
+	public static Template getRemoteTemplate(String key) {
+		RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
+		if (remoteService == null) {
+			return null;
+		}
+		String[] strs = key.split("-");
+		if (strs.length != 2) {
+			return null;
+		}
+		Template template = remoteService.template(strs[0], strs[1]);
+		if (template != null) {
+			template.setService(strs[0]);
+		}
+		return template;
 	}
 	
 	/**
@@ -198,11 +206,6 @@ public class TemplateUtils {
 				String fieldName = column.getColumnName() + field.getFieldName();
 				if (field.getRequired()) {
 					requireds.add(fieldName);
-				}
-				if (field.getRequired()) {
-					if (!requireds.contains(fieldName)) {
-						requireds.add(fieldName);
-					}
 				}
 			}
 		}
@@ -331,23 +334,54 @@ public class TemplateUtils {
 			return false;
 		}
 		for (TemplateColumn templateColumn : template.getColumns()) {
-			if (templateColumn == null) {
+			if (!checkRequired(template.getService(), templateColumn)) {
 				return false;
 			}
-			if (SystemUtils.isBlank(templateColumn.getTitle())) {
+		}
+		return true;
+	}
+	
+	/**
+	 * 检查模板列中的必填项
+	 * 
+	 * @param service 模板对应服务名
+	 * @param templateColumn 模板列对象
+	 * @return 是否检查通过
+	 */
+	public static boolean checkRequired(String service, TemplateColumn templateColumn) {
+		if (templateColumn == null) {
+			return false;
+		}
+		if (SystemUtils.isBlank(templateColumn.getTitle())) {
+			return false;
+		}
+		if (CollectionUtils.isEmpty(templateColumn.getFields()) || templateColumn.getFields().size() > 10) {
+			return false;
+		}
+		for (TemplateField templateField : templateColumn.getFields()) {
+			if (!checkRequired(service, templateField)) {
 				return false;
 			}
-			if (CollectionUtils.isEmpty(templateColumn.getFields()) || templateColumn.getFields().size() > 10) {
-				return false;
-			}
-			for (TemplateField templateField : templateColumn.getFields()) {
-				if (SystemUtils.isBlank(templateField.getFieldTitle())) {
-					return false;
-				}
-				if (Views.SELECTION.getView().equals(templateField.getViews()) && templateField.selectionSign(template.getService()) == null) {
-					return false;
-				}
-			}
+		}
+		return true;
+	}
+	
+	/**
+	 * 检查模板属性中的必填项
+	 * 
+	 * @param service 模板对应服务名
+	 * @param templateField 模板属性对象
+	 * @return 是否检查通过
+	 */
+	public static boolean checkRequired(String service, TemplateField templateField) {
+		if (templateField == null) {
+			return false;
+		}
+		if (SystemUtils.isBlank(templateField.getFieldTitle())) {
+			return false;
+		}
+		if (Views.SELECTION.getView().equals(templateField.getViews()) && templateField.selectionSign(service) == null) {
+			return false;
 		}
 		return true;
 	}

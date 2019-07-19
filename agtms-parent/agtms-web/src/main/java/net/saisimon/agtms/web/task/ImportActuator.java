@@ -180,59 +180,64 @@ public class ImportActuator implements Actuator<ImportParam> {
 			if (Thread.currentThread().isInterrupted()) {
 				throw new InterruptedException("Task Cancel");
 			}
-			List<String> data = datas.get(i);
-			List<Object> resultData = new ArrayList<>();
-			List<String> missRequireds = new ArrayList<>();
-			Domain domain = GenerateServiceFactory.build(template).newGenerate();
-			for (int j = 0; j < param.getImportFields().size(); j++) {
-				if (j < data.size()) {
-					String fieldName = param.getImportFields().get(j);
-					Object fieldValue = data.get(j);
-					TemplateField templateField = fieldInfoMap.get(fieldName);
-					if (fieldValue != null && Views.SELECTION.getView().equals(templateField.getViews())) {
-						Map<String, String> textMap = fieldTextMap.get(fieldName);
-						if (textMap == null) {
-							textMap = new HashMap<>();
-							fieldTextMap.put(fieldName, textMap);
-						}
-						String value = textMap.get(fieldValue.toString());
-						if (value == null) {
-							Set<String> texts = new HashSet<>();
-							texts.add(fieldValue.toString());
-							Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap(templateField.selectionSign(template.getService()), param.getUserId(), texts);
-							textMap.putAll(textValueMap);
-							value = textValueMap.get(fieldValue.toString());
-						}
-						fieldValue = value;
-					}
-					if (fieldValue == null) {
-						fieldValue = templateField.getDefaultValue();
-					}
-					fieldValue = DomainGenerater.parseFieldValue(fieldValue, templateField.getFieldType());
-					if (templateField.getRequired() && fieldValue == null) {
-						missRequireds.add(templateField.getFieldTitle());
-						continue;
-					}
-					if (fieldValue != null) {
-						domain.setField(fieldName, fieldValue, fieldValue.getClass());
-					}
-					resultData.add(data.get(j));
-				} else {
-					resultData.add("");
-				}
-			}
-			domain.setField(Constant.OPERATORID, param.getUserId(), Long.class);
-			if (missRequireds.size() > 0) {
-				resultData.add(getMessage("missing.required.field") + ": " + missRequireds.stream().collect(Collectors.joining(", ")));
-			} else if (GenerateServiceFactory.build(template).checkExist(domain, param.getUserId())) {
-				resultData.add(getMessage("domain.already.exists"));
-			} else {
-				GenerateServiceFactory.build(template).saveDomain(domain, param.getUserId());
-				resultData.add(getMessage("success"));
-			}
+			List<Object> resultData = importData(param, template, datas.get(i), fieldInfoMap, fieldTextMap);
 			resultDatas.add(resultData);
 		}
 		fillDatas(file, resultDatas, param.getImportFileType());
+	}
+
+	private List<Object> importData(ImportParam param, Template template, List<String> data, 
+			Map<String, TemplateField> fieldInfoMap, Map<String, Map<String, String>> fieldTextMap) throws GenerateException {
+		Domain domain = GenerateServiceFactory.build(template).newGenerate();
+		List<Object> resultData = new ArrayList<>();
+		List<String> missRequireds = new ArrayList<>();
+		for (int j = 0; j < param.getImportFields().size(); j++) {
+			if (j < data.size()) {
+				String fieldName = param.getImportFields().get(j);
+				Object fieldValue = data.get(j);
+				TemplateField templateField = fieldInfoMap.get(fieldName);
+				if (fieldValue != null && Views.SELECTION.getView().equals(templateField.getViews())) {
+					Map<String, String> textMap = fieldTextMap.get(fieldName);
+					if (textMap == null) {
+						textMap = new HashMap<>();
+						fieldTextMap.put(fieldName, textMap);
+					}
+					String value = textMap.get(fieldValue.toString());
+					if (value == null) {
+						Set<String> texts = new HashSet<>();
+						texts.add(fieldValue.toString());
+						Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap(templateField.selectionSign(template.getService()), texts, param.getUserId());
+						textMap.putAll(textValueMap);
+						value = textValueMap.get(fieldValue.toString());
+					}
+					fieldValue = value;
+				}
+				if (fieldValue == null) {
+					fieldValue = templateField.getDefaultValue();
+				}
+				fieldValue = DomainGenerater.parseFieldValue(fieldValue, templateField.getFieldType());
+				if (templateField.getRequired() && fieldValue == null) {
+					missRequireds.add(templateField.getFieldTitle());
+					continue;
+				}
+				if (fieldValue != null) {
+					domain.setField(fieldName, fieldValue, fieldValue.getClass());
+				}
+				resultData.add(data.get(j));
+			} else {
+				resultData.add("");
+			}
+		}
+		domain.setField(Constant.OPERATORID, param.getUserId(), Long.class);
+		if (missRequireds.size() > 0) {
+			resultData.add(getMessage("missing.required.field") + ": " + missRequireds.stream().collect(Collectors.joining(", ")));
+		} else if (GenerateServiceFactory.build(template).checkExist(domain, param.getUserId())) {
+			resultData.add(getMessage("domain.already.exists"));
+		} else {
+			GenerateServiceFactory.build(template).saveDomain(domain, param.getUserId());
+			resultData.add(getMessage("success"));
+		}
+		return resultData;
 	}
 
 	private List<Object> buildHead(List<List<String>> datas) {

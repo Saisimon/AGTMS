@@ -68,6 +68,7 @@ import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.dto.SimpleResult;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
@@ -202,30 +203,12 @@ public class ManagementMainController extends AbstractMainController {
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		if (!TemplateUtils.hasFunction(template, Functions.BATCH_EDIT)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
+		Result buildResult = buildFieldMap(body, template);
+		if (!ResultUtils.isSuccess(buildResult)) {
+			return buildResult;
 		}
-		Map<String, Object> map = new HashMap<>();
-		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-		for (Map.Entry<String, Object> entry : body.entrySet()) {
-			String fieldName = entry.getKey();
-			Object fieldValue = entry.getValue();
-			if (SystemUtils.isEmpty(fieldValue)) {
-				continue;
-			}
-			TemplateField field = fieldInfoMap.get(fieldName);
-			if (field == null || field.getUniqued()) {
-				continue;
-			}
-			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
-			int size = TemplateUtils.fieldSizeOverflow(field, fieldValue);
-			if (size > 0) {
-				return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), size);
-			}
-			if (fieldValue != null) {
-				map.put(fieldName, fieldValue);
-			}
-		}
+		@SuppressWarnings("unchecked")
+		Map<String, Object> map = ((SimpleResult<Map<String, Object>>) buildResult).getData();
 		if (CollectionUtils.isEmpty(map)) {
 			return ResultUtils.simpleSuccess();
 		}
@@ -240,7 +223,7 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		return ResultUtils.simpleSuccess();
 	}
-	
+
 	@Operate(type=OperateTypes.BATCH_REMOVE)
 	@Transactional(rollbackOn = Exception.class)
 	@PostMapping("/batch/remove")
@@ -341,58 +324,67 @@ public class ManagementMainController extends AbstractMainController {
 			if (importFile.isEmpty()) {
 				continue;
 			}
-			ImportParam body = new ImportParam();
-			body.setImportFields(importFields);
-			body.setImportFileName(importFileName + "-" + importFile.getOriginalFilename());
-			body.setImportFileType(importFileType);
-			body.setImportFileUUID(UUID.randomUUID().toString());
-			body.setTemplateId(template.sign());
-			body.setUserId(userId);
-			StringBuilder importFilePath = new StringBuilder();
-			importFilePath.append(filePath).append(File.separatorChar).append(Constant.File.IMPORT_PATH).append(File.separatorChar).append(userId);
-			try (FileOutputStream output = new FileOutputStream(FileUtils.createFile(importFilePath.toString(), body.getImportFileUUID(), "." + importFileType))) {
-				int size = 0;
-				switch (importFileType) {
-					case Constant.File.XLS:
-						size = FileUtils.sizeXLS(importFile.getInputStream());
-						break;
-					case Constant.File.CSV:
-						size = FileUtils.sizeCSV(importFile.getInputStream());
-						break;
-					case Constant.File.XLSX:
-						size = FileUtils.sizeXLSX(importFile.getInputStream());
-						break;
-					default:
-						break;
-				}
-				if (size == 0) {
-					return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
-				}
-				if (size > importMaxSize) {
-					Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
-					result.setMessageArgs(new Object[]{ importMaxSize });
-					return result;
-				}
-				IOUtils.copy(importFile.getInputStream(), output);
-				output.flush();
-			} catch (IOException e) {
-				log.error("导入异常", e);
-				return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
-			}
-			Task importTask = createImportTask(body);
-			try {
-				submitTask(importTask);
-			} catch (TaskRejectedException e) {
-				importTask.setHandleTime(new Date());
-				importTask.setHandleResult(ErrorMessage.Task.TASK_MAX_SIZE_LIMIT.getMessage());
-				importTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
-				TaskServiceFactory.get().saveOrUpdate(importTask);
-				return ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
+			Result result = batchImport(importFileName, importFileType, importFields, importFile, template.sign(), userId);
+			if (!ResultUtils.isSuccess(result)) {
+				return result;
 			}
 		}
-		Result result = ResultUtils.simpleSuccess();
+		Result result = new Result();
+		result.setCode(ResultUtils.SUCCESS_CODE);
 		result.setMessage(getMessage("import.task.created"));
 		return result;
+	}
+	
+	private Result batchImport(String importFileName, String importFileType, List<String> importFields, MultipartFile importFile, String sign, Long userId) {
+		ImportParam body = new ImportParam();
+		body.setImportFields(importFields);
+		body.setImportFileName(importFileName + "-" + importFile.getOriginalFilename());
+		body.setImportFileType(importFileType);
+		body.setImportFileUUID(UUID.randomUUID().toString());
+		body.setTemplateId(sign);
+		body.setUserId(userId);
+		StringBuilder importFilePath = new StringBuilder();
+		importFilePath.append(filePath).append(File.separatorChar).append(Constant.File.IMPORT_PATH).append(File.separatorChar).append(userId);
+		try (FileOutputStream output = new FileOutputStream(FileUtils.createFile(importFilePath.toString(), body.getImportFileUUID(), "." + importFileType))) {
+			int size = 0;
+			switch (importFileType) {
+				case Constant.File.XLS:
+					size = FileUtils.sizeXLS(importFile.getInputStream());
+					break;
+				case Constant.File.CSV:
+					size = FileUtils.sizeCSV(importFile.getInputStream());
+					break;
+				case Constant.File.XLSX:
+					size = FileUtils.sizeXLSX(importFile.getInputStream());
+					break;
+				default:
+					break;
+			}
+			if (size == 0) {
+				return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
+			}
+			if (size > importMaxSize) {
+				Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
+				result.setMessageArgs(new Object[]{ importMaxSize });
+				return result;
+			}
+			IOUtils.copy(importFile.getInputStream(), output);
+			output.flush();
+		} catch (IOException e) {
+			log.error("导入异常", e);
+			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
+		}
+		Task importTask = createImportTask(body);
+		try {
+			submitTask(importTask);
+			return ResultUtils.simpleSuccess();
+		} catch (TaskRejectedException e) {
+			importTask.setHandleTime(new Date());
+			importTask.setHandleResult(ErrorMessage.Task.TASK_MAX_SIZE_LIMIT.getMessage());
+			importTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
+			TaskServiceFactory.get().saveOrUpdate(importTask);
+			return ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
+		}
 	}
 	
 	@Override
@@ -613,6 +605,34 @@ public class ManagementMainController extends AbstractMainController {
 		batchImport.setImportFieldOptions(importFieldOptions);
 		batchImport.setImportFileTypeOptions(Select.buildOptions(fileTypeSelection.select()));
 		return batchImport;
+	}
+	
+	private Result buildFieldMap(Map<String, Object> body, Template template) {
+		if (!TemplateUtils.hasFunction(template, Functions.BATCH_EDIT)) {
+			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
+		}
+		Map<String, Object> map = new HashMap<>();
+		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
+		for (Map.Entry<String, Object> entry : body.entrySet()) {
+			String fieldName = entry.getKey();
+			Object fieldValue = entry.getValue();
+			if (SystemUtils.isEmpty(fieldValue)) {
+				continue;
+			}
+			TemplateField field = fieldInfoMap.get(fieldName);
+			if (field == null || field.getUniqued()) {
+				continue;
+			}
+			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
+			int size = TemplateUtils.fieldSizeOverflow(field, fieldValue);
+			if (size > 0) {
+				return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), size);
+			}
+			if (fieldValue != null) {
+				map.put(fieldName, fieldValue);
+			}
+		}
+		return ResultUtils.simpleSuccess(map);
 	}
 	
 	private List<Column> buildColumns(Template template, boolean includeHidden) {

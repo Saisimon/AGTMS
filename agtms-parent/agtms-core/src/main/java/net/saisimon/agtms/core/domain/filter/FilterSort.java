@@ -50,7 +50,7 @@ public class FilterSort implements Serializable {
 	public Sort getSort() {
 		List<Order> orders = new ArrayList<>();
 		for (Entry<String, String> entry : sortMap.entrySet()) {
-			if (Direction.DESC.name().toLowerCase().equalsIgnoreCase(entry.getValue())) {
+			if (Direction.DESC.name().equalsIgnoreCase(entry.getValue())) {
 				orders.add(Order.desc(entry.getKey()));
 			} else {
 				orders.add(Order.asc(entry.getKey()));

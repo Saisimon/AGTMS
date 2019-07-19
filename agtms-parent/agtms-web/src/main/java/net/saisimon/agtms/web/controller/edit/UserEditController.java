@@ -77,6 +77,18 @@ public class UserEditController extends AbstractEditController<User> {
 		if (result.hasErrors()) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
+		Result checkResult = checkOverflow(body);
+		if (!ResultUtils.isSuccess(checkResult)) {
+			return checkResult;
+		}
+		if (null != body.getId() && body.getId() > 0) {
+			return saveUser(body);
+		} else {
+			return updateUser(body);
+		}
+	}
+	
+	private Result checkOverflow(UserParam body) {
 		if (body.getLoginName().length() > 32) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("login.name"), 32);
 		}
@@ -98,57 +110,62 @@ public class UserEditController extends AbstractEditController<User> {
 		if (body.getRemark() != null && body.getRemark().length() > 512) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("remark"), 512);
 		}
+		return ResultUtils.simpleSuccess();
+	}
+	
+	private Result saveUser(UserParam body) {
 		UserService userService = UserServiceFactory.get();
-		Long id = body.getId();
-		if (null != id && id > 0) {
-			Optional<User> optional = userService.findById(id);
-			if (!optional.isPresent()) {
-				return ErrorMessage.User.ACCOUNT_NOT_EXIST;
-			}
-			if (userService.exists(id, body.getLoginName(), body.getCellphone(), body.getEmail())) {
-				return ErrorMessage.User.ACCOUNT_ALREADY_EXISTS;
-			}
-			User oldUser = optional.get();
-			oldUser.setLoginName(body.getLoginName());
-			oldUser.setCellphone(body.getCellphone());
-			oldUser.setEmail(body.getEmail());
-			oldUser.setUpdateTime(new Date());
-			oldUser.setAdmin(Whether.YES.getValue().equals(body.getAdmin()));
-			if (SystemUtils.isNotBlank(body.getNickname())) {
-				oldUser.setNickname(body.getNickname());
-			}
-			if (SystemUtils.isNotBlank(body.getAvatar())) {
-				oldUser.setAvatar(body.getAvatar());
-			}
-			if (SystemUtils.isNotBlank(body.getRemark())) {
-				oldUser.setRemark(body.getRemark());
-			}
-			userService.saveOrUpdate(oldUser);
-		} else {
-			if (SystemUtils.isBlank(body.getPassword())) {
-				return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
-			}
-			if (userService.exists(null, body.getLoginName(), body.getCellphone(), body.getEmail())) {
-				return ErrorMessage.User.ACCOUNT_ALREADY_EXISTS;
-			}
-			User user = new User();
-			user.setLoginName(body.getLoginName());
-			user.setCellphone(body.getCellphone());
-			user.setEmail(body.getEmail());
-			String salt = AuthUtils.createSalt();
-			String hmacPwd = AuthUtils.hmac(body.getPassword(), salt);
-			Date time = new Date();
-			user.setCreateTime(time);
-			user.setUpdateTime(time);
-			user.setSalt(salt);
-			user.setPassword(hmacPwd);
-			user.setNickname(body.getNickname());
-			user.setAvatar(body.getAvatar());
-			user.setAdmin(Whether.YES.getValue().equals(body.getAdmin()));
-			user.setStatus(UserStatuses.CREATED.getStatus());
-			user.setRemark(body.getRemark());
-			userService.saveOrUpdate(user);
+		Optional<User> optional = userService.findById(body.getId());
+		if (!optional.isPresent()) {
+			return ErrorMessage.User.ACCOUNT_NOT_EXIST;
 		}
+		if (userService.exists(body.getId(), body.getLoginName(), body.getCellphone(), body.getEmail())) {
+			return ErrorMessage.User.ACCOUNT_ALREADY_EXISTS;
+		}
+		User oldUser = optional.get();
+		oldUser.setLoginName(body.getLoginName());
+		oldUser.setCellphone(body.getCellphone());
+		oldUser.setEmail(body.getEmail());
+		oldUser.setUpdateTime(new Date());
+		oldUser.setAdmin(Whether.YES.getValue().equals(body.getAdmin()));
+		if (SystemUtils.isNotBlank(body.getNickname())) {
+			oldUser.setNickname(body.getNickname());
+		}
+		if (SystemUtils.isNotBlank(body.getAvatar())) {
+			oldUser.setAvatar(body.getAvatar());
+		}
+		if (SystemUtils.isNotBlank(body.getRemark())) {
+			oldUser.setRemark(body.getRemark());
+		}
+		userService.saveOrUpdate(oldUser);
+		return ResultUtils.simpleSuccess();
+	}
+	
+	private Result updateUser(UserParam body) {
+		if (SystemUtils.isBlank(body.getPassword())) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		UserService userService = UserServiceFactory.get();
+		if (userService.exists(null, body.getLoginName(), body.getCellphone(), body.getEmail())) {
+			return ErrorMessage.User.ACCOUNT_ALREADY_EXISTS;
+		}
+		User user = new User();
+		user.setLoginName(body.getLoginName());
+		user.setCellphone(body.getCellphone());
+		user.setEmail(body.getEmail());
+		String salt = AuthUtils.createSalt();
+		String hmacPwd = AuthUtils.hmac(body.getPassword(), salt);
+		Date time = new Date();
+		user.setCreateTime(time);
+		user.setUpdateTime(time);
+		user.setSalt(salt);
+		user.setPassword(hmacPwd);
+		user.setNickname(body.getNickname());
+		user.setAvatar(body.getAvatar());
+		user.setAdmin(Whether.YES.getValue().equals(body.getAdmin()));
+		user.setStatus(UserStatuses.CREATED.getStatus());
+		user.setRemark(body.getRemark());
+		userService.saveOrUpdate(user);
 		return ResultUtils.simpleSuccess();
 	}
 	

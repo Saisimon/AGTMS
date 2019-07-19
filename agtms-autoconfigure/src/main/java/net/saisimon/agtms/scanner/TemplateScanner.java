@@ -91,6 +91,29 @@ public class TemplateScanner {
 				fieldInfoMap.put(fieldInfo, field);
 			}
 		});
+		template.setColumns(buildTemplateColumns(fieldInfoMap));
+		return template;
+	}
+
+	public List<Template> getAllTemplates() {
+		List<Template> templates = new ArrayList<>();
+		for (TemplateResolver templateResolver : templateResolverMap.values()) {
+			if (templateResolver.getTemplate() != null) {
+				templates.add(templateResolver.getTemplate());
+			}
+		}
+		return templates;
+	}
+	
+	public TemplateResolver getTemplateResolver(String key) {
+		return templateResolverMap.get(key);
+	}
+	
+	public SelectionResolver getSelectionResolver(String key) {
+		return selectionResolverMap.get(key);
+	}
+	
+	private Set<TemplateColumn> buildTemplateColumns(Map<FieldInfo, Field> fieldInfoMap) {
 		Set<TemplateColumn> templateColumns = new HashSet<>();
 		int ordered = Integer.MIN_VALUE;
 		TemplateColumn templateColumn = null;
@@ -132,26 +155,7 @@ public class TemplateScanner {
 			}
 			templateFields.add(templateField);
 		}
-		template.setColumns(templateColumns);
-		return template;
-	}
-	
-	public List<Template> getAllTemplates() {
-		List<Template> templates = new ArrayList<>();
-		for (TemplateResolver templateResolver : templateResolverMap.values()) {
-			if (templateResolver.getTemplate() != null) {
-				templates.add(templateResolver.getTemplate());
-			}
-		}
-		return templates;
-	}
-	
-	public TemplateResolver getTemplateResolver(String key) {
-		return templateResolverMap.get(key);
-	}
-	
-	public SelectionResolver getSelectionResolver(String key) {
-		return selectionResolverMap.get(key);
+		return templateColumns;
 	}
 	
 	@Getter

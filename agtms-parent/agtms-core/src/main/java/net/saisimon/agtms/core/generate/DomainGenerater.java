@@ -1,6 +1,7 @@
 package net.saisimon.agtms.core.generate;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -63,6 +64,11 @@ public class DomainGenerater {
 	 * get 前缀
 	 */
 	private static final String GETTER_PREFIX = "get";
+	
+	/**
+	 * 父类
+	 */
+	private static final String SUPER_FULL_PATH_NAME = "java/lang/Object";
 	/**
 	 * 自定义对象的类加载器映射集合
 	 * key 为命名空间
@@ -86,14 +92,14 @@ public class DomainGenerater {
 	 * 
 	 * @param namespace 命名空间
 	 * @param fieldMap 字段与类型的映射集合
-	 * @param domainName 自定义对象名
+	 * @param name 自定义对象名
 	 * @return 自定义对象 class 对象
 	 * @throws GenerateException 生成自定义对象异常
 	 * 
 	 * @see net.saisimon.agtms.core.domain.generate.Generate
 	 */
-	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String domainName) throws GenerateException {
-		return generate(namespace, fieldMap, domainName, false, Generate.class);
+	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String name) throws GenerateException {
+		return generate(namespace, fieldMap, name, false, Generate.class);
 	}
 	
 	/**
@@ -101,15 +107,15 @@ public class DomainGenerater {
 	 * 
 	 * @param namespace 命名空间
 	 * @param fieldMap 字段与类型的映射集合
-	 * @param domainName 自定义对象名
+	 * @param name 自定义对象名
 	 * @param force 强制刷新生成
 	 * @return 自定义对象 class 对象
 	 * @throws GenerateException 生成自定义对象异常
 	 * 
 	 * @see net.saisimon.agtms.core.domain.generate.Generate
 	 */
-	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String domainName, boolean force) throws GenerateException {
-		return generate(namespace, fieldMap, domainName, force, Generate.class);
+	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String name, boolean force) throws GenerateException {
+		return generate(namespace, fieldMap, name, force, Generate.class);
 	}
 	
 	/**
@@ -117,14 +123,15 @@ public class DomainGenerater {
 	 * 
 	 * @param namespace 命名空间
 	 * @param fieldMap 字段与类型的映射集合
-	 * @param domainName 自定义对象名
+	 * @param name 自定义对象名
 	 * @param force 强制刷新生成
 	 * @param templateClass 自定义对象的模板对象
 	 * @return 自定义对象 class 对象
 	 * @throws GenerateException 生成自定义对象异常
 	 */
 	@SuppressWarnings("unchecked")
-	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String domainName, boolean force, Class<?> templateClass) throws GenerateException {
+	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String name, boolean force, Class<?> templateClass) throws GenerateException {
+		String domainName = name;
 		if (fieldMap == null || SystemUtils.isBlank(namespace) || SystemUtils.isBlank(domainName)) {
 			return null;
 		}
@@ -142,37 +149,9 @@ public class DomainGenerater {
 		File file = FileUtil.file(GenerateClassLoader.GENERATE_CLASS_PATH + File.separator + namespace + File.separator + domainFullPathName + ".class");
 		GenerateClassLoader oldClassloader = GENERATE_CLASSLOADER_MAP.get(namespace);
 		try {
-			boolean needUpdate = force || !file.exists();
 			Class<?> oldClass = null;
-			if (oldClassloader == null) {
-				needUpdate = true;
-			} else {
-				try {
-					oldClass = oldClassloader.loadClass(domainFullName);
-					needUpdate = needUpdate || needUpdate(map, oldClass);
-				} catch (ClassNotFoundException e) {
-					needUpdate = true;
-				}
-			}
-			if (needUpdate) {
-				FileUtils.createDir(file.getParentFile());
-				file.createNewFile();
-				String superFullPathName = "java/lang/Object";
-				ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-				cw.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, domainFullPathName, null, superFullPathName, new String[]{DOMAIN_PACKAGE_PATH});
-				buildConstructer(cw, superFullPathName);
-				for (Entry<String, String> entry : map.entrySet()) {
-					String fieldName = entry.getKey();
-					String fieldDesc = Type.getDescriptor(Class.forName(entry.getValue()));
-					buildField(cw, fieldName, fieldDesc);
-					buildSetterMethod(cw, domainFullPathName, fieldName, fieldDesc);
-					buildGetterMethod(cw, domainFullPathName, fieldName, fieldDesc);
-				}
-				cw.visitEnd();
-				byte[] bs = cw.toByteArray();
-				try (FileOutputStream fos = new FileOutputStream(file)) {
-					fos.write(bs);
-				}
+			if (force || !file.exists() || (oldClass = getOldClass(map, oldClassloader, domainFullName)) == null) {
+				generateClassFile(map, domainFullPathName, file);
 				oldClassloader = new GenerateClassLoader(namespace);
 				GENERATE_CLASSLOADER_MAP.put(namespace, oldClassloader);
 				oldClassloader.addGenerateClassName(domainFullName);
@@ -303,6 +282,41 @@ public class DomainGenerater {
 			}
 		}
 		return fieldValue;
+	}
+	
+	private static Class<?> getOldClass(Map<String, String> map, GenerateClassLoader oldClassloader, String domainFullName) throws IOException {
+		if (oldClassloader == null) {
+			return null;
+		}
+		try {
+			Class<?> oldClass = oldClassloader.loadClass(domainFullName);
+			if (needUpdate(map, oldClass)) {
+				return null;
+			}
+			return oldClass;
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
+	}
+	
+	private static void generateClassFile(Map<String, String> map, String domainFullPathName, File file) throws ClassNotFoundException, IOException, FileNotFoundException {
+		FileUtils.createDir(file.getParentFile());
+		file.createNewFile();
+		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+		cw.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, domainFullPathName, null, SUPER_FULL_PATH_NAME, new String[]{DOMAIN_PACKAGE_PATH});
+		buildConstructer(cw, SUPER_FULL_PATH_NAME);
+		for (Entry<String, String> entry : map.entrySet()) {
+			String fieldName = entry.getKey();
+			String fieldDesc = Type.getDescriptor(Class.forName(entry.getValue()));
+			buildField(cw, fieldName, fieldDesc);
+			buildSetterMethod(cw, domainFullPathName, fieldName, fieldDesc);
+			buildGetterMethod(cw, domainFullPathName, fieldName, fieldDesc);
+		}
+		cw.visitEnd();
+		byte[] bs = cw.toByteArray();
+		try (FileOutputStream fos = new FileOutputStream(file)) {
+			fos.write(bs);
+		}
 	}
 	
 	private static void buildConstructer(ClassWriter cw, String superFullPathName) {

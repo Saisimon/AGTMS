@@ -325,66 +325,84 @@ public abstract class AbstractMainController extends BaseController {
 			if (value == null) {
 				continue;
 			}
-			for (Filter filter : filters) {
-				SingleSelect<String> keySelect = filter.getKey();
-				for (Option<String> option : keySelect.getOptions()) {
-					if (option.getValue().equals(key)) {
-						keySelect.setSelected(option);
-						break;
-					}
-				}
-				for (Entry<String, FieldFilter> entry : filter.getValue().entrySet()) {
-					if (!entry.getKey().equals(key)) {
-						continue;
-					}
-					FieldFilter fieldFilter = entry.getValue();
-					if ("text".equals(fieldFilter.getType())) {
-						TextFilter<Object> textFilter = (TextFilter<Object>) fieldFilter;
-						textFilter.getInput().setValue(value);
-						if (Operator.EQ.equals(operator)) {
-							textFilter.getOperator().setSelected(Option.STRICT);
-						} else if (Operator.REGEX.equals(operator)) {
-							textFilter.getOperator().setSelected(Option.FUZZY);
-						} else if (Operator.IN.equals(operator)) {
-							textFilter.getOperator().setSelected(Option.SEPARATOR);
-						}
-					} else if ("select".equals(fieldFilter.getType())) {
-						SelectFilter<Object> selectFilter = (SelectFilter<Object>) fieldFilter;
-						if (selectFilter.isMultiple()) {
-							MultipleSelect<Object> filterMultipleSelect = (MultipleSelect<Object>) selectFilter.getSelect();
-							List<Object> list = (List<Object>) value;
-							List<Option<Object>> selected = new ArrayList<>();
-							for (Option<Object> option : filterMultipleSelect.getOptions()) {
-								for (Object obj : list) {
-									if (option.getValue().toString().equals(obj.toString())) {
-										selected.add(option);
-									}
-								}
-							}
-							filterMultipleSelect.setSelected(selected);
-						} else {
-							SingleSelect<Object> filterSingleSelect = (SingleSelect<Object>) selectFilter.getSelect();
-							for (Option<Object> option : filterSingleSelect.getOptions()) {
-								if (option.getValue().toString().equals(value.toString())) {
-									filterSingleSelect.setSelected(option);
-									break;
-								}
-							}
-						}
-					} else if ("range".equals(fieldFilter.getType())) {
-						RangeFilter<Object> rangeFilter = (RangeFilter<Object>) fieldFilter;
-						if (Operator.LTE.equals(operator)) {
-							rangeFilter.getTo().setValue(value);
-						} else if (Operator.GTE.equals(operator)) {
-							rangeFilter.getFrom().setValue(value);
-						}
-					}
-				}
-			}
+			populateFilters(filters, value, key, operator);
 		}
 		return true;
 	}
+
+	private void populateFilters(List<Filter> filters, Object value, String key, String operator) {
+		for (Filter filter : filters) {
+			SingleSelect<String> keySelect = filter.getKey();
+			for (Option<String> option : keySelect.getOptions()) {
+				if (option.getValue().equals(key)) {
+					keySelect.setSelected(option);
+					break;
+				}
+			}
+			for (Entry<String, FieldFilter> entry : filter.getValue().entrySet()) {
+				if (!entry.getKey().equals(key)) {
+					continue;
+				}
+				populateFieldFilter(entry.getValue(), value, operator);
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void populateFieldFilter(FieldFilter fieldFilter, Object value, String operator) {
+		if ("text".equals(fieldFilter.getType())) {
+			populateTextFilter((TextFilter<Object>) fieldFilter, value, operator);
+		} else if ("select".equals(fieldFilter.getType())) {
+			populateSelectFilter((SelectFilter<Object>) fieldFilter, value);
+		} else if ("range".equals(fieldFilter.getType())) {
+			populateRangeFilter((RangeFilter<Object>) fieldFilter, value, operator);
+		}
+	}
+
+	private void populateTextFilter(TextFilter<Object> textFilter, Object value, String operator) {
+		textFilter.getInput().setValue(value);
+		if (Operator.EQ.equals(operator)) {
+			textFilter.getOperator().setSelected(Option.STRICT);
+		} else if (Operator.REGEX.equals(operator)) {
+			textFilter.getOperator().setSelected(Option.FUZZY);
+		} else if (Operator.IN.equals(operator)) {
+			textFilter.getOperator().setSelected(Option.SEPARATOR);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void populateSelectFilter(SelectFilter<Object> selectFilter, Object value) {
+		if (selectFilter.isMultiple()) {
+			MultipleSelect<Object> filterMultipleSelect = (MultipleSelect<Object>) selectFilter.getSelect();
+			List<Object> list = (List<Object>) value;
+			List<Option<Object>> selected = new ArrayList<>();
+			for (Option<Object> option : filterMultipleSelect.getOptions()) {
+				for (Object obj : list) {
+					if (option.getValue().toString().equals(obj.toString())) {
+						selected.add(option);
+					}
+				}
+			}
+			filterMultipleSelect.setSelected(selected);
+		} else {
+			SingleSelect<Object> filterSingleSelect = (SingleSelect<Object>) selectFilter.getSelect();
+			for (Option<Object> option : filterSingleSelect.getOptions()) {
+				if (option.getValue().toString().equals(value.toString())) {
+					filterSingleSelect.setSelected(option);
+					break;
+				}
+			}
+		}
+	}
 	
+	private void populateRangeFilter(RangeFilter<Object> rangeFilter, Object value, String operator) {
+		if (Operator.LTE.equals(operator)) {
+			rangeFilter.getTo().setValue(value);
+		} else if (Operator.GTE.equals(operator)) {
+			rangeFilter.getFrom().setValue(value);
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	protected <T> T get(Map<String, Object> map, String key) {
 		if (map == null) {

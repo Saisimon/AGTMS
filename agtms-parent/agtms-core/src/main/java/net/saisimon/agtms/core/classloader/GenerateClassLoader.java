@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.util.Assert;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.URLUtil;
 import net.saisimon.agtms.core.util.FileUtils;
@@ -27,7 +27,7 @@ public class GenerateClassLoader extends URLClassLoader {
 	 */
 	public static final String GENERATE_CLASS_PATH = FileUtil.normalize(PropertyUtils.fetchYaml("extra.class.path", "/tmp/classes").toString());
 	
-	private final Set<String> generateClasses = new HashSet<>();
+	private final Set<String> generateClasses = new ConcurrentHashSet<>();
 	
 	public GenerateClassLoader(String namespace) {
 		super(new URL[]{});

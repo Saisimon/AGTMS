@@ -56,8 +56,7 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 	public Result grid(@RequestParam(name = "id", required = false) Long id) {
 		Navigation navigation = null;
 		if (id != null) {
-			Long userId = AuthUtils.getUid();
-			navigation = NavigationUtils.getNavigation(id, userId);
+			navigation = NavigationUtils.getNavigation(id, AuthUtils.getUid());
 			if (navigation == null) {
 				return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 			}
@@ -78,49 +77,11 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 		if (body.getIcon().length() > 64) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(getMessage("icon"), 64);
 		}
-		NavigationService navigationService = NavigationServiceFactory.get();
-		Long userId = AuthUtils.getUid();
-		Long id = body.getId();
-		if (null != id && id > 0) {
-			Navigation oldNavigation = NavigationUtils.getNavigation(id, userId);
-			if (oldNavigation == null) {
-				return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
-			}
-			if (!body.getTitle().equals(oldNavigation.getTitle())) {
-				if (navigationService.exists(body.getTitle(), userId)) {
-					return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
-				}
-			}
-			Map<String, String> navigationMap = navigationSelection.selectWithParent(oldNavigation.getId());
-			if (!navigationMap.containsKey(body.getParentId().toString())) {
-				return ErrorMessage.Common.PARAM_ERROR;
-			}
-			oldNavigation.setParentId(body.getParentId());
-			oldNavigation.setIcon(body.getIcon());
-			oldNavigation.setTitle(body.getTitle());
-			oldNavigation.setPriority(body.getPriority());
-			oldNavigation.setUpdateTime(new Date());
-			navigationService.saveOrUpdate(oldNavigation);
+		if (null != body.getId() && body.getId() > 0) {
+			return updateNavigation(body);
 		} else {
-			if (navigationService.exists(body.getTitle(), userId)) {
-				return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
-			}
-			Map<String, String> navigationMap = navigationSelection.selectWithParent(null);
-			if (!navigationMap.containsKey(body.getParentId().toString())) {
-				return ErrorMessage.Common.PARAM_ERROR;
-			}
-			Date time = new Date();
-			Navigation newNavigation = new Navigation();
-			newNavigation.setParentId(body.getParentId());
-			newNavigation.setIcon(body.getIcon());
-			newNavigation.setTitle(body.getTitle());
-			newNavigation.setPriority(body.getPriority());
-			newNavigation.setCreateTime(time);
-			newNavigation.setOperatorId(userId);
-			newNavigation.setUpdateTime(time);
-			navigationService.saveOrUpdate(newNavigation);
+			return saveNavigation(body);
 		}
-		return ResultUtils.simpleSuccess();
 	}
 	
 	@Override
@@ -160,6 +121,52 @@ public class NavigationEditController extends AbstractEditController<Navigation>
 		fields.add(titleField);
 		fields.add(priorityField);
 		return fields;
+	}
+	
+	private Result saveNavigation(NavigationParam body) {
+		Long userId = AuthUtils.getUid();
+		NavigationService navigationService = NavigationServiceFactory.get();
+		if (navigationService.exists(body.getTitle(), userId)) {
+			return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
+		}
+		Map<String, String> navigationMap = navigationSelection.selectWithParent(null);
+		if (!navigationMap.containsKey(body.getParentId().toString())) {
+			return ErrorMessage.Common.PARAM_ERROR;
+		}
+		Date time = new Date();
+		Navigation newNavigation = new Navigation();
+		newNavigation.setParentId(body.getParentId());
+		newNavigation.setIcon(body.getIcon());
+		newNavigation.setTitle(body.getTitle());
+		newNavigation.setPriority(body.getPriority());
+		newNavigation.setCreateTime(time);
+		newNavigation.setOperatorId(userId);
+		newNavigation.setUpdateTime(time);
+		navigationService.saveOrUpdate(newNavigation);
+		return ResultUtils.simpleSuccess();
+	}
+
+	private Result updateNavigation(NavigationParam body) {
+		Long userId = AuthUtils.getUid();
+		NavigationService navigationService = NavigationServiceFactory.get();
+		Navigation oldNavigation = NavigationUtils.getNavigation(body.getId(), userId);
+		if (oldNavigation == null) {
+			return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
+		}
+		if (!body.getTitle().equals(oldNavigation.getTitle()) && navigationService.exists(body.getTitle(), userId)) {
+			return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
+		}
+		Map<String, String> navigationMap = navigationSelection.selectWithParent(oldNavigation.getId());
+		if (!navigationMap.containsKey(body.getParentId().toString())) {
+			return ErrorMessage.Common.PARAM_ERROR;
+		}
+		oldNavigation.setParentId(body.getParentId());
+		oldNavigation.setIcon(body.getIcon());
+		oldNavigation.setTitle(body.getTitle());
+		oldNavigation.setPriority(body.getPriority());
+		oldNavigation.setUpdateTime(new Date());
+		oldNavigation = navigationService.saveOrUpdate(oldNavigation);
+		return ResultUtils.simpleSuccess();
 	}
 	
 }

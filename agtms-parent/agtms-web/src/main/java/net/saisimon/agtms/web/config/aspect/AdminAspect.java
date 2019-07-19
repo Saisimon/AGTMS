@@ -29,6 +29,9 @@ import net.saisimon.agtms.web.constant.ErrorMessage;
 @ConditionalOnClass(JoinPoint.class)
 public class AdminAspect {
 	
+	/**
+	 * 管理员注解切点
+	 */
 	@Pointcut("execution(public * net.saisimon.agtms.web.controller..*.*(..))")
 	public void controllerPointcut() {}
 	
