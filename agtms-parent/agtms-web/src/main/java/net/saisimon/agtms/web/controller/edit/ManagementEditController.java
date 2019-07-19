@@ -244,8 +244,7 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 		if (GenerateServiceFactory.build(template).checkExist(domain, userId)) {
 			return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
 		}
-		domain = GenerateServiceFactory.build(template).saveDomain(domain, userId);
-		return domain == null ? ErrorMessage.Domain.DOMAIN_SAVE_FAILED : ResultUtils.simpleSuccess();
+		return GenerateServiceFactory.build(template).saveDomain(domain, userId) == null ? ErrorMessage.Domain.DOMAIN_SAVE_FAILED : ResultUtils.simpleSuccess();
 	}
 	
 	private Result updateDomain(Domain domain, Template template, Long id, Long userId) {
@@ -257,8 +256,7 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 		if (GenerateServiceFactory.build(template).checkExist(domain, userId)) {
 			return ErrorMessage.Domain.DOMAIN_ALREADY_EXISTS;
 		}
-		domain = GenerateServiceFactory.build(template).updateDomain(domain, oldDomain, userId);
-		return domain == null ? ErrorMessage.Domain.DOMAIN_SAVE_FAILED : ResultUtils.simpleSuccess();
+		return GenerateServiceFactory.build(template).updateDomain(domain, oldDomain, userId) == null ? ErrorMessage.Domain.DOMAIN_SAVE_FAILED : ResultUtils.simpleSuccess();
 	}
 	
 }

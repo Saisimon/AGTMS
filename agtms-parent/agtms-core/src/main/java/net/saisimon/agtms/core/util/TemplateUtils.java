@@ -380,10 +380,7 @@ public class TemplateUtils {
 		if (SystemUtils.isBlank(templateField.getFieldTitle())) {
 			return false;
 		}
-		if (Views.SELECTION.getView().equals(templateField.getViews()) && templateField.selectionSign(service) == null) {
-			return false;
-		}
-		return true;
+		return !(Views.SELECTION.getView().equals(templateField.getViews()) && templateField.selectionSign(service) == null);
 	}
 	
 	/**

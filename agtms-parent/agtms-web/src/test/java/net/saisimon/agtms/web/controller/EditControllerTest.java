@@ -547,9 +547,9 @@ public class EditControllerTest extends AbstractControllerTest {
 		PageResult<TemplateInfo> templagePageResult = SystemUtils.fromJson(json, PageResult.class, TemplateInfo.class);
 		Iterable<TemplateInfo> templateIterable = templagePageResult.getRows();
 		if (templateIterable != null) {
-			for (TemplateInfo ti : templateIterable) {
-				templateInfo = ti;
-				break;
+			Iterator<TemplateInfo> templateIterator = templateIterable.iterator();
+			if (templateIterator != null && templateIterator.hasNext()) {
+				templateInfo = templateIterator.next();
 			}
 		}
 		if (templateInfo != null) {

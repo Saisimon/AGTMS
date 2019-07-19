@@ -91,7 +91,7 @@ public class FilterSort implements Serializable {
 	public String toString() {
 		List<String> orders = new ArrayList<>();
 		for (Entry<String, String> entry : sortMap.entrySet()) {
-			if (Direction.DESC.name().toLowerCase().equalsIgnoreCase(entry.getValue())) {
+			if (Direction.DESC.name().equalsIgnoreCase(entry.getValue())) {
 				orders.add("-" + entry.getKey());
 			} else {
 				orders.add("+" + entry.getKey());
