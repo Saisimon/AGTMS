@@ -13,7 +13,7 @@ import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Views;
 
 /**
- * MySQL 数据库方言
+ * MySQL(MariaDB) 数据库方言
  * 
  * @author saisimon
  *

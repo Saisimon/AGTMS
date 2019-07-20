@@ -89,7 +89,7 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 		if (idObj != null) {
 			id = Long.valueOf(idObj.toString());
 		}
-		if (checkFunction(template, id)) {
+		if (!checkFunction(template, id)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		try {

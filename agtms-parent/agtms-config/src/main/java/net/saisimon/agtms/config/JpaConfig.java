@@ -32,10 +32,21 @@ import net.saisimon.agtms.jpa.repository.base.BaseJpaRepositoryFactoryBean;
 public class JpaConfig {
 	
 	@Bean
+	@ConditionalOnMissingBean
 	@ConditionalOnClass(name= {"com.mysql.jdbc.Driver"})
 	public Dialect mysqlDialect() {
 		if (log.isDebugEnabled()) {
-			log.debug("User MySQL Dialect");
+			log.debug("Use MySQL Dialect");
+		}
+		return new MySQLDialect();
+	}
+	
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnClass(name= {"org.mariadb.jdbc.Driver"})
+	public Dialect mariadbDialect() {
+		if (log.isDebugEnabled()) {
+			log.debug("Use MariaDB Dialect");
 		}
 		return new MySQLDialect();
 	}
@@ -44,7 +55,7 @@ public class JpaConfig {
 	@ConditionalOnClass(name= {"com.microsoft.sqlserver.jdbc.SQLServerDriver"})
 	public Dialect sqlServerDialect() {
 		if (log.isDebugEnabled()) {
-			log.debug("User SQL Server Dialect");
+			log.debug("Use SQL Server Dialect");
 		}
 		return new SQLServerDialect();
 	}
@@ -53,7 +64,7 @@ public class JpaConfig {
 	@ConditionalOnClass(name= {"oracle.jdbc.OracleDriver"})
 	public Dialect oracleDialect() {
 		if (log.isDebugEnabled()) {
-			log.debug("User Oracle Dialect");
+			log.debug("Use Oracle Dialect");
 		}
 		return new OracleDialect();
 	}
@@ -62,7 +73,7 @@ public class JpaConfig {
 	@ConditionalOnClass(name= {"org.postgresql.Driver"})
 	public Dialect postgresqlDialect() {
 		if (log.isDebugEnabled()) {
-			log.debug("User PostgreSQL Dialect");
+			log.debug("Use PostgreSQL Dialect");
 		}
 		return new PostgreSQLDialect();
 	}
@@ -71,7 +82,7 @@ public class JpaConfig {
 	@ConditionalOnMissingBean
 	public Dialect h2Dialect() {
 		if (log.isDebugEnabled()) {
-			log.debug("User H2 Dialect");
+			log.debug("Use H2 Dialect");
 		}
 		return new H2Dialect();
 	}

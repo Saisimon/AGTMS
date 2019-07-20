@@ -150,21 +150,26 @@ spring:
               sharding-column: user_id
               algorithm-expression: agtms$->{user_id % 2}
   datasource:
-    # Postgresql
+    # PostgreSQL
     url: jdbc:postgresql://dbserver:5432/agtms
     username: agtms
     password: 1qaz1QAZ
     driver-class-name: org.postgresql.Driver
-    # Sqlserver
+    # SQL Server
     url: jdbc:sqlserver://dbserver:1433;databaseName=agtms
     username: agtms
     password: 1qaz1QAZ
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    # Mysql
+    # MySQL
     url: jdbc:mysql://dbserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
     username: root
     password: 1qaz1QAZ
     driver-class-name: com.mysql.cj.jdbc.Driver
+    # MariaDB
+    url: jdbc:mariadb://dbserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: root
+    password: 1qaz1QAZ
+    driver-class-name: org.mariadb.jdbc.Driver
     # Oracle
     url: jdbc:oracle:thin:@dbserver:1521:ORCL
     username: agtms
