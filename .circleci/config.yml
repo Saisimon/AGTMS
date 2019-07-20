@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  install-test-report:
+  build:
     working_directory: ~/agtms
     docker:
       - image: circleci/openjdk:8-jdk
