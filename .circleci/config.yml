@@ -1,24 +1,16 @@
 version: 2
 
-defaults: &defaults
-  working_directory: ~/agtms
-  docker:
-    - image: circleci/openjdk:8-jdk
-
 jobs:
-  before:
-    <<: *defaults
-    steps:
-      - checkout
-      - run: chmod +x mvnw
-      - run: sudo apt-get install jq wget
-
-  install-test:
-    <<: *defaults
+  install-test-report:
+    working_directory: ~/agtms
+    docker:
+      - image: circleci/openjdk:8-jdk
     environment:
       MAVEN_OPTS: -Xmx3200m
     steps:
       - checkout
+      - run: chmod +x mvnw
+      - run: sudo apt-get install jq wget
       - restore_cache:
           keys:
             - agtms-{{ .Branch }}-{{ checksum "pom.xml" }}
@@ -29,24 +21,6 @@ jobs:
           paths:
             - ~/.m2
           key: agtms-{{ .Branch }}-{{ checksum "pom.xml" }}
-
-  report:
-    <<: *defaults
-    steps:
-      - checkout
       - run: bash <(curl -s https://codecov.io/bash)
       - run: wget -O codacy-coverage-reporter-assembly.jar $(curl https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r '.assets | map({content_type, browser_download_url} | select(.content_type | contains("application/java-archive"))) | .[0].browser_download_url')
-      - run: java -jar ./codacy-coverage-reporter-assembly.jar report -l Java -r agtms-record/target/site/jacoco-aggregate/jacoco.xml
-    
-
-workflows:
-  version: 2
-  install-test-report:
-    jobs:
-      - before
-      - install-test:
-          requires:
-            - before
-      - report:
-          requires:
-            - install-test
+      - run: java -jar ./codacy-coverage-reporter-assembly.jar report -l Java -r agtms-record/target/site/jacoco-aggregate/jacoco.xml    
