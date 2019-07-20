@@ -9,14 +9,13 @@ jobs:
       MAVEN_OPTS: -Xmx3200m
     steps:
       - checkout
-      - run: chmod +x mvnw
       - run: sudo apt-get install jq wget
       - restore_cache:
           keys:
             - agtms-{{ .Branch }}-{{ checksum "pom.xml" }}
             - agtms-{{ .Branch }}-
             - agtms-
-      - run: ./mvnw clean install -Ddockerfile.skip=true
+      - run: mvn clean install -Ddockerfile.skip=true
       - save_cache:
           paths:
             - ~/.m2
