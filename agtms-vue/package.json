@@ -1,6 +1,6 @@
 {
   "name": "agtms-vue",
-  "version": "0.8.2-SNAPSHOT",
+  "version": "0.8.2",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
