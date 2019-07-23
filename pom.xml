@@ -37,9 +37,7 @@
 	<modules>
 		<module>agtms-autoconfigure</module>
 		<module>agtms-autotest</module>
-		<module>agtms-eureka</module>
 		<module>agtms-example</module>
-		<module>agtms-gateway</module>
 		<module>agtms-parent</module>
 		<module>agtms-zuul</module>
 		<module>agtms-vue</module>

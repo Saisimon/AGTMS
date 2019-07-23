@@ -30,3 +30,7 @@ extra:
     import-file: 10
     cache:
       ttl: 600
+
+agtms:
+  service:
+    excludes: agtms-web, agtms-zuul

@@ -1,20 +1,16 @@
 #!/bin/sh
 
 # 创建日志文件夹
-mkdir -p data/eureka
 mkdir -p data/web
 mkdir -p data/zuul
 
 c=0
 v=0
 if [ $# -eq 0 ]; then
-    arr=("eureka" "web" "zuul" "vue")
+    arr=("web" "zuul" "vue")
 else
     for p in "$@"; do
-        if [ "$p" == "eureka" ]; then
-            arr[c]=$p
-            c=$(( $c + 1 ))
-        elif [ "$p" == "web" ]; then
+        if [ "$p" == "web" ]; then
             arr[c]=$p
             c=$(( $c + 1 ))
         elif [ "$p" == "zuul" ]; then
@@ -23,7 +19,7 @@ else
         elif [ "$p" == "vue" ]; then
             v=1
         else
-            echo "未知参数，参数只支持:eureka、web、zuul、vue"
+            echo "未知参数，参数只支持: web、zuul、vue"
         fi
     done
     # agtms-vue 最后启动
@@ -42,17 +38,7 @@ if [ $v -eq 0 ] || [ $c -gt 0 ]; then
 fi
 
 for i in "${arr[@]}"; do
-    if [ "$i" == "eureka" ]; then
-        # 启动 agtms-eureka
-        if [ -f data/eureka/eureka.pid ]; then
-            kill -9 `cat data/eureka/eureka.pid`
-            rm data/eureka/eureka.pid
-            echo "agtms-eureka 已停止."
-        fi
-        echo "agtms-eureka 启动中..."
-        java -jar -Xms512m -Xmx512m -Xmn192m -Xss256k agtms-eureka/target/agtms-eureka.jar > data/eureka/logs/agtms-eureka.log 2>&1 &
-        echo $! > data/eureka/eureka.pid
-    elif [ "$i" == "web" ]; then
+    if [ "$i" == "web" ]; then
         # 启动 agtms-web
         if [ -f data/web/web.pid ]; then
             kill -9 `cat data/web/web.pid`

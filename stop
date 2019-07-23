@@ -1,0 +1,11 @@
+#!/bin/sh
+if [ -f data/web/web.pid ]; then
+    kill -9 `cat data/web/web.pid`
+    rm data/web/web.pid
+    echo "agtms-web 已停止."
+fi
+if [ -f data/zuul/zuul.pid ]; then
+    kill -9 `cat data/zuul/zuul.pid`
+    rm data/zuul/zuul.pid
+    echo "agtms-zuul 已停止."
+fi

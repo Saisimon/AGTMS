@@ -74,28 +74,21 @@ services:
     command: chown -R 1001:1001 /bitnami
     volumes:
     - mongodbdata:/bitnami
-  agtms-eureka:
-    image: agtms/agtms-eureka:${REVISION}
-    environment:
-      - JAVA_OPTS=-Xms512m -Xmx512m -Xmn192m -Xss256k
-    ports:
-      - 7890:7890
+  zookeeper:
+    image: zookeeper:3.5.5
     networks: 
       back:
         aliases:
-          - eurekaserver
+          - zookeeperserver
     deploy:
       mode: replicated
       replicas: 1
       labels:
-        "name": "eureka"
+        "name": "zookeeper"
       restart_policy:
         condition: on-failure
         delay: 10s
         max_attempts: 3
-      resources:
-          limits:
-            memory: 1G
   agtms-zuul:
     image: agtms/agtms-zuul:${REVISION}
     environment:

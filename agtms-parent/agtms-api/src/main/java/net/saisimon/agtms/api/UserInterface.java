@@ -12,7 +12,7 @@ import net.saisimon.agtms.api.hystrix.UserHystrixFallback;
  * @author saisimon
  *
  */
-@FeignClient(name = "agtms-web", fallback = UserHystrixFallback.class)
+@FeignClient(name = "AGTMS-WEB", fallback = UserHystrixFallback.class)
 public interface UserInterface {
 	
 	/**
