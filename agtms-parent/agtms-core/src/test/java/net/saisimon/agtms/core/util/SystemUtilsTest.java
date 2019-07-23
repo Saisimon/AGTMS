@@ -65,7 +65,7 @@ public class SystemUtilsTest {
 	@Test
 	public void testIsURL() {
 		String url = null;
-		boolean result = SystemUtils.isEmail(url);
+		boolean result = SystemUtils.isURL(url);
 		Assert.assertFalse(result);
 		
 		url = "";
