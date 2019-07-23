@@ -5,10 +5,12 @@ jobs:
     working_directory: ~/agtms
     docker:
       - image: circleci/openjdk:8-jdk
+      - image: zookeeper
     environment:
       MAVEN_OPTS: -Xmx3200m
     steps:
       - checkout
+      - run: echo "127.0.0.1 zookeeperserver" | sudo tee -a /etc/hosts
       - run: chmod +x mvnw
       - run: sudo apt-get install jq wget
       - restore_cache:
