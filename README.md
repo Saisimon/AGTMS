@@ -7,18 +7,16 @@
 AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系统，支持 Oracle、MySQL、MariaDB、SQL Server、PostgreSQL、MongoDB、RESTful 等方式获取数据。
 
 ## 分支
-* [master](https://github.com/Saisimon/AGTMS) - 分布式环境
+* [dev](https://github.com/Saisimon/AGTMS) - 开发分支
+* [master](https://github.com/Saisimon/AGTMS/tree/master) - 分布式环境
 * [standalone](https://github.com/Saisimon/AGTMS/tree/standalone) - 单机环境
-* [dev](https://github.com/Saisimon/AGTMS/tree/dev) - 开发分支
 
 ## 项目结构
 ```
 .
 ├── agtms-autoconfigure 自动配置支持类库
 ├── agtms-autotest      自动化测试
-├── agtms-eureka        Eureka 服务发现 (默认端口：7890)
 ├── agtms-example       远程调用示例服务 (默认端口：7899)
-├── agtms-gateway       Spring-Gateway 网关服务 (默认端口：7891)
 ├── agtms-parent 
 │   ├── agtms-api       内部接口类库
 │   ├── agtms-config    配置类库
@@ -36,28 +34,36 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 |       ├── config      Web 服务额外配置
 |       ├── files       Web 服务文件（图片、导入、导出）路径
 |       └── libs        Web 服务额外 jar 库路径
+├── .env                Docker Compose 环境变量配置
 ├── docker-compose.yml  Docker Compose 配置
 ├── README.md           README 文件
 ├── start.cmd           一键启动脚本 (Windows)
-└── start               一键启动脚本 (Unix)
+├── stop.cmd            停止脚本 (Windows)
+├── start               一键启动脚本 (Unix)
+└── stop                停止脚本 (Unix)
 ```
 
-## 要求
+## 先决条件
 1. [JRE(JDK) 8+](https://www.java.com)
 2. [Node.js](https://nodejs.org/)
-3. RAM 4G+
+3. [Apache ZooKeeper](http://zookeeper.apache.org/)
+4. RAM 4G+
+   
+或
+
+1. [Docker](https://www.docker.com/)
 
 ## 安装并启动
 ### 一键启动
 `默认使用 H2 内存数据库，每次重启数据会重制。要想保存数据，请自行配置数据库连接`
-1. 配置 hosts
+1. 准备 [Zookeeper](http://zookeeper.apache.org/doc/r3.5.5/zookeeperStarted.html) 并配置 hosts
 * `/etc/hosts` (Unix)
 * `c:\windows\system32\drivers\etc\hosts` (Windows)
 ```
-127.0.0.1   eurekaserver
+<ZooKeeper IP>   zookeeperserver
 ```
 2. 执行启动脚本
-* **`start.cmd 默认会杀掉占用 7890、7891、7892端口的进程，请确认以后再执行操作`**
+* **`start.cmd 默认会杀掉占用 7891、7892端口的进程，请确认以后再执行操作`**
 ```sh
 # Unix
 ./start
@@ -65,15 +71,13 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 # Windows
 start.cmd
 ```
-3. 访问
+1. 访问
 ```html
 http://localhost:8080
 ```
 4. 日志
 ```
 data
-├── eureka 
-|   └── agtms-eureka.log  服务发现日志
 ├── web 
 |   └── agtms-web.log     Web 服务日志
 └── zuul
@@ -82,11 +86,11 @@ data
 
 ### 分步启动
 `默认使用 H2 内存数据库，每次重启数据会重制。要想保存数据，请自行配置数据库连接`
-1. 配置 hosts
+1. 准备 [Zookeeper](http://zookeeper.apache.org/doc/r3.5.5/zookeeperStarted.html) 并配置 hosts
 * `/etc/hosts` (Unix)
 * `c:\windows\system32\drivers\etc\hosts` (Windows)
 ```
-127.0.0.1   eurekaserver
+<ZooKeeper IP>   zookeeperserver
 ```
 2. 打包
 ```sh
@@ -96,33 +100,27 @@ data
 # Windows
 mvnw.cmd clean package -Ddockerfile.skip=true
 ```
-3. 启动服务发现 (agtms-eureka)
-```sh
-java -jar agtms-eureka/target/agtms-eureka.jar
-```
-4. 启动Web 服务 (agtms-web)
+3. 启动Web 服务 (agtms-web)
 ```sh
 java -jar agtms-parent/agtms-web/target/agtms-web.jar
 ```
-5. 启动网关服务 (agtms-gateway 或 agtms-zuul)
+4. 启动网关服务 (agtms-zuul)
 ```sh
 java -jar agtms-zuul/target/agtms-zuul.jar
 ```
-6. 启动前端页面 (agtms-vue)
+5. 启动前端页面 (agtms-vue)
 ```sh
 cd agtms-vue
 npm install
 npm run serve
 ```
-7. 访问
+6. 访问
 ```html
 http://localhost:8080
 ```
-8. 日志
+7. 日志
 ```
 data
-├── eureka 
-|   └── agtms-eureka.log  服务发现日志
 ├── web 
 |   └── agtms-web.log     Web 服务日志
 └── zuul
@@ -163,11 +161,11 @@ http://localhost:8080
 ```
 
 ## 远程调用示例
-1. 配置 hosts
+1. 准备 [Zookeeper](http://zookeeper.apache.org/doc/r3.5.5/zookeeperStarted.html) 并配置 hosts
 * `/etc/hosts` (Unix)
 * `c:\windows\system32\drivers\etc\hosts` (Windows)
 ```
-127.0.0.1   eurekaserver
+<ZooKeeper IP>   zookeeperserver
 ```
 2. 启动 agtms 服务
 ```sh
