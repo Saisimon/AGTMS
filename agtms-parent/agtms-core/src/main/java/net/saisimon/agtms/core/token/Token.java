@@ -1,6 +1,7 @@
 package net.saisimon.agtms.core.token;
 
 import net.saisimon.agtms.core.domain.entity.UserToken;
+import net.saisimon.agtms.core.order.BaseOrder;
 
 /**
  * Token 接口
@@ -8,7 +9,7 @@ import net.saisimon.agtms.core.domain.entity.UserToken;
  * @author saisimon
  *
  */
-public interface Token {
+public interface Token extends BaseOrder {
 	
 	/**
 	 * 根据用户 ID 获取 Token

@@ -220,10 +220,6 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 			TemplateField field = entry.getValue();
 			Object fieldValue = body.get(fieldName);
 			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
-			int size = TemplateUtils.fieldSizeOverflow(field, fieldValue);
-			if (size > 0) {
-				return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), size);
-			}
 			if (SystemUtils.isEmpty(fieldValue)) {
 				if (field.getRequired()) {
 					return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
@@ -232,6 +228,10 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 					fieldValue = field.getDefaultValue();
 					fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
 				}
+			}
+			Result result = TemplateUtils.validate(template, field, fieldValue);
+			if (!ResultUtils.isSuccess(result)) {
+				return result;
 			}
 			if (fieldValue != null) {
 				domain.setField(fieldName, fieldValue, fieldValue.getClass());

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.sign.Sign;
+import net.saisimon.agtms.core.exception.AGTMSException;
 import net.saisimon.agtms.core.service.GenerateService;
 import net.saisimon.agtms.core.util.SystemUtils;
 
@@ -29,11 +30,11 @@ public class GenerateServiceFactory implements BeanPostProcessor {
 	
 	public static GenerateService build(Template template) {
 		if (template == null || SystemUtils.isBlank(template.getSource())) {
-			throw new IllegalArgumentException("build GenerateService failed");
+			throw new AGTMSException("模板不能为空");
 		}
 		GenerateService generateService = GENERATE_SERVICE_MAP.get(template.getSource());
 		if (generateService == null) {
-			throw new IllegalArgumentException("build GenerateService failed");
+			throw new AGTMSException("获取 GenerateService 失败");
 		}
 		generateService.remove();
 		generateService.init(template);

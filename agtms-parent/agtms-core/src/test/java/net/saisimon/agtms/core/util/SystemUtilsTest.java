@@ -106,7 +106,7 @@ public class SystemUtilsTest {
 		
 		url = "https://www.aa.com//";
 		result = SystemUtils.isURL(url);
-		Assert.assertFalse(result);
+		Assert.assertTrue(result);
 		
 		url = "https://www.aa.com./";
 		result = SystemUtils.isURL(url);
@@ -165,6 +165,14 @@ public class SystemUtilsTest {
 		Assert.assertTrue(result);
 		
 		url = "http://192.168.8.1/html/home.html";
+		result = SystemUtils.isURL(url);
+		Assert.assertTrue(result);
+		
+		url = "http://192.168.8.1:12345/html/home";
+		result = SystemUtils.isURL(url);
+		Assert.assertTrue(result);
+		
+		url = "https://cn.bing.com/?FORM=Z9FD1";
 		result = SystemUtils.isURL(url);
 		Assert.assertTrue(result);
 	}

@@ -624,9 +624,9 @@ public class ManagementMainController extends AbstractMainController {
 				continue;
 			}
 			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
-			int size = TemplateUtils.fieldSizeOverflow(field, fieldValue);
-			if (size > 0) {
-				return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), size);
+			Result result = TemplateUtils.validate(template, field, fieldValue);
+			if (!ResultUtils.isSuccess(result)) {
+				return result;
 			}
 			if (fieldValue != null) {
 				map.put(fieldName, fieldValue);
