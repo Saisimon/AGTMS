@@ -25,7 +25,7 @@ import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
-import net.saisimon.agtms.core.exception.AGTMSException;
+import net.saisimon.agtms.core.exception.AgtmsException;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.selection.Selection;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -346,9 +346,9 @@ public class AgtmsController {
 			BeanUtils.populate(entity, body);
 			return entity;
 		} catch (InstantiationException | IllegalAccessException e) {
-			throw new AGTMSException(String.format("Build %s failed", entityClass), e);
+			throw new AgtmsException(String.format("Build %s failed", entityClass), e);
 		} catch (InvocationTargetException e) {
-			throw new AGTMSException(String.format("Populate %s failed", entityClass), e);
+			throw new AgtmsException(String.format("Populate %s failed", entityClass), e);
 		}
 	}
 	

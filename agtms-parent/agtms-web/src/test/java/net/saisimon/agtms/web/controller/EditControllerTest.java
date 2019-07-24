@@ -15,7 +15,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
@@ -33,6 +33,7 @@ import net.saisimon.agtms.core.enums.FileTypes;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.dto.req.ExportParam;
@@ -45,23 +46,19 @@ import net.saisimon.agtms.web.dto.resp.TaskInfo;
 import net.saisimon.agtms.web.dto.resp.TemplateInfo;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG", "eureka.client.enabled=false"})
+@SpringBootTest(properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG"})
 @AutoConfigureMockMvc
 public class EditControllerTest extends AbstractControllerTest {
 	
-	@Value("${extra.admin.username:admin}")
-	private String username;
-	@Value("${extra.admin.password:123456}")
-	private String password;
-	@Value("${extra.max-size.import-file:10}")
-	private int importFileMaxSize;
+	@Autowired
+	private AgtmsProperties agtmsProperties;
 	
 	/* UserEditController Start */
 	@Test
 	public void testUserEditGrid() throws Exception {
 		UserToken testToken = login("test", "test");
 		Long testUserId = testToken.getUserId();
-		UserToken adminToken = login(username, password);
+		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
 		sendPost("/user/edit/grid", null, adminToken);
 		
 		Map<String, String> param = new HashMap<>();
@@ -75,7 +72,7 @@ public class EditControllerTest extends AbstractControllerTest {
 	
 	@Test
 	public void testUserEditSave() throws Exception {
-		UserToken adminToken = login(username, password);
+		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
 		UserParam body = new UserParam();
 		sendPost("/user/edit/save", body, adminToken);
 		
@@ -681,22 +678,11 @@ public class EditControllerTest extends AbstractControllerTest {
 			sendPost(mainBatchExportUri, exportParam, testToken);
 			
 			Map<String, Object> importParam = new HashMap<>();
-			importParam.put("importFileType", FileTypes.CSV.getType());
-			importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
-			ClassPathResource classPathResource = new ClassPathResource("test.csv");
-			MockMultipartFile file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
-			sendMultipart(mainBatchImportUri, importParam, testToken, file);
-			
-			MockMultipartFile[] files = new MockMultipartFile[importFileMaxSize + 1];
-			for (int i = 0; i < importFileMaxSize + 1; i++) {
-				files[i] = new MockMultipartFile("importFiles", classPathResource.getInputStream());
-			}
-			sendMultipart(mainBatchImportUri, importParam, testToken, files);
 			
 			importParam.put("importFileType", FileTypes.XLS.getType());
 			importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
-			classPathResource = new ClassPathResource("test.xls");
-			file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
+			ClassPathResource classPathResource = new ClassPathResource("test.xls");
+			MockMultipartFile file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
 			sendMultipart(mainBatchImportUri, importParam, testToken, file);
 			
 			importParam.put("importFileType", FileTypes.XLSX.getType());
@@ -705,7 +691,19 @@ public class EditControllerTest extends AbstractControllerTest {
 			file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
 			sendMultipart(mainBatchImportUri, importParam, testToken, file);
 			
+			importParam.put("importFileType", FileTypes.CSV.getType());
+			importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
+			classPathResource = new ClassPathResource("test.csv");
+			file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
+			sendMultipart(mainBatchImportUri, importParam, testToken, file);
+			
 			Thread.sleep(1000);
+			
+			MockMultipartFile[] files = new MockMultipartFile[agtmsProperties.getImportFileMaxSize() + 1];
+			for (int i = 0; i < agtmsProperties.getImportFileMaxSize() + 1; i++) {
+				files[i] = new MockMultipartFile("importFiles", classPathResource.getInputStream());
+			}
+			sendMultipart(mainBatchImportUri, importParam, testToken, files);
 			
 			param = new HashMap<>();
 			param.put("index", "0");
@@ -720,6 +718,12 @@ public class EditControllerTest extends AbstractControllerTest {
 			TaskInfo xlsImportTask = taskIterator.next();
 			TaskInfo xlsxImportTask = taskIterator.next();
 			TaskInfo csvImportTask = taskIterator.next();
+			System.out.println(xlsExportTask.toString());
+			System.out.println(xlsxExportTask.toString());
+			System.out.println(csvExportTask.toString());
+			System.out.println(xlsImportTask.toString());
+			System.out.println(xlsxImportTask.toString());
+			System.out.println(csvImportTask.toString());
 			
 			param = new HashMap<>();
 			param.put("id", xlsExportTask.getId());
@@ -744,6 +748,11 @@ public class EditControllerTest extends AbstractControllerTest {
 			param.put("id", "100");
 			returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken, status().isNotFound());
 			
+			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsExportTask.getHandleStatus())) {
+				param = new HashMap<>();
+				param.put("id", xlsExportTask.getId());
+				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+			}
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsxExportTask.getHandleStatus())) {
 				param = new HashMap<>();
 				param.put("id", xlsxExportTask.getId());

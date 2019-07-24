@@ -11,6 +11,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import cn.hutool.core.util.RandomUtil;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 用户相关工具类
@@ -18,13 +20,12 @@ import cn.hutool.core.util.RandomUtil;
  * @author saisimon
  *
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class AuthUtils {
 	
 	private static final long MAX_TOKEN_TIMEOUT = 30 * 60 * 1000;
 	public static final String AUTHORIZE_TOKEN = "X-TOKEN";
 	public static final String AUTHORIZE_UID = "X-UID";
-	
-	private AuthUtils() {}
 	
 	/**
 	 * 创建 Token，去掉“-”的UUID字符串

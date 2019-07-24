@@ -8,7 +8,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.OrderComparator;
 import org.springframework.stereotype.Component;
 
-import net.saisimon.agtms.core.exception.AGTMSException;
+import net.saisimon.agtms.core.exception.AgtmsException;
 import net.saisimon.agtms.core.service.SelectionService;
 
 /**
@@ -26,7 +26,7 @@ public class SelectionServiceFactory implements BeanPostProcessor {
 		if (SELECTION_SERVICES.size() > 0) {
 			return SELECTION_SERVICES.get(0);
 		}
-		throw new AGTMSException("获取 SelectionService 失败");
+		throw new AgtmsException("获取 SelectionService 失败");
 	}
 
 	@Override

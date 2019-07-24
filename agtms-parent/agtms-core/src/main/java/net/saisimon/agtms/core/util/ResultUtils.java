@@ -1,5 +1,7 @@
 package net.saisimon.agtms.core.util;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import net.saisimon.agtms.core.dto.PageResult;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.SimpleResult;
@@ -10,6 +12,7 @@ import net.saisimon.agtms.core.dto.SimpleResult;
  * @author saisimon
  *
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResultUtils {
 	
 	public static final int SUCCESS_CODE = 0;

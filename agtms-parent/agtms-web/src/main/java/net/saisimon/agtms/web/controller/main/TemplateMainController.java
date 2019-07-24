@@ -48,6 +48,7 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
+import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -93,6 +94,8 @@ public class TemplateMainController extends AbstractMainController {
 	private NavigationSelection navigationSelection;
 	@Autowired
 	private UserSelection userSelection;
+	@Autowired
+	private DomainGenerater domainGenerater;
 	
 	@PostMapping("/grid")
 	public Result grid() {
@@ -146,7 +149,7 @@ public class TemplateMainController extends AbstractMainController {
 		TemplateService templateService = TemplateServiceFactory.get();
 		templateService.delete(template);
 		GenerateServiceFactory.build(template).dropTable();
-		TemplateUtils.removeDomainClass(template);
+		removeDomainClass(template);
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -164,7 +167,7 @@ public class TemplateMainController extends AbstractMainController {
 			if (template != null) {
 				templateService.delete(template);
 				GenerateServiceFactory.build(template).dropTable();
-				TemplateUtils.removeDomainClass(template);
+				removeDomainClass(template);
 			}
 		}
 		return ResultUtils.simpleSuccess();
@@ -276,6 +279,18 @@ public class TemplateMainController extends AbstractMainController {
 		templateInfo.setCreateTime(template.getCreateTime());
 		templateInfo.setUpdateTime(template.getUpdateTime());
 		return templateInfo;
+	}
+	
+	private void removeDomainClass(Template template) {
+		if (template == null) {
+			return;
+		}
+		String sign = template.sign();
+		if (sign == null) {
+			return;
+		}
+		String generateClassName = domainGenerater.buildGenerateName(sign);
+		domainGenerater.removeDomainClass(TemplateUtils.getNamespace(template), generateClassName);
 	}
 	
 }

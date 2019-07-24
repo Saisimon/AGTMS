@@ -12,8 +12,9 @@ import java.util.Set;
 import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.util.NumberUtil;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import net.saisimon.agtms.core.constant.Constant;
-import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
@@ -21,11 +22,9 @@ import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
-import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.FieldHandlerFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
-import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.handler.FieldHandler;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.spring.SpringContext;
@@ -36,9 +35,8 @@ import net.saisimon.agtms.core.spring.SpringContext;
  * @author saisimon
  *
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class TemplateUtils {
-	
-	private TemplateUtils() {}
 	
 	/**
 	 * 获取模板对象
@@ -260,42 +258,6 @@ public class TemplateUtils {
 			}
 		}
 		return filters;
-	}
-	
-	/**
-	 * 根据指定模板获取自定义对象类型
-	 * 
-	 * @param template 模板对象
-	 * @return 自定义对象类型
-	 * @throws GenerateException 生成自定义对象类型异常
-	 */
-	public static Class<Domain> getDomainClass(Template template) throws GenerateException {
-		if (template == null) {
-			return null;
-		}
-		String sign = template.sign();
-		if (sign == null) {
-			return null;
-		}
-		String generateClassName = DomainGenerater.buildGenerateName(sign);
-		return DomainGenerater.generate(getNamespace(template), buildFieldMap(template), generateClassName);
-	}
-	
-	/**
-	 * 删除自定义对象类型
-	 * 
-	 * @param template 模板对象
-	 */
-	public static void removeDomainClass(Template template) {
-		if (template == null) {
-			return;
-		}
-		String sign = template.sign();
-		if (sign == null) {
-			return;
-		}
-		String generateClassName = DomainGenerater.buildGenerateName(sign);
-		DomainGenerater.removeDomainClass(getNamespace(template), generateClassName);
 	}
 	
 	/**

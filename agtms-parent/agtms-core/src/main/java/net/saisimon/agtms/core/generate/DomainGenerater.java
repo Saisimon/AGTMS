@@ -5,12 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.asm.ClassWriter;
@@ -18,20 +15,13 @@ import org.springframework.asm.MethodVisitor;
 import org.springframework.asm.Opcodes;
 import org.springframework.asm.Type;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.date.format.FastDateFormat;
 import cn.hutool.core.io.FileUtil;
-import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.classloader.GenerateClassLoader;
-import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.generate.Generate;
-import net.saisimon.agtms.core.enums.Classes;
-import net.saisimon.agtms.core.exception.AGTMSException;
 import net.saisimon.agtms.core.exception.GenerateException;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 
@@ -41,7 +31,6 @@ import net.saisimon.agtms.core.util.SystemUtils;
  * @author saisimon
  *
  */
-@Slf4j
 public class DomainGenerater {
 	
 	/**
@@ -76,13 +65,19 @@ public class DomainGenerater {
 	 */
 	private static final Map<String, GenerateClassLoader> GENERATE_CLASSLOADER_MAP = new ConcurrentHashMap<>();
 	
+	private final AgtmsProperties agtmsProperties;
+	
+	public DomainGenerater(AgtmsProperties agtmsProperties) {
+		this.agtmsProperties = agtmsProperties;
+	}
+	
 	/**
 	 * 构建自定义对象名称
 	 * 
 	 * @param key 自定义对象的唯一标识
 	 * @return 自定义对象名称
 	 */
-	public static String buildGenerateName(String key) {
+	public String buildGenerateName(String key) {
 		Assert.notNull(key, "key can not be null");
 		return "Generate$" + key;
 	}
@@ -98,7 +93,7 @@ public class DomainGenerater {
 	 * 
 	 * @see net.saisimon.agtms.core.domain.generate.Generate
 	 */
-	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String name) throws GenerateException {
+	public Class<Domain> generate(String namespace, Map<String, String> fieldMap, String name) throws GenerateException {
 		return generate(namespace, fieldMap, name, false, Generate.class);
 	}
 	
@@ -114,7 +109,7 @@ public class DomainGenerater {
 	 * 
 	 * @see net.saisimon.agtms.core.domain.generate.Generate
 	 */
-	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String name, boolean force) throws GenerateException {
+	public Class<Domain> generate(String namespace, Map<String, String> fieldMap, String name, boolean force) throws GenerateException {
 		return generate(namespace, fieldMap, name, force, Generate.class);
 	}
 	
@@ -130,7 +125,7 @@ public class DomainGenerater {
 	 * @throws GenerateException 生成自定义对象异常
 	 */
 	@SuppressWarnings("unchecked")
-	public static Class<Domain> generate(String namespace, Map<String, String> fieldMap, String name, boolean force, Class<?> templateClass) throws GenerateException {
+	public Class<Domain> generate(String namespace, Map<String, String> fieldMap, String name, boolean force, Class<?> templateClass) throws GenerateException {
 		String domainName = name;
 		if (fieldMap == null || SystemUtils.isBlank(namespace) || SystemUtils.isBlank(domainName)) {
 			return null;
@@ -146,13 +141,13 @@ public class DomainGenerater {
 		}
 		String domainFullName = DEFAULT_PACKAGE + "." + domainName;
 		String domainFullPathName = DEFAULT_PACKAGE_PATH + "/" + domainName;
-		File file = FileUtil.file(GenerateClassLoader.GENERATE_CLASS_PATH + File.separator + namespace + File.separator + domainFullPathName + ".class");
+		File file = FileUtil.file(agtmsProperties.getGenerateClasspath() + File.separator + namespace + File.separator + domainFullPathName + ".class");
 		GenerateClassLoader oldClassloader = GENERATE_CLASSLOADER_MAP.get(namespace);
 		try {
 			Class<?> oldClass = null;
 			if (force || !file.exists() || (oldClass = getOldClass(map, oldClassloader, domainFullName)) == null) {
 				generateClassFile(map, domainFullPathName, file);
-				oldClassloader = new GenerateClassLoader(namespace);
+				oldClassloader = new GenerateClassLoader(agtmsProperties.getGenerateClasspath(), namespace);
 				GENERATE_CLASSLOADER_MAP.put(namespace, oldClassloader);
 				oldClassloader.addGenerateClassName(domainFullName);
 				return (Class<Domain>) oldClassloader.loadClass(domainFullName);
@@ -177,7 +172,7 @@ public class DomainGenerater {
 	 * @param domainName 自定义对象名
 	 * @return 删除状态
 	 */
-	public static boolean removeDomainClass(String namespace, String domainName) {
+	public boolean removeDomainClass(String namespace, String domainName) {
 		if (SystemUtils.isBlank(namespace) || SystemUtils.isBlank(domainName)) {
 			return false;
 		}
@@ -187,104 +182,14 @@ public class DomainGenerater {
 			oldClassloader.removeGenerateClassName(domainFullName);
 		}
 		String domainFullPathName = DEFAULT_PACKAGE_PATH + "/" + domainName;
-		File file = new File(GenerateClassLoader.GENERATE_CLASS_PATH + File.separator + namespace + File.separator + domainFullPathName + ".class");
+		File file = new File(agtmsProperties.getGenerateClasspath() + File.separator + namespace + File.separator + domainFullPathName + ".class");
 		if (file.exists()) {
 			return file.delete();
 		}
 		return true;
 	}
 	
-	/**
-	 * 获取属性值
-	 * 
-	 * @param domain 自定义对象
-	 * @param fieldName 属性名称
-	 * @return 属性值
-	 */
-	public static Object getField(Domain domain, String fieldName) {
-		if (domain == null) {
-			throw new IllegalArgumentException("domain can not be null");
-		}
-		try {
-			String getterMethodName = GETTER_PREFIX + SystemUtils.capitalize(fieldName);
-			Method m = domain.getClass().getMethod(getterMethodName, new Class<?>[]{});
-			return m.invoke(domain);
-		} catch (Exception e) {
-			log.error(domain.getClass().getName() + " get field("+ fieldName +") error, msg : " + e.getMessage());
-			return null;
-		}
-	}
-	
-	/**
-	 * 设置属性值
-	 * 
-	 * @param domain 自定义对象
-	 * @param fieldName 属性名称
-	 * @param fieldValue 属性值
-	 * @param fieldClass 属性类型
-	 */
-	public static void setField(Domain domain, String fieldName, Object fieldValue, Class<?> fieldClass) {
-		if (domain == null) {
-			throw new IllegalArgumentException("domain can not be null");
-		}
-		try {
-			String setterMethodName = SETTER_PREFIX + SystemUtils.capitalize(fieldName);
-			Method m = domain.getClass().getMethod(setterMethodName, fieldClass);
-			m.invoke(domain, fieldValue);
-		} catch (Exception e) {
-			log.error(domain.getClass().getName() + " set field("+ fieldName +") error, msg : " + e.getMessage());
-		}
-	}
-	
-	public static void fillCommonFields(Domain newDomain, Domain oldDomain, Long operatorId) {
-		if (newDomain == null) {
-			return;
-		}
-		Date time = new Date();
-		if (oldDomain == null) {
-			newDomain.setField(Constant.CREATETIME, time, Date.class);
-			newDomain.setField(Constant.OPERATORID, operatorId, Long.class);
-		} else {
-			newDomain.setField(Constant.ID, oldDomain.getField(Constant.ID), Long.class);
-			newDomain.setField(Constant.CREATETIME, oldDomain.getField(Constant.CREATETIME), Date.class);
-			newDomain.setField(Constant.OPERATORID, oldDomain.getField(Constant.OPERATORID), Long.class);
-		}
-		newDomain.setField(Constant.UPDATETIME, time, Date.class);
-	}
-	
-	public static Object parseFieldValue(Object fieldValue, String fieldType) {
-		if (fieldValue != null && fieldType != null) {
-			try {
-				if (Classes.LONG.getName().equals(fieldType)) {
-					if (StringUtils.isEmpty(fieldValue)) {
-						return null;
-					}
-					return Long.valueOf(fieldValue.toString());
-				} else if (Classes.DOUBLE.getName().equals(fieldType)) {
-					if (StringUtils.isEmpty(fieldValue)) {
-						return null;
-					}
-					return Double.valueOf(fieldValue.toString());
-				} else if (Classes.DATE.getName().equals(fieldType)) {
-					if (StringUtils.isEmpty(fieldValue)) {
-						return null;
-					}
-					if (fieldValue instanceof Long) {
-						return new Date((Long) fieldValue);
-					} else if (fieldValue instanceof String) {
-						String fieldValueStr = fieldValue.toString();
-						fieldValueStr = fieldValueStr.replaceAll("T", " ").replaceAll("Z", "");
-						return DateUtil.parse(fieldValueStr, FastDateFormat.getInstance(DatePattern.NORM_DATETIME_MS_PATTERN, TimeZone.getTimeZone("UTC"))).toJdkDate();
-					}
-				}
-			} catch (Exception e) {
-				throw new AGTMSException(String.format("Convert %s to %s type failed", fieldValue, fieldType), e);
-			}
-		}
-		return fieldValue;
-	}
-	
-	private static Class<?> getOldClass(Map<String, String> map, GenerateClassLoader oldClassloader, String domainFullName) throws IOException {
+	private Class<?> getOldClass(Map<String, String> map, GenerateClassLoader oldClassloader, String domainFullName) throws IOException {
 		if (oldClassloader == null) {
 			return null;
 		}
@@ -299,7 +204,7 @@ public class DomainGenerater {
 		}
 	}
 	
-	private static void generateClassFile(Map<String, String> map, String domainFullPathName, File file) throws ClassNotFoundException, IOException, FileNotFoundException {
+	private void generateClassFile(Map<String, String> map, String domainFullPathName, File file) throws ClassNotFoundException, IOException, FileNotFoundException {
 		FileUtils.createDir(file.getParentFile());
 		file.createNewFile();
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -319,7 +224,7 @@ public class DomainGenerater {
 		}
 	}
 	
-	private static void buildConstructer(ClassWriter cw, String superFullPathName) {
+	private void buildConstructer(ClassWriter cw, String superFullPathName) {
 		MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
 		mv.visitVarInsn(Opcodes.ALOAD, 0);
 		mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superFullPathName, "<init>", "()V", false);
@@ -328,11 +233,11 @@ public class DomainGenerater {
 		mv.visitEnd();
 	}
 	
-	private static void buildField(ClassWriter cw, String fieldName, String fieldDesc) {
+	private void buildField(ClassWriter cw, String fieldName, String fieldDesc) {
 		cw.visitField(Opcodes.ACC_PRIVATE, fieldName, fieldDesc, null, null).visitEnd();
 	}
 
-	private static void buildSetterMethod(ClassWriter cw, String domainFullName, String fieldName, String fieldDesc) {
+	private void buildSetterMethod(ClassWriter cw, String domainFullName, String fieldName, String fieldDesc) {
 		String setterMethodName = SETTER_PREFIX + SystemUtils.capitalize(fieldName);
 		MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, setterMethodName, "(" + fieldDesc + ")V", null, null);
 		mv.visitCode();
@@ -345,7 +250,7 @@ public class DomainGenerater {
 		mv.visitEnd();
 	}
 	
-	private static void buildGetterMethod(ClassWriter cw, String domainFullName, String fieldName, String fieldDesc) {
+	private void buildGetterMethod(ClassWriter cw, String domainFullName, String fieldName, String fieldDesc) {
 		String getterMethodName = GETTER_PREFIX + SystemUtils.capitalize(fieldName);
 		MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, getterMethodName, "()" + fieldDesc, null, null);
 		mv.visitCode();
@@ -357,7 +262,7 @@ public class DomainGenerater {
 		mv.visitEnd();
 	}
 	
-	private static boolean needUpdate(Map<String, String> fieldMap, Class<?> oldClass) throws IOException {
+	private boolean needUpdate(Map<String, String> fieldMap, Class<?> oldClass) throws IOException {
 		Field[] fields = oldClass.getDeclaredFields();
 		if (fieldMap.size() != fields.length) {
 			return true;
@@ -372,7 +277,7 @@ public class DomainGenerater {
 		return false;
 	}
 	
-	private static int parseReturnOpcode(String fieldDesc) {
+	private int parseReturnOpcode(String fieldDesc) {
 		int opcode;
 		switch (fieldDesc) {
 		case "I":
@@ -398,7 +303,7 @@ public class DomainGenerater {
 		return opcode;
 	}
 	
-	private static int parseLoadOpcode(String fieldDesc) {
+	private int parseLoadOpcode(String fieldDesc) {
 		int opcode;
 		switch (fieldDesc) {
 		case "I":

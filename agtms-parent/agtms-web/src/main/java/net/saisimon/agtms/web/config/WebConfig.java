@@ -3,7 +3,6 @@ package net.saisimon.agtms.web.config;
 import java.util.Locale;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
@@ -16,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
+import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.web.config.runner.InitRunner;
 import net.sf.ehcache.config.ConfigurationFactory;
 
@@ -27,12 +28,6 @@ import net.sf.ehcache.config.ConfigurationFactory;
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-	
-	/**
-	 * 任务队列大小
-	 */
-	@Value("${extra.max-size.task:1024}")
-	private int taskMaxSize;
 	
 	/**
 	 * 配置国际化
@@ -73,7 +68,7 @@ public class WebConfig implements WebMvcConfigurer {
 		int size = 2 * Runtime.getRuntime().availableProcessors() + 1;
 		pool.setCorePoolSize(size);
 		pool.setMaxPoolSize(size);
-		pool.setQueueCapacity(taskMaxSize);
+		pool.setQueueCapacity(agtmsProperties().getTaskMaxSize());
 		pool.setThreadNamePrefix("Task-Pool-");
 		pool.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
 		pool.initialize();
@@ -121,6 +116,16 @@ public class WebConfig implements WebMvcConfigurer {
 	@Bean
 	public InitRunner initRunner() {
 		return new InitRunner();
+	}
+	
+	@Bean
+	public AgtmsProperties agtmsProperties() {
+		return new AgtmsProperties();
+	}
+	
+	@Bean
+	public DomainGenerater domainGenerater() {
+		return new DomainGenerater(agtmsProperties());
 	}
 	
 }

@@ -3,9 +3,9 @@ package net.saisimon.agtms.core.service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.data.domain.Page;
@@ -23,8 +23,8 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.exception.GenerateException;
-import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
+import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
@@ -158,7 +158,7 @@ public interface GenerateService {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		DomainGenerater.fillCommonFields(domain, null, operatorId);
+		DomainUtils.fillCommonFields(domain, null, operatorId);
 		return repository.saveOrUpdate(domain);
 	}
 	
@@ -166,7 +166,7 @@ public interface GenerateService {
 		Assert.notNull(domain, "domain can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
-		DomainGenerater.fillCommonFields(domain, oldDomain, operatorId);
+		DomainUtils.fillCommonFields(domain, oldDomain, operatorId);
 		return repository.saveOrUpdate(domain);
 	}
 	

@@ -4,12 +4,13 @@ import java.util.Date;
 
 import javax.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 
 import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
 
@@ -21,13 +22,11 @@ import net.saisimon.agtms.core.util.AuthUtils;
  */
 public class InitRunner implements CommandLineRunner {
 	
-	@Value("${extra.admin.username:admin}")
-	private String username;
-	@Value("${extra.admin.password:123456}")
-	private String password;
-	
 	private static final String TEST_USERNAME = "test";
 	private static final String TEST_PASSWORD = "test";
+	
+	@Autowired
+	private AgtmsProperties agtmsProperties;
 
 	@Override
 	@Transactional(rollbackOn=Exception.class)
@@ -38,19 +37,19 @@ public class InitRunner implements CommandLineRunner {
 	
 	private void buildAdminUser() {
 		UserService userService = UserServiceFactory.get();
-		User user = userService.getUserByLoginNameOrEmail(username, null);
+		User user = userService.getUserByLoginNameOrEmail(agtmsProperties.getAdminUsername(), null);
 		if (user != null) {
 			return;
 		}
 		user = new User();
-		user.setLoginName(username);
+		user.setLoginName(agtmsProperties.getAdminUsername());
 		String salt = AuthUtils.createSalt();
-		String hmacPwd = AuthUtils.hmac(password, salt);
+		String hmacPwd = AuthUtils.hmac(agtmsProperties.getAdminPassword(), salt);
 		Date time = new Date();
-		user.setNickname(username);
-		user.setRemark(username);
-		user.setCellphone(username);
-		user.setEmail(username);
+		user.setNickname(agtmsProperties.getAdminUsername());
+		user.setRemark(agtmsProperties.getAdminUsername());
+		user.setCellphone(agtmsProperties.getAdminUsername());
+		user.setEmail(agtmsProperties.getAdminUsername());
 		user.setCreateTime(time);
 		user.setUpdateTime(time);
 		user.setSalt(salt);

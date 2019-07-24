@@ -78,11 +78,12 @@ import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
-import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.AuthUtils;
+import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
@@ -106,14 +107,6 @@ import net.saisimon.agtms.web.selection.FileTypeSelection;
 @Slf4j
 public class ManagementMainController extends AbstractMainController {
 	
-	@Value("${extra.max-size.export:65535}")
-	private int exportMaxSize;
-	@Value("${extra.max-size.import:65535}")
-	private int importMaxSize;
-	@Value("${extra.max-size.import-file:10}")
-	private int importFileMaxSize;
-	@Value("${extra.file.path:/tmp/files}")
-	private String filePath;
 	@Value("${spring.cloud.client.ip-address}")
 	private String ip;
 	@Value("${server.port}")
@@ -123,6 +116,8 @@ public class ManagementMainController extends AbstractMainController {
 	private FileTypeSelection fileTypeSelection;
 	@Autowired
 	private SchedulingTaskExecutor taskThreadPool;
+	@Autowired
+	private AgtmsProperties agtmsProperties;
 	
 	@PostMapping("/grid")
 	public Result grid(@PathVariable("key") String key) {
@@ -266,9 +261,9 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		filter.and(Constant.OPERATORID, userId);
 		Long total = GenerateServiceFactory.build(template).count(filter);
-		if (total > exportMaxSize) {
+		if (total > agtmsProperties.getExportRowsMaxSize()) {
 			Result result = ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
-			result.setMessageArgs(new Object[]{ exportMaxSize });
+			result.setMessageArgs(new Object[]{ agtmsProperties.getExportRowsMaxSize() });
 			return result;
 		}
 		body.setTemplateId(template.sign());
@@ -299,9 +294,9 @@ public class ManagementMainController extends AbstractMainController {
 			@RequestParam("importFileType") String importFileType, 
 			@RequestParam("importFields") List<String> importFields, 
 			@RequestParam("importFiles") MultipartFile[] importFiles) {
-		if (importFiles.length > importFileMaxSize) {
+		if (importFiles.length > agtmsProperties.getImportFileMaxSize()) {
 			Result result = ErrorMessage.Task.Import.TASK_IMPORT_FILE_MAX_SIZE_LIMIT;
-			result.setMessageArgs(new Object[]{ importFileMaxSize });
+			result.setMessageArgs(new Object[]{ agtmsProperties.getImportFileMaxSize() });
 			return result;
 		}
 		Long userId = AuthUtils.getUid();
@@ -344,7 +339,9 @@ public class ManagementMainController extends AbstractMainController {
 		body.setTemplateId(sign);
 		body.setUserId(userId);
 		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(filePath).append(File.separatorChar).append(Constant.File.IMPORT_PATH).append(File.separatorChar).append(userId);
+		importFilePath.append(agtmsProperties.getFilepath())
+			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
+			.append(File.separatorChar).append(userId);
 		try (FileOutputStream output = new FileOutputStream(FileUtils.createFile(importFilePath.toString(), body.getImportFileUUID(), "." + importFileType))) {
 			int size = 0;
 			switch (importFileType) {
@@ -363,9 +360,9 @@ public class ManagementMainController extends AbstractMainController {
 			if (size == 0) {
 				return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
 			}
-			if (size > importMaxSize) {
+			if (size > agtmsProperties.getImportRowsMaxSize()) {
 				Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
-				result.setMessageArgs(new Object[]{ importMaxSize });
+				result.setMessageArgs(new Object[]{ agtmsProperties.getImportRowsMaxSize() });
 				return result;
 			}
 			IOUtils.copy(importFile.getInputStream(), output);
@@ -623,7 +620,7 @@ public class ManagementMainController extends AbstractMainController {
 			if (field == null || field.getUniqued()) {
 				continue;
 			}
-			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
+			fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
 			Result result = TemplateUtils.validate(template, field, fieldValue);
 			if (!ResultUtils.isSuccess(result)) {
 				return result;

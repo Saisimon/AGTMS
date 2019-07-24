@@ -19,7 +19,6 @@ import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
@@ -35,8 +34,9 @@ import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
-import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.task.Actuator;
+import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
@@ -58,8 +58,8 @@ public class ImportActuator implements Actuator<ImportParam> {
 	
 	@Autowired
 	private MessageSource messageSource;
-	@Value("${extra.file.path:/tmp/files}")
-	private String filePath;
+	@Autowired
+	private AgtmsProperties agtmsProperties;
 	
 	@Override
 	@Transactional(rollbackOn = Exception.class)
@@ -96,7 +96,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 			return;
 		}
 		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(filePath)
+		importFilePath.append(agtmsProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId())
 			.append(File.separatorChar).append(param.getImportFileUUID());
@@ -154,7 +154,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 	
 	private File createImportFile(ImportParam param) {
 		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(filePath)
+		importFilePath.append(agtmsProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId())
 			.append(File.separatorChar).append(param.getImportFileUUID()).append('.').append(param.getImportFileType());
@@ -215,7 +215,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 				if (fieldValue == null) {
 					fieldValue = templateField.getDefaultValue();
 				}
-				fieldValue = DomainGenerater.parseFieldValue(fieldValue, templateField.getFieldType());
+				fieldValue = DomainUtils.parseFieldValue(fieldValue, templateField.getFieldType());
 				if (templateField.getRequired() && fieldValue == null) {
 					missRequireds.add(templateField.getFieldTitle());
 					continue;

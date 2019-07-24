@@ -16,7 +16,6 @@ import java.util.Set;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,6 +45,7 @@ import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -85,10 +85,10 @@ public class UserMainController extends AbstractMainController {
 		USER_FILTER_FIELDS.add("updateTime");
 	}
 	
-	@Value("${extra.default.password:123456}")
-	private String defaultPassword;
 	@Autowired
 	private UserStatusSelection userStatusSelection;
+	@Autowired
+	private AgtmsProperties agtmsProperties;
 	
 	@PostMapping("/grid")
 	public Result grid() {
@@ -196,7 +196,7 @@ public class UserMainController extends AbstractMainController {
 			return ErrorMessage.User.ACCOUNT_NOT_EXIST;
 		}
 		User user = optional.get();
-		String hmacPassword = AuthUtils.hmac(defaultPassword, user.getSalt());
+		String hmacPassword = AuthUtils.hmac(agtmsProperties.getResetPassword(), user.getSalt());
 		user.setPassword(hmacPassword);
 		user.setStatus(UserStatuses.CREATED.getStatus());
 		userService.saveOrUpdate(user);

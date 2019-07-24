@@ -18,7 +18,6 @@ import java.util.Set;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,6 +56,7 @@ import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.TemplateService;
@@ -108,8 +108,8 @@ public class NavigationMainController extends AbstractMainController {
 	private DiscoveryClient discoveryClient;
 	@Autowired(required = false)
 	private RemoteService remoteService;
-	@Value("${agtms.service.excludes}")
-	private String[] excludes;
+	@Autowired
+	private AgtmsProperties agtmsProperties;
 	
 	@Operate(type=OperateTypes.QUERY, value="side")
 	@PostMapping("/side")
@@ -416,7 +416,7 @@ public class NavigationMainController extends AbstractMainController {
 		List<Template> templates = new ArrayList<>();
 		List<String> services = discoveryClient.getServices();
 		for (String service : services) {
-			if (contains(excludes, service)) {
+			if (contains(agtmsProperties.getExcludeServices(), service)) {
 				continue;
 			}
 			List<Template> remoteTemplates = remoteService.templates(service);
@@ -431,12 +431,12 @@ public class NavigationMainController extends AbstractMainController {
 		return templates;
 	}
 	
-	private boolean contains(String[] services, String service) {
+	private boolean contains(List<String> services, String service) {
 		if (services == null) {
 			return false;
 		}
-		for (int i = 0; i < services.length; i++) {
-			if (service.equalsIgnoreCase(services[i])) {
+		for (int i = 0; i < services.size(); i++) {
+			if (service.equalsIgnoreCase(services.get(i))) {
 				return true;
 			}
 		}

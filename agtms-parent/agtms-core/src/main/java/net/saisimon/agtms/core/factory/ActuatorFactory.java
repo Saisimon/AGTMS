@@ -11,7 +11,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.domain.sign.Sign;
-import net.saisimon.agtms.core.exception.AGTMSException;
+import net.saisimon.agtms.core.exception.AgtmsException;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.SystemUtils;
 
@@ -29,7 +29,7 @@ public class ActuatorFactory implements BeanPostProcessor {
 	
 	public static Actuator<?> get(String key) {
 		if (SystemUtils.isBlank(key)) {
-			throw new AGTMSException("获取执行器失败");
+			throw new AgtmsException("获取执行器失败");
 		}
 		return ACTUATOR_MAP.get(key);
 	}

@@ -2,7 +2,6 @@ package net.saisimon.agtms.config;
 
 import java.time.Duration;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
@@ -34,13 +33,6 @@ import net.saisimon.agtms.redis.order.RedisOrder;
 public class RedisConfig {
 	
 	/**
-	 * 缓存最大存活时间
-	 * 单位：秒
-	 */
-	@Value("${extra.max-size.cache.ttl:600}")
-	private int cacheTtl;
-
-	/**
 	 * Redis 缓存管理器
 	 * 
 	 * @param connectionFactory Redis 链接工厂
@@ -60,7 +52,7 @@ public class RedisConfig {
 		objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 		jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
 		SerializationPair<?> pair = RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer);
-		RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofSeconds(cacheTtl)).serializeValuesWith(pair);
+		RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofSeconds(600)).serializeValuesWith(pair);
 		return new RedisCacheManager(redisCacheWriter, redisCacheConfiguration);
 	}
 	

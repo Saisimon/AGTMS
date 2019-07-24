@@ -6,23 +6,23 @@ package net.saisimon.agtms.core.exception;
  * @author saisimon
  *
  */
-public class AGTMSException extends RuntimeException {
+public class AgtmsException extends RuntimeException {
 
 	private static final long serialVersionUID = -8855674628137353063L;
 
-	public AGTMSException() {
+	public AgtmsException() {
 		super();
 	}
 
-	public AGTMSException(String s) {
+	public AgtmsException(String s) {
 		super(s);
 	}
 
-	public AGTMSException(Throwable c) {
+	public AgtmsException(Throwable c) {
 		super(c);
 	}
 
-	public AGTMSException(String s, Throwable c) {
+	public AgtmsException(String s, Throwable c) {
 		super(s, c);
 	}
 

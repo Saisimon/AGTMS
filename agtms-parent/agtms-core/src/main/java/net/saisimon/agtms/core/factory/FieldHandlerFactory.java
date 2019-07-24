@@ -8,7 +8,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.enums.Views;
-import net.saisimon.agtms.core.exception.AGTMSException;
+import net.saisimon.agtms.core.exception.AgtmsException;
 import net.saisimon.agtms.core.handler.FieldHandler;
 import net.saisimon.agtms.core.util.SystemUtils;
 
@@ -25,7 +25,7 @@ public class FieldHandlerFactory implements BeanPostProcessor {
 	
 	public static FieldHandler getHandler(String view) {
 		if (SystemUtils.isBlank(view)) {
-			throw new AGTMSException("获取 FieldHandler 失败");
+			throw new AgtmsException("获取 FieldHandler 失败");
 		}
 		return HANDLER_MAP.get(view);
 	}

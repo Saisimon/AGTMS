@@ -36,9 +36,9 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
-import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.util.AuthUtils;
+import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -219,14 +219,14 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 			String fieldName = entry.getKey();
 			TemplateField field = entry.getValue();
 			Object fieldValue = body.get(fieldName);
-			fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
+			fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
 			if (SystemUtils.isEmpty(fieldValue)) {
 				if (field.getRequired()) {
 					return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 				}
 				if (SystemUtils.isNotBlank(field.getDefaultValue())) {
 					fieldValue = field.getDefaultValue();
-					fieldValue = DomainGenerater.parseFieldValue(fieldValue, field.getFieldType());
+					fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
 				}
 			}
 			Result result = TemplateUtils.validate(template, field, fieldValue);

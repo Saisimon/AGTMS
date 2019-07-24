@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +31,7 @@ import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -52,8 +53,8 @@ public class ExportActuator implements Actuator<ExportParam> {
 	private static final Sign EXPORT_SIGN = Sign.builder().name(Functions.EXPORT.getFunction()).text(Functions.EXPORT.getFunction()).build();
 	private static final int PAGE_SIZE = 2000;
 	
-	@Value("${extra.file.path:/tmp/files}")
-	private String filePath;
+	@Autowired
+	private AgtmsProperties agtmsProperties;
 	
 	@Override
 	@Transactional(rollbackOn = Exception.class)
@@ -88,7 +89,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			return;
 		}
 		StringBuilder exportFilePath = new StringBuilder();
-		exportFilePath.append(filePath)
+		exportFilePath.append(agtmsProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId())
 			.append(File.separatorChar).append(param.getExportFileUUID());
@@ -146,7 +147,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 	
 	private File createExportFile(ExportParam param) throws IOException {
 		StringBuilder exportFilePath = new StringBuilder();
-		exportFilePath.append(filePath)
+		exportFilePath.append(agtmsProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId());
 		return FileUtils.createFile(exportFilePath.toString(), param.getExportFileUUID(), "." + param.getExportFileType());

@@ -13,6 +13,8 @@ import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.NumberUtil;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.Domain;
@@ -42,11 +44,10 @@ import net.saisimon.agtms.core.spring.SpringContext;
  * @author saisimon
  *
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class SelectionUtils {
 	
 	private static final int OPTION_SIZE = 30;
-	
-	private SelectionUtils() {}
 	
 	/**
 	 * 获取下拉列表对象

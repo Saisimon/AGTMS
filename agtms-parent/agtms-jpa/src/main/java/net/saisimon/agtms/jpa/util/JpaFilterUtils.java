@@ -35,7 +35,7 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
-import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.jpa.domain.Statement;
 
 public class JpaFilterUtils {
@@ -161,7 +161,7 @@ public class JpaFilterUtils {
 		}
 		Predicate predicate = null;
 		String key = param.getKey();
-		Object value = DomainGenerater.parseFieldValue(param.getValue(), param.getType());
+		Object value = DomainUtils.parseFieldValue(param.getValue(), param.getType());
 		if (value != null) {
 			switch (param.getOperator()) {
 				case LT:
@@ -285,7 +285,7 @@ public class JpaFilterUtils {
 			return statement;
 		}
 		String key = param.getKey();
-		Object value = DomainGenerater.parseFieldValue(param.getValue(), param.getType());
+		Object value = DomainUtils.parseFieldValue(param.getValue(), param.getType());
 		if (value != null) {
 			StringBuilder expression = new StringBuilder();
 			switch (param.getOperator()) {

@@ -1,3 +1,3 @@
-column0field0,column1field0
-test,test
-column0field0,column1field0
+column0field0,Column0field1,Column0field2,Column0field3
+test,199,199.99,2019-01-01
+column0field0,0,0,2019-01-01

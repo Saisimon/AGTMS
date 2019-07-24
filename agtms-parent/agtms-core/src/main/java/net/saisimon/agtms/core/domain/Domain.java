@@ -1,6 +1,6 @@
 package net.saisimon.agtms.core.domain;
 
-import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.util.DomainUtils;
 
 /**
  * 自定义对象接口
@@ -17,7 +17,7 @@ public interface Domain {
 	 * @return 属性值
 	 */
 	default Object getField(String fieldName) {
-		return DomainGenerater.getField(this, fieldName);
+		return DomainUtils.getField(this, fieldName);
 	}
 
 	/**
@@ -28,7 +28,7 @@ public interface Domain {
 	 * @param fieldClass 属性值的类型
 	 */
 	default void setField(String fieldName, Object fieldValue, Class<?> fieldClass) {
-		DomainGenerater.setField(this, fieldName, fieldValue, fieldClass);
+		DomainUtils.setField(this, fieldName, fieldValue, fieldClass);
 	}
 	
 }

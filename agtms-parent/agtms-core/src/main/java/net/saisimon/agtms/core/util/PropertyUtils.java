@@ -9,15 +9,17 @@ import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
 /**
  * 属性文件读取工具类
  * 
  * @author saisimon
  *
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class PropertyUtils {
-
-	private PropertyUtils() {}
 
 	/**
 	 * 读取 application.yml 文件的属性

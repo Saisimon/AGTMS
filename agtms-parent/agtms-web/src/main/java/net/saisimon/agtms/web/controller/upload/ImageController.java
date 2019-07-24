@@ -8,7 +8,7 @@ import java.io.InputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +25,7 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.ImageFormats;
 import net.saisimon.agtms.core.enums.OperateTypes;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
@@ -36,8 +37,8 @@ import net.saisimon.agtms.web.controller.base.BaseController;
 @Slf4j
 public class ImageController extends BaseController {
 	
-	@Value("${extra.file.path:/tmp/files}")
-	private String filePath;
+	@Autowired
+	private AgtmsProperties agtmsProperties;
 	
 	@Operate(type=OperateTypes.UPLOAD)
 	@PostMapping("/upload")
@@ -52,7 +53,7 @@ public class ImageController extends BaseController {
 			String second = md5.substring(2, 4);
 			String third = md5.substring(4) + imageFormat.getSuffix();
 			StringBuilder uploadFilePath = new StringBuilder();
-			uploadFilePath.append(filePath)
+			uploadFilePath.append(agtmsProperties.getFilepath())
 				.append(File.separatorChar).append(Constant.File.UPLOAD_PATH)
 				.append(File.separatorChar).append("image")
 				.append(File.separatorChar).append(first)
@@ -77,7 +78,7 @@ public class ImageController extends BaseController {
 	@GetMapping("/res/{first}/{second}/{third}")
 	public void res(@PathVariable("first") String first, @PathVariable("second") String second, @PathVariable("third") String third) throws IOException {
 		StringBuilder uploadFilePath = new StringBuilder();
-		uploadFilePath.append(filePath)
+		uploadFilePath.append(agtmsProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.UPLOAD_PATH)
 			.append(File.separatorChar).append("image")
 			.append(File.separatorChar).append(first)

@@ -33,6 +33,8 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
 import cn.hutool.core.date.DateUtil;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import net.saisimon.agtms.core.enums.ImageFormats;
 
 /**
@@ -41,9 +43,8 @@ import net.saisimon.agtms.core.enums.ImageFormats;
  * @author saisimon
  *
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileUtils {
-	
-	private FileUtils() {}
 	
 	/**
 	 * 将指定数据写入指定XLS文件

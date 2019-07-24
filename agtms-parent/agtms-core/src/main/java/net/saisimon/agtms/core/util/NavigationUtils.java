@@ -2,6 +2,8 @@ package net.saisimon.agtms.core.util;
 
 import java.util.Optional;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import net.saisimon.agtms.core.domain.entity.Navigation;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
@@ -12,9 +14,8 @@ import net.saisimon.agtms.core.service.NavigationService;
  * @author saisimon
  *
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class NavigationUtils {
-	
-	private NavigationUtils() {}
 	
 	public static Navigation getNavigation(Long id, Long operatorId) {
 		if (id == null || operatorId == null) {

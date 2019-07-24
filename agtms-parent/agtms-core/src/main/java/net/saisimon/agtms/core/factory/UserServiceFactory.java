@@ -8,7 +8,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.OrderComparator;
 import org.springframework.stereotype.Component;
 
-import net.saisimon.agtms.core.exception.AGTMSException;
+import net.saisimon.agtms.core.exception.AgtmsException;
 import net.saisimon.agtms.core.service.UserService;
 
 /**
@@ -26,7 +26,7 @@ public class UserServiceFactory implements BeanPostProcessor {
 		if (USER_SERVICES.size() > 0) {
 			return USER_SERVICES.get(0);
 		}
-		throw new AGTMSException("获取 UserService 失败");
+		throw new AgtmsException("获取 UserService 失败");
 	}
 	
 	@Override

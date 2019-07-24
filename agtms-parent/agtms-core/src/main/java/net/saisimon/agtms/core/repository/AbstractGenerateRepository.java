@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
@@ -17,6 +18,7 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.exception.GenerateException;
+import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
 /**
@@ -29,6 +31,9 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 public abstract class AbstractGenerateRepository implements BaseRepository<Domain, Long> {
 	
 	private ThreadLocal<Template> local = new ThreadLocal<>();
+	
+	@Autowired
+	private DomainGenerater domainGenerater;
 	
 	/**
 	 * 初始化模版对象
@@ -53,17 +58,29 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 	 */
 	public Template template() {
 		Template template = local.get();
-		Assert.notNull(template, "uninit");
+		Assert.notNull(template, "未初始化模板");
 		return template;
 	}
 	
 	public Domain newGenerate() throws GenerateException {
-		Class<? extends Domain> domainClass = TemplateUtils.getDomainClass(template());
+		Class<? extends Domain> domainClass = getDomainClass(template());
 		try {
 			return domainClass.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
-			throw new GenerateException("create " + domainClass + " instance error.", e);
+			throw new GenerateException("创建 " + domainClass + " 实例失败", e);
 		}
+	}
+	
+	private Class<Domain> getDomainClass(Template template) throws GenerateException {
+		if (template == null) {
+			return null;
+		}
+		String sign = template.sign();
+		if (sign == null) {
+			return null;
+		}
+		String generateClassName = domainGenerater.buildGenerateName(sign);
+		return domainGenerater.generate(TemplateUtils.getNamespace(template), TemplateUtils.buildFieldMap(template), generateClassName);
 	}
 	
 	protected Domain conversion(Map<String, Object> map) throws GenerateException {
@@ -86,7 +103,7 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 					field.setAccessible(true);
 					field.set(domain, value);
 				} catch (Exception e) {
-					log.error(domain.getClass().getName() + " set field("+ fieldName +") error, msg : " + e.getMessage());
+					log.error(domain.getClass().getName() + " set field("+ fieldName +") error", e);
 				}
 			}
 		});
