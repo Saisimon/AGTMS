@@ -14,7 +14,7 @@ import net.saisimon.agtms.web.dto.req.UserPasswordChangeParam;
 import net.saisimon.agtms.web.dto.req.UserProfileSaveParam;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG", "eureka.client.enabled=false"})
+@SpringBootTest(properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG"})
 @AutoConfigureMockMvc
 public class UserControllerTest extends AbstractControllerTest {
 	

@@ -718,12 +718,6 @@ public class EditControllerTest extends AbstractControllerTest {
 			TaskInfo xlsImportTask = taskIterator.next();
 			TaskInfo xlsxImportTask = taskIterator.next();
 			TaskInfo csvImportTask = taskIterator.next();
-			System.out.println(xlsExportTask.toString());
-			System.out.println(xlsxExportTask.toString());
-			System.out.println(csvExportTask.toString());
-			System.out.println(xlsImportTask.toString());
-			System.out.println(xlsxImportTask.toString());
-			System.out.println(csvImportTask.toString());
 			
 			param = new HashMap<>();
 			param.put("id", xlsExportTask.getId());

@@ -14,7 +14,7 @@ import net.saisimon.agtms.core.dto.SimpleResult;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG", "eureka.client.enabled=false"})
+@SpringBootTest(properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG"})
 @AutoConfigureMockMvc
 public class ImageControllerTest extends AbstractControllerTest {
 
