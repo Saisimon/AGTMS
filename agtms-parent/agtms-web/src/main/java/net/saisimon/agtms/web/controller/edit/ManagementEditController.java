@@ -30,6 +30,7 @@ import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
@@ -175,12 +176,16 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 			String selectionSign = templateField.selectionSign(service);
 			field.setSign(selectionSign);
 			field.setOptions(getFieldOptions(selectionSign, userId));
-			value = getFieldOptionValue(value, selectionSign, userId);
+			if (value == null) {
+				value = templateField.getDefaultValue();
+			}
+			field.setValue(getFieldOptionValue(value, selectionSign, userId));
+		} else {
+			field.setValue(value == null ? DomainUtils.parseFieldValue(templateField.getDefaultValue(), templateField.getFieldType()) : value);
 		}
-		field.setValue(value == null ? templateField.getDefaultValue() : value);
 		return field;
 	}
-
+	
 	private List<Object> getFieldOptions(String selectionSign, Long userId) {
 		List<Option<Object>> selectionOptions = SelectionUtils.getSelectionOptions(selectionSign, null, userId);
 		List<Object> options = new ArrayList<>();

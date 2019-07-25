@@ -31,11 +31,14 @@ import net.saisimon.agtms.core.domain.grid.TemplateGrid.Column;
 import net.saisimon.agtms.core.domain.grid.TemplateGrid.Table;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.domain.tag.MultipleSelect;
+import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.EditorTypes;
 import net.saisimon.agtms.core.enums.OperateTypes;
+import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.SelectionServiceFactory;
@@ -45,6 +48,7 @@ import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.NavigationUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
@@ -258,14 +262,14 @@ public class TemplateEditController extends BaseController {
 			for (TemplateColumn column : template.getColumns()) {
 				columns.add(Column.builder().field(column.getColumnName()).ordered(column.getOrdered()).build());
 				columnNameRow.put(column.getColumnName(), new Editor<>(column.getTitle(), column.getColumnName()));
-				fieldRow.put(column.getColumnName(), buildSubTable(grid, column, template.getService()));
+				fieldRow.put(column.getColumnName(), buildSubTable(grid, column, template.getService(), template.getOperatorId()));
 				removeRow.put(column.getColumnName(), "");
 			}
 		} else {
 			String columnName = "column0";
 			columns.add(Column.builder().field(columnName).ordered(0).build());
 			columnNameRow.put(columnName, new Editor<>("", columnName));
-			fieldRow.put(columnName, buildSubTable(grid, null, null));
+			fieldRow.put(columnName, buildSubTable(grid, null, null, null));
 			removeRow.put(columnName, "");
 		}
 		table.setIdx(idx);
@@ -283,7 +287,7 @@ public class TemplateEditController extends BaseController {
 		return table;
 	}
 	
-	private Table buildSubTable(TemplateGrid grid, TemplateColumn column, String service) {
+	private Table buildSubTable(TemplateGrid grid, TemplateColumn column, String service, Long operatorId) {
 		Table subTable = new Table();
 		List<Column> subColumns = new ArrayList<>();
 		List<Map<String, Object>> subRows = new ArrayList<>();
@@ -295,8 +299,8 @@ public class TemplateEditController extends BaseController {
 		Map<String, Object> requiredRow = TemplateGrid.buildRow("required", null, EditorTypes.SELECT);
 		Map<String, Object> uniquedRow = TemplateGrid.buildRow("uniqued", null, EditorTypes.SELECT);
 		Map<String, Object> hiddenRow = TemplateGrid.buildRow("hidden", null, EditorTypes.SELECT);
-		Map<String, Object> defaultRow = TemplateGrid.buildRow("default", null, EditorTypes.INPUT);
 		Map<String, Object> subremoveRow = TemplateGrid.buildRow("remove", null, EditorTypes.REMOVE);
+		Map<String, Object> defaultRow = TemplateGrid.buildRow("default", null, EditorTypes.INPUT);
 		Integer idx = 1;
 		if (column != null) {
 			idx = column.getFieldIndex();
@@ -311,7 +315,7 @@ public class TemplateEditController extends BaseController {
 				requiredRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getRequired() ? 1 : 0), field.getFieldName()));
 				uniquedRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getUniqued() ? 1 : 0), field.getFieldName()));
 				hiddenRow.put(field.getFieldName(), new Editor<>(Select.getOption(grid.getWhetherOptions(), field.getHidden() ? 1 : 0), field.getFieldName()));
-				defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(field.getDefaultValue()) ? "" : field.getDefaultValue(), field.getFieldName()));
+				handleDefaultMap(defaultRow, field, service, operatorId);
 				subremoveRow.put(field.getFieldName(), "");
 			}
 		} else {
@@ -357,6 +361,21 @@ public class TemplateEditController extends BaseController {
 		subTable.setRows(subRows);
 		subTable.setColumns(subColumns);
 		return subTable;
+	}
+	
+	private void handleDefaultMap(Map<String, Object> defaultRow, TemplateField field, String service, Long operatorId) {
+		if (Views.SELECTION.getView().equals(field.getViews())) {
+			List<Option<Object>> options = SelectionUtils.getSelectionOptions(field.selectionSign(service), null, operatorId);
+			defaultRow.put(field.getFieldName(), new Editor<>(Select.getOption(options, field.getDefaultValue()), field.getFieldName(), options));
+		} else {
+			String type = "text";
+			if (Classes.LONG.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {
+				type = "number";
+			} else if (Classes.DATE.getName().equals(field.getFieldType())) {
+				type = "date";
+			}
+			defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(field.getDefaultValue()) ? "" : field.getDefaultValue(), field.getFieldName(), type));
+		}
 	}
 	
 	private List<Breadcrumb> breadcrumbs(Long id) {

@@ -109,8 +109,12 @@ public class DomainUtils {
 						return new Date((Long) fieldValue);
 					} else if (fieldValue instanceof String) {
 						String fieldValueStr = fieldValue.toString();
-						fieldValueStr = fieldValueStr.replaceAll("T", " ").replaceAll("Z", "");
-						return DateUtil.parse(fieldValueStr, FastDateFormat.getInstance(DatePattern.NORM_DATETIME_MS_PATTERN, TimeZone.getTimeZone("UTC"))).toJdkDate();
+						if (fieldValueStr.length() == DatePattern.NORM_DATE_PATTERN.length()) {
+							return DateUtil.parse(fieldValueStr, FastDateFormat.getInstance(DatePattern.NORM_DATE_PATTERN, TimeZone.getTimeZone("UTC"))).toJdkDate();
+						} else {
+							fieldValueStr = fieldValueStr.replaceAll("T", " ").replaceAll("Z", "");
+							return DateUtil.parse(fieldValueStr, FastDateFormat.getInstance(DatePattern.NORM_DATETIME_MS_PATTERN, TimeZone.getTimeZone("UTC"))).toJdkDate();
+						}
 					}
 				}
 			} catch (Exception e) {
