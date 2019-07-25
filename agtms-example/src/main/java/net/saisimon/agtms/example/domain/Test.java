@@ -33,19 +33,19 @@ public class Test {
 	private Integer age;
 	
 	@Column
-	@FieldInfo(columnOrdered = 0, fieldOrdered = 1, fieldTitle = "姓名", filter = true, uniqued = true, required = true)
+	@FieldInfo(columnOrdered = 0, fieldOrdered = 1, fieldTitle = "姓名", filter = true, uniqued = true, required = true, defaultValue = "Saisimon")
 	private String name;
 	
 	@Column
-	@FieldInfo(columnOrdered = 0, fieldOrdered = 2, fieldTitle = "性别", fieldType = Classes.LONG, view = Views.SELECTION, selection = GenderSelection.class, filter = true)
+	@FieldInfo(columnOrdered = 0, fieldOrdered = 2, fieldTitle = "性别", fieldType = Classes.LONG, view = Views.SELECTION, selection = GenderSelection.class, filter = true, defaultValue = "1")
 	private Integer gender;
 	
 	@Column
-	@FieldInfo(columnOrdered = 0, fieldOrdered = 3, fieldTitle = "生日", fieldType = Classes.DATE, filter = true, sorted = true, required = true)
+	@FieldInfo(columnOrdered = 0, fieldOrdered = 3, fieldTitle = "生日", fieldType = Classes.DATE, filter = true, sorted = true, required = true, defaultValue = "1970-01-01")
 	private Date birthday;
 	
 	@Column
-	@FieldInfo(columnOrdered = 1, fieldOrdered = 0, fieldTitle = "个人主页", view = Views.LINK)
+	@FieldInfo(columnOrdered = 1, fieldOrdered = 0, fieldTitle = "个人主页", view = Views.LINK, defaultValue = "https://github.com/Saisimon/AGTMS")
 	private String home;
 	
 	@Column
