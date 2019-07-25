@@ -8,6 +8,7 @@ import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.handler.FieldHandler;
+import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
@@ -20,7 +21,7 @@ public class SelectionFieldHandler implements FieldHandler {
 	public Result validate(Template template, TemplateField field, Object value) {
 		if (field != null && SystemUtils.isNotEmpty(value)) {
 			String selectionSign = field.selectionSign(template.getService());
-			Selection selection = SelectionUtils.getSelection(selectionSign, template.getOperatorId());
+			Selection selection = SelectionUtils.getSelection(selectionSign, AuthUtils.getUid());
 			if (selection == null) {
 				return ErrorMessage.Common.FIELD_FORMAT_NOT_CORRECT.messageArgs(field.getFieldTitle());
 			}
