@@ -2,12 +2,15 @@ package net.saisimon.agtms.controller;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.beanutils.converters.DateTimeConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.NumberUtil;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
@@ -343,6 +347,24 @@ public class AgtmsController {
 	private Object buildEntity(Class<?> entityClass, Map<String, Object> body) {
 		try {
 			Object entity = entityClass.newInstance();
+			ConvertUtils.register(new DateTimeConverter() {
+
+				@Override
+				protected Class<?> getDefaultType() {
+					return Date.class;
+				}
+
+				@Override
+				protected <T> T convertToType(Class<T> targetType, Object value) throws Exception {
+					String dateStr = value.toString().trim();
+					if (NumberUtil.isLong(dateStr)) {
+						return super.convertToType(targetType, Long.valueOf(dateStr));
+					} else {
+						return super.convertToType(targetType, value);
+					}
+				}
+				
+			}, Date.class);
 			BeanUtils.populate(entity, body);
 			return entity;
 		} catch (InstantiationException | IllegalAccessException e) {

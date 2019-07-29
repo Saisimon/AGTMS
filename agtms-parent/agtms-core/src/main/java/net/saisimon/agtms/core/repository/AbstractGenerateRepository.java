@@ -2,9 +2,9 @@ package net.saisimon.agtms.core.repository;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.format.FastDateFormat;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
@@ -72,9 +73,6 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 	}
 	
 	private Class<Domain> getDomainClass(Template template) throws GenerateException {
-		if (template == null) {
-			return null;
-		}
 		String sign = template.sign();
 		if (sign == null) {
 			return null;
@@ -133,11 +131,11 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 			val = ((Float) value).doubleValue();
 		} else if (type.isAssignableFrom(Date.class)) {
 			if (value instanceof Long) {
-				val = new Timestamp((Long) value);
+				val = new Date((Long) value);
 			} else if (value instanceof String) {
-				val = DateUtil.parseDate(value.toString()).toTimestamp();
+				val = DateUtil.parse(value.toString(), FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZ", TimeZone.getTimeZone("UTC"))).toJdkDate();
 			} else if (value instanceof Date) {
-				val = new Timestamp(((Date) value).getTime());
+				val = (Date) value;
 			}
 		}
 		return val;
