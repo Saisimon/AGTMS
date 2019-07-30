@@ -94,11 +94,15 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 	}
 	
 	private Object internationalList(List<Object> list) {
-		ListIterator<Object> it = list.listIterator();
-		while (it.hasNext()) {
-			Object sub = it.next();
-			sub = international(sub);
-			it.set(sub);
+		try {
+			ListIterator<Object> it = list.listIterator();
+			while (it.hasNext()) {
+				Object sub = it.next();
+				sub = international(sub);
+				it.set(sub);
+			}
+		} catch (UnsupportedOperationException e) {
+			// skip
 		}
 		return list;
 	}
@@ -128,10 +132,14 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 	}
 	
 	private Object internationalMap(Map<Object, Object> map) {
-		for (Object key : map.keySet()) {
-			Object val = map.get(key);
-			val = international(val);
-			map.put(key, val);
+		try {
+			for (Object key : map.keySet()) {
+				Object val = map.get(key);
+				val = international(val);
+				map.put(key, val);
+			}
+		} catch (UnsupportedOperationException e) {
+			// skip
 		}
 		return map;
 	}
@@ -157,5 +165,5 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 			return Modifier.isPrivate(mod) && !Modifier.isFinal(mod) && field.getAnnotation(International.class) != null;
 		});
 	}
-
+	
 }
