@@ -1,4 +1,14 @@
 # Auto-Generate Template Management System
+
+           d8888  .d8888b. 88888888888 888b     d888  .d8888b.  
+          d88888 d88P  Y88b    888     8888b   d8888 d88P  Y88b 
+         d88P888 888    888    888     88888b.d88888 Y88b.      
+        d88P 888 888           888     888Y88888P888  "Y888b.   
+       d88P  888 888  88888    888     888 Y888P 888     "Y88b. 
+      d88P   888 888    888    888     888  Y8P  888       "888 
+     d8888888888 Y88b  d88P    888     888   "   888 Y88b  d88P 
+    d88P     888  "Y8888P88    888     888       888  "Y8888P"  
+
 [![CircleCI](https://img.shields.io/circleci/build/github/Saisimon/AGTMS/dev.svg)](https://circleci.com/gh/Saisimon/AGTMS/tree/dev)
 [![Codecov branch](https://img.shields.io/codecov/c/github/Saisimon/AGTMS/dev.svg)](https://codecov.io/gh/Saisimon/AGTMS)
 [![Codacy branch grade](https://img.shields.io/codacy/grade/13d287dc9b6c4d1d9e219369a890d385/dev.svg)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Saisimon/AGTMS&amp;utm_campaign=Badge_Grade)
@@ -14,6 +24,7 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 ## 项目结构
 ```
 .
+├── agtms-admin         Spring Boot Admin 服务 (可选)(默认端口：7890, 默认用户：agtms， 密码：agtms7890)
 ├── agtms-autoconfigure 自动配置支持类库
 ├── agtms-autotest      自动化测试
 ├── agtms-example       远程调用示例服务 (默认端口：7899)
@@ -25,7 +36,7 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 │   ├── agtms-mongodb   MongoDB 实现支持类库 (可选)
 │   ├── agtms-redis     Redis 支持类库 (可选)
 │   ├── agtms-remote    远程调用实现支持类库 (可选)
-│   └── agtms-web       Web 服务 (默认端口：7892)
+│   └── agtms-web       Web 服务 (默认端口：7892, 默认用户：admin， 密码：123456)
 ├── agtms-record        集成测试报告聚合模块
 ├── agtms-vue           前端页面 (默认端口：8080)
 ├── agtms-zuul          Zuul 网关服务 (默认端口：7891)
@@ -63,7 +74,7 @@ AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系�
 <ZooKeeper IP>   zookeeperserver
 ```
 2. 执行启动脚本
-* **`start.cmd 默认会杀掉占用 7891、7892端口的进程，请确认以后再执行操作`**
+* **`start.cmd 默认会杀掉占用 7890、7891、7892端口的进程，请确认以后再执行操作`**
 ```sh
 # Unix
 ./start
@@ -78,6 +89,8 @@ http://localhost:8080
 4. 日志
 ```
 data
+├── admin 
+|   └── agtms-admin.log   Spring Boot Admin 服务日志
 ├── web 
 |   └── agtms-web.log     Web 服务日志
 └── zuul
@@ -118,13 +131,19 @@ npm run serve
 ```html
 http://localhost:8080
 ```
-7. 日志
+7. 启动 Spring Boot Admin 服务 (agtms-admin)
+```sh
+java -jar agtms-admin/target/agtms-admin.jar
+```
+8. 日志
 ```
 data
+├── admin 
+|   └── agtms-admin.log   Spring Boot Admin 服务日志
 ├── web 
 |   └── agtms-web.log     Web 服务日志
 └── zuul
-    └── agtms-zuul.log    网关日志
+    └── agtms-zuul.log    网关服务日志
 ```
 
 ### Docker 容器启动
