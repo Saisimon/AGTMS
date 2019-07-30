@@ -270,7 +270,10 @@ public abstract class AbstractMainController extends BaseController {
 		if (pageable == null) {
 			return;
 		}
-		HttpSession session = request.getSession();
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			return;
+		}
 		Map<String, Object> pageableMap = (Map<String, Object>) session.getAttribute(sessionKey);
 		if (pageableMap == null) {
 			return;
@@ -290,7 +293,10 @@ public abstract class AbstractMainController extends BaseController {
 		if (CollectionUtils.isEmpty(columns)) {
 			return;
 		}
-		HttpSession session = request.getSession();
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			return;
+		}
 		Map<String, String> pageableMap = (Map<String, String>) session.getAttribute(sessionKey);
 		if (pageableMap == null) {
 			return;
@@ -309,7 +315,10 @@ public abstract class AbstractMainController extends BaseController {
 		if (CollectionUtils.isEmpty(filters)) {
 			return false;
 		}
-		HttpSession session = request.getSession();
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			return false;
+		}
 		Map<String, Object> filterMap = (Map<String, Object>) session.getAttribute(sessionKey);
 		if (filterMap == null) {
 			return false;
