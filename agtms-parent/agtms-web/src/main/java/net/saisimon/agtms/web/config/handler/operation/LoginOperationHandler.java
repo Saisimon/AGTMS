@@ -10,13 +10,14 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import cn.hutool.core.util.NumberUtil;
 import net.saisimon.agtms.core.annotation.Operate;
 import net.saisimon.agtms.core.domain.entity.Operation;
-import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.dto.SimpleResult;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.handler.OperationHandler;
 import net.saisimon.agtms.core.util.SystemUtils;
+import net.saisimon.agtms.web.dto.resp.UserTokenInfo;
 
 /**
  * 登出操作处理器
@@ -33,8 +34,8 @@ public class LoginOperationHandler implements OperationHandler {
 		if (result instanceof SimpleResult) {
 			SimpleResult<?> simpleResult = (SimpleResult<?>) result;
 			Object data = simpleResult.getData();
-			if (data instanceof UserToken && data != null) {
-				operation.setOperatorId(((UserToken) data).getUserId());
+			if (data instanceof UserTokenInfo) {
+				operation.setOperatorId(Long.valueOf(((UserTokenInfo) data).getUserId()));
 			}
 		}
 		operation.setOperateType(operate.type().getType());
