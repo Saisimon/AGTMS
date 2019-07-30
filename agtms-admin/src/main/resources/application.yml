@@ -1,0 +1,22 @@
+spring:
+  main:
+    banner-mode: 'off'
+  security:
+    user:
+      name: "agtms"
+      password: "agtms7890"
+  cloud:
+    zookeeper:
+      discovery:
+        metadata:
+          user.name: ${spring.security.user.name}
+          user.password: ${spring.security.user.password}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS

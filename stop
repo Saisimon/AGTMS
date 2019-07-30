@@ -9,3 +9,8 @@ if [ -f data/zuul/zuul.pid ]; then
     rm data/zuul/zuul.pid
     echo "agtms-zuul 已停止."
 fi
+if [ -f data/admin/admin.pid ]; then
+    kill -9 `cat data/admin/admin.pid`
+    rm data/admin/admin.pid
+    echo "agtms-admin 已停止."
+fi

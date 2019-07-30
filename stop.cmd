@@ -13,3 +13,9 @@ for /f "tokens=5" %%i in ('netstat -ano ^| findstr 7891') do (
     goto zuul
 )
 :zuul
+for /f "tokens=5" %%i in ('netstat -ano ^| findstr 7890') do (
+    taskkill /f /pid %%i
+    echo "agtms-admin 已停止."
+    goto admin
+)
+:admin

@@ -47,6 +47,10 @@
 			<artifactId>ehcache</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.jolokia</groupId>
+			<artifactId>jolokia-core</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.saisimon</groupId>
 			<artifactId>agtms-api</artifactId>
 			<exclusions>
@@ -142,6 +146,13 @@
 					<mainClass>${start-class}</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>com.spotify</groupId>

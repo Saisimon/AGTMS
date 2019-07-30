@@ -1,13 +1,25 @@
 #!/bin/sh
 
+echo '================================================================'
+echo '          d8888  .d8888b.  88888888888 888b     d888  .d8888b.  '
+echo '         d88888 d88P  Y88b     888     8888b   d8888 d88P  Y88b '
+echo '        d88P888 888    888     888     88888b.d88888 Y88b.      '
+echo '       d88P 888 888            888     888Y88888P888  "Y888b.   '
+echo '      d88P  888 888  88888     888     888 Y888P 888     "Y88b. '
+echo '     d88P   888 888    888     888     888  Y8P  888       "888 '
+echo '    d8888888888 Y88b  d88P     888     888   "   888 Y88b  d88P '
+echo '   d88P     888  "Y8888P88     888     888       888  "Y8888P"  '
+echo '================================================================'
+
 # 创建日志文件夹
-mkdir -p data/web
-mkdir -p data/zuul
+mkdir -p data/admin/logs
+mkdir -p data/admin/logs
+mkdir -p data/admin/logs
 
 c=0
 v=0
 if [ $# -eq 0 ]; then
-    arr=("web" "zuul" "vue")
+    arr=("admin" "web" "zuul" "vue")
 else
     for p in "$@"; do
         if [ "$p" == "web" ]; then
@@ -16,10 +28,13 @@ else
         elif [ "$p" == "zuul" ]; then
             arr[c]=$p
             c=$(( $c + 1 ))
+        elif [ "$p" == "admin" ]; then
+            arr[c]=$p
+            c=$(( $c + 1 ))
         elif [ "$p" == "vue" ]; then
             v=1
         else
-            echo "未知参数，参数只支持: web、zuul、vue"
+            echo "未知参数，参数只支持: admin、web、zuul、vue"
         fi
     done
     # agtms-vue 最后启动
@@ -58,6 +73,16 @@ for i in "${arr[@]}"; do
         echo "agtms-zuul 启动中..."
         java -jar -Xms512m -Xmx512m -Xmn192m -Xss256k agtms-zuul/target/agtms-zuul.jar > data/zuul/logs/agtms-zuul.log 2>&1 &
         echo $! > data/zuul/zuul.pid
+    elif [ "$i" == "admin" ]; then
+        # 启动 agtms-admin
+        if [ -f data/admin/admin.pid ]; then
+            kill -9 `cat data/admin/admin.pid`
+            rm data/admin/admin.pid
+            echo "agtms-admin 已停止."
+        fi
+        echo "agtms-admin 启动中..."
+        java -jar -Xms512m -Xmx512m -Xmn192m -Xss256k agtms-admin/target/agtms-admin.jar > data/admin/logs/agtms-admin.log 2>&1 &
+        echo $! > data/admin/admin.pid
     elif [ "$i" == "vue" ]; then
         # 启动 agtms-vue
         cd agtms-vue

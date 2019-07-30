@@ -89,6 +89,26 @@ services:
         condition: on-failure
         delay: 10s
         max_attempts: 3
+  agtms-admin:
+    image: agtms/agtms-admin:${REVISION}
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx512m -Xmn192m -Xss256k
+    ports:
+      - 7890:7890
+    networks: 
+      back:
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        "name": "admin"
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+      resources:
+          limits:
+            memory: 1G
   agtms-zuul:
     image: agtms/agtms-zuul:${REVISION}
     environment:

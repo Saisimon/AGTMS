@@ -31,9 +31,8 @@ data/web/logs
 data/web/libs/*
 data/web/files/*
 data/web/*.pid
-data/eureka
 data/zuul
-data/gateway
+data/admin
 data/redis
 data/mysql
 data/mongodb

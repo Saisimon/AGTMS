@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: AGTMS-ADMIN
+  cloud:
+    zookeeper:
+      connect-string: zookeeperserver:2181
+
+server:
+  port: 7890
