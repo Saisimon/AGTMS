@@ -232,4 +232,4 @@ agtms:
   export-rows-max-size: 65535
   import-rows-max-size: 65535
   import-file-max-size: 10
-  exclude-services: agtms-web, agtms-zuul
+  exclude-services: agtms-admin, agtms-web, agtms-zuul
