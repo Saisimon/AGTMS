@@ -165,29 +165,6 @@ public class TemplateUtils {
 	}
 	
 	/**
-	 * 获取模板中是否包含下拉列表
-	 * 
-	 * @param template 模板对象
-	 * @return 是否包含下拉列表
-	 */
-	public static boolean hasSelection(Template template) {
-		if (template == null || CollectionUtils.isEmpty(template.getColumns())) {
-			return false;
-		}
-		for (TemplateColumn column : template.getColumns()) {
-			if (CollectionUtils.isEmpty(column.getFields())) {
-				continue;
-			}
-			for (TemplateField field : column.getFields()) {
-				if (Views.SELECTION.getView().equals(field.getViews())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	/**
 	 * 获取模板中的必填属性集合
 	 * 
 	 * @param template 模板对象

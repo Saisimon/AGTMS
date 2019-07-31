@@ -22,5 +22,10 @@ public abstract class AbstractFieldHandler implements FieldHandler {
 		}
 		return ResultUtils.simpleSuccess();
 	}
+
+	@Override
+	public Object masking(Object value) {
+		return value;
+	}
 	
 }

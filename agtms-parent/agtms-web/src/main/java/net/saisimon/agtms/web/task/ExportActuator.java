@@ -33,9 +33,9 @@ import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.task.Actuator;
+import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
-import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
@@ -179,7 +179,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			}
 			FilterPageable pageable = new FilterPageable(new FilterParam(Constant.ID, lastId, Operator.LT), PAGE_SIZE, null);
 			List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, pageable, fields.toArray(new String[fields.size()]));
-			List<Map<String, Object>> domainList = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), domains, param.getUserId());
+			List<Map<String, Object>> domainList = DomainUtils.conversions(fieldInfoMap, template.getService(), domains, param.getUserId());
 			for (Map<String, Object> domainMap : domainList) {
 				if (Thread.currentThread().isInterrupted()) {
 					throw new InterruptedException("Task Cancel");

@@ -23,8 +23,33 @@ public class EmailFieldHandler extends AbstractFieldHandler {
 	}
 	
 	@Override
+	public Object masking(Object value) {
+		if (SystemUtils.isEmpty(value)) {
+			return value;
+		}
+		return maskingEmail(value.toString());
+	}
+	
+	@Override
 	public Views key() {
 		return Views.EMAIL;
+	}
+	
+	private String maskingEmail(String email) {
+		StringBuffer buffer = new StringBuffer();
+		boolean emailSignal = false;
+		for (int i = 0; i < email.length(); i++) {
+			char c = email.charAt(i);
+			if (c == '@') {
+				emailSignal = true;
+			}
+			if (i > 2 && (!emailSignal && c != '@')) {
+				buffer.append('*');
+			} else {
+				buffer.append(c);
+			}
+		}
+		return buffer.toString();
 	}
 
 }

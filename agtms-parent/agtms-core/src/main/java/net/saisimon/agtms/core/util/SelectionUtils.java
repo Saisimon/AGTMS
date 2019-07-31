@@ -1,8 +1,6 @@
 package net.saisimon.agtms.core.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +20,6 @@ import net.saisimon.agtms.core.domain.entity.Selection;
 import net.saisimon.agtms.core.domain.entity.SelectionOption;
 import net.saisimon.agtms.core.domain.entity.SelectionTemplate;
 import net.saisimon.agtms.core.domain.entity.Template;
-import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
@@ -30,7 +27,6 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.enums.SelectTypes;
-import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.SelectionServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
@@ -90,62 +86,6 @@ public class SelectionUtils {
 			return selection;
 		}
 		return null;
-	}
-	
-	/**
-	 * 处理自定义对象集合中的下拉列表属性
-	 * 
-	 * @param fieldInfoMap 自定义属性与模板的映射
-	 * @param service 服务名称
-	 * @param domains 自定义对象集合
-	 * @param operatorId 用户ID
-	 * @return 处理后的自定义对象集合
-	 */
-	public static List<Map<String, Object>> handleSelection(Map<String, TemplateField> fieldInfoMap, String service, List<Domain> domains, Long operatorId) {
-		List<Map<String, Object>> datas = new ArrayList<>(domains.size());
-		Map<String, Set<String>> valueMap = MapUtil.newHashMap();
-		for (Domain domain : domains) {
-			Map<String, Object> data = new HashMap<>();
-			for (Map.Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
-				String fieldName = entry.getKey();
-				TemplateField templateField = entry.getValue();
-				Object value = domain.getField(fieldName);
-				if (value == null) {
-					continue;
-				}
-				if (Views.SELECTION.getView().equals(templateField.getViews())) {
-					Set<String> values = valueMap.get(fieldName);
-					if (values == null) {
-						values = new HashSet<>();
-						valueMap.put(fieldName, values);
-					}
-					values.add(value.toString());
-				}
-				data.put(fieldName, value);
-			}
-			data.put(Constant.ID, domain.getField(Constant.ID));
-			datas.add(data);
-		}
-		Map<String, Map<String, String>> map = MapUtil.newHashMap();
-		for (Map.Entry<String, Set<String>> entry : valueMap.entrySet()) {
-			String fieldName = entry.getKey();
-			TemplateField templateField = fieldInfoMap.get(fieldName);
-			Map<String, String> textMap = getSelectionValueTextMap(templateField.selectionSign(service), entry.getValue(), operatorId);
-			map.put(fieldName, textMap);
-		}
-		for (Map<String, Object> data : datas) {
-			for (Map.Entry<String, Map<String, String>> entry : map.entrySet()) {
-				String fieldName = entry.getKey();
-				Map<String, String> textMap = entry.getValue();
-				Object value = data.get(fieldName);
-				if (value == null) {
-					continue;
-				}
-				String text = textMap.get(value.toString());
-				data.put(fieldName, text);
-			}
-		}
-		return datas;
 	}
 	
 	/**

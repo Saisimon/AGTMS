@@ -86,7 +86,6 @@ import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
-import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
@@ -149,13 +148,7 @@ public class ManagementMainController extends AbstractMainController {
 		boolean more = domains.size() < pageable.getSize();
 		request.getSession().setAttribute(key + FILTER_SUFFIX, filterMap);
 		request.getSession().setAttribute(key + PAGEABLE_SUFFIX, pageableMap);
-		if (TemplateUtils.hasSelection(template)) {
-			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-			List<Map<String, Object>> datas = SelectionUtils.handleSelection(fieldInfoMap, template.getService(), domains, userId);
-			return ResultUtils.pageSuccess(datas, more);
-		} else {
-			return ResultUtils.pageSuccess(domains, more);
-		}
+		return ResultUtils.pageSuccess(DomainUtils.conversions(template, domains, userId), more);
 	}
 
 	@Operate(type=OperateTypes.REMOVE)

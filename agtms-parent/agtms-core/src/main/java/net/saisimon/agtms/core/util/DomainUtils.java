@@ -1,7 +1,12 @@
 package net.saisimon.agtms.core.util;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import org.springframework.util.StringUtils;
@@ -9,13 +14,19 @@ import org.springframework.util.StringUtils;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.format.FastDateFormat;
+import cn.hutool.core.map.MapUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
+import net.saisimon.agtms.core.domain.entity.Template;
+import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Classes;
+import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.AgtmsException;
+import net.saisimon.agtms.core.factory.FieldHandlerFactory;
+import net.saisimon.agtms.core.handler.FieldHandler;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -122,6 +133,73 @@ public class DomainUtils {
 			}
 		}
 		return fieldValue;
+	}
+	
+	public static List<Map<String, Object>> conversions(Template template, List<Domain> domains, Long operatorId) {
+		return conversions(TemplateUtils.getFieldInfoMap(template), template.getService(), domains, operatorId);
+	}
+	
+	public static List<Map<String, Object>> conversions(Map<String, TemplateField> fieldInfoMap, String service, List<Domain> domains, Long operatorId) {
+		List<Map<String, Object>> datas = new ArrayList<>(domains.size());
+		Map<String, Set<String>> valueMap = MapUtil.newHashMap();
+		for (Domain domain : domains) {
+			datas.add(conversion(fieldInfoMap, valueMap, domain));
+		}
+		Map<String, Map<String, String>> map = MapUtil.newHashMap();
+		for (Map.Entry<String, Set<String>> entry : valueMap.entrySet()) {
+			String fieldName = entry.getKey();
+			TemplateField templateField = fieldInfoMap.get(fieldName);
+			Map<String, String> textMap = SelectionUtils.getSelectionValueTextMap(templateField.selectionSign(service), entry.getValue(), operatorId);
+			map.put(fieldName, textMap);
+		}
+		for (Map<String, Object> data : datas) {
+			for (Map.Entry<String, Map<String, String>> entry : map.entrySet()) {
+				String fieldName = entry.getKey();
+				Map<String, String> textMap = entry.getValue();
+				Object value = data.get(fieldName);
+				if (value == null) {
+					continue;
+				}
+				String text = textMap.get(value.toString());
+				data.put(fieldName, text);
+			}
+		}
+		return datas;
+	}
+
+	private static Map<String, Object> conversion(Map<String, TemplateField> fieldInfoMap, Map<String, Set<String>> valueMap, Domain domain) {
+		Map<String, Object> data = MapUtil.newHashMap();
+		for (Map.Entry<String, TemplateField> entry : fieldInfoMap.entrySet()) {
+			String fieldName = entry.getKey();
+			TemplateField templateField = entry.getValue();
+			Object value = domain.getField(fieldName);
+			if (value == null) {
+				continue;
+			}
+			value = marking(value, templateField);
+			if (Views.SELECTION.getView().equals(templateField.getViews())) {
+				Set<String> values = valueMap.get(fieldName);
+				if (values == null) {
+					values = new HashSet<>();
+					valueMap.put(fieldName, values);
+				}
+				values.add(value.toString());
+			}
+			data.put(fieldName, value);
+		}
+		data.put(Constant.ID, domain.getField(Constant.ID));
+		data.put(Constant.OPERATORID, domain.getField(Constant.OPERATORID));
+		data.put(Constant.CREATETIME, domain.getField(Constant.CREATETIME));
+		data.put(Constant.UPDATETIME, domain.getField(Constant.UPDATETIME));
+		return data;
+	}
+	
+	private static Object marking(Object value, TemplateField templateField) {
+		FieldHandler handler = FieldHandlerFactory.getHandler(templateField.getViews());
+		if (handler == null) {
+			return value;
+		}
+		return handler.masking(value);
 	}
 	
 }
