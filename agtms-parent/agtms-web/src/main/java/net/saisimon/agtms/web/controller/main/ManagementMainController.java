@@ -274,7 +274,8 @@ public class ManagementMainController extends AbstractMainController {
 		Task exportTask = createExportTask(body);
 		try {
 			submitTask(exportTask);
-			Result result = ResultUtils.simpleSuccess();
+			Result result = new Result();
+			result.setCode(ResultUtils.SUCCESS_CODE);
 			result.setMessage(getMessage("export.task.created"));
 			return result;
 		} catch (TaskRejectedException e) {
