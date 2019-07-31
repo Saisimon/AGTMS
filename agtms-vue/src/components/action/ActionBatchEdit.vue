@@ -10,6 +10,7 @@
                 <b-row class="mb-3">
                     <b-col>
                         <multiselect v-model="editFieldSelects"
+                            style="z-index: 11"
                             label="text"
                             track-by="value"
                             select-label=""
@@ -30,6 +31,8 @@
                     <date-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].type == 'date'" />
                     <textarea-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'textarea'" />
                     <icon-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'icon'" />
+                    <image-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'image'" />
+                    <password-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'password'" />
                     <text-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else />
                 </template>
                 <b-row class="mb-3" v-if="editFieldSelects.length > 0">
@@ -54,6 +57,8 @@ import TextareaForm from '@/components/form/TextareaForm.vue'
 import IconForm from '@/components/form/IconForm.vue'
 import SelectForm from '@/components/form/SelectForm.vue'
 import DateForm from '@/components/form/DateForm.vue'
+import ImageForm from '@/components/form/ImageForm.vue'
+import PasswordForm from '@/components/form/PasswordForm.vue'
 
 export default {
     name: 'action-batch-edit',
@@ -62,7 +67,9 @@ export default {
         'textarea-form': TextareaForm,
         'icon-form': IconForm,
         'select-form': SelectForm,
-        'date-form': DateForm
+        'date-form': DateForm,
+        'image-form': ImageForm,
+        'password-form': PasswordForm
     },
     props: [
         "batchEdit", 
