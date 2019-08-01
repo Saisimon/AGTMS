@@ -60,8 +60,7 @@
                             <b-form-file multiple 
                                 name="importFiles" 
                                 v-model="importFiles"
-                                :placeholder="$t('choose_import_file')" 
-                                :accept="'.' + importFileType.value" >
+                                :placeholder="$t('choose_import_file')">
                                 <template slot="file-name" slot-scope="{ names }">
                                     {{ $t("files_selected", {count: names.length}) }}
                                 </template>
