@@ -45,8 +45,20 @@ public class Test {
 	private Date birthday;
 	
 	@Column
+	@FieldInfo(columnOrdered = 0, fieldOrdered = 4, fieldTitle = "密码", view = Views.PASSWORD)
+	private String password;
+	
+	@Column
 	@FieldInfo(columnOrdered = 1, fieldOrdered = 0, fieldTitle = "个人主页", view = Views.LINK, defaultValue = "https://github.com/Saisimon/AGTMS")
 	private String home;
+	
+	@Column
+	@FieldInfo(columnOrdered = 1, fieldOrdered = 1, fieldTitle = "邮箱", view = Views.EMAIL)
+	private String email;
+	
+	@Column
+	@FieldInfo(columnOrdered = 1, fieldOrdered = 2, fieldTitle = "联系方式", view = Views.PHONE)
+	private String phone;
 	
 	@Column
 	@FieldInfo(columnOrdered = 2, fieldOrdered = 0, fieldTitle = "介绍", view = Views.TEXTAREA, hidden = true)
