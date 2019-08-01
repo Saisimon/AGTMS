@@ -13,7 +13,7 @@ public class PasswordFieldHandler extends AbstractFieldHandler {
 		if (SystemUtils.isEmpty(value)) {
 			return value;
 		}
-		return maskingPassword(value.toString());
+		return "******";
 	}
 	
 	@Override
@@ -21,8 +21,4 @@ public class PasswordFieldHandler extends AbstractFieldHandler {
 		return Views.PASSWORD;
 	}
 	
-	private Object maskingPassword(String password) {
-		return "******";
-	}
-
 }
