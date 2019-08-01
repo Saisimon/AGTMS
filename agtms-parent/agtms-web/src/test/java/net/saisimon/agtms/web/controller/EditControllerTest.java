@@ -533,7 +533,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/management/edit/1/grid", param, testToken);
 		
 		TemplateInfo templateInfo = null;
-		Template testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 2, 4);
+		Template testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 2, 7);
 		sendPost("/template/edit/save", testTemplate, testToken);
 		
 		param = new HashMap<>();
@@ -827,12 +827,31 @@ public class EditControllerTest extends AbstractControllerTest {
 				templateField.setFieldTitle("TestField-" + j);
 				if (j == 1) {
 					templateField.setFieldType(Classes.LONG.getName());
+					templateField.setViews(Views.TEXT.getView());
+					templateField.setDefaultValue("1");
 				} else if (j == 2) {
 					templateField.setFieldType(Classes.DOUBLE.getName());
+					templateField.setViews(Views.TEXT.getView());
+					templateField.setDefaultValue("1.1");
 				} else if (j == 3) {
 					templateField.setFieldType(Classes.DATE.getName());
+					templateField.setViews(Views.TEXT.getView());
+					templateField.setDefaultValue("2019-07-25");
 				} else {
 					templateField.setFieldType(Classes.STRING.getName());
+					if (j == 4) {
+						templateField.setViews(Views.PASSWORD.getView());
+						templateField.setDefaultValue("123456789");
+					} else if (j == 5) {
+						templateField.setViews(Views.EMAIL.getView());
+						templateField.setDefaultValue("88888888@test.org");
+					} else if (j == 6) {
+						templateField.setViews(Views.PHONE.getView());
+						templateField.setDefaultValue("13888888888");
+					} else {
+						templateField.setViews(Views.TEXT.getView());
+						templateField.setDefaultValue("");
+					}
 				}
 				templateField.setFilter(true);
 				templateField.setHidden(false);
@@ -840,8 +859,6 @@ public class EditControllerTest extends AbstractControllerTest {
 				templateField.setRequired(false);
 				templateField.setSorted(false);
 				templateField.setUniqued(false);
-				templateField.setViews(Views.TEXT.getView());
-				templateField.setDefaultValue("");
 				templateFields.add(templateField);
 			}
 			templateColumn.setFields(templateFields);

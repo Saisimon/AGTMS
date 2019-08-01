@@ -1,9 +1,16 @@
 package net.saisimon.agtms.core.util;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.web.context.request.RequestAttributes;
@@ -15,7 +22,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 用户相关工具类
+ * 认证相关工具类
  * 
  * @author saisimon
  *
@@ -134,6 +141,42 @@ public class AuthUtils {
 	 */
 	public static String hmac(String password, String salt) {
 		return new HmacUtils(HmacAlgorithms.HMAC_SHA_256, salt).hmacHex(password).toUpperCase();
+	}
+	
+	/**
+	 * AES 加密
+	 * 
+	 * @param text
+	 * @param key
+	 * @return
+	 */
+	public static String aesEncrypt(String text, String key) throws Exception {
+		if (text == null || key == null) {
+			return text;
+		}
+		Cipher cipher = buildAESCipher(Cipher.ENCRYPT_MODE, key);
+		return Base64.encodeBase64String(cipher.doFinal(text.getBytes("UTF-8")));
+	}
+	
+	/**
+	 * AES 解密
+	 * 
+	 * @param ciphertext
+	 * @param key
+	 * @return
+	 */
+	public static String aesDecrypt(String ciphertext, String key) throws Exception {
+		if (ciphertext == null || key == null) {
+			return ciphertext;
+		}
+		Cipher cipher = buildAESCipher(Cipher.DECRYPT_MODE, key);
+		return new String(cipher.doFinal(Base64.decodeBase64(ciphertext)), "UTF-8");
+	}
+	
+	private static Cipher buildAESCipher(int mode, String key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
+		Cipher result = Cipher.getInstance("AES");
+		result.init(mode, new SecretKeySpec(DigestUtils.md5(key), "AES"));
+		return result;
 	}
 	
 }

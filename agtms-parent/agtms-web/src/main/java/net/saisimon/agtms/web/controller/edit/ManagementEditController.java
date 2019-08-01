@@ -179,6 +179,11 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 				value = templateField.getDefaultValue();
 			}
 			field.setValue(getFieldOptionValue(value, selectionSign, userId));
+		} else if (Views.PASSWORD.getView().equals(field.getViews())) {
+			if (value == null) {
+				value = templateField.getDefaultValue();
+			}
+			field.setValue(DomainUtils.decrypt(value));
 		} else {
 			field.setValue(value == null ? DomainUtils.parseFieldValue(templateField.getDefaultValue(), templateField.getFieldType()) : value);
 		}
@@ -228,18 +233,20 @@ public class ManagementEditController extends AbstractEditController<Domain> {
 				if (field.getRequired()) {
 					return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 				}
-				if (SystemUtils.isNotBlank(field.getDefaultValue())) {
-					fieldValue = field.getDefaultValue();
-					fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
-				}
 			}
 			Result result = TemplateUtils.validate(template, field, fieldValue);
 			if (!ResultUtils.isSuccess(result)) {
 				return result;
 			}
-			if (fieldValue != null) {
-				domain.setField(fieldName, fieldValue, fieldValue.getClass());
+			if (SystemUtils.isEmpty(fieldValue) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
+				fieldValue = DomainUtils.parseFieldValue(field.getDefaultValue(), field.getFieldType());
+			} else if (Views.PASSWORD.getView().equals(field.getViews())) {
+				fieldValue = DomainUtils.encrypt(fieldValue);
 			}
+			if (fieldValue == null) {
+				continue;
+			}
+			domain.setField(fieldName, fieldValue, fieldValue.getClass());
 		}
 		return ResultUtils.simpleSuccess();
 	}

@@ -46,6 +46,7 @@ import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.service.SelectionService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
+import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.NavigationUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
@@ -184,6 +185,10 @@ public class TemplateEditController extends BaseController {
 		template.setUpdateTime(time);
 		for (TemplateColumn column : template.getColumns()) {
 			for (TemplateField field : column.getFields()) {
+				if (Views.PASSWORD.getView().equals(field.getViews()) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
+					Object value = DomainUtils.encrypt(field.getDefaultValue());
+					field.setDefaultValue(value == null ? null : value.toString());
+				}
 				column.addField(field);
 			}
 			template.addColumn(column);
@@ -207,6 +212,10 @@ public class TemplateEditController extends BaseController {
 						field.setId(oldField.getId());
 						oldTemplateColumn.removeField(oldField);
 					}
+					if (Views.PASSWORD.getView().equals(field.getViews()) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
+						Object value = DomainUtils.encrypt(field.getDefaultValue());
+						field.setDefaultValue(value == null ? null : value.toString());
+					}
 					oldTemplateColumn.addField(field);
 				}
 				for (TemplateField oldField : oldFieldMap.values()) {
@@ -216,6 +225,10 @@ public class TemplateEditController extends BaseController {
 				oldTemplate.removeColumn(oldTemplateColumn);
 			} else {
 				for (TemplateField field : column.getFields()) {
+					if (Views.PASSWORD.getView().equals(field.getViews()) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
+						Object value = DomainUtils.encrypt(field.getDefaultValue());
+						field.setDefaultValue(value == null ? null : value.toString());
+					}
 					column.addField(field);
 				}
 			}
@@ -367,6 +380,9 @@ public class TemplateEditController extends BaseController {
 		if (Views.SELECTION.getView().equals(field.getViews())) {
 			List<Option<Object>> options = SelectionUtils.getSelectionOptions(field.selectionSign(service), null, operatorId);
 			defaultRow.put(field.getFieldName(), new Editor<>(Select.getOption(options, field.getDefaultValue()), field.getFieldName(), options));
+		} else if (Views.PASSWORD.getView().equals(field.getViews())) {
+			Object value = DomainUtils.decrypt(field.getDefaultValue());
+			defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(value) ? "" : value, field.getFieldName()));
 		} else {
 			String type = "text";
 			if (Classes.LONG.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {

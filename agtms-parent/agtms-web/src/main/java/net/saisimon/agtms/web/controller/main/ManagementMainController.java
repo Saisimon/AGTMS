@@ -546,9 +546,11 @@ public class ManagementMainController extends AbstractMainController {
 			if (templateField.getRequired()) {
 				field.setRequired(true);
 			}
-			if (SystemUtils.isNotEmpty(templateField.getDefaultValue())) {
-				field.setValue(templateField.getDefaultValue());
+			Object value = templateField.getDefaultValue();
+			if (Views.PASSWORD.getView().equals(templateField.getViews())) {
+				value = DomainUtils.decrypt(value);
 			}
+			field.setValue(value);
 			editFields.put(fieldName, field);
 		}
 		batchEdit.setEditFieldOptions(editFieldOptions);
@@ -619,9 +621,13 @@ public class ManagementMainController extends AbstractMainController {
 			if (!ResultUtils.isSuccess(result)) {
 				return result;
 			}
-			if (fieldValue != null) {
-				map.put(fieldName, fieldValue);
+			if (fieldValue == null) {
+				continue;
 			}
+			if (Views.PASSWORD.getView().equals(field.getViews())) {
+				fieldValue = DomainUtils.encrypt(fieldValue);
+			}
+			map.put(fieldName, fieldValue);
 		}
 		return ResultUtils.simpleSuccess(map);
 	}

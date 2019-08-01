@@ -212,6 +212,9 @@ public class ImportActuator implements Actuator<ImportParam> {
 					}
 					fieldValue = value;
 				}
+				if (Views.PASSWORD.getView().equals(templateField.getViews())) {
+					fieldValue = DomainUtils.encrypt(fieldValue);
+				}
 				if (fieldValue == null) {
 					fieldValue = templateField.getDefaultValue();
 				}

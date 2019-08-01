@@ -22,12 +22,22 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
+import net.saisimon.agtms.core.encrypt.Encryptor;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.AgtmsException;
+import net.saisimon.agtms.core.factory.EncryptorFactory;
 import net.saisimon.agtms.core.factory.FieldHandlerFactory;
 import net.saisimon.agtms.core.handler.FieldHandler;
+import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.spring.SpringContext;
 
+/**
+ * Domain 相关工具类
+ * 
+ * @author saisimon
+ *
+ */
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class DomainUtils {
@@ -135,6 +145,24 @@ public class DomainUtils {
 		return fieldValue;
 	}
 	
+	public static Object encrypt(Object value) {
+		try {
+			return crypt(value, true);
+		} catch (Exception e) {
+			log.warn("加密失败");
+			return null;
+		}
+	}
+	
+	public static Object decrypt(Object value) {
+		try {
+			return crypt(value, false);
+		} catch (Exception e) {
+			log.warn("解密失败");
+			return null;
+		}
+	}
+	
 	public static List<Map<String, Object>> conversions(Template template, List<Domain> domains, Long operatorId) {
 		return conversions(TemplateUtils.getFieldInfoMap(template), template.getService(), domains, operatorId);
 	}
@@ -176,7 +204,6 @@ public class DomainUtils {
 			if (value == null) {
 				continue;
 			}
-			value = marking(value, templateField);
 			if (Views.SELECTION.getView().equals(templateField.getViews())) {
 				Set<String> values = valueMap.get(fieldName);
 				if (values == null) {
@@ -185,6 +212,10 @@ public class DomainUtils {
 				}
 				values.add(value.toString());
 			}
+			if (Views.PASSWORD.getView().equals(templateField.getViews())) {
+				value = decrypt(value);
+			}
+			value = marking(value, templateField);
 			data.put(fieldName, value);
 		}
 		data.put(Constant.ID, domain.getField(Constant.ID));
@@ -200,6 +231,23 @@ public class DomainUtils {
 			return value;
 		}
 		return handler.masking(value);
+	}
+	
+	private static Object crypt(Object value, boolean encrypt) throws Exception {
+		Object val = value;
+		if (val == null) {
+			return val;
+		}
+		AgtmsProperties agtmsProperties = SpringContext.getBean("agtmsProperties", AgtmsProperties.class);
+		Encryptor encryptor = EncryptorFactory.get(agtmsProperties.getEncryptorAlgorithm());
+		if (encryptor == null) {
+			return val;
+		}
+		if (encrypt) {
+			return encryptor.encrypt(val.toString());
+		} else {
+			return encryptor.decrypt(val.toString());
+		}
 	}
 	
 }

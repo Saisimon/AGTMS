@@ -84,6 +84,18 @@ public class DomainUtilsTest {
 		DomainUtils.parseFieldValue("aaaa", Classes.DATE.getName());
 	}
 	
+	@Test
+	public void testEncrypt() {
+		Assert.assertNull(DomainUtils.encrypt(null));
+		Assert.assertNull(DomainUtils.encrypt("test"));
+	}
+	
+	@Test
+	public void testDecrypt() {
+		Assert.assertNull(DomainUtils.decrypt(null));
+		Assert.assertNull(DomainUtils.decrypt("test"));
+	}
+	
 	@Configuration
 	public static class Config {
 		

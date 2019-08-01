@@ -36,4 +36,8 @@ public class AgtmsProperties {
 	
 	private List<String> excludeServices = new ArrayList<>(Arrays.asList("agtms-admin", "agtms-web", "agtms-zuul"));
 	
+	private String encryptorAlgorithm = "aes";
+	
+	private String encryptorKey = "agtms";
+	
 }
