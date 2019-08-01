@@ -2,9 +2,9 @@ package net.saisimon.agtms.core.factory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -25,7 +25,7 @@ import net.saisimon.agtms.core.util.SystemUtils;
 public class ActuatorFactory implements BeanPostProcessor {
 
 	private static final List<Sign> SIGNS = new ArrayList<>();
-	private static final Map<String, Actuator<?>> ACTUATOR_MAP = new ConcurrentHashMap<>(16);
+	private static final Map<String, Actuator<?>> ACTUATOR_MAP = new HashMap<>(16);
 	
 	public static Actuator<?> get(String key) {
 		if (SystemUtils.isBlank(key)) {

@@ -1,7 +1,7 @@
 package net.saisimon.agtms.core.factory;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -21,7 +21,7 @@ import net.saisimon.agtms.core.util.SystemUtils;
 @Component
 public class FieldHandlerFactory implements BeanPostProcessor {
 	
-	private static final Map<String, FieldHandler> HANDLER_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, FieldHandler> HANDLER_MAP = new HashMap<>(16);
 	
 	public static FieldHandler getHandler(String view) {
 		if (SystemUtils.isBlank(view)) {

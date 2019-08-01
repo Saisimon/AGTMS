@@ -6,20 +6,20 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.format.FastDateFormat;
+import cn.hutool.core.map.CaseInsensitiveMap;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.spring.SpringContext;
 import net.saisimon.agtms.core.util.TemplateUtils;
 
 /**
@@ -32,9 +32,6 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 public abstract class AbstractGenerateRepository implements BaseRepository<Domain, Long> {
 	
 	private ThreadLocal<Template> local = new ThreadLocal<>();
-	
-	@Autowired
-	private DomainGenerater domainGenerater;
 	
 	/**
 	 * 初始化模版对象
@@ -77,6 +74,10 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 		if (sign == null) {
 			return null;
 		}
+		DomainGenerater domainGenerater = SpringContext.getBean("domainGenerater", DomainGenerater.class);
+		if (domainGenerater == null) {
+			return null;
+		}
 		String generateClassName = domainGenerater.buildGenerateName(sign);
 		return domainGenerater.generate(TemplateUtils.getNamespace(template), TemplateUtils.buildFieldMap(template), generateClassName);
 	}
@@ -101,7 +102,7 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 					field.setAccessible(true);
 					field.set(domain, value);
 				} catch (Exception e) {
-					log.error(domain.getClass().getName() + " set field("+ fieldName +") error", e);
+					log.error(String.format("%s设置%s属性错误", domain.getClass().getName(), fieldName), e);
 				}
 			}
 		});

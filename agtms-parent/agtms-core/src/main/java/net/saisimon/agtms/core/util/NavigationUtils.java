@@ -11,6 +11,8 @@ import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.service.NavigationService;
 
 /**
+ * 导航相关工具类
+ * 
  * @author saisimon
  *
  */
