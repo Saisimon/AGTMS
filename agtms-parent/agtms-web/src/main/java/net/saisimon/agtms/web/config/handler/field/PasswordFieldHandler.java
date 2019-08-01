@@ -22,11 +22,7 @@ public class PasswordFieldHandler extends AbstractFieldHandler {
 	}
 	
 	private Object maskingPassword(String password) {
-		StringBuffer buffer = new StringBuffer();
-		for (int i = 0; i < password.length(); i++) {
-			buffer.append('*');
-		}
-		return buffer.toString();
+		return "******";
 	}
 
 }
