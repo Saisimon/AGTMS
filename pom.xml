@@ -24,6 +24,8 @@
 		<hutool.version>4.1.21</hutool.version>
 		<opencsv.version>4.6</opencsv.version>
 		<sharding-sphere.version>4.0.0-RC1</sharding-sphere.version>
+		<!-- <sharding-sphere.version>4.0.0-RC2-SNAPSHOT</sharding-sphere.version> -->
+		<curator.version>4.0.1</curator.version>
 		<mysql.version>8.0.16</mysql.version>
 		<embedded-redis.version>0.7.2</embedded-redis.version>
 		<wiremock.version>2.23.2</wiremock.version>
@@ -154,8 +156,33 @@
 			</dependency>
 			<dependency>
 				<groupId>org.apache.shardingsphere</groupId>
-				<artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+				<artifactId>sharding-jdbc-orchestration-spring-boot-starter</artifactId>
 				<version>${sharding-sphere.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.shardingsphere</groupId>
+				<artifactId>sharding-orchestration-reg-zookeeper-curator</artifactId>
+				<version>${sharding-sphere.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.curator</groupId>
+				<artifactId>curator-framework</artifactId>
+				<version>${curator.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.curator</groupId>
+				<artifactId>curator-client</artifactId>
+				<version>${curator.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.curator</groupId>
+				<artifactId>curator-recipes</artifactId>
+				<version>${curator.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.curator</groupId>
+				<artifactId>curator-x-discovery</artifactId>
+				<version>${curator.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

@@ -149,6 +149,13 @@ spring:
             inline:
               sharding-column: user_id
               algorithm-expression: agtms$->{user_id % 2}
+    orchestration:
+      name: agtms-orchestration-sharding-data-source
+      overwrite: false
+      registry:
+        type: zookeeper
+        server-lists: zookeeperserver:2181
+        namespace: agtms-sharding-jdbc-orchestration
   datasource:
     # PostgreSQL
     url: jdbc:postgresql://dbserver:5432/agtms
