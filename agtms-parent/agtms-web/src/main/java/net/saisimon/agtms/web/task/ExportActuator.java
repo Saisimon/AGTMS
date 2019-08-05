@@ -66,9 +66,20 @@ public class ExportActuator implements Actuator<ExportParam> {
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
+		FilterRequest filter = FilterRequest.build(param.getFilter(), TemplateUtils.getFilters(template));
+		if (filter == null) {
+			filter = FilterRequest.build();
+		}
+		filter.and(Constant.OPERATORID, param.getUserId());
+		Long total = GenerateServiceFactory.build(template).count(filter);
+		if (total > agtmsProperties.getExportRowsMaxSize()) {
+			Result result = ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
+			result.setMessageArgs(new Object[]{ agtmsProperties.getExportRowsMaxSize() });
+			return result;
+		}
 		param.setExportFileUUID(UUID.randomUUID().toString());
 		File file = createExportFile(param);
-		exportDatas(param, template, file);
+		exportDatas(param, filter, template, file);
 		return ResultUtils.simpleSuccess();
 	}
 
@@ -153,7 +164,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		return FileUtils.createFile(exportFilePath.toString(), param.getExportFileUUID(), "." + param.getExportFileType());
 	}
 	
-	private void exportDatas(ExportParam param, Template template, File file) throws IOException, InterruptedException {
+	private void exportDatas(ExportParam param, FilterRequest filter, Template template, File file) throws IOException, InterruptedException {
 		List<Object> heads = new ArrayList<>();
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		List<String> fields = new ArrayList<>();
@@ -166,11 +177,6 @@ public class ExportActuator implements Actuator<ExportParam> {
 			fields.add(exportField);
 		}
 		fillHead(file, heads, param.getExportFileType(), false);
-		FilterRequest filter = FilterRequest.build(param.getFilter(), TemplateUtils.getFilters(template));
-		if (filter == null) {
-			filter = FilterRequest.build();
-		}
-		filter.and(Constant.OPERATORID, param.getUserId());
 		List<List<Object>> datas = new ArrayList<>();
 		Long lastId = null;
 		do {

@@ -248,17 +248,6 @@ public class ManagementMainController extends AbstractMainController {
 		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
 			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
-		FilterRequest filter = FilterRequest.build(body.getFilter(), TemplateUtils.getFilters(template));
-		if (filter == null) {
-			filter = FilterRequest.build();
-		}
-		filter.and(Constant.OPERATORID, userId);
-		Long total = GenerateServiceFactory.build(template).count(filter);
-		if (total > agtmsProperties.getExportRowsMaxSize()) {
-			Result result = ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
-			result.setMessageArgs(new Object[]{ agtmsProperties.getExportRowsMaxSize() });
-			return result;
-		}
 		body.setTemplateId(template.sign());
 		body.setUserId(userId);
 		if (SystemUtils.isBlank(body.getExportFileName())) {
