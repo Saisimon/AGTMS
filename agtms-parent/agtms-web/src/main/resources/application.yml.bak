@@ -229,6 +229,9 @@ management:
       exposure:
         include: "*"
 
+logging:
+  file: ${user.dir}/data/web/logs/agtms-web.log
+
 agtms:
   file-path: /tmp/files
   generate-classpath: /tmp/classes

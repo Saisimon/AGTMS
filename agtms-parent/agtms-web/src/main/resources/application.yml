@@ -32,3 +32,12 @@ feign:
         connectTimeout: 2000
         readTimeout: 5000
         loggerLevel: full
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  file: ${user.dir}/data/web/logs/agtms-web.log

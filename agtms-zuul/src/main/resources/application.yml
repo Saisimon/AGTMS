@@ -49,6 +49,9 @@ management:
       exposure:
         include: "*"
 
+logging:
+  file: ${user.dir}/data/zuul/logs/agtms-zuul.log
+
 white:
   list:
     urls: /agtms/user/auth

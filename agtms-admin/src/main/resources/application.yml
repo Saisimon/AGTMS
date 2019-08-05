@@ -20,3 +20,6 @@ management:
   endpoint:
     health:
       show-details: ALWAYS
+
+logging:
+  file: ${user.dir}/data/admin/logs/agtms-admin.log
