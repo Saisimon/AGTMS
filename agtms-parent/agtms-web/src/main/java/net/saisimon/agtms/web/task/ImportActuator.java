@@ -85,6 +85,18 @@ public class ImportActuator implements Actuator<ImportParam> {
 	}
 	
 	@Override
+	public String handleResult(String handleResult) {
+		if (SystemUtils.isBlank(handleResult)) {
+			return handleResult;
+		}
+		if (handleResult.equals(ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT.getMessage())) {
+			return getMessage(ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT.getMessage(), agtmsProperties.getImportRowsMaxSize());
+		} else {
+			return getMessage(handleResult);
+		}
+	}
+	
+	@Override
 	public void download(ImportParam param, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		if (param == null || param.getImportFileUUID() == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());

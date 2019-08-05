@@ -142,9 +142,7 @@ public class TaskMainController extends AbstractMainController {
 			result.setTaskType(taskTypeMap.get(task.getTaskType().toString()));
 			result.setTaskTime(task.getTaskTime());
 			result.setHandleStatus(handleStatusMap.get(task.getHandleStatus()));
-			if (SystemUtils.isNotBlank(task.getHandleResult())) {
-				result.setHandleResult(getMessage(task.getHandleResult()));
-			}
+			result.setHandleResult(actuator.handleResult(task.getHandleResult()));
 			result.setHandleTime(task.getHandleTime());
 			result.setOperator(userMap.get(task.getOperatorId().toString()));
 			result.setAction(TASK);

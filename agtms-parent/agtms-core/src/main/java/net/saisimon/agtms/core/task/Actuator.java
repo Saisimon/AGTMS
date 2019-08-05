@@ -35,6 +35,15 @@ public interface Actuator<P> {
 	 */
 	String taskContent(P param);
 	
+	
+	/**
+	 * 构建处理结果说明
+	 * 
+	 * @param param 输入参数
+	 * @return 任务结果
+	 */
+	String handleResult(String handleResult);
+	
 	/**
 	 * 任务结果输出
 	 * 

@@ -16,6 +16,8 @@ import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +56,8 @@ public class ExportActuator implements Actuator<ExportParam> {
 	private static final int PAGE_SIZE = 2000;
 	
 	@Autowired
+	private MessageSource messageSource;
+	@Autowired
 	private AgtmsProperties agtmsProperties;
 	
 	@Override
@@ -73,9 +77,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		filter.and(Constant.OPERATORID, param.getUserId());
 		Long total = GenerateServiceFactory.build(template).count(filter);
 		if (total > agtmsProperties.getExportRowsMaxSize()) {
-			Result result = ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
-			result.setMessageArgs(new Object[]{ agtmsProperties.getExportRowsMaxSize() });
-			return result;
+			return ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
 		}
 		param.setExportFileUUID(UUID.randomUUID().toString());
 		File file = createExportFile(param);
@@ -86,6 +88,18 @@ public class ExportActuator implements Actuator<ExportParam> {
 	@Override
 	public String taskContent(ExportParam param) {
 		return param == null ? null : param.getExportFileName();
+	}
+	
+	@Override
+	public String handleResult(String handleResult) {
+		if (SystemUtils.isBlank(handleResult)) {
+			return handleResult;
+		}
+		if (handleResult.equals(ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT.getMessage())) {
+			return getMessage(ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT.getMessage(), agtmsProperties.getExportRowsMaxSize());
+		} else {
+			return getMessage(handleResult);
+		}
 	}
 	
 	@Override
@@ -227,6 +241,10 @@ public class ExportActuator implements Actuator<ExportParam> {
 			default:
 				break;
 		}
+	}
+	
+	private String getMessage(String code, Object... args) {
+		return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
 	}
 	
 }
