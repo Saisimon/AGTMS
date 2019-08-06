@@ -266,7 +266,7 @@ public final class SystemUtils extends StringUtils {
 	}
 
 	/**
-	 * 根据子类获取父接口指定的泛型类型，未找到指定泛型时抛出运行时异常
+	 * 根据子类获取父接口指定的泛型类型，未找到指定泛型时将返回空
 	 * 
 	 * @param subClass 子类类型
 	 * @param targetInterfaceClass 父接口类型
