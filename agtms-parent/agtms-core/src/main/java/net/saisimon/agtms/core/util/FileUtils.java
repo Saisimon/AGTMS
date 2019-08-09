@@ -33,6 +33,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.saisimon.agtms.core.enums.ImageFormats;
@@ -294,19 +295,6 @@ public final class FileUtils {
 	}
 	
 	/**
-	 * 创建指定文件夹
-	 * 
-	 * @param dir 文件夹
-	 * @throws IOException 创建文件夹异常
-	 */
-	public static void createDir(File dir) throws IOException {
-		if (dir != null && !dir.exists()) {
-			createDir(dir.getParentFile());
-			dir.mkdirs();
-		}
-	}
-	
-	/**
 	 * 创建指定文件
 	 * 
 	 * @param path 文件所在路径
@@ -324,7 +312,7 @@ public final class FileUtils {
 			filePath += suffix;
 		}
 		File file = new File(filePath);
-		createDir(file.getParentFile());
+		FileUtil.mkParentDirs(file);
 		return file;
 	}
 	

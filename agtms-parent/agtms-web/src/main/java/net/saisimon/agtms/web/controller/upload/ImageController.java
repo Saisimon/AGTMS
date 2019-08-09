@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import cn.hutool.core.io.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.Operate;
@@ -61,7 +62,7 @@ public class ImageController extends BaseController {
 				.append(File.separatorChar).append(third);
 			File file = new File(uploadFilePath.toString());
 			if (!file.exists()) {
-				FileUtils.createDir(file.getParentFile());
+				FileUtil.mkParentDirs(file);
 				FileOutputStream output = new FileOutputStream(file);
 				IOUtils.copy(image.getInputStream(), output);
 				output.flush();

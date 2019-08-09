@@ -22,7 +22,6 @@ import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.generate.Generate;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.property.AgtmsProperties;
-import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
@@ -205,7 +204,7 @@ public class DomainGenerater {
 	}
 	
 	private void generateClassFile(Map<String, String> map, String domainFullPathName, File file) throws ClassNotFoundException, IOException, FileNotFoundException {
-		FileUtils.createDir(file.getParentFile());
+		FileUtil.mkParentDirs(file);
 		file.createNewFile();
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 		cw.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, domainFullPathName, null, SUPER_FULL_PATH_NAME, new String[]{DOMAIN_PACKAGE_PATH});

@@ -1,7 +1,6 @@
 package net.saisimon.agtms.core.classloader;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Set;
@@ -11,7 +10,6 @@ import org.springframework.util.Assert;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.URLUtil;
-import net.saisimon.agtms.core.util.FileUtils;
 
 /**
  * 自动生成的自定义对象的类加载器
@@ -27,11 +25,7 @@ public class GenerateClassLoader extends URLClassLoader {
 		super(new URL[]{});
 		Assert.notNull(namespace, "need namespace");
 		File generateClassDir = FileUtil.file(generateClasspath + "/" + namespace);
-		try {
-			FileUtils.createDir(generateClassDir);
-		} catch (IOException e) {
-			throw new IllegalArgumentException("create " + generateClassDir.getAbsolutePath() + " dir failed");
-		}
+		FileUtil.mkdir(generateClassDir);
 		addURL(URLUtil.getURL(generateClassDir));
 	}
 	
