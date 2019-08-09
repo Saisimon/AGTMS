@@ -27,10 +27,10 @@ import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.ImageFormats;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.property.AgtmsProperties;
-import net.saisimon.agtms.core.util.FileUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.controller.base.BaseController;
+import net.saisimon.agtms.web.util.FileUtils;
 
 @RestController
 @RequestMapping("/image")

@@ -1,4 +1,4 @@
-package net.saisimon.agtms.core.util;
+package net.saisimon.agtms.web.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -37,6 +37,7 @@ import cn.hutool.core.io.FileUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.saisimon.agtms.core.enums.ImageFormats;
+import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
  * 文件相关工具类

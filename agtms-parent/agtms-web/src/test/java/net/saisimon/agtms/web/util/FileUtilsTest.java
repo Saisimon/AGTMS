@@ -1,4 +1,4 @@
-package net.saisimon.agtms.core.util;
+package net.saisimon.agtms.web.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
