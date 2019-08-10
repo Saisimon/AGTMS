@@ -81,7 +81,6 @@ public class GenerateMongodbService implements GenerateService {
 		IndexOperations indexOperations = mongoTemplate.indexOps(tableName);
 		Index index = new Index(columnName, Direction.ASC);
 		index.named(indexName);
-		index.background();
 		if (unique) {
 			index.unique();
 		}
