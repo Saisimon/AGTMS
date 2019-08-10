@@ -9,9 +9,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +30,28 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.ui.freemarker.SpringTemplateLoader;
 import org.springframework.util.CollectionUtils;
+import org.xhtmlrenderer.pdf.ITextFontResolver;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfCopy;
+import com.lowagie.text.pdf.PdfImportedPage;
+import com.lowagie.text.pdf.PdfReader;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import net.saisimon.agtms.core.enums.ImageFormats;
@@ -47,12 +65,14 @@ import net.saisimon.agtms.core.util.SystemUtils;
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileUtils {
-	
+
+	private static Configuration cfg = null;
+
 	/**
-	 * 将指定数据写入指定XLS文件
+	 * 将指定数据写入指定 XLS 文件
 	 * 
-	 * @param file XLS文件
-	 * @param datas 数据集合
+	 * @param file   XLS 文件
+	 * @param datas  数据集合
 	 * @param append 是否追加
 	 * @throws IOException 写入异常
 	 */
@@ -60,7 +80,7 @@ public final class FileUtils {
 		if (file == null) {
 			return;
 		}
-		try(Workbook wb = append ? new HSSFWorkbook(new FileInputStream(file)) : new HSSFWorkbook();
+		try (Workbook wb = append ? new HSSFWorkbook(new FileInputStream(file)) : new HSSFWorkbook();
 				FileOutputStream fileOut = new FileOutputStream(file)) {
 			fillWorkbook(wb, datas);
 			wb.write(fileOut);
@@ -68,10 +88,10 @@ public final class FileUtils {
 	}
 
 	/**
-	 * 将指定数据写入指定XLSX文件
+	 * 将指定数据写入指定 XLSX 文件
 	 * 
-	 * @param file XLSX文件
-	 * @param datas 数据集合
+	 * @param file   XLSX 文件
+	 * @param datas  数据集合
 	 * @param append 是否追加
 	 * @throws IOException 写入异常
 	 */
@@ -79,20 +99,20 @@ public final class FileUtils {
 		if (file == null) {
 			return;
 		}
-		try(Workbook wb = append ? new XSSFWorkbook(new FileInputStream(file)) : new XSSFWorkbook();
+		try (Workbook wb = append ? new XSSFWorkbook(new FileInputStream(file)) : new XSSFWorkbook();
 				FileOutputStream fileOut = new FileOutputStream(file)) {
 			fillWorkbook(wb, datas);
 			wb.write(fileOut);
 		}
 	}
-	
+
 	/**
-	 * 将指定数据写入指定CSV文件
+	 * 将指定数据写入指定 CSV 文件
 	 * 
-	 * @param file CSV文件
-	 * @param datas 数据集合
+	 * @param file      CSV 文件
+	 * @param datas     数据集合
 	 * @param separator 分隔符，默认为逗号
-	 * @param append 是否追加
+	 * @param append    是否追加
 	 * @throws IOException 写入异常
 	 */
 	public static void toCSV(File file, List<List<Object>> datas, String separator, boolean append) throws IOException {
@@ -123,11 +143,68 @@ public final class FileUtils {
 			bw.flush();
 		}
 	}
-	
+
 	/**
-	 * 解析输入XLS文件流，获取数据集合大小
+	 * 将指定数据写入指定 PDF 文件
 	 * 
-	 * @param in XLS文件流
+	 * @param file  PDF 文件
+	 * @param datas 数据集合
+	 * @param fonts 字体文件路径
+	 * @throws IOException       写入异常
+	 * @throws TemplateException 模板解析异常
+	 */
+	public static void toPDF(File file, List<List<Object>> datas, String... fonts)
+			throws IOException, TemplateException {
+		if (file == null) {
+			return;
+		}
+		if (cfg == null) {
+			cfg = initConfiguration();
+		}
+		ITextRenderer renderer = new ITextRenderer();
+		addFont(renderer, fonts);
+		Template temp = cfg.getTemplate("list.ftl");
+		try (Writer writer = new StringWriter(); OutputStream out = new FileOutputStream(file)) {
+			Map<String, Object> dataModel = new HashMap<>();
+			dataModel.put("datas", datas);
+			temp.process(dataModel, writer);
+			String html = writer.toString();
+			renderer.setDocumentFromString(html);
+			renderer.layout();
+			renderer.createPDF(out);
+		}
+	}
+
+	/**
+	 * 合并多个 PDF 文件
+	 * 
+	 * @param mergedPdf 合并后的文件
+	 * @param pdfs      带合并的文件
+	 * @throws DocumentException 读取 PDF 文件异常
+	 * @throws IOException       合并异常
+	 */
+	public static void mergePDF(File mergedPdf, File... pdfs) throws DocumentException, IOException {
+		Document doc = new Document();
+		PdfCopy copy = new PdfCopy(doc, new FileOutputStream(mergedPdf));
+		doc.open();
+		for (File pdf : pdfs) {
+			PdfReader pdfreader = new PdfReader(new FileInputStream(pdf));
+			int n = pdfreader.getNumberOfPages();
+			PdfImportedPage page;
+			for (int i = 1; i <= n; i++) {
+				page = copy.getImportedPage(pdfreader, i);
+				copy.addPage(page);
+			}
+			copy.freeReader(pdfreader);
+		}
+		doc.close();
+		copy.close();
+	}
+
+	/**
+	 * 解析输入 XLS 文件流，获取数据集合大小
+	 * 
+	 * @param in XLS 文件流
 	 * @return 数据集合大小
 	 * @throws IOException 解析读取异常
 	 */
@@ -144,11 +221,11 @@ public final class FileUtils {
 		}
 		return size;
 	}
-	
+
 	/**
-	 * 解析输入XLSX文件流，获取数据集合大小
+	 * 解析输入 XLSX 文件流，获取数据集合大小
 	 * 
-	 * @param in XLSX文件流
+	 * @param in XLSX 文件流
 	 * @return 数据集合大小
 	 * @throws IOException 解析读取异常
 	 */
@@ -165,11 +242,11 @@ public final class FileUtils {
 		}
 		return size;
 	}
-	
+
 	/**
-	 * 解析输入CSV文件流，获取数据集合大小
+	 * 解析输入 CSV 文件流，获取数据集合大小
 	 * 
-	 * @param in CSV文件流
+	 * @param in        CSV 文件流
 	 * @param separator 分隔符
 	 * @return 数据集合大小
 	 * @throws IOException 解析读取异常
@@ -187,12 +264,12 @@ public final class FileUtils {
 		}
 		return size;
 	}
-	
+
 	/**
-	 * 解析输入XLS文件流，获取数据集合
+	 * 解析输入 XLS 文件流，获取数据集合
 	 * 
-	 * @param in XLS文件流
-	 * @return 数据集合，key为工作表名称
+	 * @param in XLS 文件流
+	 * @return 数据集合，key 为工作表名称
 	 * @throws IOException 解析读取异常
 	 */
 	public static Map<String, List<List<String>>> fromXLS(FileInputStream in) throws IOException {
@@ -204,10 +281,10 @@ public final class FileUtils {
 	}
 
 	/**
-	 * 解析输入XLSX文件流，获取数据集合
+	 * 解析输入 XLSX 文件流，获取数据集合
 	 * 
-	 * @param in XLSX文件流
-	 * @return 数据集合，key为工作表名称
+	 * @param in XLSX 文件流
+	 * @return 数据集合，key 为工作表名称
 	 * @throws IOException 解析读取异常
 	 */
 	public static Map<String, List<List<String>>> fromXLSX(FileInputStream in) throws IOException {
@@ -217,16 +294,17 @@ public final class FileUtils {
 		}
 		return result;
 	}
-	
+
 	/**
-	 * 解析输入CSV文件流，获取数据集合
+	 * 解析输入 CSV 文件流，获取数据集合
 	 * 
-	 * @param in CSV文件流
+	 * @param in CSV 文件流
 	 * @return 数据集合
 	 * @throws IOException 解析读取异常
 	 */
 	public static List<List<String>> fromCSV(FileInputStream in) throws IOException {
-		CSVReader reader = new CSVReaderBuilder(new InputStreamReader(in)).withCSVParser(new CSVParserBuilder().build()).build();
+		CSVReader reader = new CSVReaderBuilder(new InputStreamReader(in)).withCSVParser(new CSVParserBuilder().build())
+				.build();
 		List<List<String>> result = new ArrayList<>();
 		String[] nextLineAsTokens = null;
 		do {
@@ -242,7 +320,7 @@ public final class FileUtils {
 		} while (true);
 		return result;
 	}
-	
+
 	/**
 	 * 判断输入流的图片格式
 	 * 
@@ -275,13 +353,12 @@ public final class FileUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * 根据文件名称判断图片格式
 	 * 
-	 * @param name
-	 * @return
-	 * @throws IOException
+	 * @param name 图片文件名
+	 * @return 图片格式
 	 */
 	public static ImageFormats imageFormat(String name) {
 		if (SystemUtils.isBlank(name)) {
@@ -294,12 +371,12 @@ public final class FileUtils {
 		}
 		return ImageFormats.UNKNOWN;
 	}
-	
+
 	/**
 	 * 创建指定文件
 	 * 
-	 * @param path 文件所在路径
-	 * @param name 文件名称
+	 * @param path   文件所在路径
+	 * @param name   文件名称
 	 * @param suffix 文件后缀名
 	 * @return 文件
 	 * @throws IOException 创建文件异常
@@ -316,7 +393,7 @@ public final class FileUtils {
 		FileUtil.mkParentDirs(file);
 		return file;
 	}
-	
+
 	private static void fillWorkbook(Workbook wb, List<List<Object>> datas) {
 		if (!CollectionUtils.isEmpty(datas)) {
 			Sheet sheet = null;
@@ -347,7 +424,7 @@ public final class FileUtils {
 			}
 		}
 	}
-	
+
 	private static void setValue(Cell cell, Object obj) {
 		List<Object> list = SystemUtils.transformList(obj);
 		if (list != null) {
@@ -389,7 +466,7 @@ public final class FileUtils {
 			cell.setCellType(CellType.BLANK);
 		}
 	}
-	
+
 	private static String cellString(Object obj) {
 		String value = "";
 		List<Object> list = SystemUtils.transformList(obj);
@@ -403,7 +480,7 @@ public final class FileUtils {
 		}
 		return value;
 	}
-	
+
 	private static void fillDatas(Workbook workbook, Map<String, List<List<String>>> result) {
 		for (int sheetIdx = 0; sheetIdx < workbook.getNumberOfSheets(); sheetIdx++) {
 			Sheet sheet = workbook.getSheetAt(sheetIdx);
@@ -451,5 +528,22 @@ public final class FileUtils {
 			result.put(sheet.getSheetName(), datas);
 		}
 	}
-	
+
+	private static Configuration initConfiguration() throws IOException {
+		Configuration cfg = new Configuration(Configuration.VERSION_2_3_27);
+		cfg.setTemplateLoader(new SpringTemplateLoader(new DefaultResourceLoader(), "classpath:/templates/"));
+		cfg.setDefaultEncoding("UTF-8");
+		cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+		cfg.setLogTemplateExceptions(false);
+		cfg.setWrapUncheckedExceptions(true);
+		return cfg;
+	}
+
+	private static void addFont(ITextRenderer renderer, String... fonts) throws DocumentException, IOException {
+		ITextFontResolver fontResolver = renderer.getFontResolver();
+		for (String font : fonts) {
+			fontResolver.addFont(font, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+		}
+	}
+
 }
