@@ -41,12 +41,8 @@ export default function request(user, reqUrl, payload) {
                         });
                     }
                 } else if (error.response.status === 500) {
-                    var message = 'Error';
-                    if (error.response.statusText) {
-                        message = error.response.statusText;
-                    }
                     store.commit('showAlert', {
-                        message: message
+                        message: null
                     });
                 }
             }

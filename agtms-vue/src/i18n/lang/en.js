@@ -1,4 +1,5 @@
 export default {
+    server_error: 'Service is temporarily unavailable, please try again later',
     sign_in: 'Sign in',
     no_account: 'Don\'t have an account? ',
     have_account: 'Already have an account? ',

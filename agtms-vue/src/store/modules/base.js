@@ -1,5 +1,6 @@
 import { signIn, signOut, passwordChange, profileSave, profileInfo } from '@/api/user'
 import { uploadImage } from '@/api/upload'
+import router from '@/router'
 
 function getCookie(name, defaultValue) {
     var reg = new RegExp("(^| )"+name+"=([^;]*)(;|$)");
@@ -79,7 +80,7 @@ const mutations = {
             if (alert.message != null) {
                 state.alert.text = alert.message;
             } else {
-                state.alert.text = 'Error';
+                state.alert.text = router.app.$t('server_error');
             }
             if (alert.variant) {
                 state.alert.variant = alert.variant;

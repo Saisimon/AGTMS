@@ -1,4 +1,5 @@
 export default {
+    server_error: '服务暂不可用，请稍后重试',
     sign_in: '登录',
     no_account: '没有账户？',
     have_account: '已有账户？',
