@@ -15,7 +15,7 @@ public abstract class AbstractFieldHandler implements FieldHandler {
 	public Result validate(Template template, TemplateField field, Object value) {
 		if (field != null && SystemUtils.isNotEmpty(value)) {
 			String str = value.toString();
-			Views view = key();
+			Views view = view();
 			if (str.length() > view.getSize()) {
 				return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(field.getFieldTitle(), view.getSize());
 			}

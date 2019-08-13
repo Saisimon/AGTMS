@@ -4,7 +4,7 @@
 		<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"></link>
 		<style type="text/css">
 			body {
-				font-family: 'Microsoft YaHei';
+				font-family: '${font!"Arial Unicode MS"}';
 			}
 			table {
 				max-width: 690px;

@@ -29,7 +29,7 @@ public class SelectionFieldHandler extends AbstractFieldHandler {
 	}
 
 	@Override
-	public Views key() {
+	public Views view() {
 		return Views.SELECTION;
 	}
 

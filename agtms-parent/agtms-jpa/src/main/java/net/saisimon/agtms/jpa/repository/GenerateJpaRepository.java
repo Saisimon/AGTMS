@@ -117,8 +117,12 @@ public class GenerateJpaRepository extends AbstractGenerateRepository {
 		FilterRequest filterRequest = filter;
 		if (filterRequest == null) {
 			filterRequest = FilterRequest.build();
+		} else {
+			filterRequest = filterRequest.clone();
 		}
-		filterRequest.and(filterPageable.getParam());
+		if (filterPageable.getParam() != null) {
+			filterRequest.and(filterPageable.getParam());
+		}
 		List<Object> args = new ArrayList<>();
 		Statement where = JpaFilterUtils.where(filterRequest);
 		if (where.isNotEmpty()) {

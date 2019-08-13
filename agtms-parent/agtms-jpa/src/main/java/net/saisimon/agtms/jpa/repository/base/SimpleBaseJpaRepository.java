@@ -85,8 +85,12 @@ public class SimpleBaseJpaRepository<T, ID extends Serializable> extends SimpleJ
 		FilterRequest filterRequest = filter;
 		if (filterRequest == null) {
 			filterRequest = FilterRequest.build();
+		} else {
+			filterRequest = filterRequest.clone();
 		}
-		filterRequest.and(filterPageable.getParam());
+		if (filterPageable.getParam() != null) {
+			filterRequest.and(filterPageable.getParam());
+		}
 		Pageable springPageable = filterPageable.getPageable();
 		Class<T> domainClass = getDomainClass();
 		// 如果是复合ID，直接查出指定属性，否则先查出ID集合再根据ID查指定属性

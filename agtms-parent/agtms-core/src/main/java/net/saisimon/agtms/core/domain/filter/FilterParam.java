@@ -100,5 +100,15 @@ public class FilterParam extends FilterRequest {
 		filterMap.put("value", value);
 		return filterMap;
 	}
+
+	@Override
+	public FilterParam clone() {
+		FilterParam filterParam = new FilterParam();
+		filterParam.setKey(key);
+		filterParam.setOperator(operator);
+		filterParam.setType(type);
+		filterParam.setValue(value);
+		return filterParam;
+	}
 	
 }

@@ -31,7 +31,7 @@ public class EmailFieldHandler extends AbstractFieldHandler {
 	}
 	
 	@Override
-	public Views key() {
+	public Views view() {
 		return Views.EMAIL;
 	}
 	

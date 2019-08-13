@@ -14,7 +14,18 @@ public class FileTypeSelection extends AbstractSelection<String> {
 	
 	@Override
 	public Map<String, String> select() {
-		FileTypes[] types = FileTypes.values();
+		return select(FileTypes.values());
+	}
+	
+	public Map<String, String> importSelect() {
+		return select(FileTypes.CSV, FileTypes.XLS, FileTypes.XLSX);
+	}
+	
+	public Map<String, String> exportSelect() {
+		return select(FileTypes.CSV, FileTypes.PDF, FileTypes.XLS, FileTypes.XLSX);
+	}
+	
+	private Map<String, String> select(FileTypes... types) {
 		Map<String, String> typeMap = MapUtil.newHashMap(types.length, true);
 		for (FileTypes type : types) {
 			typeMap.put(type.getType(), getMessage(SystemUtils.humpToCode(type.getType(), ".")));

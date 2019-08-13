@@ -24,7 +24,7 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class FilterRequest implements Serializable {
+public class FilterRequest implements Serializable, Cloneable {
 	
 	private static final long serialVersionUID = 9055844361079917020L;
 	
@@ -151,6 +151,33 @@ public class FilterRequest implements Serializable {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public FilterRequest clone() {
+		try {
+			FilterRequest filterRequest = new FilterRequest();
+			filterRequest.setAndFilters(clones(andFilters));
+			filterRequest.setOrFilters(clones(orFilters));
+			return filterRequest;
+		} catch (CloneNotSupportedException e) {
+			throw new IllegalArgumentException("克隆 FilterRequest 失败", e);
+		}
+	}
+	
+	private List<FilterRequest> clones(List<FilterRequest> filters) throws CloneNotSupportedException {
+		if (filters == null) {
+			return null;
+		}
+		List<FilterRequest> newFilters = new ArrayList<>(filters.size());
+		for (FilterRequest filter : filters) {
+			if (filter instanceof FilterParam) {
+				newFilters.add((FilterParam) ((FilterParam)filter).clone());
+			} else {
+				newFilters.add((FilterRequest) filter.clone());
+			}
+		}
+		return newFilters;
 	}
 	
 }

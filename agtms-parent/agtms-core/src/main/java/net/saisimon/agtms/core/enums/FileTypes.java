@@ -1,7 +1,7 @@
 package net.saisimon.agtms.core.enums;
 
 /**
- * 导入导出支持的文件类型枚举
+ * 文件类型枚举
  * 
  * @author saisimon
  *
@@ -9,17 +9,21 @@ package net.saisimon.agtms.core.enums;
 public enum FileTypes {
 	
 	/**
-	 * Excel xls类型文件
+	 * Excel xls 类型文件
 	 */
 	XLS("xls"),
 	/**
-	 * Excel xlsx类型文件
+	 * Excel xlsx 类型文件
 	 */
 	XLSX("xlsx"),
 	/**
-	 * Excel csv类型文件
+	 * csv 类型文件
 	 */
-	CSV("csv");
+	CSV("csv"),
+	/**
+	 * pdf 类型文件
+	 */
+	PDF("pdf");
 	
 	private String type;
 	

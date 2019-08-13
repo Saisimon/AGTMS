@@ -35,8 +35,8 @@ public interface FieldHandler extends BaseOrder {
 	/**
 	 * 属性字段处理器对应的展现类型
 	 * 
-	 * @return 展现类型数组
+	 * @return 展现类型
 	 */
-	Views key();
+	Views view();
 	
 }

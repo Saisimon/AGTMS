@@ -32,7 +32,9 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.core.factory.FileHandlerFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.handler.FileHandler;
 import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.DomainUtils;
@@ -53,7 +55,7 @@ import net.saisimon.agtms.web.util.FileUtils;
 public class ExportActuator implements Actuator<ExportParam> {
 	
 	private static final Sign EXPORT_SIGN = Sign.builder().name(Functions.EXPORT.getFunction()).text(Functions.EXPORT.getFunction()).build();
-	private static final int PAGE_SIZE = 2000;
+	private static final int PAGE_SIZE = 5000;
 	
 	@Autowired
 	private MessageSource messageSource;
@@ -79,9 +81,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		if (total > agtmsProperties.getExportRowsMaxSize()) {
 			return ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
 		}
-		param.setExportFileUUID(UUID.randomUUID().toString());
-		File file = createExportFile(param);
-		exportDatas(param, filter, template, file);
+		exportDatas(template, param, filter);
 		return ResultUtils.simpleSuccess();
 	}
 
@@ -113,41 +113,14 @@ public class ExportActuator implements Actuator<ExportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		StringBuilder exportFilePath = new StringBuilder();
-		exportFilePath.append(agtmsProperties.getFilepath())
-			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
-			.append(File.separatorChar).append(param.getUserId())
-			.append(File.separatorChar).append(param.getExportFileUUID());
-		File file = null;
-		String filename = param.getExportFileName();
-		switch (param.getExportFileType()) {
-			case Constant.File.XLS:
-				response.setContentType("application/vnd.ms-excel");
-				exportFilePath.append(Constant.File.XLS_SUFFIX);
-				file = new File(exportFilePath.toString());
-				filename += Constant.File.XLS_SUFFIX;
-				break;
-			case Constant.File.CSV:
-				response.setContentType("application/CSV");
-				exportFilePath.append(Constant.File.CSV_SUFFIX);
-				file = new File(exportFilePath.toString());
-				filename += Constant.File.CSV_SUFFIX;
-				break;
-			case Constant.File.XLSX:
-				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				exportFilePath.append(Constant.File.XLSX_SUFFIX);
-				file = new File(exportFilePath.toString());
-				filename += Constant.File.XLSX_SUFFIX;
-				break;
-			default:
-				break;
-		}
+		File file = createExportFile(param, null);
 		if (file == null || !file.exists()) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
 		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(request.getHeader("user-agent"), filename));
+			response.setContentType(FileUtils.CONTENT_TYPE_MAP.get(param.getExportFileType()));
+			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(request.getHeader("user-agent"), param.getExportFileName() + "." + param.getExportFileType()));
 			IOUtils.copy(in, response.getOutputStream());
 			response.flushBuffer();
 		}
@@ -158,7 +131,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		if (param == null) {
 			return;
 		}
-		File file = createExportFile(param);
+		File file = createExportFile(param, null);
 		if (file == null || !file.exists()) {
 			return;
 		}
@@ -170,77 +143,95 @@ public class ExportActuator implements Actuator<ExportParam> {
 		return EXPORT_SIGN;
 	}
 	
-	private File createExportFile(ExportParam param) throws IOException {
+	private File createExportFile(ExportParam param, Integer idx) throws IOException {
 		StringBuilder exportFilePath = new StringBuilder();
 		exportFilePath.append(agtmsProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId());
-		return FileUtils.createFile(exportFilePath.toString(), param.getExportFileUUID(), "." + param.getExportFileType());
+		String fileName = idx == null ? param.getExportFileUUID() : param.getExportFileUUID() + "-" + idx.toString();
+		return FileUtils.createFile(exportFilePath.toString(), fileName, "." + param.getExportFileType());
 	}
 	
-	private void exportDatas(ExportParam param, FilterRequest filter, Template template, File file) throws IOException, InterruptedException {
-		List<Object> heads = new ArrayList<>();
+	private void exportDatas(Template template, ExportParam param, FilterRequest filter) throws IOException, InterruptedException {
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
+		String[] exportFields = buildExportFields(param.getExportFields(), fieldInfoMap);
+		List<Object> heads = buildHeads(exportFields, fieldInfoMap);
+		param.setExportFileUUID(UUID.randomUUID().toString());
+		FileHandler handler = FileHandlerFactory.getHandler(param.getExportFileType());
+		List<List<Object>> datas = new ArrayList<>();
+		datas.add(heads);
+		int idx = 0;
+		Long lastId = null;
+		List<File> files = new ArrayList<>();
+		try {
+			do {
+				if (Thread.currentThread().isInterrupted()) {
+					throw new InterruptedException("Task Cancel");
+				}
+				FilterPageable pageable = new FilterPageable(new FilterParam(Constant.ID, lastId, Operator.LT), PAGE_SIZE, null);
+				List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, pageable, exportFields);
+				List<Map<String, Object>> domainList = DomainUtils.conversions(fieldInfoMap, template.getService(), domains, param.getUserId());
+				buildDatas(domainList, datas, exportFields);
+				File file = createExportFile(param, idx);
+				handler.populate(file, datas);
+				files.add(file);
+				datas.clear();
+				idx++;
+				lastId = (Long) domainList.get(domainList.size() - 1).get(Constant.ID);
+				if (lastId == null || domainList.size() < PAGE_SIZE) {
+					break;
+				}
+			} while (true);
+			handler.merge(createExportFile(param, null), files);
+		} finally {
+			for (File file : files) {
+				if (file != null && file.exists()) {
+					file.delete();
+				}
+			}
+		}
+	}
+
+	private String[] buildExportFields(List<String> exportFields, Map<String, TemplateField> fieldInfoMap) {
 		List<String> fields = new ArrayList<>();
-		for (String exportField : param.getExportFields()) {
+		for (String exportField : exportFields) {
 			TemplateField templateField = fieldInfoMap.get(exportField);
 			if (templateField == null) {
 				continue;
 			}
-			heads.add(templateField.getFieldTitle());
 			fields.add(exportField);
 		}
-		fillHead(file, heads, param.getExportFileType(), false);
-		List<List<Object>> datas = new ArrayList<>();
-		Long lastId = null;
-		do {
+		String[] fieldArray = new String[fields.size()];
+		fields.toArray(fieldArray);
+		return fieldArray;
+	}
+	
+	private List<Object> buildHeads(String[] exportFields, Map<String, TemplateField> fieldInfoMap) {
+		List<Object> heads = new ArrayList<>();
+		for (int i = 0; i < exportFields.length; i++) {
+			String exportField = exportFields[i];
+			heads.add(fieldInfoMap.get(exportField).getFieldTitle());
+		}
+		return heads;
+	}
+	
+	private void buildDatas(List<Map<String, Object>> domainList, List<List<Object>> datas, String[] exportFields) throws InterruptedException {
+		for (Map<String, Object> domainMap : domainList) {
 			if (Thread.currentThread().isInterrupted()) {
 				throw new InterruptedException("Task Cancel");
 			}
-			FilterPageable pageable = new FilterPageable(new FilterParam(Constant.ID, lastId, Operator.LT), PAGE_SIZE, null);
-			List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, pageable, fields.toArray(new String[fields.size()]));
-			List<Map<String, Object>> domainList = DomainUtils.conversions(fieldInfoMap, template.getService(), domains, param.getUserId());
-			for (Map<String, Object> domainMap : domainList) {
-				if (Thread.currentThread().isInterrupted()) {
-					throw new InterruptedException("Task Cancel");
-				}
-				List<Object> data = new ArrayList<>();
-				for (int i = 0; i < fields.size(); i++) {
-					String field = fields.get(i);
-					Object value = domainMap.get(field);
-					data.add(value == null ? "" : value);
-				}
-				datas.add(data);
-				lastId = (Long) domainMap.get(Constant.ID);
-			}
-			fillDatas(file, datas, param.getExportFileType(), true);
-			datas.clear();
-			if (lastId == null || domains.size() < PAGE_SIZE) {
-				break;
-			}
-		} while (true);
-	}
-	
-	private void fillHead(File file, List<Object> heads, String fileType, boolean append) throws IOException {
-		List<List<Object>> datas = new ArrayList<>();
-		datas.add(heads);
-		fillDatas(file, datas, fileType, append);
-	}
-	
-	private void fillDatas(File file, List<List<Object>> datas, String fileType, boolean append) throws IOException {
-		switch (fileType) {
-			case Constant.File.XLS:
-				FileUtils.toXLS(file, datas, append);
-				break;
-			case Constant.File.CSV:
-				FileUtils.toCSV(file, datas, ",", append);
-				break;
-			case Constant.File.XLSX:
-				FileUtils.toXLSX(file, datas, append);
-				break;
-			default:
-				break;
+			datas.add(buildData(exportFields, domainMap));
 		}
+	}
+
+	private List<Object> buildData(String[] exportFields, Map<String, Object> domainMap) {
+		List<Object> data = new ArrayList<>();
+		for (int i = 0; i < exportFields.length; i++) {
+			String exportField = exportFields[i];
+			Object value = domainMap.get(exportField);
+			data.add(value == null ? "" : value);
+		}
+		return data;
 	}
 	
 	private String getMessage(String code, Object... args) {

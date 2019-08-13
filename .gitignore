@@ -27,6 +27,9 @@
 ### Mac OS ###
 .DS_Store
 
+### JVM error log ###
+hs_err_pid*.log
+
 data/web/logs
 data/web/libs/*
 data/web/files/*

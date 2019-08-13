@@ -81,8 +81,12 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 		FilterRequest filterRequest = filter;
 		if (filterRequest == null) {
 			filterRequest = FilterRequest.build();
+		} else {
+			filterRequest = filterRequest.clone();
 		}
-		filterRequest.and(filterPageable.getParam());
+		if (filterPageable.getParam() != null) {
+			filterRequest.and(filterPageable.getParam());
+		}
 		Query query = MongodbFilterUtils.query(filterRequest);
 		query.with(filterPageable.getPageable());
 		Template template = template();
@@ -103,15 +107,19 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 		if (filterPageable == null) {
 			filterPageable = FilterPageable.build(null);
 		}
-		Pageable springPageable = filterPageable.getPageable();
 		FilterRequest filterRequest = filter;
 		if (filterRequest == null) {
 			filterRequest = FilterRequest.build();
+		} else {
+			filterRequest = filterRequest.clone();
 		}
-		filterRequest.and(filterPageable.getParam());
+		if (filterPageable.getParam() != null) {
+			filterRequest.and(filterPageable.getParam());
+		}
 		Query query = MongodbFilterUtils.query(filterRequest);
 		Template template = template();
 		String collectionName = collectionName(template);
+		Pageable springPageable = filterPageable.getPageable();
 		long total = 0;
 		if (count) {
 			total = mongoTemplate.count(query, collectionName);

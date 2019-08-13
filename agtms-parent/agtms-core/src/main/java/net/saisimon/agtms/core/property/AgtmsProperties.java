@@ -40,4 +40,8 @@ public class AgtmsProperties {
 	
 	private String encryptorKey = "agtms";
 	
+	private String pdfFontFamily = "Arial Unicode MS";
+	
+	private String pdfFontPath;
+	
 }

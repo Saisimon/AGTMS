@@ -8,7 +8,7 @@ import net.saisimon.agtms.core.enums.Views;
 public class IconFieldHandler extends AbstractFieldHandler {
 	
 	@Override
-	public Views key() {
+	public Views view() {
 		return Views.ICON;
 	}
 

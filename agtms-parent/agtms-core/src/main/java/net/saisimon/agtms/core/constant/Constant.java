@@ -46,14 +46,6 @@ public class Constant {
 	
 	public static class File {
 		
-		public static final String XLS = "xls";
-		public static final String XLSX = "xlsx";
-		public static final String CSV = "csv";
-		
-		public static final String XLS_SUFFIX = ".xls";
-		public static final String XLSX_SUFFIX = ".xlsx";
-		public static final String CSV_SUFFIX = ".csv";
-		
 		public static final String EXPORT_PATH = "export";
 		public static final String IMPORT_PATH = "import";
 		public static final String UPLOAD_PATH = "upload";

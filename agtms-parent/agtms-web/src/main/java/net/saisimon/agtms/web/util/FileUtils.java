@@ -1,15 +1,16 @@
 package net.saisimon.agtms.web.util;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.ui.freemarker.SpringTemplateLoader;
@@ -40,11 +42,11 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfCopy;
-import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import com.opencsv.CSVWriter;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
@@ -54,6 +56,7 @@ import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import net.saisimon.agtms.core.enums.FileTypes;
 import net.saisimon.agtms.core.enums.ImageFormats;
 import net.saisimon.agtms.core.util.SystemUtils;
 
@@ -66,134 +69,195 @@ import net.saisimon.agtms.core.util.SystemUtils;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileUtils {
 
+	private static final int XLS_MAX_ROWS = 65535;
+	private static final int XLSX_MAX_ROWS = 1048575;
+	
+	public static final Map<String, String> CONTENT_TYPE_MAP = new HashMap<>();
+	static {
+		CONTENT_TYPE_MAP.put(FileTypes.XLS.getType(), "application/vnd.ms-excel");
+		CONTENT_TYPE_MAP.put(FileTypes.XLSX.getType(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		CONTENT_TYPE_MAP.put(FileTypes.CSV.getType(), "application/csv");
+		CONTENT_TYPE_MAP.put(FileTypes.PDF.getType(), "application/pdf");
+	}
+	
 	private static Configuration cfg = null;
 
 	/**
-	 * 将指定数据写入指定 XLS 文件
+	 * 将指定数据写入指定输出流
 	 * 
-	 * @param file   XLS 文件
+	 * @param out   输出流
 	 * @param datas  数据集合
-	 * @param append 是否追加
 	 * @throws IOException 写入异常
 	 */
-	public static void toXLS(File file, List<List<Object>> datas, boolean append) throws IOException {
-		if (file == null) {
-			return;
-		}
-		try (Workbook wb = append ? new HSSFWorkbook(new FileInputStream(file)) : new HSSFWorkbook();
-				FileOutputStream fileOut = new FileOutputStream(file)) {
+	public static void toXLS(OutputStream out, List<List<Object>> datas) throws IOException {
+		try (Workbook wb = new HSSFWorkbook()) {
 			fillWorkbook(wb, datas);
-			wb.write(fileOut);
+			wb.write(out);
 		}
 	}
 
 	/**
-	 * 将指定数据写入指定 XLSX 文件
+	 * 将指定数据写入指定输出流
 	 * 
-	 * @param file   XLSX 文件
+	 * @param out   输出流
 	 * @param datas  数据集合
-	 * @param append 是否追加
 	 * @throws IOException 写入异常
 	 */
-	public static void toXLSX(File file, List<List<Object>> datas, boolean append) throws IOException {
-		if (file == null) {
-			return;
-		}
-		try (Workbook wb = append ? new XSSFWorkbook(new FileInputStream(file)) : new XSSFWorkbook();
-				FileOutputStream fileOut = new FileOutputStream(file)) {
+	public static void toXLSX(OutputStream out, List<List<Object>> datas) throws IOException {
+		try (Workbook wb = new SXSSFWorkbook()) {
 			fillWorkbook(wb, datas);
-			wb.write(fileOut);
+			wb.write(out);
 		}
 	}
-
+	
 	/**
-	 * 将指定数据写入指定 CSV 文件
+	 * 将指定数据写入指定输出流
 	 * 
-	 * @param file      CSV 文件
+	 * @param out      输出流
 	 * @param datas     数据集合
-	 * @param separator 分隔符，默认为逗号
-	 * @param append    是否追加
 	 * @throws IOException 写入异常
 	 */
-	public static void toCSV(File file, List<List<Object>> datas, String separator, boolean append) throws IOException {
-		if (file == null) {
-			return;
-		}
-		String s = separator;
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsolutePath(), append))) {
-			if (null == s) {
-				s = ",";
-			}
+	public static void toCSV(OutputStream out, List<List<Object>> datas) throws IOException {
+		try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(out))) {
 			if (!CollectionUtils.isEmpty(datas)) {
-				StringBuilder buffer = new StringBuilder();
 				for (int i = 0; i < datas.size(); i++) {
 					List<Object> data = datas.get(i);
+					String[] dataArray = new String[data.size()];
 					for (int j = 0; j < data.size(); j++) {
-						Object obj = data.get(j);
-						buffer.append(cellString(obj));
-						if (j != data.size() - 1) {
-							buffer.append(s);
-						}
+						dataArray[j] = cellString(data.get(j));
 					}
-					bw.write(buffer.toString());
-					bw.newLine();
-					buffer.setLength(0);
+					writer.writeNext(dataArray);
 				}
 			}
-			bw.flush();
 		}
 	}
 
 	/**
-	 * 将指定数据写入指定 PDF 文件
+	 * 将指定数据写入指定输出流
 	 * 
-	 * @param file  PDF 文件
+	 * @param out   输出流
 	 * @param datas 数据集合
 	 * @param fonts 字体文件路径
 	 * @throws IOException       写入异常
 	 * @throws TemplateException 模板解析异常
 	 */
-	public static void toPDF(File file, List<List<Object>> datas, String... fonts)
-			throws IOException, TemplateException {
-		if (file == null) {
-			return;
-		}
+	public static void toPDF(OutputStream out, List<List<Object>> datas, String fontPath, String fontFamily) throws IOException, TemplateException {
 		if (cfg == null) {
 			cfg = initConfiguration();
 		}
 		ITextRenderer renderer = new ITextRenderer();
-		addFont(renderer, fonts);
+		if (fontPath != null) {
+			addFont(renderer, fontPath);
+		}
 		Template temp = cfg.getTemplate("list.ftl");
-		try (Writer writer = new StringWriter(); OutputStream out = new FileOutputStream(file)) {
+		try (Writer writer = new StringWriter()) {
 			Map<String, Object> dataModel = new HashMap<>();
+			dataModel.put("font", fontFamily);
 			dataModel.put("datas", datas);
 			temp.process(dataModel, writer);
 			String html = writer.toString();
+			System.out.println(html);
 			renderer.setDocumentFromString(html);
 			renderer.layout();
 			renderer.createPDF(out);
 		}
 	}
-
+	
+	/**
+	 * 合并多个 Excel 文件
+	 * 
+	 * @param isXlsx     合并文件类型是否是 xlsx
+	 * @param mergedFile 合并后的文件
+	 * @param files      待合并的文件
+	 * @throws IOException       合并异常
+	 */
+	public static void mergeExcel(boolean isXlsx, File mergedFile, List<File> files) throws IOException {
+		if (mergedFile == null || files == null) {
+			return;
+		}
+		try (Workbook mergedWorkbook = isXlsx ? new SXSSFWorkbook() : new HSSFWorkbook();
+				FileOutputStream out = new FileOutputStream(mergedFile)) {
+			Sheet newSheet = mergedWorkbook.createSheet();
+			int start = 0;
+			for (File file : files) {
+				if (file == null) {
+					continue;
+				}
+				try (Workbook oldWorkbook = isXlsx ? new XSSFWorkbook(new FileInputStream(file)) : new HSSFWorkbook(new FileInputStream(file))) {
+					int oldSheetSize = oldWorkbook.getNumberOfSheets();
+					for (int i = 0; i < oldSheetSize; i++) {
+						Sheet oldSheet = oldWorkbook.getSheetAt(i);
+						int oldRowSize = oldSheet.getLastRowNum();
+						for (int j = 0; j < oldRowSize; j++) {
+							if (start == (isXlsx ? XLSX_MAX_ROWS : XLS_MAX_ROWS)) {
+								newSheet = mergedWorkbook.createSheet();
+								start = newSheet.getLastRowNum();
+							}
+							Row oldRow = oldSheet.getRow(j);
+							Row newRow = newSheet.createRow(start);
+							copyRow(oldRow, newRow);
+							start++;
+						}
+					}
+				}
+			}
+			mergedWorkbook.write(out);
+		}
+	}
+	
+	/**
+	 * 合并多个 CSV 文件
+	 * 
+	 * @param mergedCsv 合并后的文件
+	 * @param csvs      待合并的文件
+	 * @throws IOException       合并异常
+	 */
+	public static void mergeCSV(File mergedCsv, List<File> csvs) throws IOException {
+		if (mergedCsv == null || csvs == null) {
+			return;
+		}
+		try (CSVWriter writer = new CSVWriter(new FileWriter(mergedCsv))) {
+			for (File csv : csvs) {
+				if (csv == null) {
+					continue;
+				}
+				try (CSVReader reader = new CSVReaderBuilder(new FileReader(csv)).withCSVParser(new CSVParserBuilder().build()).build()) {
+					String[] nextLineAsTokens = null;
+					do {
+						nextLineAsTokens = reader.readNext();
+						if (nextLineAsTokens == null) {
+							break;
+						}
+						writer.writeNext(nextLineAsTokens);
+					} while (true);
+				}
+			}
+		}
+	}
+	
 	/**
 	 * 合并多个 PDF 文件
 	 * 
 	 * @param mergedPdf 合并后的文件
-	 * @param pdfs      带合并的文件
+	 * @param pdfs      待合并的文件
 	 * @throws DocumentException 读取 PDF 文件异常
 	 * @throws IOException       合并异常
 	 */
-	public static void mergePDF(File mergedPdf, File... pdfs) throws DocumentException, IOException {
+	public static void mergePDF(File mergedPdf, List<File> pdfs) throws DocumentException, IOException {
+		if (mergedPdf == null || pdfs == null) {
+			return;
+		}
 		Document doc = new Document();
 		PdfCopy copy = new PdfCopy(doc, new FileOutputStream(mergedPdf));
 		doc.open();
 		for (File pdf : pdfs) {
+			if (pdf == null) {
+				continue;
+			}
 			PdfReader pdfreader = new PdfReader(new FileInputStream(pdf));
 			int n = pdfreader.getNumberOfPages();
-			PdfImportedPage page;
 			for (int i = 1; i <= n; i++) {
-				page = copy.getImportedPage(pdfreader, i);
-				copy.addPage(page);
+				copy.addPage(copy.getImportedPage(pdfreader, i));
 			}
 			copy.freeReader(pdfreader);
 		}
@@ -202,9 +266,9 @@ public final class FileUtils {
 	}
 
 	/**
-	 * 解析输入 XLS 文件流，获取数据集合大小
+	 * 解析输入流，获取数据集合大小
 	 * 
-	 * @param in XLS 文件流
+	 * @param in 输入流
 	 * @return 数据集合大小
 	 * @throws IOException 解析读取异常
 	 */
@@ -223,9 +287,9 @@ public final class FileUtils {
 	}
 
 	/**
-	 * 解析输入 XLSX 文件流，获取数据集合大小
+	 * 解析输入流，获取数据集合大小
 	 * 
-	 * @param in XLSX 文件流
+	 * @param in 输入流
 	 * @return 数据集合大小
 	 * @throws IOException 解析读取异常
 	 */
@@ -244,9 +308,9 @@ public final class FileUtils {
 	}
 
 	/**
-	 * 解析输入 CSV 文件流，获取数据集合大小
+	 * 解析输入流，获取数据集合大小
 	 * 
-	 * @param in        CSV 文件流
+	 * @param in        输入流
 	 * @param separator 分隔符
 	 * @return 数据集合大小
 	 * @throws IOException 解析读取异常
@@ -266,13 +330,13 @@ public final class FileUtils {
 	}
 
 	/**
-	 * 解析输入 XLS 文件流，获取数据集合
+	 * 解析输入流，获取数据集合
 	 * 
-	 * @param in XLS 文件流
+	 * @param in 输入流
 	 * @return 数据集合，key 为工作表名称
 	 * @throws IOException 解析读取异常
 	 */
-	public static Map<String, List<List<String>>> fromXLS(FileInputStream in) throws IOException {
+	public static Map<String, List<List<String>>> fromXLS(InputStream in) throws IOException {
 		Map<String, List<List<String>>> result = new LinkedHashMap<>();
 		try (Workbook workbook = new HSSFWorkbook(in)) {
 			fillDatas(workbook, result);
@@ -281,13 +345,13 @@ public final class FileUtils {
 	}
 
 	/**
-	 * 解析输入 XLSX 文件流，获取数据集合
+	 * 解析输入流，获取数据集合
 	 * 
-	 * @param in XLSX 文件流
+	 * @param in 输入流
 	 * @return 数据集合，key 为工作表名称
 	 * @throws IOException 解析读取异常
 	 */
-	public static Map<String, List<List<String>>> fromXLSX(FileInputStream in) throws IOException {
+	public static Map<String, List<List<String>>> fromXLSX(InputStream in) throws IOException {
 		Map<String, List<List<String>>> result = new LinkedHashMap<>();
 		try (Workbook workbook = new XSSFWorkbook(in)) {
 			fillDatas(workbook, result);
@@ -296,29 +360,29 @@ public final class FileUtils {
 	}
 
 	/**
-	 * 解析输入 CSV 文件流，获取数据集合
+	 * 解析输入流，获取数据集合
 	 * 
-	 * @param in CSV 文件流
+	 * @param in 输入流
 	 * @return 数据集合
 	 * @throws IOException 解析读取异常
 	 */
-	public static List<List<String>> fromCSV(FileInputStream in) throws IOException {
-		CSVReader reader = new CSVReaderBuilder(new InputStreamReader(in)).withCSVParser(new CSVParserBuilder().build())
-				.build();
-		List<List<String>> result = new ArrayList<>();
-		String[] nextLineAsTokens = null;
-		do {
-			nextLineAsTokens = reader.readNext();
-			if (nextLineAsTokens == null) {
-				break;
-			}
-			List<String> datas = new ArrayList<>(nextLineAsTokens.length);
-			for (String data : nextLineAsTokens) {
-				datas.add(data);
-			}
-			result.add(datas);
-		} while (true);
-		return result;
+	public static List<List<String>> fromCSV(InputStream in) throws IOException {
+		try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(in)).withCSVParser(new CSVParserBuilder().build()).build()) {
+			List<List<String>> result = new ArrayList<>();
+			String[] nextLineAsTokens = null;
+			do {
+				nextLineAsTokens = reader.readNext();
+				if (nextLineAsTokens == null) {
+					break;
+				}
+				List<String> datas = new ArrayList<>(nextLineAsTokens.length);
+				for (String data : nextLineAsTokens) {
+					datas.add(data);
+				}
+				result.add(datas);
+			} while (true);
+			return result;
+		}
 	}
 
 	/**
@@ -542,7 +606,50 @@ public final class FileUtils {
 	private static void addFont(ITextRenderer renderer, String... fonts) throws DocumentException, IOException {
 		ITextFontResolver fontResolver = renderer.getFontResolver();
 		for (String font : fonts) {
-			fontResolver.addFont(font, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+			if (font == null) {
+				continue;
+			}
+			try {
+				fontResolver.addFont(font, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+			} catch (Exception e) {
+				throw new IllegalArgumentException(String.format("%s字体添加失败", font), e);
+			}
+		}
+	}
+	
+	private static void copyRow(Row oldRow, Row newRow) {
+		newRow.setHeight(oldRow.getHeight());
+		for (int i = oldRow.getFirstCellNum(); i <= oldRow.getLastCellNum(); i++) {
+			Cell oldCell = oldRow.getCell(i);
+			if (null != oldCell) {
+				copyCell(oldCell, newRow.createCell(i));
+			}
+		}
+	}
+	
+	private static void copyCell(Cell oldCell, Cell newCell) {
+		switch (oldCell.getCellTypeEnum()) {
+			case FORMULA:
+				newCell.setCellFormula(oldCell.getCellFormula());
+				break;
+			case NUMERIC:
+				if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(oldCell)) {
+					newCell.setCellValue(DateUtil.formatDate(oldCell.getDateCellValue()));
+				} else {
+					newCell.setCellValue(oldCell.getNumericCellValue());
+				}
+				break;
+			case BLANK:
+				newCell.setCellValue(oldCell.getStringCellValue());
+				break;
+			case BOOLEAN:
+				newCell.setCellValue(oldCell.getBooleanCellValue());
+				break;
+			case STRING:
+				newCell.setCellValue(oldCell.getStringCellValue());
+				break;
+			default:
+				break;
 		}
 	}
 

@@ -36,7 +36,7 @@ public class FieldHandlerFactory implements BeanPostProcessor {
 			return bean;
 		}
 		FieldHandler fieldHandler = (FieldHandler) bean;
-		Views view = fieldHandler.key();
+		Views view = fieldHandler.view();
 		if (view == null) {
 			return bean;
 		}

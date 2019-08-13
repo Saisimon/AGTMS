@@ -75,9 +75,11 @@ import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.ActuatorFactory;
+import net.saisimon.agtms.core.factory.FileHandlerFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.NavigationServiceFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
+import net.saisimon.agtms.core.handler.FileHandler;
 import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.service.NavigationService;
 import net.saisimon.agtms.core.service.TaskService;
@@ -302,7 +304,14 @@ public class ManagementMainController extends AbstractMainController {
 			if (importFile.isEmpty()) {
 				continue;
 			}
-			Result result = batchImport(importFileName, importFileType, importFields, importFile, template.sign(), userId);
+			ImportParam param = new ImportParam();
+			param.setImportFields(importFields);
+			param.setImportFileName(importFileName + "-" + importFile.getOriginalFilename());
+			param.setImportFileType(importFileType);
+			param.setImportFileUUID(UUID.randomUUID().toString());
+			param.setTemplateId(template.sign());
+			param.setUserId(userId);
+			Result result = batchImport(param, importFile);
 			if (!ResultUtils.isSuccess(result)) {
 				return result;
 			}
@@ -311,60 +320,6 @@ public class ManagementMainController extends AbstractMainController {
 		result.setCode(ResultUtils.SUCCESS_CODE);
 		result.setMessage(getMessage("import.task.created"));
 		return result;
-	}
-	
-	private Result batchImport(String importFileName, String importFileType, List<String> importFields, MultipartFile importFile, String sign, Long userId) {
-		ImportParam body = new ImportParam();
-		body.setImportFields(importFields);
-		body.setImportFileName(importFileName + "-" + importFile.getOriginalFilename());
-		body.setImportFileType(importFileType);
-		body.setImportFileUUID(UUID.randomUUID().toString());
-		body.setTemplateId(sign);
-		body.setUserId(userId);
-		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(agtmsProperties.getFilepath())
-			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
-			.append(File.separatorChar).append(userId);
-		try (FileOutputStream output = new FileOutputStream(FileUtils.createFile(importFilePath.toString(), body.getImportFileUUID(), "." + importFileType))) {
-			int size = 0;
-			switch (importFileType) {
-				case Constant.File.XLS:
-					size = FileUtils.sizeXLS(importFile.getInputStream());
-					break;
-				case Constant.File.CSV:
-					size = FileUtils.sizeCSV(importFile.getInputStream());
-					break;
-				case Constant.File.XLSX:
-					size = FileUtils.sizeXLSX(importFile.getInputStream());
-					break;
-				default:
-					break;
-			}
-			if (size == 0) {
-				return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
-			}
-			if (size > agtmsProperties.getImportRowsMaxSize()) {
-				Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
-				result.setMessageArgs(new Object[]{ agtmsProperties.getImportRowsMaxSize() });
-				return result;
-			}
-			IOUtils.copy(importFile.getInputStream(), output);
-			output.flush();
-		} catch (IOException e) {
-			log.error("导入异常", e);
-			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
-		}
-		Task importTask = createImportTask(body);
-		try {
-			submitTask(importTask);
-			return ResultUtils.simpleSuccess();
-		} catch (TaskRejectedException e) {
-			importTask.setHandleTime(new Date());
-			importTask.setHandleResult(ErrorMessage.Task.TASK_MAX_SIZE_LIMIT.getMessage());
-			importTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
-			TaskServiceFactory.get().saveOrUpdate(importTask);
-			return ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
-		}
 	}
 	
 	@Override
@@ -564,7 +519,7 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		batchExport.setExportFileName(template.getTitle());
 		batchExport.setExportFieldOptions(exportFieldOptions);
-		batchExport.setExportFileTypeOptions(Select.buildOptions(fileTypeSelection.select()));
+		batchExport.setExportFileTypeOptions(Select.buildOptions(fileTypeSelection.exportSelect()));
 		return batchExport;
 	}
 
@@ -585,7 +540,7 @@ public class ManagementMainController extends AbstractMainController {
 		}
 		batchImport.setImportFileName(template.getTitle());
 		batchImport.setImportFieldOptions(importFieldOptions);
-		batchImport.setImportFileTypeOptions(Select.buildOptions(fileTypeSelection.select()));
+		batchImport.setImportFileTypeOptions(Select.buildOptions(fileTypeSelection.importSelect()));
 		return batchImport;
 	}
 	
@@ -747,6 +702,48 @@ public class ManagementMainController extends AbstractMainController {
 			log.error("Query count failed.", e);
 			return -1L;
 		}
+	}
+	
+	private Result batchImport(ImportParam param, MultipartFile importFile) {
+		FileHandler handler = FileHandlerFactory.getHandler(param.getImportFileType());
+		if (handler == null) {
+			return ErrorMessage.Common.UNSUPPORTED_FILE_TYPE;
+		}
+		try (FileOutputStream output = new FileOutputStream(createImportFile(param))) {
+			int size = handler.size(importFile);
+			if (size == 0) {
+				return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
+			}
+			if (size > agtmsProperties.getImportRowsMaxSize()) {
+				Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
+				result.setMessageArgs(new Object[]{ agtmsProperties.getImportRowsMaxSize() });
+				return result;
+			}
+			IOUtils.copy(importFile.getInputStream(), output);
+			output.flush();
+		} catch (IOException e) {
+			log.error("导入异常", e);
+			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
+		}
+		Task importTask = createImportTask(param);
+		try {
+			submitTask(importTask);
+			return ResultUtils.simpleSuccess();
+		} catch (TaskRejectedException e) {
+			importTask.setHandleTime(new Date());
+			importTask.setHandleResult(ErrorMessage.Task.TASK_MAX_SIZE_LIMIT.getMessage());
+			importTask.setHandleStatus(HandleStatuses.REJECTED.getStatus());
+			TaskServiceFactory.get().saveOrUpdate(importTask);
+			return ErrorMessage.Task.TASK_MAX_SIZE_LIMIT;
+		}
+	}
+	
+	private File createImportFile(ImportParam param) throws IOException {
+		StringBuilder importFilePath = new StringBuilder();
+		importFilePath.append(agtmsProperties.getFilepath())
+			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
+			.append(File.separatorChar).append(param.getUserId());
+		return FileUtils.createFile(importFilePath.toString(), param.getImportFileUUID(), "." + param.getImportFileType());
 	}
 	
 }

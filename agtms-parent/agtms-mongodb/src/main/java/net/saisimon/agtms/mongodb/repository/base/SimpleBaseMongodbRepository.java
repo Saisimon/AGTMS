@@ -72,8 +72,12 @@ public class SimpleBaseMongodbRepository<T, ID extends Serializable> extends Sim
 		FilterRequest filterRequest = filter;
 		if (filterRequest == null) {
 			filterRequest = FilterRequest.build();
+		} else {
+			filterRequest = filterRequest.clone();
 		}
-		filterRequest.and(filterPageable.getParam());
+		if (filterPageable.getParam() != null) {
+			filterRequest.and(filterPageable.getParam());
+		}
 		Query query = MongodbFilterUtils.query(filterRequest);
 		query.with(filterPageable.getPageable());
 		if (properties != null && properties.length > 0) {

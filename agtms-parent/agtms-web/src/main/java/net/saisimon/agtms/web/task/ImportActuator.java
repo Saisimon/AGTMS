@@ -33,7 +33,9 @@ import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
+import net.saisimon.agtms.core.factory.FileHandlerFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.handler.FileHandler;
 import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.DomainUtils;
@@ -107,41 +109,14 @@ public class ImportActuator implements Actuator<ImportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(agtmsProperties.getFilepath())
-			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
-			.append(File.separatorChar).append(param.getUserId())
-			.append(File.separatorChar).append(param.getImportFileUUID());
-		File file = null;
-		String filename = param.getImportFileName();
-		switch (param.getImportFileType()) {
-			case Constant.File.XLS:
-				response.setContentType("application/vnd.ms-excel");
-				importFilePath.append(Constant.File.XLS_SUFFIX);
-				file = new File(importFilePath.toString());
-				filename += Constant.File.XLS_SUFFIX;
-				break;
-			case Constant.File.CSV:
-				response.setContentType("application/CSV");
-				importFilePath.append(Constant.File.CSV_SUFFIX);
-				file = new File(importFilePath.toString());
-				filename += Constant.File.CSV_SUFFIX;
-				break;
-			case Constant.File.XLSX:
-				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				importFilePath.append(Constant.File.XLSX_SUFFIX);
-				file = new File(importFilePath.toString());
-				filename += Constant.File.XLSX_SUFFIX;
-				break;
-			default:
-				break;
-		}
+		File file = createImportFile(param);
 		if (file == null || !file.exists()) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
 		try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(request.getHeader("user-agent"), filename));
+			response.setContentType(FileUtils.CONTENT_TYPE_MAP.get(param.getImportFileType()));
+			response.setHeader("Content-Disposition", SystemUtils.encodeDownloadContentDisposition(request.getHeader("user-agent"), param.getImportFileName() + "." + param.getImportFileType()));
 			IOUtils.copy(in, response.getOutputStream());
 			response.flushBuffer();
 		}
@@ -175,15 +150,19 @@ public class ImportActuator implements Actuator<ImportParam> {
 	}
 
 	private void importDatas(ImportParam param, Template template, File file) throws InterruptedException, GenerateException, IOException {
-		List<List<String>> datas = parseFile(file, param.getImportFileType());
+		FileHandler handler = FileHandlerFactory.getHandler(param.getImportFileType());
+		if (handler == null) {
+			return;
+		}
+		List<List<String>> datas = handler.fetch(file);
 		List<List<Object>> resultDatas = new ArrayList<>(datas.size());
 		if (datas.size() == 0) {
-			fillDatas(file, resultDatas, param.getImportFileType());
+			handler.populate(file, resultDatas);
 			return;
 		}
 		resultDatas.add(buildHead(datas));
 		if (datas.size() == 1) {
-			fillDatas(file, resultDatas, param.getImportFileType());
+			handler.populate(file, resultDatas);
 			return;
 		}
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
@@ -195,7 +174,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 			List<Object> resultData = importData(param, template, datas.get(i), fieldInfoMap, fieldTextMap);
 			resultDatas.add(resultData);
 		}
-		fillDatas(file, resultDatas, param.getImportFileType());
+		handler.populate(file, resultDatas);
 	}
 
 	private List<Object> importData(ImportParam param, Template template, List<String> data, 
@@ -263,59 +242,6 @@ public class ImportActuator implements Actuator<ImportParam> {
 		}
 		headList.add(getMessage("result"));
 		return headList;
-	}
-	
-	private void fillDatas(File file, List<List<Object>> datas, String fileType) throws IOException {
-		switch (fileType) {
-			case Constant.File.XLS:
-				FileUtils.toXLS(file, datas, false);
-				break;
-			case Constant.File.CSV:
-				FileUtils.toCSV(file, datas, ",", false);
-				break;
-			case Constant.File.XLSX:
-				FileUtils.toXLSX(file, datas, false);
-				break;
-			default:
-				break;
-		}
-	}
-	
-	private List<List<String>> parseFile(File file, String fileType) throws IOException {
-		List<List<String>> datas = new ArrayList<>();
-		try (FileInputStream in = new FileInputStream(file)) {
-			switch (fileType) {
-				case Constant.File.XLS:
-					Map<String, List<List<String>>> dataXLSMap = FileUtils.fromXLS(in);
-					for (List<List<String>> value : dataXLSMap.values()) {
-						if (value.size() > 1) {
-							if (datas.isEmpty()) {
-								datas.add(value.get(0));
-							}
-							datas.addAll(value.subList(1, value.size()));
-						}
-					}
-					break;
-				case Constant.File.CSV:
-					List<List<String>> dataCSVList = FileUtils.fromCSV(in);
-					datas.addAll(dataCSVList);
-					break;
-				case Constant.File.XLSX:
-					Map<String, List<List<String>>> dataXLSXMap = FileUtils.fromXLSX(in);
-					for (List<List<String>> value : dataXLSXMap.values()) {
-						if (value.size() > 1) {
-							if (datas.isEmpty()) {
-								datas.add(value.get(0));
-							}
-							datas.addAll(value.subList(1, value.size()));
-						}
-					}
-					break;
-				default:
-					break;
-			}
-		}
-		return datas;
 	}
 	
 	private String getMessage(String code, Object... args) {
