@@ -41,9 +41,6 @@ public class CsvFileHandler implements FileHandler {
 	
 	@Override
 	public void merge(File mergedFile, List<File> files) throws IOException {
-		if (mergedFile == null || files == null) {
-			return;
-		}
 		FileUtils.mergeCSV(mergedFile, files);
 	}
 

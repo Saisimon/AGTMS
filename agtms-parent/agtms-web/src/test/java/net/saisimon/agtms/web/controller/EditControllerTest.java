@@ -677,6 +677,11 @@ public class EditControllerTest extends AbstractControllerTest {
 			exportParam.setExportFileType(FileTypes.CSV.getType());
 			sendPost(mainBatchExportUri, exportParam, testToken);
 			
+			exportParam = new ExportParam();
+			exportParam.setExportFields(exportFields);
+			exportParam.setExportFileType(FileTypes.PDF.getType());
+			sendPost(mainBatchExportUri, exportParam, testToken);
+			
 			Map<String, Object> importParam = new HashMap<>();
 			
 			importParam.put("importFileType", FileTypes.XLS.getType());
@@ -715,6 +720,7 @@ public class EditControllerTest extends AbstractControllerTest {
 			TaskInfo xlsExportTask = taskIterator.next();
 			TaskInfo xlsxExportTask = taskIterator.next();
 			TaskInfo csvExportTask = taskIterator.next();
+			TaskInfo pdfExportTask = taskIterator.next();
 			TaskInfo xlsImportTask = taskIterator.next();
 			TaskInfo xlsxImportTask = taskIterator.next();
 			TaskInfo csvImportTask = taskIterator.next();
@@ -755,6 +761,11 @@ public class EditControllerTest extends AbstractControllerTest {
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(csvExportTask.getHandleStatus())) {
 				param = new HashMap<>();
 				param.put("id", csvExportTask.getId());
+				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+			}
+			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(pdfExportTask.getHandleStatus())) {
+				param = new HashMap<>();
+				param.put("id", pdfExportTask.getId());
 				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
 			}
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsImportTask.getHandleStatus())) {
