@@ -92,10 +92,7 @@ public class PdfFileHandler implements FileHandler {
 			for (int j = 0; j < data.size(); j++) {
 				Object val = data.get(j);
 				if (val != null && val instanceof String) {
-					String str = (String) val;
-					if (str.contains("&")) {
-						val = "<![CDATA[" + str + "]]>";
-					}
+					val = "<![CDATA[" + (String) val + "]]>";
 				}
 				newData.add(val);
 			}

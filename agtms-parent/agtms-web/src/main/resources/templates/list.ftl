@@ -5,9 +5,19 @@
 		<style type="text/css">
 			body {
 				font-family: '${font!"Arial Unicode MS"}';
+				font-size: 12px!important;
 			}
 			table {
-				max-width: 690px;
+				max-width: 690px!important;
+			}
+			tr {
+				max-width: 130px!important;
+			}
+			td, th {
+				padding: .25rem!important;
+				max-width: 130px!important;
+				word-wrap: break-word!important;
+				word-break: normal!important;
 			}
 		</style>
 	</head>

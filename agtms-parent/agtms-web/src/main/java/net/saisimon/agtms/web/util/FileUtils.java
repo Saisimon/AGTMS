@@ -155,8 +155,7 @@ public final class FileUtils {
 			dataModel.put("font", fontFamily);
 			dataModel.put("datas", datas);
 			temp.process(dataModel, writer);
-			String html = writer.toString();
-			renderer.setDocumentFromString(html);
+			renderer.setDocumentFromString(writer.toString());
 			renderer.layout();
 			renderer.createPDF(out);
 		}
