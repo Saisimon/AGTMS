@@ -156,7 +156,6 @@ public final class FileUtils {
 			dataModel.put("datas", datas);
 			temp.process(dataModel, writer);
 			String html = writer.toString();
-			System.out.println(html);
 			renderer.setDocumentFromString(html);
 			renderer.layout();
 			renderer.createPDF(out);
