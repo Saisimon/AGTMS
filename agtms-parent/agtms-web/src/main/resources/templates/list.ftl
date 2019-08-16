@@ -27,11 +27,15 @@
 			<tr>
 			<#if data_index == 0>
 			<#list data as val>
-				<th class="text-center">${val}</th>
+				<th class="text-center">${val!""}</th>
 			</#list>
 			<#else>
 			<#list data as val>
+				<#if val?is_date_like>
+				<td>${val?string("yyyy-MM-dd")}</td>
+				<#else>
 				<td>${val!""}</td>
+				</#if>
 			</#list>
 			</#if>
 			</tr>

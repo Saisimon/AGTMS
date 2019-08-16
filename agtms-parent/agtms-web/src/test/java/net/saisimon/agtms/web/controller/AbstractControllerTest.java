@@ -78,17 +78,13 @@ public abstract class AbstractControllerTest {
 		return result;
 	}
 	
-	protected void returnBinary(String uri, HttpMethod method, Map<String, String> param, Object body, UserToken token) throws Exception {
-		returnBinary(uri, method, param, body, token, status().isOk());
+	protected void returnBinary(String uri, HttpMethod method, Map<String, String> param, Object body) throws Exception {
+		returnBinary(uri, method, param, body, status().isOk());
 	}
 	
-	protected void returnBinary(String uri, HttpMethod method, Map<String, String> param, Object body, UserToken token, ResultMatcher matcher) throws Exception {
+	protected void returnBinary(String uri, HttpMethod method, Map<String, String> param, Object body, ResultMatcher matcher) throws Exception {
 		MockHttpServletRequestBuilder builder = build(uri, method);
 		builder.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
-		if (token != null) {
-			builder.header("X-UID", token.getUserId());
-			builder.header("X-TOKEN", token.getToken());
-		}
 		if (param != null) {
 			for (Map.Entry<String, String> entry : param.entrySet()) {
 				builder.param(entry.getKey(), entry.getValue());

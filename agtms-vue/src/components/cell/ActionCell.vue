@@ -18,7 +18,7 @@
                     :variant="action.variant"
                     v-b-tooltip.hover 
                     :title="action.text"
-                    :href="$store.state.base.urlPrefix + action.to + rowData.id" 
+                    :href="$store.state.base.urlPrefix + action.to + '?id=' + rowData.id + '&uuid=' + rowData.uuid" 
                     target="_blank"
                     class="ml-1" >
                     <i class="fa fa-fw" :class="'fa-' + action.icon"></i>

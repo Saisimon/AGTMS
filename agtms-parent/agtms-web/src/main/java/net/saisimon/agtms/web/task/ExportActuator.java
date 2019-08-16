@@ -104,7 +104,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 	
 	@Override
 	public void download(ExportParam param, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		if (param == null || param.getExportFileUUID() == null) {
+		if (param == null || param.getUuid() == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
@@ -148,7 +148,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		exportFilePath.append(agtmsProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId());
-		String fileName = idx == null ? param.getExportFileUUID() : param.getExportFileUUID() + "-" + idx.toString();
+		String fileName = idx == null ? param.getUuid() : param.getUuid() + "-" + idx.toString();
 		return FileUtils.createFile(exportFilePath.toString(), fileName, "." + param.getExportFileType());
 	}
 	
@@ -156,7 +156,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		String[] exportFields = buildExportFields(param.getExportFields(), fieldInfoMap);
 		List<Object> heads = buildHeads(exportFields, fieldInfoMap);
-		param.setExportFileUUID(UUID.randomUUID().toString());
+		param.setUuid(UUID.randomUUID().toString());
 		FileHandler handler = FileHandlerFactory.getHandler(param.getExportFileType());
 		List<List<Object>> datas = new ArrayList<>();
 		datas.add(heads);

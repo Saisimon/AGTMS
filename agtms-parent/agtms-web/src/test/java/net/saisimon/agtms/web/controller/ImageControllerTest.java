@@ -36,7 +36,7 @@ public class ImageControllerTest extends AbstractControllerTest {
 		@SuppressWarnings("unchecked")
 		SimpleResult<String> simpleResult = SystemUtils.fromJson(json, SimpleResult.class, String.class);
 		String uri = simpleResult.getData();
-		returnBinary(uri, HttpMethod.GET, null, null, testToken);
+		returnBinary(uri, HttpMethod.GET, null, null);
 	}
 	/* ImageController End */
 	

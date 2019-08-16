@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.transaction.Transactional;
@@ -45,6 +46,7 @@ import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.dto.TaskParam;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
@@ -110,7 +112,7 @@ public class TaskMainController extends AbstractMainController {
 	
 	@Operate(type=OperateTypes.QUERY, value="list")
 	@PostMapping("/list")
-	public <P> Result list(@RequestBody Map<String, Object> body) {
+	public <P extends TaskParam> Result list(@RequestBody Map<String, Object> body) {
 		Map<String, Object> filterMap = get(body, FILTER);
 		Map<String, Object> pageableMap = get(body, PAGEABLE);
 		FilterRequest filter = FilterRequest.build(filterMap, TASK_FILTER_FIELDS);
@@ -145,6 +147,7 @@ public class TaskMainController extends AbstractMainController {
 			result.setHandleResult(actuator.handleResult(task.getHandleResult()));
 			result.setHandleTime(task.getHandleTime());
 			result.setOperator(userMap.get(task.getOperatorId().toString()));
+			result.setUuid(param.getUuid());
 			result.setAction(TASK);
 			// download
 			if (HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
@@ -170,12 +173,16 @@ public class TaskMainController extends AbstractMainController {
 	@Operate(type=OperateTypes.QUERY, value="download")
 	@Transactional(rollbackOn = Exception.class)
 	@GetMapping("/download")
-	public <P> void download(@RequestParam(name = "id") Long id) {
+	public <P extends TaskParam> void download(@RequestParam(name = "id") Long id, @RequestParam(name = "uuid") String uuid) {
 		try {
 			TaskService taskService = TaskServiceFactory.get();
-			Long userId = AuthUtils.getUid();
-			Task task = taskService.getTask(id, userId);
-			if (task == null || !HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
+			Optional<Task> optional = taskService.findById(id);
+			if (!optional.isPresent()) {
+				response.sendError(HttpStatus.NOT_FOUND.value());
+				return;
+			}
+			Task task = optional.get();
+			if (!HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
 				response.sendError(HttpStatus.NOT_FOUND.value());
 				return;
 			}
@@ -186,6 +193,10 @@ public class TaskMainController extends AbstractMainController {
 				return;
 			}
 			P param = SystemUtils.fromJson(task.getTaskParam(), actuator.getParamClass());
+			if (!uuid.equals(param.getUuid())) {
+				response.sendError(HttpStatus.NOT_FOUND.value());
+				return;
+			}
 			actuator.download(param, request, response);
 		} catch (IOException e) {
 			log.error("响应流异常", e);
@@ -327,7 +338,7 @@ public class TaskMainController extends AbstractMainController {
 	@Override
 	protected List<Action> actions(Object key) {
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().key("download").icon("download").to("/task/main/download?" + AuthUtils.AUTHORIZE_UID + "=" + AuthUtils.getUid() + "&" + AuthUtils.AUTHORIZE_TOKEN + "=" + AuthUtils.getToken() + "&id=").text(getMessage("result")).type("download").build());
+		actions.add(Action.builder().key("download").icon("download").to("/task/main/download").text(getMessage("result")).type("download").build());
 		actions.add(Action.builder().key("cancel").icon("ban").to("/task/main/cancel").text(getMessage("cancel")).variant("outline-warning").type("modal").build());
 		actions.add(Action.builder().key("remove").icon("trash").to("/task/main/remove").text(getMessage("remove")).variant("outline-danger").type("modal").build());
 		return actions;
@@ -338,7 +349,7 @@ public class TaskMainController extends AbstractMainController {
 		return FUNCTIONS;
 	}
 	
-	private <P> void deleteTaskFile(Task task) {
+	private <P extends TaskParam> void deleteTaskFile(Task task) {
 		if (task == null) {
 			return;
 		}

@@ -100,7 +100,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 	
 	@Override
 	public void download(ImportParam param, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		if (param == null || param.getImportFileUUID() == null) {
+		if (param == null || param.getUuid() == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
@@ -144,7 +144,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 		importFilePath.append(agtmsProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId())
-			.append(File.separatorChar).append(param.getImportFileUUID()).append('.').append(param.getImportFileType());
+			.append(File.separatorChar).append(param.getUuid()).append('.').append(param.getImportFileType());
 		File file = new File(importFilePath.toString());
 		return file;
 	}

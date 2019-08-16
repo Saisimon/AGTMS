@@ -746,42 +746,50 @@ public class EditControllerTest extends AbstractControllerTest {
 			
 			param = new HashMap<>();
 			param.put("id", "100");
-			returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken, status().isNotFound());
+			param.put("uuid", "");
+			returnBinary("/task/main/download", HttpMethod.GET, param, null, status().isNotFound());
 			
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsExportTask.getHandleStatus())) {
 				param = new HashMap<>();
 				param.put("id", xlsExportTask.getId());
-				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+				param.put("uuid", xlsExportTask.getUuid());
+				returnBinary("/task/main/download", HttpMethod.GET, param, null);
 			}
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsxExportTask.getHandleStatus())) {
 				param = new HashMap<>();
 				param.put("id", xlsxExportTask.getId());
-				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+				param.put("uuid", xlsxExportTask.getUuid());
+				returnBinary("/task/main/download", HttpMethod.GET, param, null);
 			}
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(csvExportTask.getHandleStatus())) {
 				param = new HashMap<>();
 				param.put("id", csvExportTask.getId());
-				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+				param.put("uuid", csvExportTask.getUuid());
+				returnBinary("/task/main/download", HttpMethod.GET, param, null);
 			}
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(pdfExportTask.getHandleStatus())) {
 				param = new HashMap<>();
 				param.put("id", pdfExportTask.getId());
-				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+				param.put("uuid", pdfExportTask.getUuid());
+				returnBinary("/task/main/download", HttpMethod.GET, param, null);
 			}
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsImportTask.getHandleStatus())) {
 				param = new HashMap<>();
 				param.put("id", xlsImportTask.getId());
-				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+				param.put("uuid", xlsImportTask.getUuid());
+				returnBinary("/task/main/download", HttpMethod.GET, param, null);
 			}
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsxImportTask.getHandleStatus())) {
 				param = new HashMap<>();
 				param.put("id", xlsxImportTask.getId());
-				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+				param.put("uuid", xlsxImportTask.getUuid());
+				returnBinary("/task/main/download", HttpMethod.GET, param, null);
 			}
 			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(csvImportTask.getHandleStatus())) {
 				param = new HashMap<>();
 				param.put("id", csvImportTask.getId());
-				returnBinary("/task/main/download", HttpMethod.GET, param, null, testToken);
+				param.put("uuid", csvImportTask.getUuid());
+				returnBinary("/task/main/download", HttpMethod.GET, param, null);
 			}
 			
 			param = new HashMap<>();

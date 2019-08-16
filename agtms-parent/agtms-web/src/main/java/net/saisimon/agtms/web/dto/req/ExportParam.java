@@ -7,13 +7,12 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import net.saisimon.agtms.core.dto.TaskParam;
 
 @Data
-public class ExportParam {
-	
-	private Object templateId;
-	
-	private Long userId;
+@EqualsAndHashCode(callSuper=false)
+public class ExportParam extends TaskParam {
 	
 	@NotEmpty
 	private List<String> exportFields;
@@ -22,8 +21,6 @@ public class ExportParam {
 	private String exportFileType;
 	
 	private String exportFileName;
-	
-	private String exportFileUUID;
 	
 	private Map<String, Object> filter;
 	

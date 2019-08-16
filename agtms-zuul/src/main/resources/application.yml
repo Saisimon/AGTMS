@@ -54,6 +54,6 @@ logging:
 
 white:
   list:
-    urls: /agtms/user/auth
+    urls: /agtms/user/auth,/agtms/task/main/download
   prefix:
     urls: /agtms/image/res

@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -50,7 +51,8 @@ public class Task implements Serializable {
 	/**
 	 * 任务参数（json）
 	 */
-	@Column(length=512)
+	@Lob
+	@Column
 	private String taskParam;
 	
 	/**

@@ -69,6 +69,7 @@ import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.SimpleResult;
+import net.saisimon.agtms.core.dto.TaskParam;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
@@ -308,7 +309,7 @@ public class ManagementMainController extends AbstractMainController {
 			param.setImportFields(importFields);
 			param.setImportFileName(importFileName + "-" + importFile.getOriginalFilename());
 			param.setImportFileType(importFileType);
-			param.setImportFileUUID(UUID.randomUUID().toString());
+			param.setUuid(UUID.randomUUID().toString());
 			param.setTemplateId(template.sign());
 			param.setUserId(userId);
 			Result result = batchImport(param, importFile);
@@ -634,7 +635,7 @@ public class ManagementMainController extends AbstractMainController {
 		return importTask;
 	}
 	
-	private <P> void submitTask(final Task task) {
+	private <P extends TaskParam> void submitTask(final Task task) {
 		Future<?> future = taskThreadPool.submit(() -> {
 			TaskService taskService = TaskServiceFactory.get();
 			task.setHandleStatus(HandleStatuses.PROCESSING.getStatus());
@@ -743,7 +744,7 @@ public class ManagementMainController extends AbstractMainController {
 		importFilePath.append(agtmsProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId());
-		return FileUtils.createFile(importFilePath.toString(), param.getImportFileUUID(), "." + param.getImportFileType());
+		return FileUtils.createFile(importFilePath.toString(), param.getUuid(), "." + param.getImportFileType());
 	}
 	
 }
