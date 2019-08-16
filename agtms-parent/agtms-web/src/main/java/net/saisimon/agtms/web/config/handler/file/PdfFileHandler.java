@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import freemarker.template.TemplateException;
@@ -29,7 +31,7 @@ public class PdfFileHandler implements FileHandler {
 	public void populate(File file, List<List<Object>> datas) throws IOException {
 		try (OutputStream out = new FileOutputStream(file)) {
 			try {
-				FileUtils.toPDF(out, datas, getFont(), agtmsProperties.getPdfFontFamily());
+				FileUtils.toPDF(out, handleDatas(datas), getFont(), agtmsProperties.getPdfFontFamily());
 			} catch (TemplateException e) {
 				throw new IOException("Freemarker 模板解析错误", e);
 			}
@@ -74,6 +76,32 @@ public class PdfFileHandler implements FileHandler {
 			fontPath = path;
 		}
 		return fontPath;
+	}
+	
+	private List<List<Object>> handleDatas(List<List<Object>> datas) {
+		if (CollectionUtils.isEmpty(datas)) {
+			return datas;
+		}
+		List<List<Object>> newDatas = new ArrayList<>();
+		for (int i = 0; i < datas.size(); i++) {
+			List<Object> data = datas.get(i);
+			if (data == null) {
+				continue;
+			}
+			List<Object> newData = new ArrayList<>();
+			for (int j = 0; j < data.size(); j++) {
+				Object val = data.get(j);
+				if (val != null && val instanceof String) {
+					String str = (String) val;
+					if (str.contains("&")) {
+						val = "<![CDATA[" + str + "]]>";
+					}
+				}
+				newData.add(val);
+			}
+			newDatas.add(newData);
+		}
+		return newDatas;
 	}
 
 }
