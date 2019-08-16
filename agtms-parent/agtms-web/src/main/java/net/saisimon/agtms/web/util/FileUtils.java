@@ -165,12 +165,12 @@ public final class FileUtils {
 	/**
 	 * 合并多个 Excel 文件
 	 * 
-	 * @param isXlsx     合并文件类型是否是 xlsx
 	 * @param mergedFile 合并后的文件
 	 * @param files      待合并的文件
+	 * @param isXlsx     合并文件类型是否是 xlsx
 	 * @throws IOException       合并异常
 	 */
-	public static void mergeExcel(boolean isXlsx, File mergedFile, List<File> files) throws IOException {
+	public static void mergeExcel(File mergedFile, List<File> files, boolean isXlsx) throws IOException {
 		if (mergedFile == null || files == null) {
 			return;
 		}

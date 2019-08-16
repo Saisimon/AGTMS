@@ -53,7 +53,7 @@ public class XlsFileHandler implements FileHandler {
 	
 	@Override
 	public void merge(File mergedFile, List<File> files) throws IOException {
-		FileUtils.mergeExcel(false, mergedFile, files);
+		FileUtils.mergeExcel(mergedFile, files, false);
 	}
 
 	@Override
