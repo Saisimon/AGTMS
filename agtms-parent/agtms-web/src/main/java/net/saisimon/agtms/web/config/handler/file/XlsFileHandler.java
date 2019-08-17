@@ -23,7 +23,7 @@ public class XlsFileHandler implements FileHandler {
 	@Override
 	public void populate(File file, List<List<Object>> datas) throws IOException {
 		try (OutputStream out = new FileOutputStream(file)) {
-			FileUtils.toXLS(out, datas);
+			FileUtils.toExcel(out, datas, false);
 		}
 	}
 	
@@ -31,7 +31,7 @@ public class XlsFileHandler implements FileHandler {
 	public List<List<String>> fetch(File file) throws IOException {
 		try (InputStream in = new FileInputStream(file)) {
 			List<List<String>> datas = new ArrayList<>();
-			Map<String, List<List<String>>> dataXLSMap = FileUtils.fromXLS(in);
+			Map<String, List<List<String>>> dataXLSMap = FileUtils.fromExcel(in, false);
 			for (List<List<String>> value : dataXLSMap.values()) {
 				if (value.size() > 1) {
 					if (datas.isEmpty()) {
@@ -47,7 +47,7 @@ public class XlsFileHandler implements FileHandler {
 	@Override
 	public int size(MultipartFile file) throws IOException {
 		try (InputStream in = file.getInputStream()) {
-			return FileUtils.sizeXLS(in);
+			return FileUtils.sizeExcel(in, false);
 		}
 	}
 	

@@ -71,7 +71,7 @@ public final class FileUtils {
 
 	private static final int XLS_MAX_ROWS = 65535;
 	private static final int XLSX_MAX_ROWS = 1048575;
-	
+
 	public static final Map<String, String> CONTENT_TYPE_MAP = new HashMap<>();
 	static {
 		CONTENT_TYPE_MAP.put(FileTypes.XLS.getType(), "application/vnd.ms-excel");
@@ -79,19 +79,20 @@ public final class FileUtils {
 		CONTENT_TYPE_MAP.put(FileTypes.CSV.getType(), "application/csv");
 		CONTENT_TYPE_MAP.put(FileTypes.PDF.getType(), "application/pdf");
 	}
-	
+
 	private static Configuration cfg = null;
 
 	/**
 	 * 将指定数据写入指定输出流
 	 * 
-	 * @param out   输出流
+	 * @param out    输出流
 	 * @param datas  数据集合
+	 * @param isXlsx 文件类型是否是 xlsx
 	 * @throws IOException 写入异常
 	 */
-	public static void toXLS(OutputStream out, List<List<Object>> datas) throws IOException {
-		try (Workbook wb = new HSSFWorkbook()) {
-			fillWorkbook(wb, datas);
+	public static void toExcel(OutputStream out, List<List<Object>> datas, boolean isXlsx) throws IOException {
+		try (Workbook wb = isXlsx ? new SXSSFWorkbook() : new HSSFWorkbook()) {
+			fillWorkbook(wb, datas, isXlsx);
 			wb.write(out);
 		}
 	}
@@ -100,21 +101,7 @@ public final class FileUtils {
 	 * 将指定数据写入指定输出流
 	 * 
 	 * @param out   输出流
-	 * @param datas  数据集合
-	 * @throws IOException 写入异常
-	 */
-	public static void toXLSX(OutputStream out, List<List<Object>> datas) throws IOException {
-		try (Workbook wb = new SXSSFWorkbook()) {
-			fillWorkbook(wb, datas);
-			wb.write(out);
-		}
-	}
-	
-	/**
-	 * 将指定数据写入指定输出流
-	 * 
-	 * @param out      输出流
-	 * @param datas     数据集合
+	 * @param datas 数据集合
 	 * @throws IOException 写入异常
 	 */
 	public static void toCSV(OutputStream out, List<List<Object>> datas) throws IOException {
@@ -160,14 +147,14 @@ public final class FileUtils {
 			renderer.createPDF(out);
 		}
 	}
-	
+
 	/**
 	 * 合并多个 Excel 文件
 	 * 
 	 * @param mergedFile 合并后的文件
 	 * @param files      待合并的文件
-	 * @param isXlsx     合并文件类型是否是 xlsx
-	 * @throws IOException       合并异常
+	 * @param isXlsx     文件类型是否是 xlsx
+	 * @throws IOException 合并异常
 	 */
 	public static void mergeExcel(File mergedFile, List<File> files, boolean isXlsx) throws IOException {
 		if (mergedFile == null || files == null) {
@@ -202,13 +189,13 @@ public final class FileUtils {
 			mergedWorkbook.write(out);
 		}
 	}
-	
+
 	/**
 	 * 合并多个 CSV 文件
 	 * 
 	 * @param mergedCsv 合并后的文件
 	 * @param csvs      待合并的文件
-	 * @throws IOException       合并异常
+	 * @throws IOException 合并异常
 	 */
 	public static void mergeCSV(File mergedCsv, List<File> csvs) throws IOException {
 		if (mergedCsv == null || csvs == null) {
@@ -232,7 +219,7 @@ public final class FileUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * 合并多个 PDF 文件
 	 * 
@@ -266,34 +253,14 @@ public final class FileUtils {
 	/**
 	 * 解析输入流，获取数据集合大小
 	 * 
-	 * @param in 输入流
+	 * @param in     输入流
+	 * @param isXlsx 文件类型是否是 xlsx
 	 * @return 数据集合大小
 	 * @throws IOException 解析读取异常
 	 */
-	public static int sizeXLS(InputStream in) throws IOException {
+	public static int sizeExcel(InputStream in, boolean isXlsx) throws IOException {
 		int size = 0;
-		try (Workbook workbook = new HSSFWorkbook(in)) {
-			for (int sheetIdx = 0; sheetIdx < workbook.getNumberOfSheets(); sheetIdx++) {
-				Sheet sheet = workbook.getSheetAt(sheetIdx);
-				if (sheet == null) {
-					continue;
-				}
-				size += sheet.getLastRowNum();
-			}
-		}
-		return size;
-	}
-
-	/**
-	 * 解析输入流，获取数据集合大小
-	 * 
-	 * @param in 输入流
-	 * @return 数据集合大小
-	 * @throws IOException 解析读取异常
-	 */
-	public static int sizeXLSX(InputStream in) throws IOException {
-		int size = 0;
-		try (Workbook workbook = new XSSFWorkbook(in)) {
+		try (Workbook workbook = isXlsx ? new XSSFWorkbook(in) : new HSSFWorkbook(in)) {
 			for (int sheetIdx = 0; sheetIdx < workbook.getNumberOfSheets(); sheetIdx++) {
 				Sheet sheet = workbook.getSheetAt(sheetIdx);
 				if (sheet == null) {
@@ -330,28 +297,14 @@ public final class FileUtils {
 	/**
 	 * 解析输入流，获取数据集合
 	 * 
-	 * @param in 输入流
+	 * @param in     输入流
+	 * @param isXlsx 文件类型是否是 xlsx
 	 * @return 数据集合，key 为工作表名称
 	 * @throws IOException 解析读取异常
 	 */
-	public static Map<String, List<List<String>>> fromXLS(InputStream in) throws IOException {
+	public static Map<String, List<List<String>>> fromExcel(InputStream in, boolean isXlsx) throws IOException {
 		Map<String, List<List<String>>> result = new LinkedHashMap<>();
-		try (Workbook workbook = new HSSFWorkbook(in)) {
-			fillDatas(workbook, result);
-		}
-		return result;
-	}
-
-	/**
-	 * 解析输入流，获取数据集合
-	 * 
-	 * @param in 输入流
-	 * @return 数据集合，key 为工作表名称
-	 * @throws IOException 解析读取异常
-	 */
-	public static Map<String, List<List<String>>> fromXLSX(InputStream in) throws IOException {
-		Map<String, List<List<String>>> result = new LinkedHashMap<>();
-		try (Workbook workbook = new XSSFWorkbook(in)) {
+		try (Workbook workbook = isXlsx ? new XSSFWorkbook(in) : new HSSFWorkbook(in)) {
 			fillDatas(workbook, result);
 		}
 		return result;
@@ -456,7 +409,7 @@ public final class FileUtils {
 		return file;
 	}
 
-	private static void fillWorkbook(Workbook wb, List<List<Object>> datas) {
+	private static void fillWorkbook(Workbook wb, List<List<Object>> datas, boolean isXlsx) {
 		if (!CollectionUtils.isEmpty(datas)) {
 			Sheet sheet = null;
 			int sheetSize = wb.getNumberOfSheets();
@@ -471,7 +424,7 @@ public final class FileUtils {
 				start++;
 			}
 			for (int i = 0; i < datas.size(); i++) {
-				if (start == 65535) {
+				if (start == (isXlsx ? XLSX_MAX_ROWS : XLS_MAX_ROWS)) {
 					sheet = wb.createSheet();
 					start = sheet.getLastRowNum();
 				}
@@ -614,7 +567,7 @@ public final class FileUtils {
 			}
 		}
 	}
-	
+
 	private static void copyRow(Row oldRow, Row newRow) {
 		newRow.setHeight(oldRow.getHeight());
 		for (int i = oldRow.getFirstCellNum(); i <= oldRow.getLastCellNum(); i++) {
@@ -624,30 +577,30 @@ public final class FileUtils {
 			}
 		}
 	}
-	
+
 	private static void copyCell(Cell oldCell, Cell newCell) {
 		switch (oldCell.getCellTypeEnum()) {
-			case FORMULA:
-				newCell.setCellFormula(oldCell.getCellFormula());
-				break;
-			case NUMERIC:
-				if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(oldCell)) {
-					newCell.setCellValue(DateUtil.formatDate(oldCell.getDateCellValue()));
-				} else {
-					newCell.setCellValue(oldCell.getNumericCellValue());
-				}
-				break;
-			case BLANK:
-				newCell.setCellValue(oldCell.getStringCellValue());
-				break;
-			case BOOLEAN:
-				newCell.setCellValue(oldCell.getBooleanCellValue());
-				break;
-			case STRING:
-				newCell.setCellValue(oldCell.getStringCellValue());
-				break;
-			default:
-				break;
+		case FORMULA:
+			newCell.setCellFormula(oldCell.getCellFormula());
+			break;
+		case NUMERIC:
+			if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(oldCell)) {
+				newCell.setCellValue(DateUtil.formatDate(oldCell.getDateCellValue()));
+			} else {
+				newCell.setCellValue(oldCell.getNumericCellValue());
+			}
+			break;
+		case BLANK:
+			newCell.setCellValue(oldCell.getStringCellValue());
+			break;
+		case BOOLEAN:
+			newCell.setCellValue(oldCell.getBooleanCellValue());
+			break;
+		case STRING:
+			newCell.setCellValue(oldCell.getStringCellValue());
+			break;
+		default:
+			break;
 		}
 	}
 
