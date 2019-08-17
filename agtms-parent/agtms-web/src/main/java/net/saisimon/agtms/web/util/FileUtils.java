@@ -186,7 +186,7 @@ public final class FileUtils {
 					for (int i = 0; i < oldSheetSize; i++) {
 						Sheet oldSheet = oldWorkbook.getSheetAt(i);
 						int oldRowSize = oldSheet.getLastRowNum();
-						for (int j = 0; j < oldRowSize; j++) {
+						for (int j = 0; j <= oldRowSize; j++) {
 							if (start == (isXlsx ? XLSX_MAX_ROWS : XLS_MAX_ROWS)) {
 								newSheet = mergedWorkbook.createSheet();
 								start = newSheet.getLastRowNum();
