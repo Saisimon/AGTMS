@@ -14,11 +14,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -96,6 +104,9 @@ public class TaskMainController extends AbstractMainController {
 		TASK_FILTER_FIELDS.add(Constant.OPERATORID);
 	}
 	
+	@Value("${spring.application.name}")
+	private String applicationName;
+	
 	@Autowired
 	private HandleStatusSelection handleStatusSelection;
 	@Autowired
@@ -104,6 +115,8 @@ public class TaskMainController extends AbstractMainController {
 	private RestTemplate restTemplate;
 	@Autowired
 	private UserSelection userSelection;
+	@Autowired(required = false)
+	private DiscoveryClient discoveryClient;
 	
 	@PostMapping("/grid")
 	public Result grid() {
@@ -214,6 +227,9 @@ public class TaskMainController extends AbstractMainController {
 		Task task = taskService.getTask(id, AuthUtils.getUid());
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
+		}
+		if (HandleStatuses.PROCESSING.getStatus() < task.getHandleStatus()) {
+			return ErrorMessage.Task.TASK_CANCEL_FAILED;
 		}
 		if (!cancelTask(task)) {
 			return ErrorMessage.Task.TASK_CANCEL_FAILED;
@@ -366,19 +382,30 @@ public class TaskMainController extends AbstractMainController {
 		}
 	}
 	
-	// TODO
 	private boolean cancelTask(Task task) {
-		if (task == null || SystemUtils.isBlank(task.getIp()) || task.getPort() == null) {
-			return false;
+		if (discoveryClient != null) {
+			List<ServiceInstance> instances = discoveryClient.getInstances(applicationName);
+			if (instances == null) {
+				return true;
+			}
+			MultiValueMap<String, Object> map= new LinkedMultiValueMap<>();
+			map.add("taskId", task.getId());
+			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, new HttpHeaders());
+			for (ServiceInstance instance : instances) {
+				try {
+					restTemplate.postForEntity(instance.getUri() + "/api/cancel/task", request, Void.class);
+				} catch (RestClientException e) {
+					log.error("取消任务失败", e);
+					return false;
+				}
+			}
+		} else {
+			Future<?> future = SystemUtils.removeTaskFuture(task.getId());
+			if (future != null) {
+				return future.cancel(true);
+			}
 		}
-		String url = "http://" + task.getIp() + ":" + task.getPort() + "/api/cancel/task?taskId=" + task.getId();
-		try {
-			restTemplate.getForObject(url, Void.class);
-			return true;
-		} catch (RestClientException e) {
-			log.error("取消任务失败", e);
-			return false;
-		}
+		return true;
 	}
 
 }

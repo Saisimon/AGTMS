@@ -150,31 +150,47 @@ public class ImportActuator implements Actuator<ImportParam> {
 	}
 
 	private void importDatas(ImportParam param, Template template, File file) throws InterruptedException, GenerateException, IOException {
-		FileHandler handler = FileHandlerFactory.getHandler(param.getImportFileType());
-		if (handler == null) {
-			return;
-		}
-		List<List<String>> datas = handler.fetch(file);
-		List<List<Object>> resultDatas = new ArrayList<>(datas.size());
-		if (datas.size() == 0) {
-			handler.populate(file, resultDatas);
-			return;
-		}
-		resultDatas.add(buildHead(datas));
-		if (datas.size() == 1) {
-			handler.populate(file, resultDatas);
-			return;
-		}
-		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
-		Map<String, Map<String, String>> fieldTextMap = new HashMap<>();
-		for (int i = 1; i < datas.size(); i++) {
+		try {
+			FileHandler handler = FileHandlerFactory.getHandler(param.getImportFileType());
+			if (handler == null) {
+				return;
+			}
+			List<List<String>> datas = handler.fetch(file);
 			if (Thread.currentThread().isInterrupted()) {
 				throw new InterruptedException("Task Cancel");
 			}
-			List<Object> resultData = importData(param, template, datas.get(i), fieldInfoMap, fieldTextMap);
-			resultDatas.add(resultData);
+			List<List<Object>> resultDatas = new ArrayList<>(datas.size());
+			if (datas.size() == 0) {
+				handler.populate(file, resultDatas);
+				return;
+			}
+			resultDatas.add(buildHead(datas));
+			if (datas.size() == 1) {
+				handler.populate(file, resultDatas);
+				return;
+			}
+			Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
+			Map<String, Map<String, String>> fieldTextMap = new HashMap<>();
+			for (int i = 1; i < datas.size(); i++) {
+				if (Thread.currentThread().isInterrupted()) {
+					throw new InterruptedException("Task Cancel");
+				}
+				List<Object> resultData = importData(param, template, datas.get(i), fieldInfoMap, fieldTextMap);
+				resultDatas.add(resultData);
+			}
+			if (Thread.currentThread().isInterrupted()) {
+				throw new InterruptedException("Task Cancel");
+			}
+			handler.populate(file, resultDatas);
+		} catch (InterruptedException e) {
+			throw e;
+		} catch (Exception e) {
+			if (Thread.currentThread().isInterrupted()) {
+				throw new InterruptedException("Task Cancel");
+			} else {
+				throw e;
+			}
 		}
-		handler.populate(file, resultDatas);
 	}
 
 	private List<Object> importData(ImportParam param, Template template, List<String> data, 

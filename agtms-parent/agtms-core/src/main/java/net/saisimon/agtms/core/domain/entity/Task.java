@@ -81,10 +81,4 @@ public class Task implements Serializable {
 	@Column(nullable=false)
 	private Long operatorId;
 	
-	@Column(length=50)
-	private String ip;
-	
-	@Column
-	private Integer port;
-	
 }

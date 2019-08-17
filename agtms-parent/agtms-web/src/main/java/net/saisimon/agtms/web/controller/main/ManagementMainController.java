@@ -24,7 +24,6 @@ import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.util.CollectionUtils;
@@ -108,11 +107,6 @@ import net.saisimon.agtms.web.util.FileUtils;
 @ControllerInfo("management")
 @Slf4j
 public class ManagementMainController extends AbstractMainController {
-	
-	@Value("${spring.cloud.client.ip-address}")
-	private String ip;
-	@Value("${server.port}")
-	private int port;
 	
 	@Autowired
 	private FileTypeSelection fileTypeSelection;
@@ -616,8 +610,6 @@ public class ManagementMainController extends AbstractMainController {
 		exportTask.setTaskType(Functions.EXPORT.getFunction());
 		exportTask.setTaskParam(SystemUtils.toJson(body));
 		exportTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
-		exportTask.setIp(ip);
-		exportTask.setPort(port);
 		TaskServiceFactory.get().saveOrUpdate(exportTask);
 		return exportTask;
 	}
@@ -629,8 +621,6 @@ public class ManagementMainController extends AbstractMainController {
 		importTask.setTaskType(Functions.IMPORT.getFunction());
 		importTask.setTaskParam(SystemUtils.toJson(body));
 		importTask.setHandleStatus(HandleStatuses.CREATED.getStatus());
-		importTask.setIp(ip);
-		importTask.setPort(port);
 		TaskServiceFactory.get().saveOrUpdate(importTask);
 		return importTask;
 	}

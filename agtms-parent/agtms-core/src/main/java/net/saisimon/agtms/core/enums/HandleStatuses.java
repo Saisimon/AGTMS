@@ -25,13 +25,13 @@ public enum HandleStatuses {
 	 */
 	FAILURE(40, "failure"),
 	/**
-	 * 已取消
-	 */
-	CANCELED(50, "canceled"),
-	/**
 	 * 取消中
 	 */
-	CANCELING(60, "canceling"),
+	CANCELING(50, "canceling"),
+	/**
+	 * 已取消
+	 */
+	CANCELED(60, "canceled"),
 	/**
 	 * 已丢弃
 	 */

@@ -133,9 +133,7 @@ public class NavigationMainController extends AbstractMainController {
 		if (templates == null) {
 			templates = new ArrayList<>();
 		}
-		if (remoteService != null) {
-			templates.addAll(remoteTemplates());
-		}
+		templates.addAll(remoteTemplates());
 		for (Template template : templates) {
 			links.add(new NavigationLink("/management/main/" + template.sign(), template.getTitle()));
 		}
@@ -414,6 +412,9 @@ public class NavigationMainController extends AbstractMainController {
 	
 	private List<Template> remoteTemplates() {
 		List<Template> templates = new ArrayList<>();
+		if (remoteService == null || discoveryClient == null) {
+			return templates;
+		}
 		List<String> services = discoveryClient.getServices();
 		for (String service : services) {
 			if (contains(agtmsProperties.getExcludeServices(), service)) {

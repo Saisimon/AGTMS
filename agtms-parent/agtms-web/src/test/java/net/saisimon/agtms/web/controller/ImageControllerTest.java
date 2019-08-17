@@ -5,7 +5,6 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -36,7 +35,7 @@ public class ImageControllerTest extends AbstractControllerTest {
 		@SuppressWarnings("unchecked")
 		SimpleResult<String> simpleResult = SystemUtils.fromJson(json, SimpleResult.class, String.class);
 		String uri = simpleResult.getData();
-		returnBinary(uri, HttpMethod.GET, null, null);
+		returnBinary(uri, null, null);
 	}
 	/* ImageController End */
 	

@@ -2,7 +2,6 @@ package net.saisimon.agtms.web.controller.api;
 
 import java.util.concurrent.Future;
 
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,8 +45,9 @@ public class ApiController {
 	 * 根据任务 ID 取消任务
 	 * 
 	 * @param taskId 任务 ID
+	 * @return 取消任务结果
 	 */
-	@GetMapping("/cancel/task")
+	@PostMapping("/cancel/task")
 	public void cancel(@RequestParam("taskId") Long taskId) {
 		Future<?> future = SystemUtils.removeTaskFuture(taskId);
 		if (future != null) {

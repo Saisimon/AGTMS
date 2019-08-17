@@ -674,9 +674,7 @@ public class ServiceTest {
 		Date time = new Date();
 		task.setHandleResult("success");
 		task.setHandleStatus(HandleStatuses.SUCCESS.getStatus());
-		task.setIp("127.0.0.1");
 		task.setOperatorId(1L);
-		task.setPort(7891);
 		task.setTaskParam("{}");
 		task.setHandleTime(time);
 		task.setTaskTime(time);

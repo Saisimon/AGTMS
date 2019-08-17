@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequ
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.dto.SimpleResult;
+import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.dto.req.UserAuthParam;
 
@@ -38,10 +39,6 @@ public abstract class AbstractControllerTest {
 	protected MockMvc mockMvc;
 	@Autowired
 	protected MessageSource messageSource;
-	
-	protected String sendGet(String uri, Map<String, String> param) throws Exception {
-		return send(uri, HttpMethod.GET, param , null, null);
-	}
 	
 	protected String sendPost(String uri, Map<String, String> param, UserToken token) throws Exception {
 		return send(uri, HttpMethod.POST, param , null, token);
@@ -59,8 +56,8 @@ public abstract class AbstractControllerTest {
 		MockHttpServletRequestBuilder builder = build(uri, method);
 		builder.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
 		if (token != null) {
-			builder.header("X-UID", token.getUserId());
-			builder.header("X-TOKEN", token.getToken());
+			builder.header(AuthUtils.AUTHORIZE_UID, token.getUserId());
+			builder.header(AuthUtils.AUTHORIZE_TOKEN, token.getToken());
 		}
 		if (param != null) {
 			for (Map.Entry<String, String> entry : param.entrySet()) {
@@ -78,12 +75,12 @@ public abstract class AbstractControllerTest {
 		return result;
 	}
 	
-	protected void returnBinary(String uri, HttpMethod method, Map<String, String> param, Object body) throws Exception {
-		returnBinary(uri, method, param, body, status().isOk());
+	protected void returnBinary(String uri, Map<String, String> param, Object body) throws Exception {
+		returnBinary(uri, param, body, status().isOk());
 	}
 	
-	protected void returnBinary(String uri, HttpMethod method, Map<String, String> param, Object body, ResultMatcher matcher) throws Exception {
-		MockHttpServletRequestBuilder builder = build(uri, method);
+	protected void returnBinary(String uri, Map<String, String> param, Object body, ResultMatcher matcher) throws Exception {
+		MockHttpServletRequestBuilder builder = build(uri, HttpMethod.GET);
 		builder.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
 		if (param != null) {
 			for (Map.Entry<String, String> entry : param.entrySet()) {
@@ -103,8 +100,8 @@ public abstract class AbstractControllerTest {
 		MockMultipartHttpServletRequestBuilder builder = multipart(uri);
 		builder.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
 		if (token != null) {
-			builder.header("X-UID", token.getUserId());
-			builder.header("X-TOKEN", token.getToken());
+			builder.header(AuthUtils.AUTHORIZE_UID, token.getUserId());
+			builder.header(AuthUtils.AUTHORIZE_TOKEN, token.getToken());
 		}
 		if (param != null) {
 			for (Map.Entry<String, Object> entry : param.entrySet()) {

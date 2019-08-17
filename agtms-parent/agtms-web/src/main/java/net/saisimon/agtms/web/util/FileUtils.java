@@ -153,7 +153,7 @@ public final class FileUtils {
 		try (Writer writer = new StringWriter()) {
 			Map<String, Object> dataModel = new HashMap<>();
 			dataModel.put("font", fontFamily);
-			dataModel.put("datas", datas);
+			dataModel.put("datas", datas == null ? new ArrayList<>() : datas);
 			temp.process(dataModel, writer);
 			renderer.setDocumentFromString(writer.toString());
 			renderer.layout();

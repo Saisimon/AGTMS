@@ -158,6 +158,9 @@ public class ExportActuator implements Actuator<ExportParam> {
 		List<Object> heads = buildHeads(exportFields, fieldInfoMap);
 		param.setUuid(UUID.randomUUID().toString());
 		FileHandler handler = FileHandlerFactory.getHandler(param.getExportFileType());
+		if (handler == null) {
+			return;
+		}
 		List<List<Object>> datas = new ArrayList<>();
 		datas.add(heads);
 		int idx = 0;
@@ -173,6 +176,9 @@ public class ExportActuator implements Actuator<ExportParam> {
 				List<Map<String, Object>> domainList = DomainUtils.conversions(fieldInfoMap, template.getService(), domains, param.getUserId());
 				buildDatas(domainList, datas, exportFields);
 				File file = createExportFile(param, idx);
+				if (Thread.currentThread().isInterrupted()) {
+					throw new InterruptedException("Task Cancel");
+				}
 				handler.populate(file, datas);
 				files.add(file);
 				datas.clear();
@@ -182,7 +188,18 @@ public class ExportActuator implements Actuator<ExportParam> {
 					break;
 				}
 			} while (true);
+			if (Thread.currentThread().isInterrupted()) {
+				throw new InterruptedException("Task Cancel");
+			}
 			handler.merge(createExportFile(param, null), files);
+		} catch (InterruptedException e) {
+			throw e;
+		} catch (Exception e) {
+			if (Thread.currentThread().isInterrupted()) {
+				throw new InterruptedException("Task Cancel");
+			} else {
+				throw e;
+			}
 		} finally {
 			for (File file : files) {
 				if (file != null && file.exists()) {
@@ -215,11 +232,8 @@ public class ExportActuator implements Actuator<ExportParam> {
 		return heads;
 	}
 	
-	private void buildDatas(List<Map<String, Object>> domainList, List<List<Object>> datas, String[] exportFields) throws InterruptedException {
+	private void buildDatas(List<Map<String, Object>> domainList, List<List<Object>> datas, String[] exportFields) {
 		for (Map<String, Object> domainMap : domainList) {
-			if (Thread.currentThread().isInterrupted()) {
-				throw new InterruptedException("Task Cancel");
-			}
 			datas.add(buildData(exportFields, domainMap));
 		}
 	}
