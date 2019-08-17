@@ -18,7 +18,7 @@ import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.web.dto.req.UserPasswordChangeParam;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG"})
+@SpringBootTest(properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR", "logging.level.net.saisimon=DEBUG"})
 @AutoConfigureMockMvc
 public class MainControllerTest extends AbstractControllerTest {
 	

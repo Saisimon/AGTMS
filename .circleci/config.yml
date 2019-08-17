@@ -18,7 +18,7 @@ jobs:
             - agtms-{{ .Branch }}-{{ checksum "pom.xml" }}
             - agtms-{{ .Branch }}-
             - agtms-
-      - run: ./mvnw clean install -Ddockerfile.skip=true
+      - run: ./mvnw clean install -Ddockerfile.skip=true --quiet
       - save_cache:
           paths:
             - ~/.m2

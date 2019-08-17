@@ -55,7 +55,7 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.mongodb.MongodbTestApplication;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = MongodbTestApplication.class, properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG", "logging.level.org.springframework.data.mongodb=DEBUG"})
+@SpringBootTest(classes = MongodbTestApplication.class, properties = { "spring.main.bannerMode=OFF", "logging.level.root=ERROR" })
 @DataMongoTest
 public class ServiceTest {
 	

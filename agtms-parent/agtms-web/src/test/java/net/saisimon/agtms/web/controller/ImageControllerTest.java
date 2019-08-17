@@ -13,7 +13,7 @@ import net.saisimon.agtms.core.dto.SimpleResult;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG"})
+@SpringBootTest(properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR", "logging.level.net.saisimon=DEBUG"})
 @AutoConfigureMockMvc
 public class ImageControllerTest extends AbstractControllerTest {
 

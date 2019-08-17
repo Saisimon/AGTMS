@@ -56,7 +56,7 @@ import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.jpa.JpaTestApplication;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = JpaTestApplication.class, properties = {"spring.main.banner-mode=OFF", "logging.level.net.saisimon=DEBUG"})
+@SpringBootTest(classes = JpaTestApplication.class, properties = { "spring.main.bannerMode=OFF", "logging.level.root=ERROR" })
 @DataJpaTest
 @JdbcTest
 public class ServiceTest {
