@@ -45,7 +45,7 @@ import net.saisimon.agtms.web.dto.resp.TaskInfo;
 import net.saisimon.agtms.web.dto.resp.TemplateInfo;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR", "logging.level.net.saisimon=DEBUG"})
+@SpringBootTest(properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR"})
 @AutoConfigureMockMvc
 public class EditControllerTest extends AbstractControllerTest {
 	

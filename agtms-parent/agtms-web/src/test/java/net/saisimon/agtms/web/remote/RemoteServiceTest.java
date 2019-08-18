@@ -53,7 +53,7 @@ import net.saisimon.agtms.web.remote.RemoteServiceTest.LocalRibbonClientConfigur
 import net.saisimon.agtms.web.selection.GenderSelection;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes=RemoteTestApplication.class, properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR", "logging.level.net.saisimon=DEBUG"})
+@SpringBootTest(classes=RemoteTestApplication.class, properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR"})
 @ContextConfiguration(classes = {LocalRibbonClientConfiguration.class})
 public class RemoteServiceTest {
 	

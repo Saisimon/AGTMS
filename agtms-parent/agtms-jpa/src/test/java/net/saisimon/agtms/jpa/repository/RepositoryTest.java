@@ -29,7 +29,7 @@ import net.saisimon.agtms.jpa.domain.TestLong;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = JpaTestApplication.class, properties = { "spring.main.bannerMode=OFF", "logging.level.root=ERROR" })
-@DataJpaTest
+@DataJpaTest(showSql=false)
 @JdbcTest
 public class RepositoryTest {
 

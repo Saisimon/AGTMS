@@ -2,6 +2,7 @@ package net.saisimon.agtms.core.util;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.junit.Assert;
@@ -38,7 +39,9 @@ public class DomainUtilsTest {
 	@Test
 	public void testGetField() throws Exception {
 		try {
-			Class<Domain> domainClass = domainGenerater.generate(NAMESPACE, new HashMap<>(), NAME);
+			Map<String, String> map = new HashMap<>();
+			map.put("aaa", String.class.getName());
+			Class<Domain> domainClass = domainGenerater.generate(NAMESPACE, map, NAME);
 			Domain domain = domainClass.newInstance();
 			Assert.assertNull(DomainUtils.getField(domain, "aaa"));
 		} finally {
@@ -54,7 +57,9 @@ public class DomainUtilsTest {
 	@Test
 	public void testSetField() throws Exception {
 		try {
-			Class<Domain> domainClass = domainGenerater.generate(NAMESPACE, new HashMap<>(), NAME);
+			Map<String, String> map = new HashMap<>();
+			map.put("aaa", String.class.getName());
+			Class<Domain> domainClass = domainGenerater.generate(NAMESPACE, map, NAME);
 			Domain domain = domainClass.newInstance();
 			DomainUtils.setField(domain, "aaa", null, String.class);
 		} finally {
