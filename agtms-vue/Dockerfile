@@ -5,6 +5,7 @@ WORKDIR /app
 RUN npm install --registry=https://registry.npm.taobao.org && npm run build
 
 FROM nginx:1.15.12-alpine
+LABEL authors="Saisimon"
 RUN mkdir /app
 COPY waiting.sh /app/waiting.sh
 RUN chmod 777 /app/waiting.sh
