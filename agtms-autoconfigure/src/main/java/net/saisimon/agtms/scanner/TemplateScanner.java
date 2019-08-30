@@ -71,7 +71,7 @@ public class TemplateScanner {
 			function += func.getCode();
 		}
 		template.setKey(templateInfo.key());
-		template.setNavigationId(-1L);
+		template.setPath("");
 		template.setFunctions(function);
 		String title = templateInfo.title();
 		if (SystemUtils.isBlank(title)) {

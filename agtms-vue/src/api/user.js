@@ -25,3 +25,7 @@ export function profileInfo(user) {
 export function profileSave(user, data) {
     return request(user, "/user/profile/save", data);
 }
+
+export function nav(user) {
+    return request(user, "/user/nav");
+}

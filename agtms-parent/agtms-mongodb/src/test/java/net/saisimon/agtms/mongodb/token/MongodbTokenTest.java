@@ -33,7 +33,6 @@ public class MongodbTokenTest {
 	@Before
 	public void before() {
 		user = new User();
-		user.setAdmin(false);
 		user.setAvatar("/");
 		user.setCellphone("test");
 		user.setEmail("test");

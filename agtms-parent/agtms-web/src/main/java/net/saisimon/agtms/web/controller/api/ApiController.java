@@ -1,16 +1,13 @@
 package net.saisimon.agtms.web.controller.api;
 
-import java.util.concurrent.Future;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import cn.hutool.core.util.NumberUtil;
-import net.saisimon.agtms.core.domain.entity.UserToken;
-import net.saisimon.agtms.core.factory.TokenFactory;
-import net.saisimon.agtms.core.util.SystemUtils;
+import net.saisimon.agtms.web.service.main.TaskMainService;
+import net.saisimon.agtms.web.service.main.UserMainService;
 
 /**
  * 接口控制器
@@ -22,6 +19,11 @@ import net.saisimon.agtms.core.util.SystemUtils;
 @RequestMapping(path = "/api")
 public class ApiController {
 	
+	@Autowired
+	private UserMainService userMainService;
+	@Autowired
+	private TaskMainService taskMainService;
+	
 	/**
 	 * 验证 uid 与 token 是否正确并且匹配
 	 * 
@@ -31,14 +33,7 @@ public class ApiController {
 	 */
 	@PostMapping("/check/token")
 	public boolean checkToken(@RequestParam("uid") String uid, @RequestParam("token") String token) {
-		if (!NumberUtil.isLong(uid)) {
-			return false;
-		}
-		UserToken userToken = TokenFactory.get().getToken(Long.valueOf(uid), true);
-		if (userToken == null) {
-			return false;
-		}
-		return token.equals(userToken.getToken());
+		return userMainService.checkToken(uid, token);
 	}
 	
 	/**
@@ -49,10 +44,7 @@ public class ApiController {
 	 */
 	@PostMapping("/cancel/task")
 	public void cancel(@RequestParam("taskId") Long taskId) {
-		Future<?> future = SystemUtils.removeTaskFuture(taskId);
-		if (future != null) {
-			future.cancel(true);
-		}
+		taskMainService.cancelTask(taskId);
 	}
 	
 }

@@ -24,6 +24,7 @@ import net.saisimon.agtms.core.service.OperationService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.config.handler.operation.DefaultOperationHandler;
+import net.saisimon.agtms.web.service.user.UserInfoService;
 
 /**
  * 操作记录切面
@@ -40,6 +41,8 @@ public class OperationAspect {
 	private SchedulingTaskExecutor operationThreadPool;
 	@Autowired
 	private DefaultOperationHandler defaultOperationHandler;
+	@Autowired
+	private UserInfoService userInfoService;
 	
 	/**
 	 * 操作记录注解切点
@@ -88,7 +91,7 @@ public class OperationAspect {
 		if (userId == null) {
 			return null;
 		}
-		Template template = TemplateUtils.getTemplate(args[0], userId);
+		Template template = TemplateUtils.getTemplate(args[0], userInfoService.getUserIds(userId));
 		if (template == null) {
 			return null;
 		}

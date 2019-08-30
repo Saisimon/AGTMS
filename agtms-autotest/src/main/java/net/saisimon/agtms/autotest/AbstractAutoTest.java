@@ -27,8 +27,8 @@ public abstract class AbstractAutoTest implements AutoTest {
 	@Value("${auto.test.timeout}")
 	private Long timeout;
 	
-	private static final String TEST_USERNAME = "test";
-	private static final String TEST_PASSWORD = "test";
+	private static final String TEST_USERNAME = "editor";
+	private static final String TEST_PASSWORD = "editor";
 
 	@Override
 	public void detroyDriver(WebDriver driver) {
@@ -82,24 +82,24 @@ public abstract class AbstractAutoTest implements AutoTest {
 		// 空表单登录提交
 		clickButton(driver, "save-btn");
 		// 设置导航信息
-		setNavigation(driver, 1, "random", "TEST", 1);
+		setNavigation(driver, 1, "random", "TEST");
 		// 重置取消
 		reset(driver, false);
 		// 重置确认
 		reset(driver, true);
 		// 创建导航信息
-		createNavigation(driver, 1, "random", "TEST-1", 2);
+		createNavigation(driver, 1, "random", "TEST-1");
 		// 重复创建导航信息
-		createNavigation(driver, 1, "random", "TEST-1", 3);
+		createNavigation(driver, 1, "random", "TEST-1");
 		// 批量创建导航信息
 		for (int i = 0; i < 9; i++) {
-			createNavigation(driver, 1, "random", "TEST-" + (i + 2), i + 3);
+			createNavigation(driver, 1, "random", "TEST-" + (i + 2));
 		}
 		// 点击返回按钮
 		clickButton(driver, "back-btn");
 		// 点击导航创建按钮
 		clickButton(driver, "create-btn");
-		createNavigation(driver, 2, "link", "TEST-SUB-1", 3);
+		createNavigation(driver, 2, "link", "TEST-SUB-1");
 		// 点击返回按钮
 		clickButton(driver, "back-btn");
 		// 显示筛选条件
@@ -107,14 +107,14 @@ public abstract class AbstractAutoTest implements AutoTest {
 			clickButton(driver, "filter-switch-btn");
 		}
 		// 精确查询
-		inputByClass(driver, "title-input", "TEST-1");
+		inputByClass(driver, "name-input", "TEST-1");
 		clickButton(driver, "search-btn");
 		// 模糊查询
-		select(driver, "//div[contains(@class,'title-operator-select')]", 2);
+		select(driver, "//div[contains(@class,'name-operator-select')]", 2);
 		clickButton(driver, "search-btn");
 		// 逗号分隔查询
-		inputByClass(driver, "title-input", "TEST-1,TEST-2");
-		select(driver, "//div[contains(@class,'title-operator-select')]", 3);
+		inputByClass(driver, "name-input", "TEST-1,TEST-2");
+		select(driver, "//div[contains(@class,'name-operator-select')]", 3);
 		clickButton(driver, "search-btn");
 		// 点击清空按钮
 		clickButton(driver, "clear-btn");
@@ -133,11 +133,11 @@ public abstract class AbstractAutoTest implements AutoTest {
 		// 编辑列表第一条
 		clickActionButton(getTableList(driver).get(0), "btn-outline-primary");
 		// 设置导航信息
-		setNavigation(driver, 2, "bars", "TEST", 100);
+		setNavigation(driver, 2, "bars", "TEST");
 		// 重置确认
 		reset(driver, true);
 		// 创建导航信息
-		createNavigation(driver, 2, "bars", "TEST-CHANGE", 100);
+		createNavigation(driver, 2, "bars", "TEST-CHANGE");
 		// 返回
 		clickButton(driver, "back-btn");
 		// 删除列表第一条
@@ -146,13 +146,9 @@ public abstract class AbstractAutoTest implements AutoTest {
 		selectAllRows(driver);
 		// 点击批量编辑按钮
 		clickButton(driver, "batch-edit-btn");
-		String selectPath = "//div[@class='batch-edit-container']//div[@class='form-container']//div[@class='multiselect']";
 		// 选择图标
-		select(driver, selectPath, 3);
+		select(driver, "//div[@class='batch-edit-container']//div[@class='form-container']//div[@class='multiselect']", 3);
 		inputById(driver, "icon-input", "list");
-		// 选择优先级
-		select(driver, selectPath, 4);
-		inputById(driver, "priority-input", "99");
 		// 批量保存
 		clickButton(driver, "save-btn");
 		// 勾选列表所有行
@@ -271,7 +267,7 @@ public abstract class AbstractAutoTest implements AutoTest {
 		if (!findElement(driver, By.id("filter-toggle")).isDisplayed()) {
 			clickButton(driver, "filter-switch-btn");
 		}
-		for (int i = 1; i <= 9; i++) {
+		for (int i = 1; i <= 10; i++) {
 			// 选择操作类型
 			select(driver, "//div[@class='filter-container']//div[contains(@class,'operateType-select')]", i);
 			// 搜索
@@ -309,11 +305,10 @@ public abstract class AbstractAutoTest implements AutoTest {
 		closeAlert(driver);
 	}
 	
-	protected void setNavigation(WebDriver driver, int navigationIndex, String icon, String title, int priority) throws Exception {
+	protected void setNavigation(WebDriver driver, int navigationIndex, String icon, String title) throws Exception {
 		select(driver, "//div[@class='edit-container']//div[@class='form-container']//div[contains(@class,'multiselect')]", navigationIndex);
 		inputById(driver, "icon-input", icon);
-		inputById(driver, "title-input", title);
-		inputById(driver, "priority-input", "" + priority);
+		inputById(driver, "name-input", title);
 	}
 	
 	protected void to(WebDriver driver, String path) throws Exception {
@@ -321,8 +316,8 @@ public abstract class AbstractAutoTest implements AutoTest {
 		Thread.sleep(interval);
 	}
 	
-	protected void createNavigation(WebDriver driver, int navigationIndex, String icon, String title, int priority) throws Exception {
-		setNavigation(driver, navigationIndex, icon, title, priority);
+	protected void createNavigation(WebDriver driver, int navigationIndex, String icon, String title) throws Exception {
+		setNavigation(driver, navigationIndex, icon, title);
 		clickButton(driver, "save-btn");
 		closeAlert(driver);
 	}
@@ -398,14 +393,20 @@ public abstract class AbstractAutoTest implements AutoTest {
 	}
 	
 	protected void prevPage(WebDriver driver) throws Exception {
-		List<WebElement> pageableElements = driver.findElements(By.xpath("//div[@class='table-container']//div[@class='footer__navigation vgt-pull-right']/a"));
+		List<WebElement> pageableElements = driver.findElements(By.xpath("//div[@id='pagination']/div[@class='row']/div"));
+		if (CollectionUtils.isEmpty(pageableElements)) {
+			return;
+		}
 		pageableElements.get(0).click();
 		Thread.sleep(interval);
 	}
 	
 	protected void nextPage(WebDriver driver) throws Exception {
-		List<WebElement> pageableElements = driver.findElements(By.xpath("//div[@class='table-container']//div[@class='footer__navigation vgt-pull-right']/a"));
-		pageableElements.get(1).click();
+		List<WebElement> pageableElements = driver.findElements(By.xpath("//div[@id='pagination']/div[@class='row']/div"));
+		if (CollectionUtils.isEmpty(pageableElements)) {
+			return;
+		}
+		pageableElements.get(2).click();
 		Thread.sleep(interval);
 	}
 	
@@ -426,7 +427,7 @@ public abstract class AbstractAutoTest implements AutoTest {
 	}
 	
 	protected void selectAllRows(WebDriver driver) {
-		List<WebElement> trElements = driver.findElements(By.xpath("//div[@class='table-container']//table/tbody/tr"));
+		List<WebElement> trElements = driver.findElements(By.xpath("//div[@class='table-container']//table/tbody/tr/th/input"));
 		if (CollectionUtils.isEmpty(trElements)) {
 			return;
 		}

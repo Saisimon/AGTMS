@@ -8,6 +8,7 @@
             <multiselect
                 v-if="field.multiple"
                 v-model="field.value"
+                style="z-index: 11"
                 label="text"
                 track-by="value"
                 select-label=""
@@ -33,6 +34,7 @@
             <multiselect
                 v-else
                 v-model="field.value"
+                style="z-index: 11"
                 label="text"
                 track-by="value"
                 select-label=""

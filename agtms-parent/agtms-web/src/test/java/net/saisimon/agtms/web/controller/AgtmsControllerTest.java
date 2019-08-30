@@ -21,63 +21,63 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 	
 	@Test
 	public void testTemplates() throws Exception {
-		UserToken token = login("test", "test");
-		sendPost("/agtms/templates", null, null, token);
+		UserToken token = login("editor", "editor");
+		sendPost("/agtms/templates", null, null, token, -1);
 	}
 	
 	@Test
 	public void testTemplate() throws Exception {
-		UserToken token = login("test", "test");
-		sendPost("/agtms/entity/template", null, null, token);
+		UserToken token = login("editor", "editor");
+		sendPost("/agtms/entity/template", null, null, token, -1);
 		
-		sendPost("/agtms/simpleEntity/template", null, null, token);
+		sendPost("/agtms/simpleEntity/template", null, null, token, -1);
 	}
 	
 	@Test
 	public void testSelection() throws Exception {
-		UserToken token = login("test", "test");
+		UserToken token = login("editor", "editor");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/agtms/GenderSelection/selection", body, token);
+		sendPost("/agtms/GenderSelection/selection", body, token, -1);
 		
 		body = new HashMap<>();
 		body.put("values", Arrays.asList(0, 1));
-		sendPost("/agtms/GenderSelection/selection", body, token);
+		sendPost("/agtms/GenderSelection/selection", body, token, -1);
 		
 		body = new HashMap<>();
 		body.put("texts", Arrays.asList("女", "男"));
-		sendPost("/agtms/GenderSelection/selection", body, token);
+		sendPost("/agtms/GenderSelection/selection", body, token, -1);
 		
 		body = new HashMap<>();
 		body.put("text", "女");
-		sendPost("/agtms/GenderSelection/selection", body, token);
+		sendPost("/agtms/GenderSelection/selection", body, token, -1);
 	}
 	
 	@Test
 	public void testCount() throws Exception {
-		UserToken token = login("test", "test");
+		UserToken token = login("editor", "editor");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/agtms/simpleEntity/count", body, token);
+		sendPost("/agtms/simpleEntity/count", body, token, -1);
 	}
 	
 	@Test
 	public void testFindListBySort() throws Exception {
-		UserToken token = login("test", "test");
+		UserToken token = login("editor", "editor");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/agtms/simpleEntity/findList", body, token);
+		sendPost("/agtms/simpleEntity/findList", body, token, -1);
 	}
 	
 	@Test
 	public void testFindPage() throws Exception {
-		UserToken token = login("test", "test");
+		UserToken token = login("editor", "editor");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/agtms/simpleEntity/findPage", body, token);
+		sendPost("/agtms/simpleEntity/findPage", body, token, -1);
 	}
 	
 	@Test
 	public void testFindOne() throws Exception {
-		UserToken token = login("test", "test");
+		UserToken token = login("editor", "editor");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/agtms/simpleEntity/findOne", body, token);
+		sendPost("/agtms/simpleEntity/findOne", body, token, -1);
 		
 		SimpleEntity entity = new SimpleEntity();
 		entity.setAge(11);
@@ -87,32 +87,32 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 		entity.setHome("/");
 		entity.setName("Test");
 		body.put("body", entity);
-		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token, -1);
 		
 		body = new HashMap<>();
-		sendPost("/agtms/simpleEntity/findOne", body, token);
+		sendPost("/agtms/simpleEntity/findOne", body, token, -1);
 	}
 	
 	@Test
 	public void testDelete() throws Exception {
-		UserToken token = login("test", "test");
+		UserToken token = login("editor", "editor");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/agtms/simpleEntity/delete", body, token);
+		sendPost("/agtms/simpleEntity/delete", body, token, -1);
 	}
 	
 	@Test
 	public void testDeleteEntity() throws Exception {
-		UserToken token = login("test", "test");
+		UserToken token = login("editor", "editor");
 		Map<String, Object> param = new HashMap<>();
 		SimpleEntity entity = new SimpleEntity();
 		entity.setId(1);
 		param.put("body", entity);
-		sendPost("/agtms/simpleEntity/deleteEntity", param, token);
+		sendPost("/agtms/simpleEntity/deleteEntity", param, token, -1);
 	}
 	
 	@Test
 	public void testSaveOrUpdate() throws Exception {
-		UserToken token = login("test", "test");
+		UserToken token = login("editor", "editor");
 		Map<String, Object> body = new HashMap<>();
 		SimpleEntity entity = new SimpleEntity();
 		entity.setAge(11);
@@ -122,21 +122,21 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 		entity.setHome("/");
 		entity.setName("Test");
 		body.put("body", entity);
-		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token, -1);
 		
 		entity = new SimpleEntity();
 		entity.setId(1);
 		entity.setAge(18);
 		entity.setGender(0);
 		body.put("body", entity);
-		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token, -1);
 	}
 	
 	@Test
 	public void testBatchUpdate() throws Exception {
-		UserToken token = login("test", "test");
+		UserToken token = login("editor", "editor");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/agtms/simpleEntity/batchUpdate", body, token);
+		sendPost("/agtms/simpleEntity/batchUpdate", body, token, -1);
 		
 		SimpleEntity entity = new SimpleEntity();
 		entity.setAge(11);
@@ -146,17 +146,17 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 		entity.setHome("/");
 		entity.setName("Test");
 		body.put("body", entity);
-		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
-		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token, -1);
+		sendPost("/agtms/simpleEntity/saveOrUpdate", body, token, -1);
 		
 		body = new HashMap<>();
-		sendPost("/agtms/simpleEntity/findList", body, token);
+		sendPost("/agtms/simpleEntity/findList", body, token, -1);
 		
 		body = new HashMap<>();
 		Map<String, Object> updateMap = new HashMap<>();
 		updateMap.put("name", "entity");
 		body.put("update", updateMap);
-		sendPost("/agtms/simpleEntity/batchUpdate", body, token);
+		sendPost("/agtms/simpleEntity/batchUpdate", body, token, -1);
 	}
 	
 }

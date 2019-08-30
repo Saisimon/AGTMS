@@ -1,5 +1,7 @@
 package net.saisimon.agtms.core.service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +19,7 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Selection;
 import net.saisimon.agtms.core.domain.entity.SelectionOption;
 import net.saisimon.agtms.core.domain.entity.SelectionTemplate;
-import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
-import net.saisimon.agtms.core.factory.TokenFactory;
 
 /**
  * 下拉列表服务接口
@@ -36,20 +36,16 @@ public interface SelectionService extends BaseService<Selection, Long>, Ordered 
 		return count(filter) > 0;
 	}
 	
-	default List<Selection> getSelections(Long operatorId) {
-		if (operatorId == null) {
-			return null;
+	default List<Selection> getSelections(Collection<Long> operatorIds) {
+		if (CollectionUtils.isEmpty(operatorIds)) {
+			return Collections.emptyList();
 		}
-		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
-		FilterRequest filter = FilterRequest.build();
-		if (!userToken.isAdmin()) {
-			filter.and(Constant.OPERATORID, operatorId);
-		}
+		FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, operatorIds, Constant.Operator.IN);
 		return findList(filter);
 	}
 	
-	default LinkedHashMap<String, String> getSelectionMap(Long operatorId) {
-		List<Selection> selections = getSelections(operatorId);
+	default LinkedHashMap<String, String> getSelectionMap(Collection<Long> operatorIds) {
+		List<Selection> selections = getSelections(operatorIds);
 		LinkedHashMap<String, String> selectionMap = new LinkedHashMap<>();
 		if (!CollectionUtils.isEmpty(selections)) {
 			for (Selection selection : selections) {
@@ -59,21 +55,21 @@ public interface SelectionService extends BaseService<Selection, Long>, Ordered 
 		return selectionMap;
 	}
 	
-	List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId);
+	List<SelectionOption> getSelectionOptions(Selection selection);
 	
-	void removeSelectionOptions(Long selectionId, Long operatorId);
+	void removeSelectionOptions(Selection selection);
 	
-	void removeSelectionTemplate(Long selectionId, Long operatorId);
+	void removeSelectionTemplate(Selection selection);
 	
-	List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId, Set<String> values, boolean isValue);
+	List<SelectionOption> getSelectionOptions(Selection selection, Set<String> values, boolean isValue);
 	
-	List<SelectionOption> searchSelectionOptions(Long selectionId, Long operatorId, String keyword, Integer size);
+	List<SelectionOption> searchSelectionOptions(Selection selection, String keyword, Integer size);
 	
-	SelectionTemplate getSelectionTemplate(Long selectionId, Long operatorId);
+	SelectionTemplate getSelectionTemplate(Selection selection);
 	
-	void saveSelectionOptions(List<SelectionOption> options, Long operatorId);
+	void saveSelectionOptions(List<SelectionOption> options, Selection selection);
 	
-	void saveSelectionTemplate(SelectionTemplate template, Long operatorId);
+	void saveSelectionTemplate(SelectionTemplate template, Selection selection);
 	
 	@Override
 	@Cacheable(cacheNames="selection", key="#p0")

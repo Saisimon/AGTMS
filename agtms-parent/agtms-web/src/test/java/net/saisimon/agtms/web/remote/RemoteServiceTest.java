@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -166,13 +167,13 @@ public class RemoteServiceTest {
 		Assert.assertEquals("Test", page.getContent().get(0).getField("name"));
 		Optional<Domain> optional = generateRemoteService.findOne(FilterRequest.build(), FilterSort.build(null));
 		Assert.assertTrue(optional.isPresent());
-		domain = generateRemoteService.findById(1L, 1L);
+		domain = generateRemoteService.findById(1L, Arrays.asList(1L));
 		Assert.assertEquals("Test", domain.getField("name"));
 		generateRemoteService.delete(domain);
 		generateRemoteService.delete(FilterRequest.build());
 		domain = generateRemoteService.saveDomain(domain, 1L);
 		Assert.assertEquals("Test", domain.getField("name"));
-		Assert.assertTrue(generateRemoteService.checkExist(domain, 1L));
+		Assert.assertTrue(generateRemoteService.checkExist(domain, Arrays.asList(1L)));
 		domain = generateRemoteService.updateDomain(domain, generateRemoteService.newGenerate(), 1L);
 		Assert.assertEquals("Test", domain.getField("name"));
 		Map<String, Object> updateMap = new HashMap<>();

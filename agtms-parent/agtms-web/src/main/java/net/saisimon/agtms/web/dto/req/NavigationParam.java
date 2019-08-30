@@ -11,14 +11,12 @@ public class NavigationParam {
 	private Long id;
 	
 	@NotBlank
-	private String title;
+	private String name;
 	
 	@NotBlank
 	private String icon;
 	
-	private Long priority;
-	
 	@NotNull
-	private Long parentId;
+	private String path;
 	
 }

@@ -1,4 +1,4 @@
-import { signIn, signOut, passwordChange, profileSave, profileInfo } from '@/api/user'
+import { signIn, signOut, passwordChange, profileSave, profileInfo, nav } from '@/api/user'
 import { uploadImage } from '@/api/upload'
 import router from '@/router'
 
@@ -31,7 +31,9 @@ const state = {
         variant: 'success',
         text: ''
     },
-    showChangePasswordModal: false
+    showChangePasswordModal: false,
+    openTree: false,
+    tree: {}
 };
 
 const mutations = {
@@ -97,6 +99,18 @@ const mutations = {
     },
     changePasswordModal(state, show) {
         state.showChangePasswordModal = show;
+    },
+    changeOpenTree(state, status) {
+        if (status) {
+            state.openTree = true;
+        } else {
+            state.openTree = false;
+        }
+    },
+    setTree(state, tree) {
+        if (tree) {
+            state.tree = tree;
+        }
     }
 };
 
@@ -165,6 +179,14 @@ const actions = {
                     reject(error);
                 });
             }
+        });
+    },
+    changeOpenTree(context, status) {
+        context.commit('changeOpenTree', status);
+    },
+    getTree(context) {
+        nav(context.rootState.base.user).then(resp => {
+            return context.commit('setTree', resp.data.data);
         });
     }
 };

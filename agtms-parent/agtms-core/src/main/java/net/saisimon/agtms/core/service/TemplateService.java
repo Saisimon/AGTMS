@@ -1,5 +1,7 @@
 package net.saisimon.agtms.core.service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -8,12 +10,11 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Template;
-import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
-import net.saisimon.agtms.core.factory.TokenFactory;
 
 /**
  * 模板服务接口
@@ -23,34 +24,18 @@ import net.saisimon.agtms.core.factory.TokenFactory;
  */
 public interface TemplateService extends BaseService<Template, Long>, Ordered {
 	
-	default Boolean exists(String title, Long operatorId) {
+	default Boolean exists(String title, Collection<Long> operatorIds) {
 		Assert.notNull(title, "title can not be null");
-		Assert.notNull(operatorId, "operatorId can not be null");
-		FilterRequest filter = FilterRequest.build().and("title", title).and(Constant.OPERATORID, operatorId);
+		Assert.notNull(operatorIds, "operatorId can not be null");
+		FilterRequest filter = FilterRequest.build().and("title", title).and(Constant.OPERATORID, operatorIds, Constant.Operator.IN);
 		return count(filter) > 0;
 	}
 	
-	default List<Template> getTemplates(Long operatorId) {
-		if (operatorId == null) {
-			return null;
+	default List<Template> getTemplates(Collection<Long> operatorIds) {
+		if (CollectionUtils.isEmpty(operatorIds)) {
+			return Collections.emptyList();
 		}
-		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
-		FilterRequest filter = FilterRequest.build();
-		if (userToken == null || !userToken.isAdmin()) {
-			filter.and(Constant.OPERATORID, operatorId);
-		}
-		return findList(filter);
-	}
-	
-	default List<Template> getTemplates(Long navigationId, Long operatorId) {
-		if (navigationId == null || operatorId == null) {
-			return null;
-		}
-		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
-		FilterRequest filter = FilterRequest.build().and("navigationId", navigationId);
-		if (!userToken.isAdmin()) {
-			filter.and(Constant.OPERATORID, operatorId);
-		}
+		FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, operatorIds, Constant.Operator.IN);
 		return findList(filter);
 	}
 	

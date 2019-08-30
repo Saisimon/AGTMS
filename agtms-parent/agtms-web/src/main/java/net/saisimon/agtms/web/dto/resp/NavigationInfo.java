@@ -12,11 +12,9 @@ public class NavigationInfo extends BaseInfo {
 	
 	private static final long serialVersionUID = 2294019883615427021L;
 
-	private String title;
+	private String name;
 	
 	private String icon;
-	
-	private Long priority;
 	
 	private String parentId;
 	

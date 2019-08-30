@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +46,7 @@ import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.ImportParam;
+import net.saisimon.agtms.web.service.user.UserInfoService;
 import net.saisimon.agtms.web.util.FileUtils;
 
 /**
@@ -62,11 +64,14 @@ public class ImportActuator implements Actuator<ImportParam> {
 	private MessageSource messageSource;
 	@Autowired
 	private AgtmsProperties agtmsProperties;
+	@Autowired
+	private UserInfoService userInfoSerivce;
 	
 	@Override
 	@Transactional(rollbackOn = Exception.class)
 	public Result execute(ImportParam param) throws Exception {
-		Template template = TemplateUtils.getTemplate(param.getTemplateId(), param.getUserId());
+		Set<Long> userIds = userInfoSerivce.getUserIds(param.getUserId());
+		Template template = TemplateUtils.getTemplate(param.getTemplateId(), userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -77,7 +82,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 		if (!file.exists()) {
 			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
 		}
-		importDatas(param, template, file);
+		importDatas(param, template, file, userIds);
 		return ResultUtils.simpleSuccess();
 	}
 
@@ -104,7 +109,8 @@ public class ImportActuator implements Actuator<ImportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		Template template = TemplateUtils.getTemplate(param.getTemplateId(), param.getUserId());
+		Set<Long> userIds = userInfoSerivce.getUserIds(param.getUserId());
+		Template template = TemplateUtils.getTemplate(param.getTemplateId(), userIds);
 		if (template == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
@@ -149,7 +155,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 		return file;
 	}
 
-	private void importDatas(ImportParam param, Template template, File file) throws InterruptedException, GenerateException, IOException {
+	private void importDatas(ImportParam param, Template template, File file, Collection<Long> operatorIds) throws InterruptedException, GenerateException, IOException {
 		try {
 			FileHandler handler = FileHandlerFactory.getHandler(param.getImportFileType());
 			if (handler == null) {
@@ -175,7 +181,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 				if (Thread.currentThread().isInterrupted()) {
 					throw new InterruptedException("Task Cancel");
 				}
-				List<Object> resultData = importData(param, template, datas.get(i), fieldInfoMap, fieldTextMap);
+				List<Object> resultData = importData(param, template, datas.get(i), fieldInfoMap, fieldTextMap, operatorIds);
 				resultDatas.add(resultData);
 			}
 			if (Thread.currentThread().isInterrupted()) {
@@ -194,7 +200,9 @@ public class ImportActuator implements Actuator<ImportParam> {
 	}
 
 	private List<Object> importData(ImportParam param, Template template, List<String> data, 
-			Map<String, TemplateField> fieldInfoMap, Map<String, Map<String, String>> fieldTextMap) throws GenerateException {
+			Map<String, TemplateField> fieldInfoMap, 
+			Map<String, Map<String, String>> fieldTextMap,
+			Collection<Long> operatorIds) throws GenerateException {
 		Domain domain = GenerateServiceFactory.build(template).newGenerate();
 		List<Object> resultData = new ArrayList<>();
 		List<String> missRequireds = new ArrayList<>();
@@ -213,7 +221,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 					if (value == null) {
 						Set<String> texts = new HashSet<>();
 						texts.add(fieldValue.toString());
-						Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap(templateField.selectionSign(template.getService()), texts, param.getUserId());
+						Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap(templateField.selectionSign(template.getService()), texts, operatorIds);
 						textMap.putAll(textValueMap);
 						value = textValueMap.get(fieldValue.toString());
 					}
@@ -241,7 +249,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 		domain.setField(Constant.OPERATORID, param.getUserId(), Long.class);
 		if (missRequireds.size() > 0) {
 			resultData.add(getMessage("missing.required.field") + ": " + missRequireds.stream().collect(Collectors.joining(", ")));
-		} else if (GenerateServiceFactory.build(template).checkExist(domain, param.getUserId())) {
+		} else if (GenerateServiceFactory.build(template).checkExist(domain, operatorIds)) {
 			resultData.add(getMessage("domain.already.exists"));
 		} else {
 			GenerateServiceFactory.build(template).saveDomain(domain, param.getUserId());

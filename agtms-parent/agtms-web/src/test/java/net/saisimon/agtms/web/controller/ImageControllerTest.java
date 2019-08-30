@@ -20,7 +20,7 @@ public class ImageControllerTest extends AbstractControllerTest {
 	/* ImageController Start */
 	@Test
 	public void testUpload() throws Exception {
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		ClassPathResource classPathResource = new ClassPathResource("test.png");
 		MockMultipartFile file = new MockMultipartFile("image", classPathResource.getInputStream());
 		sendMultipart("/image/upload", null, testToken, file);
@@ -28,7 +28,7 @@ public class ImageControllerTest extends AbstractControllerTest {
 	
 	@Test
 	public void testRes() throws Exception {
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		ClassPathResource classPathResource = new ClassPathResource("test.png");
 		MockMultipartFile file = new MockMultipartFile("image", classPathResource.getInputStream());
 		String json = sendMultipart("/image/upload", null, testToken, file);

@@ -9,6 +9,12 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 展现类型下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class ViewSelection extends AbstractSelection<String> {
 

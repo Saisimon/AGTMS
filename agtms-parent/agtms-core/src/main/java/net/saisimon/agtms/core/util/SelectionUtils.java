@@ -1,6 +1,7 @@
 package net.saisimon.agtms.core.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,6 @@ import net.saisimon.agtms.core.domain.entity.Selection;
 import net.saisimon.agtms.core.domain.entity.SelectionOption;
 import net.saisimon.agtms.core.domain.entity.SelectionTemplate;
 import net.saisimon.agtms.core.domain.entity.Template;
-import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterParam;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -29,7 +29,6 @@ import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.enums.SelectTypes;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.SelectionServiceFactory;
-import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.SelectionService;
 import net.saisimon.agtms.core.spring.SpringContext;
@@ -49,43 +48,48 @@ public class SelectionUtils {
 	 * 获取下拉列表对象
 	 * 
 	 * @param key 下拉列表唯一标识
-	 * @param operatorId 用户ID
+	 * @param operatorIds 用户ID集合
 	 * @return 下拉列表对象
 	 */
-	public static Selection getSelection(Object key, Long operatorId) {
-		if (key == null || operatorId == null) {
+	public static Selection getSelection(Object key, Collection<Long> operatorIds) {
+		if (key == null || CollectionUtils.isEmpty(operatorIds)) {
 			return null;
 		}
 		String sign = key.toString();
 		if (!NumberUtil.isLong(sign)) {
-			RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
-			if (remoteService == null) {
-				return null;
-			}
-			String[] strs = sign.split("-");
-			if (strs.length != 2) {
-				return null;
-			}
-			Selection selection = new Selection();
-			selection.setService(strs[0]);
-			selection.setKey(strs[1]);
-			selection.setType(SelectTypes.REMOTE.getType());
-			return selection;
+			return getRemoteSelection(sign);
 		}
-		SelectionService selectionService = SelectionServiceFactory.get();
-		Optional<Selection> optional = selectionService.findById(Long.valueOf(sign));
+		Optional<Selection> optional = SelectionServiceFactory.get().findById(Long.valueOf(sign));
 		if (!optional.isPresent()) {
 			return null;
 		}
 		Selection selection = optional.get();
-		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
-		if (userToken != null && userToken.isAdmin()) {
-			return selection;
-		}
-		if (operatorId.equals(selection.getOperatorId())) {
+		if (operatorIds.contains(selection.getOperatorId())) {
 			return selection;
 		}
 		return null;
+	}
+	
+	/**
+	 * 获取远程下拉列表对象
+	 * 
+	 * @param key 下拉列表唯一标识
+	 * @return 下拉列表对象
+	 */
+	public static Selection getRemoteSelection(String key) {
+		RemoteService remoteService = SpringContext.getBean("remoteService", RemoteService.class);
+		if (remoteService == null) {
+			return null;
+		}
+		String[] strs = key.split("-");
+		if (strs.length != 2) {
+			return null;
+		}
+		Selection selection = new Selection();
+		selection.setService(strs[0]);
+		selection.setKey(strs[1]);
+		selection.setType(SelectTypes.REMOTE.getType());
+		return selection;
 	}
 	
 	/**
@@ -96,8 +100,8 @@ public class SelectionUtils {
 	 * @param values 下拉列表选项值集合
 	 * @return 下拉列表的选项映射，key为选项值，value为选项名称
 	 */
-	public static Map<String, String> getSelectionValueTextMap(String sign, Set<String> values, Long operatorId) {
-		return getSelectionMap(sign, values, true, operatorId);
+	public static Map<String, String> getSelectionValueTextMap(String sign, Set<String> values, Collection<Long> operatorIds) {
+		return getSelectionMap(sign, values, true, operatorIds);
 	}
 	
 	/**
@@ -108,8 +112,8 @@ public class SelectionUtils {
 	 * @param texts 下拉列表选项名称集合
 	 * @return 下拉列表的选项映射，key为选项名称，value为选项值
 	 */
-	public static Map<String, String> getSelectionTextValueMap(String sign, Set<String> texts, Long operatorId) {
-		return getSelectionMap(sign, texts, false, operatorId);
+	public static Map<String, String> getSelectionTextValueMap(String sign, Set<String> texts, Collection<Long> operatorIds) {
+		return getSelectionMap(sign, texts, false, operatorIds);
 	}
 	
 	/**
@@ -120,22 +124,22 @@ public class SelectionUtils {
 	 * @param operatorId 用户ID
 	 * @return
 	 */
-	public static List<Option<Object>> getSelectionOptions(String sign, String keyword, Long operatorId) {
+	public static List<Option<Object>> getSelectionOptions(String sign, String keyword, Collection<Long> operatorIds) {
 		List<Option<Object>> options = new ArrayList<>();
-		Selection selection = getSelection(sign, operatorId);
+		Selection selection = getSelection(sign, operatorIds);
 		if (selection == null) {
 			return options;
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
-			List<SelectionOption> selectionOptions = selectionService.searchSelectionOptions(selection.getId(), operatorId, keyword, OPTION_SIZE);
+			List<SelectionOption> selectionOptions = selectionService.searchSelectionOptions(selection, keyword, OPTION_SIZE);
 			for (SelectionOption selectionOption : selectionOptions) {
 				Option<Object> option = new Option<>(selectionOption.getValue(), selectionOption.getText());
 				options.add(option);
 			}
 		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
-			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId(), operatorId);
-			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorId);
+			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection);
+			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorIds);
 			if (template == null) {
 				return options;
 			}
@@ -168,18 +172,18 @@ public class SelectionUtils {
 		return options;
 	}
 	
-	private static Map<String, String> getSelectionMap(String sign, Set<String> values, boolean valueKey, Long operatorId) {
+	private static Map<String, String> getSelectionMap(String sign, Set<String> values, boolean valueKey, Collection<Long> operatorIds) {
 		Map<String, String> selectionMap = MapUtil.newHashMap();
 		if (CollectionUtils.isEmpty(values)) {
 			return selectionMap;
 		}
-		Selection selection = getSelection(sign, operatorId);
+		Selection selection = getSelection(sign, operatorIds);
 		if (selection == null) {
 			return selectionMap;
 		}
 		SelectionService selectionService = SelectionServiceFactory.get();
 		if (SelectTypes.OPTION.getType().equals(selection.getType())) {
-			List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection.getId(), operatorId, values, valueKey);
+			List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection, values, valueKey);
 			if (selectionOptions == null) {
 				return selectionMap;
 			}
@@ -191,8 +195,8 @@ public class SelectionUtils {
 				}
 			}
 		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
-			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection.getId(), operatorId);
-			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorId);
+			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection);
+			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorIds);
 			FilterRequest filter = FilterRequest.build();
 			if (valueKey) {
 				if (values.size() == 1) {

@@ -4,11 +4,16 @@ import static net.saisimon.agtms.core.constant.Constant.Operator.EXISTS;
 import static net.saisimon.agtms.core.constant.Constant.Operator.GT;
 import static net.saisimon.agtms.core.constant.Constant.Operator.GTE;
 import static net.saisimon.agtms.core.constant.Constant.Operator.IN;
+import static net.saisimon.agtms.core.constant.Constant.Operator.LNREGEX;
+import static net.saisimon.agtms.core.constant.Constant.Operator.LREGEX;
 import static net.saisimon.agtms.core.constant.Constant.Operator.LT;
 import static net.saisimon.agtms.core.constant.Constant.Operator.LTE;
 import static net.saisimon.agtms.core.constant.Constant.Operator.NE;
 import static net.saisimon.agtms.core.constant.Constant.Operator.NIN;
+import static net.saisimon.agtms.core.constant.Constant.Operator.NREGEX;
 import static net.saisimon.agtms.core.constant.Constant.Operator.REGEX;
+import static net.saisimon.agtms.core.constant.Constant.Operator.RNREGEX;
+import static net.saisimon.agtms.core.constant.Constant.Operator.RREGEX;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -200,8 +205,23 @@ public class JpaFilterUtils {
 						predicate = criteriaBuilder.greaterThanOrEqualTo(buildExpression(root, key), value.toString());
 					}
 					break;
+				case LREGEX:
+					predicate = criteriaBuilder.like(buildExpression(root, key), "%" + value.toString());
+					break;
+				case RREGEX:
+					predicate = criteriaBuilder.like(buildExpression(root, key), value.toString() + "%");
+					break;
 				case REGEX:
 					predicate = criteriaBuilder.like(buildExpression(root, key), "%" + value.toString() + "%");
+					break;
+				case LNREGEX:
+					predicate = criteriaBuilder.notLike(buildExpression(root, key), "%" + value.toString());
+					break;
+				case RNREGEX:
+					predicate = criteriaBuilder.notLike(buildExpression(root, key), value.toString() + "%");
+					break;
+				case NREGEX:
+					predicate = criteriaBuilder.notLike(buildExpression(root, key), "%" + value.toString() + "%");
 					break;
 				case NE:
 					predicate = criteriaBuilder.notEqual(buildExpression(root, key), value);
@@ -234,7 +254,7 @@ public class JpaFilterUtils {
 		}
 		return predicate;
 	}
-	
+
 	private static <Y, T> Expression<Y> buildExpression(Root<T> root, String key) {
 		String[] ks = key.split("\\.");
 		if (ks.length > 1) {
@@ -305,9 +325,29 @@ public class JpaFilterUtils {
 					expression.append(key).append(" >= ?");
 					statement.addArgs(value);
 					break;
+				case LREGEX:
+					expression.append(key).append(" LIKE ?");
+					statement.addArgs("%" + value.toString());
+					break;
+				case RREGEX:
+					expression.append(key).append(" LIKE ?");
+					statement.addArgs(value.toString() + "%");
+					break;
 				case REGEX:
 					expression.append(key).append(" LIKE ?");
-					statement.addArgs("%" + value + "%");
+					statement.addArgs("%" + value.toString() + "%");
+					break;
+				case LNREGEX:
+					expression.append(key).append(" NOT LIKE ?");
+					statement.addArgs("%" + value.toString());
+					break;
+				case RNREGEX:
+					expression.append(key).append(" NOT LIKE ?");
+					statement.addArgs(value.toString() + "%");
+					break;
+				case NREGEX:
+					expression.append(key).append(" NOT LIKE ?");
+					statement.addArgs("%" + value.toString() + "%");
 					break;
 				case NE:
 					expression.append(key).append(" <> ?");

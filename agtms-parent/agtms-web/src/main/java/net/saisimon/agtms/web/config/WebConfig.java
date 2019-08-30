@@ -12,16 +12,17 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import net.saisimon.agtms.core.generate.DomainGenerater;
 import net.saisimon.agtms.core.property.AgtmsProperties;
-import net.saisimon.agtms.web.config.runner.InitRunner;
+import net.saisimon.agtms.web.config.interceptor.ResourceInterceptor;
 import net.sf.ehcache.config.ConfigurationFactory;
 
 /**
- * web 配置
+ * Web 配置
  * 
  * @author saisimon
  *
@@ -103,29 +104,50 @@ public class WebConfig implements WebMvcConfigurer {
 		return new EhCacheCacheManager(net.sf.ehcache.CacheManager.create(ConfigurationFactory.parseConfiguration()));
 	}
 	
+	/**
+	 * @return
+	 */
 	@Bean
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
 	
 	/**
-	 * 初始化操作
+	 * AGTMS 属性对象
 	 * 
 	 * @return
 	 */
-	@Bean
-	public InitRunner initRunner() {
-		return new InitRunner();
-	}
-	
 	@Bean
 	public AgtmsProperties agtmsProperties() {
 		return new AgtmsProperties();
 	}
 	
+	/**
+	 * 对象生成器
+	 * 
+	 * @return
+	 */
 	@Bean
 	public DomainGenerater domainGenerater() {
 		return new DomainGenerater(agtmsProperties());
+	}
+	
+	/**
+	 * 资源权限拦截器
+	 * 
+	 * @return
+	 */
+	@Bean
+	public ResourceInterceptor resourceInterceptor() {
+		return new ResourceInterceptor();
+	}
+	
+	/**
+	 * 添加拦截器
+	 */
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(resourceInterceptor());
 	}
 	
 }

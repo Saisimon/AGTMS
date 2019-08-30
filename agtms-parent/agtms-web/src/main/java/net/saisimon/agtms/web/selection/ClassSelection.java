@@ -8,6 +8,12 @@ import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 类型下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class ClassSelection extends AbstractSelection<String> {
 	

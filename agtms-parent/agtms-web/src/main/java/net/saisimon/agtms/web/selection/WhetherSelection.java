@@ -8,6 +8,12 @@ import cn.hutool.core.map.MapUtil;
 import net.saisimon.agtms.core.enums.Whether;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 
+/**
+ * 是否下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class WhetherSelection extends AbstractSelection<Integer> {
 

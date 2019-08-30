@@ -9,8 +9,6 @@ import java.util.Set;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -25,6 +23,7 @@ import net.saisimon.agtms.core.annotation.International;
 import net.saisimon.agtms.core.dto.PageResult;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.SimpleResult;
+import net.saisimon.agtms.web.service.common.MessageService;
 
 /**
  * 全局响应消息国际化
@@ -37,7 +36,7 @@ import net.saisimon.agtms.core.dto.SimpleResult;
 public class InternationalResponseBodyAdvice extends AbstractMappingJacksonResponseBodyAdvice {
 	
 	@Autowired
-	private MessageSource messageSource;
+	private MessageService messageService;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -49,13 +48,13 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 			SimpleResult<Object> simpleResult = new SimpleResult<>();
 			simpleResult.setCode(result.getCode());
 			simpleResult.setData(result.getData());
-			simpleResult.setMessage(messageSource.getMessage(result.getMessage(), result.getMessageArgs(), LocaleContextHolder.getLocale()));
+			simpleResult.setMessage(messageService.getMessage(result.getMessage(), result.getMessageArgs()));
 			resultObj = simpleResult;
 		} else if (resultObj instanceof PageResult) {
 			PageResult<Object> result = (PageResult<Object>) resultObj;
 			PageResult<Object> pageResult = new PageResult<>();
 			pageResult.setCode(result.getCode());
-			pageResult.setMessage(messageSource.getMessage(result.getMessage(), result.getMessageArgs(), LocaleContextHolder.getLocale()));
+			pageResult.setMessage(messageService.getMessage(result.getMessage(), result.getMessageArgs()));
 			pageResult.setRows(result.getRows());
 			pageResult.setMore(result.getMore());
 			resultObj = pageResult;
@@ -63,7 +62,7 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 			Result result = (Result) resultObj;
 			Result res = new Result();
 			res.setCode(result.getCode());
-			res.setMessage(messageSource.getMessage(result.getMessage(), result.getMessageArgs(), LocaleContextHolder.getLocale()));
+			res.setMessage(messageService.getMessage(result.getMessage(), result.getMessageArgs()));
 			resultObj = res;
 		}
 		bodyContainer.setValue(international(resultObj));
@@ -146,8 +145,7 @@ public class InternationalResponseBodyAdvice extends AbstractMappingJacksonRespo
 	
 	private Object internationalSimpleProperty(Object obj) {
 		if (obj instanceof String) {
-			String code = (String) obj;
-			return messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
+			return messageService.getMessage((String) obj);
 		}
 		return obj;
 	}

@@ -1,8 +1,8 @@
 <template>
     <li class="treeview" :class="{'menu-open': hasMenuOpen}" :key=tree.id>
-        <a href="javascript:void(0);" @click="openMenu" :title="tree.title">
+        <a href="javascript:void(0);" @click="openMenu" :title="tree.name">
             <i class="fa fa-fw text-light" :class="'fa-' + tree.icon"></i>
-            <span class="text-light ml-1">{{tree.title}}</span>
+            <span class="text-light ml-1">{{tree.name}}</span>
             <span class="pull-right-container">
                 <i class="fa fa-angle-left text-light pull-right"></i>
             </span>
@@ -37,12 +37,12 @@ export default {
     },
     computed: {
         hasMenuOpen: function() {
-            return this.menuOpen && this.$store.state.navigation.openTree;
+            return this.menuOpen && this.$store.state.base.openTree;
         }
     },
     methods: {
         openMenu: function() {
-            if (this.$store.state.navigation.openTree) {
+            if (this.$store.state.base.openTree) {
                 this.menuOpen = !this.menuOpen;
             }
         }

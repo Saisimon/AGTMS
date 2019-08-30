@@ -23,7 +23,7 @@ export default {
     width: 100%;
     height: 30px;
     line-height: 30px;
-    z-index: 1000px;
+    z-index: 1000;
     font-size: 12px;
     font-weight: 100;
 }

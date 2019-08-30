@@ -1,9 +1,13 @@
 package net.saisimon.agtms.remote.service;
 
+import java.util.Collection;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
@@ -26,6 +30,16 @@ public class GenerateRemoteService implements GenerateService {
 	@Override
 	public Sign sign() {
 		return REMOTE_SIGN;
+	}
+	
+	@Override
+	public Domain findById(Long id, Collection<Long> operatorIds) {
+		if (id == null) {
+			return null;
+		}
+		AbstractGenerateRepository repository = getRepository();
+		Assert.notNull(repository, "repository can not be null");
+		return repository.find(id).orElse(null);
 	}
 
 	@Override

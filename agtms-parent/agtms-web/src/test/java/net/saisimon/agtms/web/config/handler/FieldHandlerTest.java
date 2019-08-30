@@ -2,6 +2,11 @@ package net.saisimon.agtms.web.config.handler;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
@@ -11,11 +16,20 @@ import net.saisimon.agtms.web.config.handler.field.EmailFieldHandler;
 import net.saisimon.agtms.web.config.handler.field.LinkFieldHandler;
 import net.saisimon.agtms.web.config.handler.field.SelectionFieldHandler;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR"})
+@AutoConfigureMockMvc
 public class FieldHandlerTest {
+	
+	@Autowired
+	private EmailFieldHandler emailFieldHandler;
+	@Autowired
+	private LinkFieldHandler linkFieldHandler;
+	@Autowired
+	private SelectionFieldHandler selectionFieldHandler;
 	
 	@Test
 	public void testEmailFieldHandler() {
-		EmailFieldHandler emailFieldHandler = new EmailFieldHandler();
 		Template template = new Template();
 		TemplateField field = new TemplateField();
 		Object value = null;
@@ -37,7 +51,6 @@ public class FieldHandlerTest {
 	
 	@Test
 	public void testLinkFieldHandler() {
-		LinkFieldHandler linkFieldHandler = new LinkFieldHandler();
 		Template template = new Template();
 		TemplateField field = new TemplateField();
 		Object value = null;
@@ -59,7 +72,6 @@ public class FieldHandlerTest {
 	
 	@Test
 	public void testSelectionFieldHandler() {
-		SelectionFieldHandler selectionFieldHandler = new SelectionFieldHandler();
 		Template template = new Template();
 		TemplateField field = new TemplateField();
 		Object value = null;

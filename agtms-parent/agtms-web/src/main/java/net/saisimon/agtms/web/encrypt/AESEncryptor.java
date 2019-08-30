@@ -7,6 +7,12 @@ import net.saisimon.agtms.core.encrypt.Encryptor;
 import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.util.AuthUtils;
 
+/**
+ * AES 对称加密器
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class AESEncryptor implements Encryptor {
 	

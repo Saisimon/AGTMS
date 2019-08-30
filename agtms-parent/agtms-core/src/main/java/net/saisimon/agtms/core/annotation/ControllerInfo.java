@@ -17,4 +17,6 @@ public @interface ControllerInfo {
 	
 	String value();
 	
+	String link() default "";
+	
 }

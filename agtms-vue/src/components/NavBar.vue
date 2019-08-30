@@ -283,7 +283,7 @@ export default {
             window.location.reload();
         },
         toggleBars: function() {
-            var openTree = this.$store.state.navigation.openTree;
+            var openTree = this.$store.state.base.openTree;
             this.$store.commit('changeOpenTree', !openTree);
         },
         changePasswordValue: function() {

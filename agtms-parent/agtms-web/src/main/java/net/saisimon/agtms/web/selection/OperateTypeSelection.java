@@ -9,6 +9,12 @@ import net.saisimon.agtms.core.enums.OperateTypes;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 操作类型下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class OperateTypeSelection extends AbstractSelection<Integer> {
 	

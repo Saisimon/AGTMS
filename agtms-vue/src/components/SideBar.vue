@@ -32,7 +32,7 @@ export default {
     },
     computed: {
         menuTree: function() {
-            return this.filterTree(this.search.toLowerCase(), this.$store.state.navigation.tree);
+            return this.filterTree(this.search.toLowerCase(), this.$store.state.base.tree);
         }
     },
     methods: {
@@ -70,7 +70,7 @@ export default {
                     menuTree[key] = value;
                 }
             }
-            if (tree.id == -1 || tree.title.toLowerCase().indexOf(search) !== -1 || needPush) {
+            if (tree.id == -1 || tree.name.toLowerCase().indexOf(search) !== -1 || needPush) {
                 return menuTree;
             } else {
                 return null;

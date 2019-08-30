@@ -107,12 +107,6 @@ public class User implements Serializable {
 	private Date lastLoginTime;
 	
 	/**
-	 * 管理员
-	 */
-	@Column
-	private boolean admin;
-	
-	/**
 	 * 用户状态
 	 * 
 	 * @see net.saisimon.agtms.core.enums.UserStatuses

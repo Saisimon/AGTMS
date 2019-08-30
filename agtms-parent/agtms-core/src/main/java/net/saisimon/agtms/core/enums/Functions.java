@@ -9,37 +9,49 @@ package net.saisimon.agtms.core.enums;
 public enum Functions {
 	
 	/**
-	 * 	查看(0000000)
+	 * 	查看(1)
 	 */
-	VIEW(0, "view"),
+	VIEW(1, "view"),
 	/**
-	 * 创建(0000001)
+	 * 创建(10)
 	 */
-	CREATE(1, "create"),
+	CREATE(2, "create"),
 	/**
-	 * 编辑(0000010)
+	 * 编辑(100)
 	 */
-	EDIT(2, "edit"),
+	EDIT(4, "edit"),
 	/**
-	 * 批量编辑(0000100)
+	 * 批量编辑(1000)
 	 */
-	BATCH_EDIT(4, "batchEdit"),
+	BATCH_EDIT(8, "batchEdit"),
 	/**
-	 * 删除(0001000)
+	 * 删除(10000)
 	 */
-	REMOVE(8, "remove"),
+	REMOVE(16, "remove"),
 	/**
-	 * 批量删除(0010000)
+	 * 批量删除(100000)
 	 */
-	BATCH_REMOVE(16, "batchRemove"),
+	BATCH_REMOVE(32, "batchRemove"),
 	/**
-	 * 批量导出(0100000)
+	 * 批量导出(1000000)
 	 */
-	EXPORT(32, "export"),
+	EXPORT(64, "export"),
 	/**
-	 * 批量导入(1000000)
+	 * 批量导入(10000000)
 	 */
-	IMPORT(64, "import");
+	IMPORT(128, "import"),
+	/**
+	 * 锁定(100000000)
+	 */
+	LOCK(256, "lock"),
+	/**
+	 * 解锁(1000000000)
+	 */
+	UNLOCK(512, "unlock"),
+	/**
+	 * 重置密码(10000000000)
+	 */
+	RESET_PASSWORD(1024, "reset.password");
 	
 	/**
 	 * 功能代码

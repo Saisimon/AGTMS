@@ -4,11 +4,16 @@ import static net.saisimon.agtms.core.constant.Constant.Operator.EXISTS;
 import static net.saisimon.agtms.core.constant.Constant.Operator.GT;
 import static net.saisimon.agtms.core.constant.Constant.Operator.GTE;
 import static net.saisimon.agtms.core.constant.Constant.Operator.IN;
+import static net.saisimon.agtms.core.constant.Constant.Operator.LNREGEX;
+import static net.saisimon.agtms.core.constant.Constant.Operator.LREGEX;
 import static net.saisimon.agtms.core.constant.Constant.Operator.LT;
 import static net.saisimon.agtms.core.constant.Constant.Operator.LTE;
 import static net.saisimon.agtms.core.constant.Constant.Operator.NE;
 import static net.saisimon.agtms.core.constant.Constant.Operator.NIN;
+import static net.saisimon.agtms.core.constant.Constant.Operator.NREGEX;
 import static net.saisimon.agtms.core.constant.Constant.Operator.REGEX;
+import static net.saisimon.agtms.core.constant.Constant.Operator.RNREGEX;
+import static net.saisimon.agtms.core.constant.Constant.Operator.RREGEX;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,11 +49,15 @@ public class MongodbFilterUtils {
 		Criteria criteria = new Criteria();
 		if (!CollectionUtils.isEmpty(filterRequest.getAndFilters())) {
 			List<Criteria> andCriterias = parseFilters(filterRequest.getAndFilters());
-			criteria.andOperator(andCriterias.toArray(new Criteria[andCriterias.size()]));
+			if (!CollectionUtils.isEmpty(andCriterias)) {
+				criteria.andOperator(andCriterias.toArray(new Criteria[andCriterias.size()]));
+			}
 		}
 		if (!CollectionUtils.isEmpty(filterRequest.getOrFilters())) {
 			List<Criteria> orCriterias = parseFilters(filterRequest.getOrFilters());
-			criteria.orOperator(orCriterias.toArray(new Criteria[orCriterias.size()]));
+			if (!CollectionUtils.isEmpty(orCriterias)) {
+				criteria.orOperator(orCriterias.toArray(new Criteria[orCriterias.size()]));
+			}
 		}
 		return criteria;
 	}
@@ -94,8 +103,23 @@ public class MongodbFilterUtils {
 			case GTE:
 				criteria.gte(value);
 				break;
+			case LREGEX:
+				criteria.regex(Pattern.compile(value.toString() + "$", Pattern.CASE_INSENSITIVE));
+				break;
+			case RREGEX:
+				criteria.regex(Pattern.compile("^" + value.toString(), Pattern.CASE_INSENSITIVE));
+				break;
 			case REGEX:
 				criteria.regex(Pattern.compile(Pattern.quote(value.toString()), Pattern.CASE_INSENSITIVE));
+				break;
+			case LNREGEX:
+				criteria.not().regex(Pattern.compile(value.toString()  + "$", Pattern.CASE_INSENSITIVE));
+				break;
+			case RNREGEX:
+				criteria.not().regex(Pattern.compile("^" + value.toString(), Pattern.CASE_INSENSITIVE));
+				break;
+			case NREGEX:
+				criteria.not().regex(Pattern.compile(Pattern.quote(value.toString()), Pattern.CASE_INSENSITIVE));
 				break;
 			case NE:
 				criteria.ne(value);

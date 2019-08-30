@@ -9,6 +9,12 @@ import net.saisimon.agtms.core.enums.FileTypes;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 文件类型下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class FileTypeSelection extends AbstractSelection<String> {
 	

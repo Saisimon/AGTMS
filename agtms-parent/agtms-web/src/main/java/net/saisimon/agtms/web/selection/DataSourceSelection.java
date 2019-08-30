@@ -10,6 +10,12 @@ import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 
+/**
+ * 数据涞源下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class DataSourceSelection extends AbstractSelection<String> {
 

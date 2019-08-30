@@ -1,12 +1,16 @@
-package net.saisimon.agtms.web.controller.base;
+package net.saisimon.agtms.web.service.base;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -32,20 +36,27 @@ import net.saisimon.agtms.core.domain.tag.MultipleSelect;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
-import net.saisimon.agtms.web.dto.resp.NavigationTree;
-import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
+import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.web.service.common.MessageService;
 
 /**
- * 主列表页面抽象控制器
+ * 主列表页面抽象服务
  * 
  * @author saisimon
  *
  */
 @Slf4j
-public abstract class AbstractMainController extends BaseController {
+public abstract class AbstractMainService {
 	
 	protected static final String FILTER_SUFFIX = "_filter";
 	protected static final String PAGEABLE_SUFFIX = "_pageable";
+	
+	@Autowired
+	protected MessageService messageService;
+	@Autowired
+	protected HttpServletRequest request;
+	@Autowired
+	protected HttpServletResponse response;
 	
 	/**
 	 * 前端头信息配置
@@ -95,7 +106,7 @@ public abstract class AbstractMainController extends BaseController {
 	 * @param key 关键词
 	 * @return 功能信息
 	 */
-	protected List<String> functions(Object key) {
+	protected List<Functions> functions(Object key) {
 		return null;
 	}
 	
@@ -159,7 +170,10 @@ public abstract class AbstractMainController extends BaseController {
 		Pageable pageable = pageable();
 		previousPageable(pageable, sign + PAGEABLE_SUFFIX);
 		mainGrid.setPageable(pageable);
-		mainGrid.setFunctions(functions(key));
+		List<Functions> functions = functions(key);
+		if (functions != null) {
+			mainGrid.setFunctions(functions.stream().map(Functions::getFunction).collect(Collectors.toList()));
+		}
 		return mainGrid;
 	}
 	
@@ -198,30 +212,6 @@ public abstract class AbstractMainController extends BaseController {
 		return Pageable.builder().pageIndex(1).pageSize(10).build();
 	}
 	
-	protected List<NavigationTree> internationNavigationTrees(List<NavigationTree> trees) {
-		if (CollectionUtils.isEmpty(trees)) {
-			return null;
-		}
-		List<NavigationTree> internationNavigationTrees = new ArrayList<>();
-		for (NavigationTree tree : trees) {
-			try {
-				NavigationTree cloneTree = (NavigationTree) tree.clone();
-				cloneTree.setTitle(getMessage(cloneTree.getTitle()));
-				if (!CollectionUtils.isEmpty(cloneTree.getLinks())) {
-					for (NavigationLink link : cloneTree.getLinks()) {
-						link.setName(getMessage(link.getName()));
-					}
-				}
-				cloneTree.setChildrens(internationNavigationTrees(cloneTree.getChildrens()));
-				internationNavigationTrees.add(cloneTree);
-			} catch (CloneNotSupportedException e) {
-				log.error("clone navigation tree failed", e);
-				internationNavigationTrees.add(tree);
-			}
-		}
-		return internationNavigationTrees;
-	}
-	
 	private List<Filter> internationFilters(List<Filter> filters) {
 		if (CollectionUtils.isEmpty(filters)) {
 			return null;
@@ -251,17 +241,17 @@ public abstract class AbstractMainController extends BaseController {
 		if (filterSelect instanceof SingleSelect) {
 			SingleSelect<T> filterSingleSelect = (SingleSelect<T>) filterSelect;
 			Option<T> selected = filterSingleSelect.getSelected();
-			selected.setText(getMessage(selected.getText()));
+			selected.setText(messageService.getMessage(selected.getText()));
 		} else if (filterSelect instanceof MultipleSelect) {
 			MultipleSelect<T> filterMultipleSelect = (MultipleSelect<T>) filterSelect;
 			List<Option<T>> selected = filterMultipleSelect.getSelected();
 			for (Option<T> selectedOption : selected) {
-				selectedOption.setText(getMessage(selectedOption.getText()));
+				selectedOption.setText(messageService.getMessage(selectedOption.getText()));
 			}
 		}
 		List<Option<T>> options = filterSelect.getOptions();
 		for (Option<T> option : options) {
-			option.setText(getMessage(option.getText()));
+			option.setText(messageService.getMessage(option.getText()));
 		}
 	}
 	

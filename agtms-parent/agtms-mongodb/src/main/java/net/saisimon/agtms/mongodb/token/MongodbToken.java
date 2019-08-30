@@ -40,8 +40,6 @@ public class MongodbToken implements Token, MongodbOrder {
 			token.setExpireTime(AuthUtils.getExpireTime());
 			userTokenMongodbRepository.saveOrUpdate(token);
 		}
-		User user = userOptional.get();
-		token.setAdmin(user.isAdmin());
 		return token;
 	}
 

@@ -1,6 +1,7 @@
 package net.saisimon.agtms.core.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -18,13 +19,11 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
-import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.FieldHandlerFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
-import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.handler.FieldHandler;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.spring.SpringContext;
@@ -42,11 +41,11 @@ public class TemplateUtils {
 	 * 获取模板对象
 	 * 
 	 * @param key 模板唯一标识
-	 * @param operatorId 用户ID
+	 * @param operatorIds 用户ID集合
 	 * @return 模板对象
 	 */
-	public static Template getTemplate(Object key, Long operatorId) {
-		if (key == null || operatorId == null) {
+	public static Template getTemplate(Object key, Collection<Long> operatorIds) {
+		if (key == null) {
 			return null;
 		}
 		String sign = key.toString();
@@ -58,11 +57,7 @@ public class TemplateUtils {
 			return null;
 		}
 		Template template = optional.get();
-		UserToken userToken = TokenFactory.get().getToken(operatorId, false);
-		if (userToken != null && userToken.isAdmin()) {
-			return template;
-		}
-		if (operatorId.equals(template.getOperatorId())) {
+		if (operatorIds.contains(template.getOperatorId())) {
 			return template;
 		}
 		return null;
@@ -71,7 +66,7 @@ public class TemplateUtils {
 	/**
 	 * 获取远程模板对象
 	 * 
-	 * @param sign 模板唯一标识
+	 * @param key 模板唯一标识
 	 * @return 模板对象
 	 */
 	public static Template getRemoteTemplate(String key) {
@@ -365,17 +360,28 @@ public class TemplateUtils {
 	 * @param template 模板对象
 	 * @return 功能名称集合
 	 */
-	public static List<String> getFunctions(Template template) {
-		List<String> functions = new ArrayList<>();
+	public static List<Functions> getFunctions(Template template) {
+		List<Functions> functions = new ArrayList<>();
 		if (template == null || template.getFunctions() == null || template.getFunctions() == 0) {
 			return functions;
 		}
-		for (Functions func : Functions.values()) {
-			if (hasFunction(template.getFunctions(), func)) {
-				functions.add(func.getFunction());
+		for (Functions function : Functions.values()) {
+			if (hasFunction(template.getFunctions(), function)) {
+				functions.add(function);
 			}
 		}
 		return functions;
+	}
+	
+	public static int getFunctions(List<Functions> functions) {
+		if (functions == null) {
+			return 0;
+		}
+		int func = 0;
+		for (Functions function : functions) {
+			func += function.getCode();
+		}
+		return func;
 	}
 	
 	/**
@@ -385,11 +391,11 @@ public class TemplateUtils {
 	 * @param func 待判断的功能
 	 * @return 是否包含指定的功能
 	 */
-	public static boolean hasFunction(Template template, Functions func) {
-		if (template == null || template.getFunctions() == null || func == null) {
+	public static boolean hasFunction(Template template, Functions function) {
+		if (template == null || template.getFunctions() == null || function == null) {
 			return false;
 		}
-		return hasFunction(template.getFunctions(), func);
+		return hasFunction(template.getFunctions(), function);
 	}
 	
 	/**
@@ -399,19 +405,29 @@ public class TemplateUtils {
 	 * @param funcs 待判断的功能集合
 	 * @return 是否包含指定的功能集合中的某一个
 	 */
-	public static boolean hasOneOfFunctions(Template template, Functions... funcs) {
-		if (template == null || template.getFunctions() == null || template.getFunctions() == 0 || funcs == null) {
+	public static boolean hasOneOfFunctions(Template template, Functions... functions) {
+		if (template == null || template.getFunctions() == null || template.getFunctions() == 0 || functions == null) {
 			return false;
 		}
-		for (Functions func : funcs) {
-			if (hasFunction(template.getFunctions(), func)) {
+		for (Functions function : functions) {
+			if (hasFunction(template.getFunctions(), function)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	private static boolean hasFunction(Integer function, Functions func) {
+	/**
+	 * 是否存在指定功能
+	 * 
+	 * @param function
+	 * @param func
+	 * @return
+	 */
+	public static boolean hasFunction(int function, Functions func) {
+		if (func == null) {
+			return false;
+		}
 		return func.getCode().equals((function & func.getCode()));
 	}
 	

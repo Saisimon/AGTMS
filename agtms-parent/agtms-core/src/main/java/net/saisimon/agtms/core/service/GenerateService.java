@@ -1,5 +1,6 @@
 package net.saisimon.agtms.core.service;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,15 +71,15 @@ public interface GenerateService {
 		return repository.count(filter);
 	}
 	
-	default Boolean checkExist(Domain domain, Long operatorId) {
+	default Boolean checkExist(Domain domain, Collection<Long> operatorIds) {
 		Assert.notNull(domain, "domain can not be null");
-		Assert.notNull(operatorId, "operatorId can not be null");
+		Assert.notNull(operatorIds, "operatorId can not be null");
 		AbstractGenerateRepository repository = getRepository();
 		Assert.notNull(repository, "repository can not be null");
 		Template template = template();
 		Set<String> uniques = TemplateUtils.getUniques(template);
 		if (!CollectionUtils.isEmpty(uniques)) {
-			FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, operatorId);
+			FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, operatorIds, Constant.Operator.IN);
 			Object id = domain.getField(Constant.ID);
 			if (id != null) {
 				filter.and(Constant.ID, id, Operator.NE);
@@ -134,8 +135,8 @@ public interface GenerateService {
 		repository.delete(entity);
 	}
 	
-	default Domain findById(Long id, Long operatorId) {
-		if (id == null || operatorId == null) {
+	default Domain findById(Long id, Collection<Long> operatorIds) {
+		if (id == null || CollectionUtils.isEmpty(operatorIds)) {
 			return null;
 		}
 		AbstractGenerateRepository repository = getRepository();
@@ -144,10 +145,7 @@ public interface GenerateService {
 		if (optional.isPresent()) {
 			Domain domain = optional.get();
 			Object obj = domain.getField(Constant.OPERATORID);
-			if (obj == null) {
-				return domain;
-			}
-			if (operatorId.toString().equals(obj.toString())) {
+			if (obj instanceof Long && operatorIds.contains((Long) obj)) {
 				return domain;
 			}
 		}

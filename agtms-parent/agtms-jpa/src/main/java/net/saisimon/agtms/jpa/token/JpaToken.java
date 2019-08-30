@@ -43,8 +43,6 @@ public class JpaToken implements Token, JpaOrder {
 			token.setExpireTime(AuthUtils.getExpireTime());
 			userTokenJpaRepository.saveOrUpdate(token);
 		}
-		User user = userOptional.get();
-		token.setAdmin(user.isAdmin());
 		return token;
 	}
 

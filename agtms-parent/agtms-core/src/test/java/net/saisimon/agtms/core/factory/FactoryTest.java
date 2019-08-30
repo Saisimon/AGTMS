@@ -31,11 +31,7 @@ public class FactoryTest {
 		GenerateServiceFactory.build(template);
 	}
 	
-	@Test(expected = AgtmsException.class)
-	public void testNavigationServiceFactory() {
-		NavigationServiceFactory.get();
-	}
-	
+	@Test
 	public void testOperationHandlerFactory() {
 		Assert.assertNull(OperationHandlerFactory.getHandler(null));
 	}

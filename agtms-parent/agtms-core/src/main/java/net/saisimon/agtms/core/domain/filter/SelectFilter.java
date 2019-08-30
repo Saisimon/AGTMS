@@ -1,6 +1,7 @@
 package net.saisimon.agtms.core.domain.filter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import lombok.Getter;
@@ -54,11 +55,11 @@ public class SelectFilter<T> extends FieldFilter {
 		return selectFilter;
 	}
 	
-	public static FieldFilter selectSearchableFilter(Object selected, String type, String sign, Long operatorId) {
+	public static FieldFilter selectSearchableFilter(Object selected, String type, String sign, Collection<Long> operatorIds) {
 		SelectFilter<Object> selectFilter = new SelectFilter<>(false);
 		Select<Object> select = SingleSelect.select(selected, new ArrayList<>(), new ArrayList<>());
 		select.setType(type);
-		select.setOptions(SelectionUtils.getSelectionOptions(sign, null, operatorId));
+		select.setOptions(SelectionUtils.getSelectionOptions(sign, null, operatorIds));
 		selectFilter.setSelect(select);
 		selectFilter.setSearchable(true);
 		selectFilter.setSign(sign);

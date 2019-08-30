@@ -8,6 +8,8 @@ package net.saisimon.agtms.core.constant;
  */
 public class Constant {
 	
+	public static final Long SYSTEM_OPERATORID = 0L;
+	
 	public static final String MONGODBID = "_id";
 	public static final String ID = "id";
 	public static final String OPERATORID = "operatorId";
@@ -39,6 +41,11 @@ public class Constant {
 		public static final String GT = "$gt";
 		public static final String GTE = "$gte";
 		public static final String REGEX = "$regex";
+		public static final String LREGEX = "$lregex";
+		public static final String RREGEX = "$rregex";
+		public static final String NREGEX = "$nregex";
+		public static final String LNREGEX = "$lnregex";
+		public static final String RNREGEX = "$rnregex";
 		public static final String IN = "$in";
 		public static final String NIN = "$nin";
 		public static final String EXISTS = "$exists";

@@ -9,6 +9,12 @@ import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 处理状态下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class HandleStatusSelection extends AbstractSelection<Integer> {
 	

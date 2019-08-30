@@ -10,6 +10,12 @@ import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 
+/**
+ * 任务类型下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class TaskTypeSelection extends AbstractSelection<String> {
 	

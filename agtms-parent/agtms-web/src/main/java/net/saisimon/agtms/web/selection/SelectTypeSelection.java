@@ -9,6 +9,12 @@ import net.saisimon.agtms.core.enums.SelectTypes;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 下拉列表内容来源类型下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class SelectTypeSelection extends AbstractSelection<Integer> {
 	

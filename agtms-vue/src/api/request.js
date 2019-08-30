@@ -40,6 +40,10 @@ export default function request(user, reqUrl, payload) {
                             path: '/signin?reply=' + encodeURIComponent(window.location.pathname + window.location.search)
                         });
                     }
+                } else if (error.response.status === 403) {
+                    router.push({
+                        path: '/404'
+                    });
                 } else if (error.response.status === 500) {
                     store.commit('showAlert', {
                         message: null

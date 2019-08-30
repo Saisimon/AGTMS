@@ -40,38 +40,38 @@ public class SelectionJpaService implements SelectionService, JpaOrder {
 	}
 	
 	@Override
-	public List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId) {
-		return selectionOptionJpaRepository.findBySelectionId(selectionId, null);
+	public List<SelectionOption> getSelectionOptions(Selection selection) {
+		return selectionOptionJpaRepository.findBySelectionId(selection.getId(), null);
 	}
 	
 	@Override
-	public List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId, Set<String> values, boolean isValue) {
+	public List<SelectionOption> getSelectionOptions(Selection selection, Set<String> values, boolean isValue) {
 		if (isValue) {
-			return selectionOptionJpaRepository.findBySelectionIdAndValueIn(selectionId, values);
+			return selectionOptionJpaRepository.findBySelectionIdAndValueIn(selection.getId(), values);
 		} else {
-			return selectionOptionJpaRepository.findBySelectionIdAndTextIn(selectionId, values);
+			return selectionOptionJpaRepository.findBySelectionIdAndTextIn(selection.getId(), values);
 		}
 	}
 	
 	@Override
-	public List<SelectionOption> searchSelectionOptions(Long selectionId, Long operatorId, String keyword, Integer size) {
+	public List<SelectionOption> searchSelectionOptions(Selection selection, String keyword, Integer size) {
 		Pageable pageable = PageRequest.of(0, size);
 		if (SystemUtils.isBlank(keyword)) {
-			return selectionOptionJpaRepository.findBySelectionId(selectionId, pageable);
+			return selectionOptionJpaRepository.findBySelectionId(selection.getId(), pageable);
 		} else {
-			return selectionOptionJpaRepository.findBySelectionIdAndTextContaining(selectionId, keyword, pageable);
+			return selectionOptionJpaRepository.findBySelectionIdAndTextContaining(selection.getId(), keyword, pageable);
 		}
 	}
 
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public void removeSelectionOptions(Long selectionId, Long operatorId) {
-		selectionOptionJpaRepository.deleteBySelectionId(selectionId);
+	public void removeSelectionOptions(Selection selection) {
+		selectionOptionJpaRepository.deleteBySelectionId(selection.getId());
 	}
 	
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public void saveSelectionOptions(List<SelectionOption> options, Long operatorId) {
+	public void saveSelectionOptions(List<SelectionOption> options, Selection selection) {
 		if (CollectionUtils.isEmpty(options)) {
 			return;
 		}
@@ -81,19 +81,19 @@ public class SelectionJpaService implements SelectionService, JpaOrder {
 	}
 	
 	@Override
-	public SelectionTemplate getSelectionTemplate(Long selectionId, Long operatorId) {
-		return selectionTemplateJpaRepository.findBySelectionId(selectionId);
+	public SelectionTemplate getSelectionTemplate(Selection selection) {
+		return selectionTemplateJpaRepository.findBySelectionId(selection.getId());
 	}
 
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public void removeSelectionTemplate(Long selectionId, Long operatorId) {
-		selectionTemplateJpaRepository.deleteBySelectionId(selectionId);
+	public void removeSelectionTemplate(Selection selection) {
+		selectionTemplateJpaRepository.deleteBySelectionId(selection.getId());
 	}
 
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public void saveSelectionTemplate(SelectionTemplate template, Long operatorId) {
+	public void saveSelectionTemplate(SelectionTemplate template, Selection selection) {
 		if (template == null) {
 			return;
 		}

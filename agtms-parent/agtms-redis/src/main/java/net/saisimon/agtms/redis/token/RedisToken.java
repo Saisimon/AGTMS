@@ -43,8 +43,6 @@ public class RedisToken implements RedisOrder, Token {
 			token.setExpireTime(AuthUtils.getExpireTime());
 			setToken(uid, token);
 		}
-		User user = userOptional.get();
-		token.setAdmin(user.isAdmin());
 		return token;
 	}
 

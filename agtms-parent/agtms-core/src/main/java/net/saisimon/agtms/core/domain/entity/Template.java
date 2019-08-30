@@ -47,16 +47,16 @@ public class Template implements Cloneable, Serializable {
 	private Long id;
 	
 	/**
-	 * 导航ID
-	 */
-	@Column
-	private Long navigationId;
-	
-	/**
 	 * 模板标题
 	 */
 	@Column(length=32, nullable=false)
 	private String title;
+	
+	/**
+	 * 位置路径
+	 */
+	@Column
+	private String path;
 	
 	/**
 	 * 模板支持的功能

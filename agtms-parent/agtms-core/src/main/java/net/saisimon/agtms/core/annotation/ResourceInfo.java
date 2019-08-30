@@ -5,14 +5,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import net.saisimon.agtms.core.enums.Functions;
+
 /**
- * 管理员	注解
+ * 资源信息注解
  * 
  * @author saisimon
  *
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Admin {
+public @interface ResourceInfo {
+	
+	Functions[] func();
 	
 }

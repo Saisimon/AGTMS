@@ -355,7 +355,7 @@ export default {
                 value: []
             },
             navigationField: {
-                name: 'navigationId',
+                name: 'path',
                 text: this.$t('navigation'),
                 required: true,
                 options: [],
@@ -517,7 +517,7 @@ export default {
                 return false;
             }
             template['title'] = title;
-            template['navigationId'] = this.navigationField.value.value;
+            template['path'] = this.navigationField.value.value;
             template['source'] = this.dataSourceField.value.value;
             var functions = this.functionField.value;
             var func = new Number(0);

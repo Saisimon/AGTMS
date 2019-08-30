@@ -41,55 +41,55 @@ public class SelectionShardingJpaService implements SelectionService, JpaOrder {
 	}
 	
 	@Override
-	public List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId) {
+	public List<SelectionOption> getSelectionOptions(Selection selection) {
 		try (HintManager hintManager = HintManager.getInstance()) {
-			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, operatorId);
-			return selectionOptionJpaRepository.findBySelectionId(selectionId, null);
+			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, selection.getOperatorId());
+			return selectionOptionJpaRepository.findBySelectionId(selection.getId(), null);
 		}
 	}
 	
 	@Override
-	public List<SelectionOption> getSelectionOptions(Long selectionId, Long operatorId, Set<String> values, boolean isValue) {
+	public List<SelectionOption> getSelectionOptions(Selection selection, Set<String> values, boolean isValue) {
 		try (HintManager hintManager = HintManager.getInstance()) {
-			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, operatorId);
+			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, selection.getOperatorId());
 			if (isValue) {
-				return selectionOptionJpaRepository.findBySelectionIdAndValueIn(selectionId, values);
+				return selectionOptionJpaRepository.findBySelectionIdAndValueIn(selection.getId(), values);
 			} else {
-				return selectionOptionJpaRepository.findBySelectionIdAndTextIn(selectionId, values);
+				return selectionOptionJpaRepository.findBySelectionIdAndTextIn(selection.getId(), values);
 			}
 		}
 	}
 	
 	@Override
-	public List<SelectionOption> searchSelectionOptions(Long selectionId, Long operatorId, String keyword, Integer size) {
+	public List<SelectionOption> searchSelectionOptions(Selection selection, String keyword, Integer size) {
 		try (HintManager hintManager = HintManager.getInstance()) {
-			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, operatorId);
+			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, selection.getOperatorId());
 			Pageable pageable = PageRequest.of(0, size);
 			if (SystemUtils.isBlank(keyword)) {
-				return selectionOptionJpaRepository.findBySelectionId(selectionId, pageable);
+				return selectionOptionJpaRepository.findBySelectionId(selection.getId(), pageable);
 			} else {
-				return selectionOptionJpaRepository.findBySelectionIdAndTextContaining(selectionId, keyword, pageable);
+				return selectionOptionJpaRepository.findBySelectionIdAndTextContaining(selection.getId(), keyword, pageable);
 			}
 		}
 	}
 
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public void removeSelectionOptions(Long selectionId, Long operatorId) {
+	public void removeSelectionOptions(Selection selection) {
 		try (HintManager hintManager = HintManager.getInstance()) {
-			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, operatorId);
-			selectionOptionJpaRepository.deleteBySelectionId(selectionId);
+			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, selection.getOperatorId());
+			selectionOptionJpaRepository.deleteBySelectionId(selection.getId());
 		}
 	}
 	
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public void saveSelectionOptions(List<SelectionOption> options, Long operatorId) {
+	public void saveSelectionOptions(List<SelectionOption> options, Selection selection) {
 		if (CollectionUtils.isEmpty(options)) {
 			return;
 		}
 		try (HintManager hintManager = HintManager.getInstance()) {
-			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, operatorId);
+			hintManager.addDatabaseShardingValue(SelectionOption.TABLE_NAME, selection.getOperatorId());
 			for (SelectionOption option : options) {
 				selectionOptionJpaRepository.save(option);
 			}
@@ -97,30 +97,30 @@ public class SelectionShardingJpaService implements SelectionService, JpaOrder {
 	}
 	
 	@Override
-	public SelectionTemplate getSelectionTemplate(Long selectionId, Long operatorId) {
+	public SelectionTemplate getSelectionTemplate(Selection selection) {
 		try (HintManager hintManager = HintManager.getInstance()) {
-			hintManager.addDatabaseShardingValue(SelectionTemplate.TABLE_NAME, operatorId);
-			return selectionTemplateJpaRepository.findBySelectionId(selectionId);
+			hintManager.addDatabaseShardingValue(SelectionTemplate.TABLE_NAME, selection.getOperatorId());
+			return selectionTemplateJpaRepository.findBySelectionId(selection.getId());
 		}
 	}
 
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public void removeSelectionTemplate(Long selectionId, Long operatorId) {
+	public void removeSelectionTemplate(Selection selection) {
 		try (HintManager hintManager = HintManager.getInstance()) {
-			hintManager.addDatabaseShardingValue(SelectionTemplate.TABLE_NAME, operatorId);
-			selectionTemplateJpaRepository.deleteBySelectionId(selectionId);
+			hintManager.addDatabaseShardingValue(SelectionTemplate.TABLE_NAME, selection.getOperatorId());
+			selectionTemplateJpaRepository.deleteBySelectionId(selection.getId());
 		}
 	}
 
 	@Transactional(rollbackOn=Exception.class)
 	@Override
-	public void saveSelectionTemplate(SelectionTemplate template, Long operatorId) {
+	public void saveSelectionTemplate(SelectionTemplate template, Selection selection) {
 		if (template == null) {
 			return;
 		}
 		try (HintManager hintManager = HintManager.getInstance()) {
-			hintManager.addDatabaseShardingValue(SelectionTemplate.TABLE_NAME, operatorId);
+			hintManager.addDatabaseShardingValue(SelectionTemplate.TABLE_NAME, selection.getOperatorId());
 			selectionTemplateJpaRepository.save(template);
 		}
 	}

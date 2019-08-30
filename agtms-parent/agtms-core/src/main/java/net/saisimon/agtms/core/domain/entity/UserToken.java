@@ -7,7 +7,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Getter;
@@ -42,9 +41,5 @@ public class UserToken implements Serializable {
 	 */
 	@Column
 	private Long expireTime;
-	
-	@Transient
-	@javax.persistence.Transient
-	private boolean admin;
 	
 }

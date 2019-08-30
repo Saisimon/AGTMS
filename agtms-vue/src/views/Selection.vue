@@ -38,7 +38,7 @@
                         </b-row>
                         <draggable v-model="selectionGrid.options" element='div'>
                             <transition-group v-for="(option, key) in selectionGrid.options" :key="key">
-                                <b-row class="mb-2 pl-4 pr-4" >
+                                <b-row class="mb-2 pl-4 pr-4" :key="key">
                                     <div class="draggable-option-div">
                                         <i class="fa fa-list"></i>
                                     </div>

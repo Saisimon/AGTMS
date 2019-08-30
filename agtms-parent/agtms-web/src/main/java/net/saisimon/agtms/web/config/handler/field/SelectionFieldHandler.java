@@ -1,5 +1,8 @@
 package net.saisimon.agtms.web.config.handler.field;
 
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.domain.entity.Selection;
@@ -12,15 +15,20 @@ import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
+import net.saisimon.agtms.web.service.user.UserInfoService;
 
 @Component
 public class SelectionFieldHandler extends AbstractFieldHandler {
+	
+	@Autowired
+	private UserInfoService userInfoSerivce;
 
 	@Override
 	public Result validate(Template template, TemplateField field, Object value) {
 		if (field != null && SystemUtils.isNotEmpty(value)) {
 			String selectionSign = field.selectionSign(template.getService());
-			Selection selection = SelectionUtils.getSelection(selectionSign, AuthUtils.getUid());
+			Set<Long> userIds = userInfoSerivce.getUserIds(AuthUtils.getUid());
+			Selection selection = SelectionUtils.getSelection(selectionSign, userIds);
 			if (selection == null) {
 				return ErrorMessage.Common.FIELD_FORMAT_NOT_CORRECT.messageArgs(field.getFieldTitle());
 			}

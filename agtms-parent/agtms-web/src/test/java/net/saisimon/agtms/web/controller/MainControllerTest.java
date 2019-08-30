@@ -1,5 +1,7 @@
 package net.saisimon.agtms.web.controller;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,6 +17,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.web.constant.ErrorMessage;
+import net.saisimon.agtms.web.dto.req.UserAuthParam;
 import net.saisimon.agtms.web.dto.req.UserPasswordChangeParam;
 
 @RunWith(SpringRunner.class)
@@ -28,8 +32,8 @@ public class MainControllerTest extends AbstractControllerTest {
 	/* UserMainController Start */
 	@Test
 	public void testUserMainGrid() throws Exception {
-		UserToken testToken = login("test", "test");
-		sendPost("/user/main/grid", null, testToken);
+		UserToken testToken = login("editor", "editor");
+		sendPost("/user/main/grid", null, testToken, status().isForbidden());
 		
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
 		sendPost("/user/main/grid", null, adminToken);
@@ -73,7 +77,7 @@ public class MainControllerTest extends AbstractControllerTest {
 		andFilter.put("key", "loginName");
 		andFilter.put("operator", "$in");
 		andFilter.put("type", "string");
-		andFilter.put("value", Arrays.asList("admin", "test"));
+		andFilter.put("value", Arrays.asList("admin", "editor"));
 		andFilters.add(andFilter);
 		body.put("andFilters", andFilters);
 		sendPost("/user/main/list", param, body, adminToken);
@@ -84,7 +88,7 @@ public class MainControllerTest extends AbstractControllerTest {
 		andFilter.put("key", "loginName");
 		andFilter.put("operator", "$in");
 		andFilter.put("type", "string");
-		andFilter.put("value", Arrays.asList("admin", "test"));
+		andFilter.put("value", Arrays.asList("admin", "editor"));
 		andFilters.add(andFilter);
 		body.put("andFilters", andFilters);
 		sendPost("/user/main/list", param, body, adminToken);
@@ -114,17 +118,20 @@ public class MainControllerTest extends AbstractControllerTest {
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
 		Map<String, String> param = new HashMap<>();
 		param.put("id", "0");
-		sendPost("/user/main/lock", param, adminToken);
+		sendPost("/user/main/lock", param, adminToken, ErrorMessage.User.ACCOUNT_NOT_EXIST.getCode());
 		
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		Long testUserId = testToken.getUserId();
 		param.put("id", testUserId.toString());
 		sendPost("/user/main/lock", param, adminToken);
 		
-		testToken = login("test", "test");
+		UserAuthParam userAuthParam = new UserAuthParam();
+		userAuthParam.setName("editor");
+		userAuthParam.setPassword("editor");
+		sendPost("/user/auth", userAuthParam, null, ErrorMessage.User.ACCOUNT_LOCKED.getCode());
 		
 		param.put("id", "0");
-		sendPost("/user/main/unlock", param, adminToken);
+		sendPost("/user/main/unlock", param, adminToken, ErrorMessage.User.ACCOUNT_NOT_EXIST.getCode());
 		
 		param.put("id", testUserId.toString());
 		sendPost("/user/main/unlock", param, adminToken);
@@ -135,28 +142,28 @@ public class MainControllerTest extends AbstractControllerTest {
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
 		Map<String, String> param = new HashMap<>();
 		param.put("id", "0");
-		sendPost("/user/main/reset/password", param, adminToken);
+		sendPost("/user/main/reset/password", param, adminToken, ErrorMessage.User.ACCOUNT_NOT_EXIST.getCode());
 		
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		Long testUserId = testToken.getUserId();
 		param.put("id", testUserId.toString());
 		sendPost("/user/main/reset/password", param, adminToken);
 		
-		testToken = login("test", agtmsProperties.getResetPassword());
+		testToken = login("editor", agtmsProperties.getResetPassword());
 		
 		UserPasswordChangeParam userPasswordChangeParam = new UserPasswordChangeParam();
-		userPasswordChangeParam.setNewPassword("test");
+		userPasswordChangeParam.setNewPassword("editor");
 		userPasswordChangeParam.setOldPassword(agtmsProperties.getResetPassword());
 		sendPost("/user/password/change", userPasswordChangeParam, testToken);
 		
-		testToken = login("test", "test");
+		testToken = login("editor", "editor");
 	}
 	/* UserMainController End */
 	
 	/* NavigationMainController Start */
 	@Test
 	public void testNavigationMainGrid() throws Exception {
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		sendPost("/navigation/main/grid", null, testToken);
 		
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
@@ -172,7 +179,7 @@ public class MainControllerTest extends AbstractControllerTest {
 		Map<String, Object> body = new HashMap<>();
 		sendPost("/navigation/main/list", param, body, adminToken);
 		
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		param = new HashMap<>();
 		param.put("index", "0");
 		param.put("size", "10");
@@ -181,20 +188,11 @@ public class MainControllerTest extends AbstractControllerTest {
 	}
 	
 	@Test
-	public void testNavigationMainSide() throws Exception {
-		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
-		sendPost("/navigation/main/side", null, null, adminToken);
-		
-		UserToken testToken = login("test", "test");
-		sendPost("/navigation/main/side", null, null, testToken);
-	}
-	
-	@Test
 	public void testNavigationMainBatchGrid() throws Exception {
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
 		sendPost("/navigation/main/batch/grid", null, null, adminToken);
 		
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		sendPost("/navigation/main/batch/grid", null, null, testToken);
 	}
 	/* NavigationMainController End */
@@ -202,7 +200,7 @@ public class MainControllerTest extends AbstractControllerTest {
 	/* TemplateMainController Start */
 	@Test
 	public void testTemplateMainGrid() throws Exception {
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		sendPost("/template/main/grid", null, testToken);
 		
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
@@ -218,7 +216,7 @@ public class MainControllerTest extends AbstractControllerTest {
 		Map<String, Object> body = new HashMap<>();
 		sendPost("/template/main/list", param, body, adminToken);
 		
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		param = new HashMap<>();
 		param.put("index", "0");
 		param.put("size", "10");
@@ -230,7 +228,7 @@ public class MainControllerTest extends AbstractControllerTest {
 	/* SelectionMainController Start */
 	@Test
 	public void testSelectionMainGrid() throws Exception {
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		sendPost("/selection/main/grid", null, testToken);
 		
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
@@ -246,7 +244,7 @@ public class MainControllerTest extends AbstractControllerTest {
 		Map<String, Object> body = new HashMap<>();
 		sendPost("/selection/main/list", param, body, adminToken);
 		
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		param = new HashMap<>();
 		param.put("index", "0");
 		param.put("size", "10");
@@ -258,7 +256,7 @@ public class MainControllerTest extends AbstractControllerTest {
 	/* TaskMainController Start */
 	@Test
 	public void testTaskMainGrid() throws Exception {
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		sendPost("/task/main/grid", null, testToken);
 		
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
@@ -274,7 +272,7 @@ public class MainControllerTest extends AbstractControllerTest {
 		Map<String, Object> body = new HashMap<>();
 		sendPost("/task/main/list", param, body, adminToken);
 		
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		param = new HashMap<>();
 		param.put("index", "0");
 		param.put("size", "10");
@@ -286,7 +284,7 @@ public class MainControllerTest extends AbstractControllerTest {
 	/* OperationMainController Start */
 	@Test
 	public void testOperationMainGrid() throws Exception {
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		sendPost("/operation/main/grid", null, testToken);
 		
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
@@ -302,7 +300,7 @@ public class MainControllerTest extends AbstractControllerTest {
 		Map<String, Object> body = new HashMap<>();
 		sendPost("/operation/main/list", param, body, adminToken);
 		
-		UserToken testToken = login("test", "test");
+		UserToken testToken = login("editor", "editor");
 		param = new HashMap<>();
 		param.put("index", "0");
 		param.put("size", "10");
@@ -310,42 +308,5 @@ public class MainControllerTest extends AbstractControllerTest {
 		sendPost("/operation/main/list", param, body, testToken);
 	}
 	/* OperationMainController End */
-	
-	/* ManagementMainController Start */
-	@Test
-	public void testManagementMainGrid() throws Exception {
-		UserToken testToken = login("test", "test");
-		sendPost("/management/main/1/grid", null, testToken);
-		
-		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
-		sendPost("/management/main/1/grid", null, adminToken);
-	}
-	
-	@Test
-	public void testManagementMainList() throws Exception {
-		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
-		Map<String, String> param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
-		Map<String, Object> body = new HashMap<>();
-		sendPost("/management/main/1/list", param, body, adminToken);
-		
-		UserToken testToken = login("test", "test");
-		param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
-		body = new HashMap<>();
-		sendPost("/management/main/1/list", param, body, testToken);
-	}
-	
-	@Test
-	public void testManagementMainBatchGrid() throws Exception {
-		UserToken testToken = login("test", "test");
-		sendPost("/management/main/1//batch/grid", null, testToken);
-		
-		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
-		sendPost("/management/main/1//batch/grid", null, adminToken);
-	}
-	/* ManagementMainController Start */
 	
 }

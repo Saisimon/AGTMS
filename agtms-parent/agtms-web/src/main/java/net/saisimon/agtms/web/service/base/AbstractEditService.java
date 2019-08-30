@@ -1,18 +1,24 @@
-package net.saisimon.agtms.web.controller.base;
+package net.saisimon.agtms.web.service.base;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.EditGrid;
 import net.saisimon.agtms.core.domain.grid.Field;
+import net.saisimon.agtms.web.service.common.MessageService;
 
 /**
- * 编辑页面抽象控制器
+ * 编辑页面抽象服务
  * 
  * @author saisimon
  *
  */
-public abstract class AbstractEditController<T> extends BaseController {
+public abstract class AbstractEditService<T> {
+	
+	@Autowired
+	protected MessageService messageService;
 	
 	/**
 	 * 前端编辑相关信息的框架

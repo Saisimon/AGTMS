@@ -41,7 +41,7 @@ export default {
     name: 'app',
     computed: {
         hasMainNavbarCollapse: function() {
-            return !this.$store.state.navigation.openTree;
+            return !this.$store.state.base.openTree;
         },
         progress: function() {
             return this.$store.state.base.progress;

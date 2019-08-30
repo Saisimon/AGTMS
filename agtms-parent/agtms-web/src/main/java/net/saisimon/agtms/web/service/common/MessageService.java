@@ -1,26 +1,21 @@
-package net.saisimon.agtms.web.controller.base;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+package net.saisimon.agtms.web.service.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.stereotype.Service;
 
 /**
- * 基础控制器
+ * 消息服务
  * 
  * @author saisimon
  *
  */
-public abstract class BaseController {
+@Service
+public class MessageService {
 	
 	@Autowired
 	private MessageSource messageSource;
-	@Autowired
-	protected HttpServletRequest request;
-	@Autowired
-	protected HttpServletResponse response;
 	
 	/**
 	 * 根据 code 获取对应的国际化消息
@@ -29,7 +24,10 @@ public abstract class BaseController {
 	 * @param args 消息参数
 	 * @return 消息
 	 */
-	protected String getMessage(String code, Object... args) {
+	public String getMessage(String code, Object... args) {
+		if (code == null) {
+			return null;
+		}
 		return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
 	}
 	

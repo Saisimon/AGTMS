@@ -9,6 +9,12 @@ import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 用户状态下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class UserStatusSelection extends AbstractSelection<Integer> {
 	
