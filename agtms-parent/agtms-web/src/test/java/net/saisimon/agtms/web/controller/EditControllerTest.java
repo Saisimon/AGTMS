@@ -282,7 +282,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/navigation/main/batch/save", null, bodyRequest, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
 		bodyRequest = new HashMap<>();
-		bodyRequest.put("ids", Arrays.asList(11L, 12L, 13L, 14L, 100L));
+		bodyRequest.put("ids", Arrays.asList("11", "12", "13", "14", "100"));
 		bodyRequest.put("icon", "users");
 		sendPost("/navigation/main/batch/save", null, bodyRequest, testToken);
 		
@@ -643,12 +643,12 @@ public class EditControllerTest extends AbstractControllerTest {
 			sendPost(mainBatchSaveUri, null, body, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 			
 			body = new HashMap<>();
-			body.put("ids", Arrays.asList(2L, 3L, 4L, 100L));
+			body.put("ids", Arrays.asList("2", "3", "4", "100"));
 			body.put("column0field0", buildString(513));
 			sendPost(mainBatchSaveUri, null, body, testToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
 			
 			body = new HashMap<>();
-			body.put("ids", Arrays.asList(2L, 3L, 4L, 100L));
+			body.put("ids", Arrays.asList("2", "3", "4", "100"));
 			body.put("column0field0", "column0field0-test");
 			body.put("column0field3", new Date());
 			sendPost(mainBatchSaveUri, null, body, testToken);
