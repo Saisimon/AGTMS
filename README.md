@@ -12,6 +12,7 @@
 [![CircleCI](https://img.shields.io/circleci/build/github/Saisimon/AGTMS/dev.svg)](https://circleci.com/gh/Saisimon/AGTMS/tree/dev)
 [![Codecov branch](https://img.shields.io/codecov/c/github/Saisimon/AGTMS/dev.svg)](https://codecov.io/gh/Saisimon/AGTMS)
 [![Codacy branch grade](https://img.shields.io/codacy/grade/13d287dc9b6c4d1d9e219369a890d385/dev.svg)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Saisimon/AGTMS&amp;utm_campaign=Badge_Grade)
+[![Total Lines](https://tokei.rs/b1/github/Saisimon/AGTMS)](https://github.com/Saisimon/AGTMS)
 ![GitHub](https://img.shields.io/github/license/Saisimon/AGTMS.svg)
 
 AGTMS 是一个基于 Spring Cloud 和 Vue.js 的自定义配置对象管理系统，支持 Oracle、MySQL、MariaDB、SQL Server、PostgreSQL、MongoDB、RESTful 等方式获取数据。
