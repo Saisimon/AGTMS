@@ -36,6 +36,7 @@ public class ErrorMessage {
 	public static class Navigation {
 		public static final Result NAVIGATION_NOT_EXIST = ResultUtils.error(2001, "navigation.not.exist");
 		public static final Result NAVIGATION_ALREADY_EXISTS = ResultUtils.error(2002, "navigation.already.exists");
+		public static final Result NAVIGATION_MAX_DEPTH_LIMIT = ResultUtils.error(2003, "navigation.max.depth.limit");
 	}
 	
 	public static class Template {

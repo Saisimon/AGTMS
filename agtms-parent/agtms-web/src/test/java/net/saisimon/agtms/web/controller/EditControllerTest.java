@@ -246,8 +246,42 @@ public class EditControllerTest extends AbstractControllerTest {
 		body = new NavigationParam();
 		body.setId(10L);
 		body.setIcon("cogs");
+		body.setName("Test");
+		body.setPath("/9");
+		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS.getCode());
+		
+		body = new NavigationParam();
+		body.setId(10L);
+		body.setIcon("cogs");
 		body.setName("Test-0");
 		body.setPath("/9");
+		sendPost("/navigation/edit/save", body, testToken);
+		
+		body = new NavigationParam();
+		body.setId(11L);
+		body.setIcon("cogs");
+		body.setName("Test-1");
+		body.setPath("/9/10");
+		sendPost("/navigation/edit/save", body, testToken);
+		
+		body = new NavigationParam();
+		body.setId(12L);
+		body.setIcon("cogs");
+		body.setName("Test-2");
+		body.setPath("/9/10/11");
+		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT.getCode());
+		
+		body = new NavigationParam();
+		body.setIcon("cogs");
+		body.setName("Test-SUB");
+		body.setPath("/9/10/11");
+		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT.getCode());
+		
+		body = new NavigationParam();
+		body.setId(10L);
+		body.setIcon("cogs");
+		body.setName("Test-0");
+		body.setPath("/12");
 		sendPost("/navigation/edit/save", body, testToken);
 		
 		sendPost("/navigation/edit/grid", null, testToken);

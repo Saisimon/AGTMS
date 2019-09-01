@@ -34,6 +34,8 @@ public class AgtmsProperties {
 	
 	private int importFileMaxSize = 10;
 	
+	private int navigationMaxDepth = 3;
+	
 	private List<String> excludeServices = new ArrayList<>(Arrays.asList("agtms-admin", "agtms-web", "agtms-zuul"));
 	
 	private String encryptorAlgorithm = "aes";

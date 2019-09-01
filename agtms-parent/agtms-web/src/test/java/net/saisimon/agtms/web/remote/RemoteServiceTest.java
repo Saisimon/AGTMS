@@ -181,6 +181,43 @@ public class RemoteServiceTest {
 		generateRemoteService.updateDomain(1L, updateMap);
 	}
 	
+	@Test(expected=UnsupportedOperationException.class)
+	public void testCreateTable() {
+		generateRemoteService.createTable();
+	}
+	
+	@Test(expected=UnsupportedOperationException.class)
+	public void testAlterTable() {
+		generateRemoteService.alterTable(null);
+	}
+	
+	@Test(expected=UnsupportedOperationException.class)
+	public void testDropTable() {
+		generateRemoteService.dropTable();
+	}
+	
+	@Test(expected=UnsupportedOperationException.class)
+	public void testCreateIndex() {
+		generateRemoteService.createIndex(null, null, false);
+	}
+	
+	@Test(expected=UnsupportedOperationException.class)
+	public void testDropIndex() {
+		generateRemoteService.dropIndex(null, null);
+	}
+	
+	@Test
+	public void testFindByIdWithNull() {
+		Assert.assertNull(generateRemoteService.findById(null, null));
+	}
+	
+	@Test
+	public void testRemoteApiServiceWithBlank() {
+		Assert.assertNull(remoteApiService.templates(""));
+		Assert.assertNull(remoteApiService.template("", ""));
+		Assert.assertNull(remoteApiService.selection("", "", null));
+	}
+	
 	public static class LocalRibbonClientConfiguration {
 		
 		@Bean

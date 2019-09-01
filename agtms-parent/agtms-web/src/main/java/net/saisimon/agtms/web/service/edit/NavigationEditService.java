@@ -9,6 +9,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.domain.entity.Resource;
 import net.saisimon.agtms.core.domain.entity.RoleResource;
@@ -25,6 +26,7 @@ import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
+import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.service.ResourceService;
 import net.saisimon.agtms.core.service.RoleResourceService;
 import net.saisimon.agtms.core.service.TemplateService;
@@ -50,6 +52,8 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 	private ResourceSelection resourceSelection;
 	@Autowired
 	private UserInfoService userInfoService;
+	@Autowired
+	private AgtmsProperties agtmsProperties;
 	
 	public Result grid(Long id) {
 		Resource resource = null;
@@ -133,33 +137,40 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 			return ErrorMessage.Common.PARAM_ERROR;
 		}
 		List<Resource> resources = resourceService.getResources(oldResource.getPath() + "/" + oldResource.getId(), Resource.ContentType.NAVIGATION, userIds);
-		if (!checkPath(body.getPath(), resources)) {
+		if (!validatePath(body.getPath(), resources)) {
 			return ErrorMessage.Common.PARAM_ERROR;
 		}
-		TemplateService templateService = TemplateServiceFactory.get();
+		if (!checkDepth(body.getPath())) {
+			Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
+			result.setMessageArgs(new Object[]{ agtmsProperties.getNavigationMaxDepth() });
+			return result;
+		}
 		Date time = new Date();
 		List<Resource> childrens = resourceService.getAllChildrenResources(oldResource.getId(), oldResource.getPath());
-		for (Resource children : childrens) {
-			String[] strs = body.getPath().split("/");
-			String[] oldStrs = oldResource.getPath().split("/");
-			String[] childrenStrs = children.getPath().split("/");
-			StringBuilder buffer = new StringBuilder();
-			for (int i = 1; i < childrenStrs.length; i++) {
-				if (i < strs.length) {
-					buffer.append("/").append(strs[i]);
-				} else if (i >= oldStrs.length) {
-					buffer.append("/").append(childrenStrs[i]);
+		if (!CollectionUtils.isEmpty(childrens)) {
+			for (Resource children : childrens) {
+				String newPathPrefix = body.getPath() + "/" + body.getId();
+				String oldPathPrefix = oldResource.getPath() + "/" + oldResource.getId();
+				String oldPath = children.getPath();
+				oldPath = oldPath.replaceFirst(oldPathPrefix, newPathPrefix);
+				if (Resource.ContentType.NAVIGATION.getValue().equals(children.getContentType()) && !checkDepth(oldPath)) {
+					Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
+					result.setMessageArgs(new Object[]{ agtmsProperties.getNavigationMaxDepth() });
+					return result;
 				}
+				children.setPath(oldPath);
+				children.setUpdateTime(time);
 			}
-			children.setPath(buffer.toString());
-			children.setUpdateTime(time);
-			resourceService.saveOrUpdate(children);
-			if (Resource.ContentType.TEMPLATE.getValue().equals(children.getContentType())) {
-				Template template = templateService.findById(children.getContentId()).orElse(null);
-				if (template != null) {
-					template.setPath(buffer.toString());
-					template.setUpdateTime(time);
-					templateService.saveOrUpdate(template);
+			TemplateService templateService = TemplateServiceFactory.get();
+			for (Resource children : childrens) {
+				resourceService.saveOrUpdate(children);
+				if (Resource.ContentType.TEMPLATE.getValue().equals(children.getContentType())) {
+					Template template = templateService.findById(children.getContentId()).orElse(null);
+					if (template != null) {
+						template.setPath(children.getPath());
+						template.setUpdateTime(time);
+						templateService.saveOrUpdate(template);
+					}
 				}
 			}
 		}
@@ -179,8 +190,13 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 			return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
 		}
 		List<Resource> resources = resourceService.getResources(null, Resource.ContentType.NAVIGATION, userIds);
-		if (!checkPath(body.getPath(), resources)) {
+		if (!validatePath(body.getPath(), resources)) {
 			return ErrorMessage.Common.PARAM_ERROR;
+		}
+		if (!checkDepth(body.getPath())) {
+			Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
+			result.setMessageArgs(new Object[]{ agtmsProperties.getNavigationMaxDepth() });
+			return result;
 		}
 		Date time = new Date();
 		Resource newResource = new Resource();
@@ -204,7 +220,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 		return ResultUtils.simpleSuccess();
 	}
 	
-	private boolean checkPath(String path, List<Resource> resources) {
+	private boolean validatePath(String path, List<Resource> resources) {
 		if ("".equals(path)) {
 			return true;
 		}
@@ -214,6 +230,14 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 			}
 		}
 		return false;
+	}
+	
+	private boolean checkDepth(String path) {
+		if ("".equals(path)) {
+			return true;
+		}
+		String[] strs = path.split("/");
+		return strs.length <= agtmsProperties.getNavigationMaxDepth();
 	}
 	
 }
