@@ -13,7 +13,7 @@ import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.service.ResourceService;
 import net.saisimon.agtms.core.util.AuthUtils;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 资源下拉列表
@@ -25,7 +25,7 @@ import net.saisimon.agtms.web.service.user.UserInfoService;
 public class ResourceSelection extends AbstractSelection<String> {
 	
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 
 	@Override
 	public Map<String, String> select() {
@@ -34,7 +34,7 @@ public class ResourceSelection extends AbstractSelection<String> {
 	
 	public Map<String, String> selectWithParent(String excludePath, Resource.ContentType contentType) {
 		ResourceService resourceService = ResourceServiceFactory.get();
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		List<Resource> resources = resourceService.getResources(excludePath, contentType, userIds);
 		Map<String, String> resourceMap = MapUtil.newHashMap(resources.size() + 1, true);
 		resourceMap.put("", "/");

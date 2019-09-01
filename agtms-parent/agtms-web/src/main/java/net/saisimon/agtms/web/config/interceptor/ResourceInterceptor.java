@@ -22,7 +22,7 @@ import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.service.common.MessageService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 资源权限拦截器
@@ -33,7 +33,7 @@ import net.saisimon.agtms.web.service.user.UserInfoService;
 public class ResourceInterceptor implements HandlerInterceptor {
 	
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	@Autowired
 	private MessageService messageService;
 
@@ -51,7 +51,7 @@ public class ResourceInterceptor implements HandlerInterceptor {
 		if (controllerInfo == null || SystemUtils.isBlank(controllerInfo.link())) {
 			return true;
 		}
-		Set<Long> ownResourceIds = userInfoService.getResourceIds(AuthUtils.getUid());
+		Set<Long> ownResourceIds = premissionService.getResourceIds(AuthUtils.getUid());
 		if (CollectionUtils.isEmpty(ownResourceIds)) {
 			noPermission(request, response);
 			return false;

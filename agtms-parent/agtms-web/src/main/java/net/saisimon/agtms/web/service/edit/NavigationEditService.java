@@ -2,7 +2,9 @@ package net.saisimon.agtms.web.service.edit;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.Transactional;
@@ -36,8 +38,8 @@ import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.NavigationParam;
 import net.saisimon.agtms.web.selection.ResourceSelection;
 import net.saisimon.agtms.web.service.base.AbstractEditService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 import net.saisimon.agtms.web.service.main.NavigationMainService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
 
 /**
  * 导航编辑服务
@@ -51,7 +53,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 	@Autowired
 	private ResourceSelection resourceSelection;
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	@Autowired
 	private AgtmsProperties agtmsProperties;
 	
@@ -63,7 +65,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 			if (resource == null) {
 				return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 			}
-			Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+			Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 			if (!userIds.contains(resource.getOperatorId())) {
 				return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 			}
@@ -125,7 +127,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 	private Result updateResource(NavigationParam body) {
 		ResourceService resourceService = ResourceServiceFactory.get();
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = userInfoService.getUserIds(userId);
+		Set<Long> userIds = premissionService.getUserIds(userId);
 		Resource oldResource = resourceService.findById(body.getId()).orElse(null);
 		if (oldResource == null) {
 			return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
@@ -167,9 +169,10 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 				if (Resource.ContentType.TEMPLATE.getValue().equals(children.getContentType())) {
 					Template template = templateService.findById(children.getContentId()).orElse(null);
 					if (template != null) {
-						template.setPath(children.getPath());
-						template.setUpdateTime(time);
-						templateService.saveOrUpdate(template);
+						Map<String, Object> updateMap = new HashMap<>();
+						updateMap.put("path", children.getPath());
+						updateMap.put("updateTime", time);
+						templateService.update(template.getId(), updateMap);
 					}
 				}
 			}
@@ -185,7 +188,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 	private Result saveResource(NavigationParam body) {
 		ResourceService resourceService = ResourceServiceFactory.get();
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = userInfoService.getUserIds(userId);
+		Set<Long> userIds = premissionService.getUserIds(userId);
 		if (resourceService.exists(body.getName(), Resource.ContentType.NAVIGATION, userIds)) {
 			return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
 		}

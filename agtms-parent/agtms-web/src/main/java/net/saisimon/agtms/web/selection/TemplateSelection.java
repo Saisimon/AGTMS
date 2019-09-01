@@ -13,7 +13,7 @@ import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 模板下拉列表
@@ -25,12 +25,12 @@ import net.saisimon.agtms.web.service.user.UserInfoService;
 public class TemplateSelection extends AbstractSelection<String> {
 	
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	
 	@Override
 	public Map<String, String> select() {
 		TemplateService templateService = TemplateServiceFactory.get();
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		List<Template> templates = templateService.getTemplates(userIds);
 		Map<String, String> templateMap = MapUtil.newHashMap(templates.size() + 1, true);
 		templateMap.put("-1", "");

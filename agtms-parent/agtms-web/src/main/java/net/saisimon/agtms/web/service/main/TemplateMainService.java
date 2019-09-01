@@ -51,7 +51,7 @@ import net.saisimon.agtms.web.dto.resp.TemplateInfo;
 import net.saisimon.agtms.web.selection.ResourceSelection;
 import net.saisimon.agtms.web.selection.UserSelection;
 import net.saisimon.agtms.web.service.base.AbstractMainService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 模板主服务
@@ -89,7 +89,7 @@ public class TemplateMainService extends AbstractMainService {
 	@Autowired
 	private DomainGenerater domainGenerater;
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	
 	public Result grid() {
 		return ResultUtils.simpleSuccess(getMainGrid(TEMPLATE));
@@ -102,7 +102,7 @@ public class TemplateMainService extends AbstractMainService {
 		if (filter == null) {
 			filter = FilterRequest.build();
 		}
-		filter.and(Constant.OPERATORID, userInfoService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN);
+		filter.and(Constant.OPERATORID, premissionService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN);
 		if (pageableMap != null) {
 			pageableMap.remove(PARAM);
 		}
@@ -130,7 +130,7 @@ public class TemplateMainService extends AbstractMainService {
 	
 	@Transactional(rollbackOn = Exception.class)
 	public Result remove(Long id) {
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(id, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -147,7 +147,7 @@ public class TemplateMainService extends AbstractMainService {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		TemplateService templateService = TemplateServiceFactory.get();
 		for (Long id : ids) {
 			Template template = TemplateUtils.getTemplate(id, userIds);

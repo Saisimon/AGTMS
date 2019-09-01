@@ -45,7 +45,7 @@ import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.ExportParam;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 import net.saisimon.agtms.web.util.FileUtils;
 
 /**
@@ -65,12 +65,12 @@ public class ExportActuator implements Actuator<ExportParam> {
 	@Autowired
 	private AgtmsProperties agtmsProperties;
 	@Autowired
-	private UserInfoService userInfoSerivce;
+	private PremissionService premissionService;
 	
 	@Override
 	@Transactional(rollbackOn = Exception.class)
 	public Result execute(ExportParam param) throws Exception {
-		Set<Long> userIds = userInfoSerivce.getUserIds(param.getUserId());
+		Set<Long> userIds = premissionService.getUserIds(param.getUserId());
 		Template template = TemplateUtils.getTemplate(param.getTemplateId(), userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -113,7 +113,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		Set<Long> userIds = userInfoSerivce.getUserIds(param.getUserId());
+		Set<Long> userIds = premissionService.getUserIds(param.getUserId());
 		Template template = TemplateUtils.getTemplate(param.getTemplateId(), userIds);
 		if (template == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());

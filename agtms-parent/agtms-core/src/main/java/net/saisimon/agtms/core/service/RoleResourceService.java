@@ -10,8 +10,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.Ordered;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.entity.RoleResource;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -41,31 +43,44 @@ public interface RoleResourceService extends BaseService<RoleResource, Long>, Or
 	}
 
 	@Override
-	@CacheEvict(cacheNames="roleResource", key="#p0.id")
+	@Caching(evict = {
+			@CacheEvict(cacheNames="roleResource", key="#p0.id"),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME }, allEntries=true)
+	})
 	default void delete(RoleResource entity) {
 		BaseService.super.delete(entity);
 	}
 
 	@Override
 	@CachePut(cacheNames="roleResource", key="#p0.id")
+	@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME }, allEntries=true)
 	default RoleResource saveOrUpdate(RoleResource entity) {
 		return BaseService.super.saveOrUpdate(entity);
 	}
 
 	@Override
-	@CacheEvict(cacheNames="roleResource", key="#p0")
+	@Caching(evict = {
+			@CacheEvict(cacheNames="roleResource", key="#p0"),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME }, allEntries=true)
+	})
 	default void update(Long id, Map<String, Object> updateMap) {
 		BaseService.super.update(id, updateMap);
 	}
 
 	@Override
-	@CacheEvict(cacheNames="roleResource", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames= "roleResource", allEntries=true),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME }, allEntries=true)
+	})
 	default void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
 		BaseService.super.batchUpdate(filter, updateMap);
 	}
 	
 	@Override
-	@CacheEvict(cacheNames="roleResource", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames= "roleResource", allEntries=true),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME }, allEntries=true)
+	})
 	default Long delete(FilterRequest filter) {
 		return BaseService.super.delete(filter);
 	}

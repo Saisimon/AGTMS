@@ -59,4 +59,11 @@ public class Constant {
 		
 	}
 	
+	public static class Cache {
+		
+		public static final String RESOURCE_IDS_NAME = "getResourceIds";
+		public static final String USER_IDS_NAME = "getUserIds";
+		
+	}
+	
 }

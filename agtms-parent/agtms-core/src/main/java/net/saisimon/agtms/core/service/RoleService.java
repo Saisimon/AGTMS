@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.Ordered;
 
 import net.saisimon.agtms.core.constant.Constant;
@@ -53,31 +54,44 @@ public interface RoleService extends BaseService<Role, Long>, Ordered {
 	}
 
 	@Override
-	@CacheEvict(cacheNames="role", key="#p0.id")
+	@Caching(evict = {
+			@CacheEvict(cacheNames="role", key="#p0.id"),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, allEntries=true)
+	})
 	default void delete(Role entity) {
 		BaseService.super.delete(entity);
 	}
 
 	@Override
 	@CachePut(cacheNames="role", key="#p0.id")
+	@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, allEntries=true)
 	default Role saveOrUpdate(Role entity) {
 		return BaseService.super.saveOrUpdate(entity);
 	}
 
 	@Override
-	@CacheEvict(cacheNames="role", key="#p0")
+	@Caching(evict = {
+			@CacheEvict(cacheNames="role", key="#p0"),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, allEntries=true)
+	})
 	default void update(Long id, Map<String, Object> updateMap) {
 		BaseService.super.update(id, updateMap);
 	}
 
 	@Override
-	@CacheEvict(cacheNames="role", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames= "role", allEntries=true),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, allEntries=true)
+	})
 	default void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
 		BaseService.super.batchUpdate(filter, updateMap);
 	}
 	
 	@Override
-	@CacheEvict(cacheNames="role", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames= "role", allEntries=true),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, allEntries=true)
+	})
 	default Long delete(FilterRequest filter) {
 		return BaseService.super.delete(filter);
 	}

@@ -15,7 +15,7 @@ import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.selection.AbstractSelection;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 用户下拉列表
@@ -27,7 +27,7 @@ import net.saisimon.agtms.web.service.user.UserInfoService;
 public class UserSelection extends AbstractSelection<String> {
 	
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 
 	@Override
 	public Map<String, String> select() {
@@ -36,7 +36,7 @@ public class UserSelection extends AbstractSelection<String> {
 		if (userId == null) {
 			return MapUtil.newHashMap(0);
 		}
-		Set<Long> userIds = userInfoService.getUserIds(userId);
+		Set<Long> userIds = premissionService.getUserIds(userId);
 		List<User> users =userService.findList(FilterRequest.build().and(Constant.ID, userIds, Constant.Operator.IN), Constant.ID, "loginName");
 		Map<String, String> userMap = MapUtil.newHashMap(users.size(), true);
 		for (User user : users) {

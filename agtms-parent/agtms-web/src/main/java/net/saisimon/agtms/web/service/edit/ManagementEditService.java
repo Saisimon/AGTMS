@@ -39,7 +39,7 @@ import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.service.base.AbstractEditService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 自定义对象管理编辑服务
@@ -52,10 +52,10 @@ import net.saisimon.agtms.web.service.user.UserInfoService;
 public class ManagementEditService extends AbstractEditService<Domain> {
 	
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	
 	public Result grid(String key, Long id) {
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -73,7 +73,7 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 	@Transactional(rollbackOn = Exception.class)
 	public Result save(String key, Map<String, Object> body) {
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = userInfoService.getUserIds(userId);
+		Set<Long> userIds = premissionService.getUserIds(userId);
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -138,7 +138,7 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 		if (!(key instanceof Template)) {
 			return null;
 		}
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = (Template) key;
 		List<Field<?>> fields = new ArrayList<>();
 		if (CollectionUtils.isEmpty(template.getColumns())) {

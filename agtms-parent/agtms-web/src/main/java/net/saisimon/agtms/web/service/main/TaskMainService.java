@@ -63,7 +63,7 @@ import net.saisimon.agtms.web.selection.HandleStatusSelection;
 import net.saisimon.agtms.web.selection.TaskTypeSelection;
 import net.saisimon.agtms.web.selection.UserSelection;
 import net.saisimon.agtms.web.service.base.AbstractMainService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 任务主服务
@@ -108,7 +108,7 @@ public class TaskMainService extends AbstractMainService {
 	@Autowired(required = false)
 	private DiscoveryClient discoveryClient;
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	
 	public Result grid() {
 		return ResultUtils.simpleSuccess(getMainGrid(TASK));
@@ -121,7 +121,7 @@ public class TaskMainService extends AbstractMainService {
 		if (filter == null) {
 			filter = FilterRequest.build();
 		}
-		filter.and(Constant.OPERATORID, userInfoService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN);
+		filter.and(Constant.OPERATORID, premissionService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN);
 		if (pageableMap != null) {
 			pageableMap.remove(PARAM);
 		}
@@ -204,7 +204,7 @@ public class TaskMainService extends AbstractMainService {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		if (!userIds.contains(task.getOperatorId())) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
@@ -229,7 +229,7 @@ public class TaskMainService extends AbstractMainService {
 		if (task == null) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		if (!userIds.contains(task.getOperatorId())) {
 			return ErrorMessage.Task.TASK_NOT_EXIST;
 		}
@@ -247,7 +247,7 @@ public class TaskMainService extends AbstractMainService {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		TaskService taskService = TaskServiceFactory.get();
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		for (Long id : ids) {
 			Task task = taskService.findById(id).orElse(null);
 			if (task == null || !userIds.contains(task.getOperatorId())) {

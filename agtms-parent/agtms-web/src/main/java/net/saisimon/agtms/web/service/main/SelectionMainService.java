@@ -47,7 +47,7 @@ import net.saisimon.agtms.web.dto.resp.SelectionInfo;
 import net.saisimon.agtms.web.selection.SelectTypeSelection;
 import net.saisimon.agtms.web.selection.UserSelection;
 import net.saisimon.agtms.web.service.base.AbstractMainService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 下拉列表主服务
@@ -83,7 +83,7 @@ public class SelectionMainService extends AbstractMainService {
 	@Autowired
 	private UserSelection userSelection;
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	
 	public Result grid() {
 		return ResultUtils.simpleSuccess(getMainGrid(SELECTION));
@@ -96,7 +96,7 @@ public class SelectionMainService extends AbstractMainService {
 		if (filter == null) {
 			filter = FilterRequest.build();
 		}
-		filter.and(Constant.OPERATORID, userInfoService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN);
+		filter.and(Constant.OPERATORID, premissionService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN);
 		if (pageableMap != null) {
 			pageableMap.remove(PARAM);
 		}
@@ -127,7 +127,7 @@ public class SelectionMainService extends AbstractMainService {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Selection selection = SelectionUtils.getSelection(id, userInfoService.getUserIds(AuthUtils.getUid()));
+		Selection selection = SelectionUtils.getSelection(id, premissionService.getUserIds(AuthUtils.getUid()));
 		if (selection == null) {
 			return ErrorMessage.Selection.SELECTION_NOT_EXIST;
 		}
@@ -146,7 +146,7 @@ public class SelectionMainService extends AbstractMainService {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		SelectionService selectionService = SelectionServiceFactory.get();
 		for (Long id : ids) {
 			Selection selection = SelectionUtils.getSelection(id, userIds);

@@ -9,8 +9,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.Ordered;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.entity.UserRole;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
@@ -48,31 +50,44 @@ public interface UserRoleService extends BaseService<UserRole, Long>, Ordered {
 	}
 
 	@Override
-	@CacheEvict(cacheNames="userRole", key="#p0.id")
+	@Caching(evict = {
+			@CacheEvict(cacheNames= "userRole", key="#p0.id"),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, key="#p0.userId")
+	})
 	default void delete(UserRole entity) {
 		BaseService.super.delete(entity);
 	}
 
 	@Override
 	@CachePut(cacheNames="userRole", key="#p0.id")
+	@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, key="#p0.userId")
 	default UserRole saveOrUpdate(UserRole entity) {
 		return BaseService.super.saveOrUpdate(entity);
 	}
 
 	@Override
-	@CacheEvict(cacheNames="userRole", key="#p0")
+	@Caching(evict = {
+			@CacheEvict(cacheNames= "userRole", key="#p0"),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, allEntries=true)
+	})
 	default void update(Long id, Map<String, Object> updateMap) {
 		BaseService.super.update(id, updateMap);
 	}
 
 	@Override
-	@CacheEvict(cacheNames="userRole", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames= "userRole", allEntries=true),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, allEntries=true)
+	})
 	default void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
 		BaseService.super.batchUpdate(filter, updateMap);
 	}
 	
 	@Override
-	@CacheEvict(cacheNames="userRole", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames= "userRole", allEntries=true),
+			@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, allEntries=true)
+	})
 	default Long delete(FilterRequest filter) {
 		return BaseService.super.delete(filter);
 	}

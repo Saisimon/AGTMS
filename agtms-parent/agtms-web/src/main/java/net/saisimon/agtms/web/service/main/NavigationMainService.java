@@ -57,7 +57,7 @@ import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.resp.NavigationInfo;
 import net.saisimon.agtms.web.selection.UserSelection;
 import net.saisimon.agtms.web.service.base.AbstractMainService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 导航主服务
@@ -91,7 +91,7 @@ public class NavigationMainService extends AbstractMainService {
 	@Autowired
 	private UserSelection userSelection;
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	
 	public Result grid() {
 		return ResultUtils.simpleSuccess(getMainGrid(NAVIGATION));
@@ -104,7 +104,7 @@ public class NavigationMainService extends AbstractMainService {
 		if (filter == null) {
 			filter = FilterRequest.build();
 		}
-		filter.and(Constant.OPERATORID, userInfoService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN).and("contentType", Resource.ContentType.NAVIGATION.getValue());
+		filter.and(Constant.OPERATORID, premissionService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN).and("contentType", Resource.ContentType.NAVIGATION.getValue());
 		if (pageableMap != null) {
 			pageableMap.remove(PARAM);
 		}
@@ -139,7 +139,7 @@ public class NavigationMainService extends AbstractMainService {
 		if (resource == null) {
 			return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 		}
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		if (!userIds.contains(resource.getOperatorId())) {
 			return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 		}
@@ -157,7 +157,7 @@ public class NavigationMainService extends AbstractMainService {
 		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		String icon = (String) body.get("icon");
 		ResourceService resourceService = ResourceServiceFactory.get();
 		for (String id : ids) {
@@ -184,7 +184,7 @@ public class NavigationMainService extends AbstractMainService {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		ResourceService resourceService = ResourceServiceFactory.get();
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		for (Long id : ids) {
 			Resource resource = resourceService.findById(id.longValue()).orElse(null);
 			if (resource == null || !userIds.contains(resource.getOperatorId())) {

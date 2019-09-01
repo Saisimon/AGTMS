@@ -40,7 +40,7 @@ import net.saisimon.agtms.web.dto.resp.OperationInfo;
 import net.saisimon.agtms.web.selection.OperateTypeSelection;
 import net.saisimon.agtms.web.selection.UserSelection;
 import net.saisimon.agtms.web.service.base.AbstractMainService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 操作记录主服务
@@ -71,7 +71,7 @@ public class OperationMainService extends AbstractMainService {
 	@Autowired
 	private UserSelection userSelection;
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	
 	public Result grid() {
 		return ResultUtils.simpleSuccess(getMainGrid(OPERATION));
@@ -84,7 +84,7 @@ public class OperationMainService extends AbstractMainService {
 		if (filter == null) {
 			filter = FilterRequest.build();
 		}
-		filter.and(Constant.OPERATORID, userInfoService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN);
+		filter.and(Constant.OPERATORID, premissionService.getUserIds(AuthUtils.getUid()), Constant.Operator.IN);
 		FilterPageable pageable = FilterPageable.build(pageableMap);
 		OperationService operationService = OperationServiceFactory.get();
 		List<Operation> list = operationService.findPage(filter, pageable, false).getContent();

@@ -85,7 +85,7 @@ import net.saisimon.agtms.web.dto.req.ExportParam;
 import net.saisimon.agtms.web.dto.req.ImportParam;
 import net.saisimon.agtms.web.selection.FileTypeSelection;
 import net.saisimon.agtms.web.service.base.AbstractMainService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 import net.saisimon.agtms.web.util.FileUtils;
 
 /**
@@ -116,10 +116,10 @@ public class ManagementMainService extends AbstractMainService {
 	@Autowired
 	private AgtmsProperties agtmsProperties;
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	
 	public Result grid(String key) {
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -128,7 +128,7 @@ public class ManagementMainService extends AbstractMainService {
 	}
 	
 	public Result list(String key, Map<String, Object> body) {
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -155,7 +155,7 @@ public class ManagementMainService extends AbstractMainService {
 
 	@Transactional(rollbackOn = Exception.class)
 	public Result remove(String key, Long id) {
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -172,7 +172,7 @@ public class ManagementMainService extends AbstractMainService {
 	}
 	
 	public Result batchGrid(String key) {
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -186,7 +186,7 @@ public class ManagementMainService extends AbstractMainService {
 		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -217,7 +217,7 @@ public class ManagementMainService extends AbstractMainService {
 		if (ids.size() == 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -237,7 +237,7 @@ public class ManagementMainService extends AbstractMainService {
 	
 	public Result batchExport(String key, ExportParam body) {
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = userInfoService.getUserIds(userId);
+		Set<Long> userIds = premissionService.getUserIds(userId);
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -274,7 +274,7 @@ public class ManagementMainService extends AbstractMainService {
 			return result;
 		}
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = userInfoService.getUserIds(userId);
+		Set<Long> userIds = premissionService.getUserIds(userId);
 		Template template = TemplateUtils.getTemplate(key, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -370,7 +370,7 @@ public class ManagementMainService extends AbstractMainService {
 		}
 		Template template = (Template) key;
 		List<Filter> filters = new ArrayList<>();
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		for (TemplateColumn column : template.getColumns()) {
 			Filter filter = new Filter();
 			List<String> keyValues = new ArrayList<>();

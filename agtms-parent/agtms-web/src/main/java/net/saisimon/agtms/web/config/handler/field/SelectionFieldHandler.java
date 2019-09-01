@@ -15,19 +15,19 @@ import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 @Component
 public class SelectionFieldHandler extends AbstractFieldHandler {
 	
 	@Autowired
-	private UserInfoService userInfoSerivce;
+	private PremissionService premissionService;
 
 	@Override
 	public Result validate(Template template, TemplateField field, Object value) {
 		if (field != null && SystemUtils.isNotEmpty(value)) {
 			String selectionSign = field.selectionSign(template.getService());
-			Set<Long> userIds = userInfoSerivce.getUserIds(AuthUtils.getUid());
+			Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 			Selection selection = SelectionUtils.getSelection(selectionSign, userIds);
 			if (selection == null) {
 				return ErrorMessage.Common.FIELD_FORMAT_NOT_CORRECT.messageArgs(field.getFieldTitle());

@@ -39,7 +39,7 @@ import net.saisimon.agtms.web.dto.req.SelectionParam.SelectionTemplateParam;
 import net.saisimon.agtms.web.selection.SelectTypeSelection;
 import net.saisimon.agtms.web.selection.TemplateSelection;
 import net.saisimon.agtms.web.service.common.MessageService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 下拉列表编辑服务
@@ -57,11 +57,11 @@ public class SelectionEditService {
 	@Autowired
 	private MessageService messageService;
 	@Autowired
-	private UserInfoService userInfoSerivce;
+	private PremissionService premissionService;
 	
 	
 	public Result grid(Long id) {
-		Set<Long> userIds = userInfoSerivce.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Selection selection = null;
 		if (id != null) {
 			selection = SelectionUtils.getSelection(id, userIds);
@@ -134,7 +134,7 @@ public class SelectionEditService {
 	}
 	
 	public Result template(Long id) {
-		Set<Long> userIds = userInfoSerivce.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(id, userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
@@ -144,7 +144,7 @@ public class SelectionEditService {
 	}
 	
 	public Result search(String sign, String keyword) {
-		Set<Long> userIds = userInfoSerivce.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		List<Option<Object>> options = SelectionUtils.getSelectionOptions(sign, keyword, userIds);
 		return ResultUtils.simpleSuccess(options);
 	}
@@ -176,7 +176,7 @@ public class SelectionEditService {
 		Date time = new Date();
 		Selection selection = null;
 		if (null != body.getId() && body.getId() > 0) {
-			Set<Long> userIds = userInfoSerivce.getUserIds(AuthUtils.getUid());
+			Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 			selection = SelectionUtils.getSelection(body.getId(), userIds);
 			if (selection == null) {
 				return ErrorMessage.Selection.SELECTION_NOT_EXIST;
@@ -231,7 +231,7 @@ public class SelectionEditService {
 		if (body == null) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = userInfoSerivce.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = TemplateUtils.getTemplate(body.getId(), userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;

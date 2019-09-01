@@ -1,13 +1,10 @@
 package net.saisimon.agtms.web.service.user;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -17,23 +14,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.domain.entity.Resource;
-import net.saisimon.agtms.core.domain.entity.Role;
-import net.saisimon.agtms.core.domain.entity.RoleResource;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.User;
-import net.saisimon.agtms.core.domain.entity.UserRole;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
-import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
-import net.saisimon.agtms.core.factory.RoleServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
-import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.service.RemoteService;
-import net.saisimon.agtms.core.service.RoleService;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -47,6 +37,7 @@ import net.saisimon.agtms.web.dto.resp.NavigationTree.NavigationLink;
 import net.saisimon.agtms.web.dto.resp.ProfileInfo;
 import net.saisimon.agtms.web.dto.resp.UserTokenInfo;
 import net.saisimon.agtms.web.service.common.MessageService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 用户信息服务
@@ -65,6 +56,8 @@ public class UserInfoService {
 	private AgtmsProperties agtmsProperties;
 	@Autowired
 	private MessageService messageService;
+	@Autowired
+	private PremissionService premissionService;
 	
 	@Transactional(rollbackOn = Exception.class)
 	public Result auth(UserAuthParam param) {
@@ -84,7 +77,7 @@ public class UserInfoService {
 	}
 	
 	public Result nav() {
-		Set<Long> resourceIds = getResourceIds(AuthUtils.getUid());
+		Set<Long> resourceIds = premissionService.getResourceIds(AuthUtils.getUid());
 		List<Resource> resources = ResourceServiceFactory.get().getResources(resourceIds);
 		NavigationTree root = new NavigationTree();
 		root.setId("-1");
@@ -175,50 +168,6 @@ public class UserInfoService {
 		Long uid = AuthUtils.getUid();
 		TokenFactory.get().setToken(uid, null);
 		return ResultUtils.simpleSuccess(uid);
-	}
-	
-	public Set<Long> getResourceIds(Long userId) {
-		if (userId == null) {
-			return Collections.emptySet();
-		}
-		Set<Long> roleIds = getRoleIds(userId, true);
-		if (CollectionUtils.isEmpty(roleIds)) {
-			return Collections.emptySet();
-		}
-		return RoleResourceServiceFactory.get().getRoleResources(roleIds).parallelStream().map(RoleResource::getResourceId).collect(Collectors.toSet());
-	}
-	
-	public Set<Long> getUserIds(Long userId) {
-		if (userId == null) {
-			return Collections.emptySet();
-		}
-		Set<Long> userIds = new HashSet<>();
-		userIds.add(userId);
-		Set<Long> roleIds = getRoleIds(userId, false);
-		if (CollectionUtils.isEmpty(roleIds)) {
-			return userIds;
-		}
-		userIds.addAll(UserRoleServiceFactory.get().getUserRoles(roleIds).parallelStream().map(UserRole::getUserId).collect(Collectors.toSet()));
-		return userIds;
-	}
-	
-	private Set<Long> getRoleIds(Long userId, boolean includeSelfRole) {
-		if (userId == null) {
-			return Collections.emptySet();
-		}
-		List<UserRole> userRoles = UserRoleServiceFactory.get().getUserRoles(userId);
-		RoleService roleService = RoleServiceFactory.get();
-		Set<Long> roleIds = new HashSet<>();
-		for (UserRole userRole : userRoles) {
-			if (includeSelfRole) {
-				roleIds.add(userRole.getRoleId());
-			}
-			List<Role> childrenRoles = roleService.getAllChildrenRoles(userRole.getRoleId(), userRole.getRolePath());
-			if (childrenRoles != null) {
-				roleIds.addAll(childrenRoles.parallelStream().map(Role::getId).collect(Collectors.toSet()));
-			}
-		}
-		return roleIds;
 	}
 	
 	private UserToken buildToken(User user) {

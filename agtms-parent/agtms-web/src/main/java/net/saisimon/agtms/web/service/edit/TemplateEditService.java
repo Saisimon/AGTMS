@@ -61,8 +61,8 @@ import net.saisimon.agtms.web.selection.ResourceSelection;
 import net.saisimon.agtms.web.selection.ViewSelection;
 import net.saisimon.agtms.web.selection.WhetherSelection;
 import net.saisimon.agtms.web.service.common.MessageService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 import net.saisimon.agtms.web.service.main.ManagementMainService;
-import net.saisimon.agtms.web.service.user.UserInfoService;
 
 /**
  * 模板编辑服务
@@ -88,10 +88,10 @@ public class TemplateEditService {
 	@Autowired
 	private MessageService messageService;
 	@Autowired
-	private UserInfoService userInfoService;
+	private PremissionService premissionService;
 	
 	public Result grid(Long id) {
-		Set<Long> userIds = userInfoService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = null;
 		if (id != null) {
 			template = TemplateUtils.getTemplate(id, userIds);
@@ -148,7 +148,7 @@ public class TemplateEditService {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(messageService.getMessage("title"), 32);
 		}
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = userInfoService.getUserIds(userId);
+		Set<Long> userIds = premissionService.getUserIds(userId);
 		TemplateService templateService = TemplateServiceFactory.get();
 		Map<String, String> navigationMap = resourceSelection.selectWithParent(null, Resource.ContentType.NAVIGATION);
 		if (!navigationMap.containsKey(template.getPath())) {
