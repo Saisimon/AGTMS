@@ -346,7 +346,6 @@ public class ManagementMainService extends AbstractMainService {
 		}
 		Template template = (Template) key;
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(template.getTitle()).active(true).build());
 		ResourceService resourceService = ResourceServiceFactory.get();
 		if (SystemUtils.isNotBlank(template.getPath())) {
 			String[] strs = template.getPath().split("/");
@@ -356,10 +355,11 @@ public class ManagementMainService extends AbstractMainService {
 					if (r == null) {
 						continue;
 					}
-					breadcrumbs.add(0, Breadcrumb.builder().text(r.getName()).to("/").build());
+					breadcrumbs.add(Breadcrumb.builder().text(r.getName()).to("/").build());
 				} catch (NumberFormatException e) {}
 			}
 		}
+		breadcrumbs.add(Breadcrumb.builder().text(template.getTitle()).active(true).build());
 		return breadcrumbs;
 	}
 

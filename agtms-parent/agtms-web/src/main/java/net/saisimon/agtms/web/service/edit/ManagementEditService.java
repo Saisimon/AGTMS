@@ -111,7 +111,6 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 		}
 		Template template = (Template) key;
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(template.getTitle()).to("/management/main/" + template.sign()).build());
 		ResourceService resourceService = ResourceServiceFactory.get();
 		if (SystemUtils.isNotBlank(template.getPath())) {
 			String[] strs = template.getPath().split("/");
@@ -121,10 +120,11 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 					if (r == null) {
 						continue;
 					}
-					breadcrumbs.add(0, Breadcrumb.builder().text(r.getName()).to("/").build());
+					breadcrumbs.add(Breadcrumb.builder().text(r.getName()).to("/").build());
 				} catch (NumberFormatException e) {}
 			}
 		}
+		breadcrumbs.add(Breadcrumb.builder().text(template.getTitle()).to("/management/main/" + template.sign()).build());
 		if (domain == null) {
 			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("create")).active(true).build());
 		} else {
