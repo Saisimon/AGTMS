@@ -12,29 +12,45 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.entity.UserToken;
+import net.saisimon.agtms.core.domain.filter.FilterRequest;
+import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.dto.PageResult;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.FileTypes;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.factory.OperationServiceFactory;
+import net.saisimon.agtms.core.factory.ResourceServiceFactory;
+import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
+import net.saisimon.agtms.core.factory.RoleServiceFactory;
+import net.saisimon.agtms.core.factory.SelectionServiceFactory;
+import net.saisimon.agtms.core.factory.TaskServiceFactory;
+import net.saisimon.agtms.core.factory.TemplateServiceFactory;
+import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
+import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.property.AgtmsProperties;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
-import net.saisimon.agtms.web.annotation.Order;
+import net.saisimon.agtms.web.config.runner.InitRunner;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.ExportParam;
 import net.saisimon.agtms.web.dto.req.NavigationParam;
@@ -44,19 +60,38 @@ import net.saisimon.agtms.web.dto.req.SelectionParam.SelectionTemplateParam;
 import net.saisimon.agtms.web.dto.req.UserParam;
 import net.saisimon.agtms.web.dto.resp.TaskInfo;
 import net.saisimon.agtms.web.dto.resp.TemplateInfo;
-import net.saisimon.agtms.web.runner.OrderedRunner;
 
-@RunWith(OrderedRunner.class)
+@RunWith(SpringRunner.class)
 @SpringBootTest(properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR"})
 @AutoConfigureMockMvc
 public class EditControllerTest extends AbstractControllerTest {
 	
 	@Autowired
 	private AgtmsProperties agtmsProperties;
+	@Autowired
+	private InitRunner initRunner;
+	
+	@Before
+	public void setUp() throws Exception {
+		initRunner.run(new String[0]);
+	}
+	
+	@After
+	public void tearsDown() throws Exception {
+		FilterRequest filter = FilterRequest.build();
+		UserServiceFactory.get().delete(filter);
+		UserRoleServiceFactory.get().delete(filter);
+		TemplateServiceFactory.get().delete(filter);
+		TaskServiceFactory.get().delete(filter);
+		SelectionServiceFactory.get().delete(filter);
+		RoleServiceFactory.get().delete(filter);
+		RoleResourceServiceFactory.get().delete(filter);
+		ResourceServiceFactory.get().delete(filter);
+		OperationServiceFactory.get().delete(filter);
+	}
 	
 	/* UserEditController Start */
 	@Test
-	@Order(1)
 	public void testUserEditGrid() throws Exception {
 		UserToken testToken = login("editor", "editor");
 		Long testUserId = testToken.getUserId();
@@ -73,7 +108,6 @@ public class EditControllerTest extends AbstractControllerTest {
 	}
 	
 	@Test
-	@Order(2)
 	public void testUserEditSave() throws Exception {
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
 		UserParam body = new UserParam();
@@ -182,7 +216,6 @@ public class EditControllerTest extends AbstractControllerTest {
 	
 	/* NavigationEditController Start */
 	@Test
-	@Order(3)
 	public void testNavigationEditSave() throws Exception {
 		UserToken testToken = login("editor", "editor");
 		NavigationParam body = new NavigationParam();
@@ -211,6 +244,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		body.setName("Test");
 		body.setPath("");
 		sendPost("/navigation/edit/save", body, testToken);
+		Long newId = ResourceServiceFactory.get().findOne(FilterRequest.build(), FilterSort.build(Constant.ID, Direction.DESC), Constant.ID).get().getId();
 		
 		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS.getCode());
 		
@@ -223,75 +257,75 @@ public class EditControllerTest extends AbstractControllerTest {
 		}
 		
 		body = new NavigationParam();
-		body.setId(100L);
+		body.setId(1000L);
 		body.setIcon("list");
 		body.setName("Test");
 		body.setPath("");
 		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Navigation.NAVIGATION_NOT_EXIST.getCode());
 		
 		body = new NavigationParam();
-		body.setId(9L);
+		body.setId(newId);
 		body.setIcon("list");
 		body.setName("Test");
-		body.setPath("/9");
+		body.setPath("/" + newId);
 		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Common.PARAM_ERROR.getCode());
 		
 		body = new NavigationParam();
-		body.setId(9L);
+		body.setId(newId);
 		body.setIcon("list");
 		body.setName("Test");
-		body.setPath("/100");
+		body.setPath("/1000");
 		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Common.PARAM_ERROR.getCode());
 		
 		body = new NavigationParam();
-		body.setId(10L);
+		body.setId(newId + 1);
 		body.setIcon("cogs");
 		body.setName("Test");
-		body.setPath("/9");
+		body.setPath("/" + newId);
 		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS.getCode());
 		
 		body = new NavigationParam();
-		body.setId(10L);
+		body.setId(newId + 1);
 		body.setIcon("cogs");
 		body.setName("Test-0");
-		body.setPath("/9");
+		body.setPath("/" + newId);
 		sendPost("/navigation/edit/save", body, testToken);
 		
 		body = new NavigationParam();
-		body.setId(11L);
+		body.setId(newId + 2);
 		body.setIcon("cogs");
 		body.setName("Test-1");
-		body.setPath("/9/10");
+		body.setPath("/" + newId + "/" + (newId + 1));
 		sendPost("/navigation/edit/save", body, testToken);
 		
 		body = new NavigationParam();
-		body.setId(12L);
+		body.setId(newId + 3);
 		body.setIcon("cogs");
 		body.setName("Test-2");
-		body.setPath("/9/10/11");
+		body.setPath("/" + newId + "/" + (newId + 1) + "/" + (newId + 2));
 		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT.getCode());
 		
 		body = new NavigationParam();
 		body.setIcon("cogs");
 		body.setName("Test-SUB");
-		body.setPath("/9/10/11");
+		body.setPath("/" + newId + "/" + (newId + 1) + "/" + (newId + 2));
 		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT.getCode());
 		
 		body = new NavigationParam();
-		body.setId(10L);
+		body.setId(newId + 1);
 		body.setIcon("cogs");
 		body.setName("Test-0");
-		body.setPath("/12");
+		body.setPath("/" + (newId + 3));
 		sendPost("/navigation/edit/save", body, testToken);
 		
 		sendPost("/navigation/edit/grid", null, testToken);
 		
 		Map<String, String> param = new HashMap<>();
-		param.put("id", "100");
+		param.put("id", "1000");
 		sendPost("/navigation/edit/grid", param, testToken, ErrorMessage.Navigation.NAVIGATION_NOT_EXIST.getCode());
 		
 		param = new HashMap<>();
-		param.put("id", "10");
+		param.put("id", (newId + 1) + "");
 		sendPost("/navigation/edit/grid", param, testToken);
 		
 		Map<String, String> paramRequest = new HashMap<>();
@@ -305,18 +339,18 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/navigation/main/remove", param, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
 		param = new HashMap<>();
-		param.put("id", "100");
+		param.put("id", "1000");
 		sendPost("/navigation/main/remove", param, testToken, ErrorMessage.Navigation.NAVIGATION_NOT_EXIST.getCode());
 		
 		param = new HashMap<>();
-		param.put("id", "10");
+		param.put("id", (newId + 1) + "");
 		sendPost("/navigation/main/remove", param, testToken);
 		
 		bodyRequest = new HashMap<>();
 		sendPost("/navigation/main/batch/save", null, bodyRequest, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
 		bodyRequest = new HashMap<>();
-		bodyRequest.put("ids", Arrays.asList("11", "12", "13", "14", "100"));
+		bodyRequest.put("ids", Arrays.asList((newId + 1) + "", (newId + 2) + "", (newId + 3) + "", "1000"));
 		bodyRequest.put("icon", "users");
 		sendPost("/navigation/main/batch/save", null, bodyRequest, testToken);
 		
@@ -324,22 +358,22 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/navigation/main/batch/remove", ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
 		ids = new ArrayList<>();
-		ids.add(11L);
-		ids.add(12L);
-		ids.add(13L);
+		ids.add(newId + 1);
+		ids.add(newId + 2);
+		ids.add(newId + 3);
+		ids.add(1000L);
 		sendPost("/navigation/main/batch/remove", ids, testToken);
 	}
 	/* NavigationEditController End */
 	
 	/* TemplateEditController Start */
 	@Test
-	@Order(4)
 	public void testTemplateEditSave() throws Exception {
 		UserToken testToken = login("editor", "editor");
 		sendPost("/template/edit/grid", null, testToken);
 		
 		Map<String, String> param = new HashMap<>();
-		param.put("id", "10");
+		param.put("id", "1000");
 		sendPost("/template/edit/grid", param, testToken, ErrorMessage.Template.TEMPLATE_NOT_EXIST.getCode());
 		
 		Template testTemplate = buildTestTemplate(testToken.getUserId(), null, 0, 0);
@@ -358,37 +392,40 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/template/edit/save", testTemplate, testToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
 		
 		testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 2, 1);
-		testTemplate.setPath("/100");
+		testTemplate.setPath("/1000");
 		sendPost("/template/edit/save", testTemplate, testToken, ErrorMessage.Common.PARAM_ERROR.getCode());
 		
 		testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 2, 1);
 		sendPost("/template/edit/save", testTemplate, testToken);
 		
+		Long newId = TemplateServiceFactory.get().findOne(FilterRequest.build(), FilterSort.build(Constant.ID, Direction.DESC), Constant.ID).get().getId();
+		
 		sendPost("/template/edit/save", testTemplate, testToken, ErrorMessage.Template.TEMPLATE_ALREADY_EXISTS.getCode());
 		
-		for (int i = 0; i < 5; i++) {
+		int size = 5;
+		for (int i = 0; i < size; i++) {
 			testTemplate = buildTestTemplate(testToken.getUserId(), "Test-" + i, 3, 2);
 			sendPost("/template/edit/save", testTemplate, testToken);
 		}
 		
 		testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 1, 2);
-		testTemplate.setId(10L);
+		testTemplate.setId(1000L);
 		sendPost("/template/edit/save", testTemplate, testToken, ErrorMessage.Template.TEMPLATE_NOT_EXIST.getCode());
 		
 		testTemplate = buildTestTemplate(testToken.getUserId(), "Test-1", 1, 2);
-		testTemplate.setId(1L);
+		testTemplate.setId(newId);
 		sendPost("/template/edit/save", testTemplate, testToken, ErrorMessage.Template.TEMPLATE_ALREADY_EXISTS.getCode());
 		
 		testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 1, 2);
-		testTemplate.setId(1L);
+		testTemplate.setId(newId);
 		sendPost("/template/edit/save", testTemplate, testToken);
 		
 		param = new HashMap<>();
-		param.put("id", "1");
+		param.put("id", newId.toString());
 		sendPost("/template/edit/grid", param, testToken);
 		
 		param = new HashMap<>();
-		param.put("id", "1");
+		param.put("id", newId.toString());
 		sendPost("/template/main/grid", param, testToken);
 		
 		param = new HashMap<>();
@@ -398,30 +435,26 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/template/main/list", param, body, testToken);
 		
 		param = new HashMap<>();
-		param.put("id", "100");
+		param.put("id", "1000");
 		sendPost("/template/main/remove", param, testToken, ErrorMessage.Template.TEMPLATE_NOT_EXIST.getCode());
 		
 		param = new HashMap<>();
-		param.put("id", "1");
+		param.put("id", newId.toString());
 		sendPost("/template/main/remove", param, testToken);
 		
 		List<Long> ids = new ArrayList<>();
 		sendPost("/template/main/batch/remove", ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
 		ids = new ArrayList<>();
-		ids.add(1L);
-		ids.add(2L);
-		ids.add(3L);
-		ids.add(4L);
-		ids.add(5L);
-		ids.add(6L);
+		for (int i = 0; i <= size; i++) {
+			ids.add(newId + i);
+		}
 		sendPost("/template/main/batch/remove", ids, testToken);
 	}
 	/* TemplateEditController End */
 	
 	/* SelectionEditController Start */
 	@Test
-	@Order(5)
 	public void testSelectionEditSave() throws Exception {
 		UserToken testToken = login("editor", "editor");
 		sendPost("/selection/edit/grid", null, testToken);
@@ -563,7 +596,6 @@ public class EditControllerTest extends AbstractControllerTest {
 	
 	/* ManagementEditController Start */
 	@Test
-	@Order(6)
 	@SuppressWarnings("unchecked")
 	public void testManagementEditSave() throws Exception {
 		UserToken testToken = login("editor", "editor");
