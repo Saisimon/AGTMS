@@ -27,7 +27,11 @@ public class SelectionFieldHandler extends AbstractFieldHandler {
 	public Result validate(Template template, TemplateField field, Object value) {
 		if (field != null && SystemUtils.isNotEmpty(value)) {
 			String selectionSign = field.selectionSign(template.getService());
-			Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
+			Long userId = AuthUtils.getUid();
+			if (userId == null) {
+				return ErrorMessage.Common.FIELD_FORMAT_NOT_CORRECT.messageArgs(field.getFieldTitle());
+			}
+			Set<Long> userIds = premissionService.getUserIds(userId);
 			Selection selection = SelectionUtils.getSelection(selectionSign, userIds);
 			if (selection == null) {
 				return ErrorMessage.Common.FIELD_FORMAT_NOT_CORRECT.messageArgs(field.getFieldTitle());
