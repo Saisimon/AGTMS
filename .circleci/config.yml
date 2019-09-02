@@ -4,10 +4,10 @@ jobs:
   build:
     working_directory: ~/agtms
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/jdk8:0.1.1
       - image: zookeeper
     environment:
-      MAVEN_OPTS: -Xmx3200m
+      _JAVA_OPTIONS: "-Xmx3g"
     steps:
       - checkout
       - run: echo "127.0.0.1 zookeeperserver" | sudo tee -a /etc/hosts
