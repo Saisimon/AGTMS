@@ -10,8 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import net.saisimon.agtms.core.domain.entity.UserToken;
@@ -29,9 +31,13 @@ import net.saisimon.agtms.web.config.runner.InitRunner;
 import net.saisimon.agtms.web.domain.SimpleEntity;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR"})
+@SpringBootTest(classes = AgtmsControllerTest.TestMain.class, properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR"})
 @AutoConfigureMockMvc
 public class AgtmsControllerTest extends AbstractControllerTest {
+	
+	@SpringBootApplication
+	@ComponentScan(basePackages="net.saisimon.agtms")
+	public static class TestMain {}
 	
 	@Autowired
 	private InitRunner initRunner;

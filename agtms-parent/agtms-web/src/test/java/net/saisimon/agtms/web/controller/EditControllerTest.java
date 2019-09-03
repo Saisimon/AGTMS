@@ -18,8 +18,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.mock.web.MockMultipartFile;
@@ -62,9 +64,13 @@ import net.saisimon.agtms.web.dto.resp.TaskInfo;
 import net.saisimon.agtms.web.dto.resp.TemplateInfo;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR"})
+@SpringBootTest(classes = EditControllerTest.TestMain.class, properties = {"spring.main.bannerMode=OFF", "logging.level.root=ERROR"})
 @AutoConfigureMockMvc
 public class EditControllerTest extends AbstractControllerTest {
+	
+	@SpringBootApplication
+	@ComponentScan(basePackages="net.saisimon.agtms")
+	public static class TestMain {}
 	
 	@Autowired
 	private AgtmsProperties agtmsProperties;
@@ -601,288 +607,273 @@ public class EditControllerTest extends AbstractControllerTest {
 		UserToken testToken = login("editor", "editor");
 		Template testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 2, 7);
 		sendPost("/template/edit/save", testTemplate, testToken);
+		Long templateId = TemplateServiceFactory.get().findOne(FilterRequest.build(), FilterSort.build(Constant.ID, Direction.DESC), Constant.ID).get().getId();
+		
+		String editGridUri = "/management/edit/" + templateId + "/grid";
+		String editSaveUri = "/management/edit/" + templateId + "/save";
+		String mainGridUri = "/management/main/" + templateId + "/grid";
+		String mainRemoveUri = "/management/main/" + templateId + "/remove";
+		String mainBatchGridUri = "/management/main/" + templateId + "/batch/grid";
+		String mainBatchRemoveUri = "/management/main/" + templateId + "/batch/remove";
+		String mainBatchSaveUri = "/management/main/" + templateId + "/batch/save";
+		String mainBatchExportUri = "/management/main/" + templateId + "/batch/export";
+		String mainBatchImportUri = "/management/main/" + templateId + "/batch/import";
+		String mainListUri = "/management/main/" + templateId + "/list";
+		sendPost(editGridUri, null, testToken);
+		
+		sendPost(mainGridUri, null, testToken);
 		
 		Map<String, String> param = new HashMap<>();
 		param.put("index", "0");
 		param.put("size", "10");
 		Map<String, Object> body = new HashMap<>();
-		String json = sendPost("/template/main/list", param, body, testToken);
-		PageResult<TemplateInfo> templagePageResult = SystemUtils.fromJson(json, PageResult.class, TemplateInfo.class);
-		Iterable<TemplateInfo> templateIterable = templagePageResult.getRows();
-		TemplateInfo templateInfo = null;
-		if (templateIterable != null) {
-			Iterator<TemplateInfo> templateIterator = templateIterable.iterator();
-			if (templateIterator != null && templateIterator.hasNext()) {
-				templateInfo = templateIterator.next();
-			}
-		}
-		if (templateInfo != null) {
-			String editGridUri = "/management/edit/" + templateInfo.getId() + "/grid";
-			String editSaveUri = "/management/edit/" + templateInfo.getId() + "/save";
-			String mainGridUri = "/management/main/" + templateInfo.getId() + "/grid";
-			String mainRemoveUri = "/management/main/" + templateInfo.getId() + "/remove";
-			String mainBatchGridUri = "/management/main/" + templateInfo.getId() + "/batch/grid";
-			String mainBatchRemoveUri = "/management/main/" + templateInfo.getId() + "/batch/remove";
-			String mainBatchSaveUri = "/management/main/" + templateInfo.getId() + "/batch/save";
-			String mainBatchExportUri = "/management/main/" + templateInfo.getId() + "/batch/export";
-			String mainBatchImportUri = "/management/main/" + templateInfo.getId() + "/batch/import";
-			String mainListUri = "/management/main/" + templateInfo.getId() + "/list";
-			sendPost(editGridUri, null, testToken);
-			
-			sendPost(mainGridUri, null, testToken);
-			
-			param = new HashMap<>();
-			param.put("index", "0");
-			param.put("size", "10");
+		sendPost(mainListUri, param, body, testToken);
+		
+		body = new HashMap<>();
+		body.put("column0field0", buildString(513));
+		sendPost(editSaveUri, body, testToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
+		
+		body = new HashMap<>();
+		body.put("column0field0", "column0field0");
+		body.put("column0field1", 99L);
+		body.put("column0field2", 99.99D);
+		body.put("column0field3", new Date());
+		body.put("column1field0", "column1field0");
+		body.put("column1field1", 99L);
+		body.put("column1field2", 99.99D);
+		body.put("column1field3", new Date());
+		sendPost(editSaveUri, body, testToken);
+		
+		param = new HashMap<>();
+		param.put("id", "10");
+		sendPost(editGridUri, param, testToken, ErrorMessage.Domain.DOMAIN_NOT_EXIST.getCode());
+		
+		param = new HashMap<>();
+		param.put("id", "1");
+		sendPost(editGridUri, param, testToken);
+		
+		sendPost(mainBatchGridUri, null, testToken);
+		
+		param = new HashMap<>();
+		param.put("index", "0");
+		param.put("size", "10");
+		body = new HashMap<>();
+		sendPost(mainListUri, param, body, testToken);
+		
+		body = new HashMap<>();
+		body.put("id", 10L);
+		body.put("column0field0", "column0field0");
+		body.put("column0field1", 99L);
+		body.put("column0field2", 99.99D);
+		body.put("column0field3", new Date());
+		body.put("column1field0", "column1field0");
+		body.put("column1field1", 99L);
+		body.put("column1field2", 99.99D);
+		body.put("column1field3", new Date());
+		sendPost(editSaveUri, body, testToken, ErrorMessage.Domain.DOMAIN_NOT_EXIST.getCode());
+		
+		body = new HashMap<>();
+		body.put("id", 1L);
+		body.put("column0field0", "column0field0");
+		body.put("column0field1", 199L);
+		body.put("column0field2", 199.99D);
+		body.put("column0field3", new Date());
+		body.put("column1field0", "column1field0");
+		body.put("column1field1", 199L);
+		body.put("column1field2", 199.99D);
+		body.put("column1field3", new Date());
+		sendPost(editSaveUri, body, testToken);
+		
+		for (int i = 0; i < 5; i++) {
 			body = new HashMap<>();
-			sendPost(mainListUri, param, body, testToken);
-			
-			body = new HashMap<>();
-			body.put("column0field0", buildString(513));
-			sendPost(editSaveUri, body, testToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
-			
-			body = new HashMap<>();
-			body.put("column0field0", "column0field0");
-			body.put("column0field1", 99L);
-			body.put("column0field2", 99.99D);
-			body.put("column0field3", new Date());
-			body.put("column1field0", "column1field0");
-			body.put("column1field1", 99L);
-			body.put("column1field2", 99.99D);
-			body.put("column1field3", new Date());
-			sendPost(editSaveUri, body, testToken);
-			
-			param = new HashMap<>();
-			param.put("id", "10");
-			sendPost(editGridUri, param, testToken, ErrorMessage.Domain.DOMAIN_NOT_EXIST.getCode());
-			
-			param = new HashMap<>();
-			param.put("id", "1");
-			sendPost(editGridUri, param, testToken);
-			
-			sendPost(mainBatchGridUri, null, testToken);
-			
-			param = new HashMap<>();
-			param.put("index", "0");
-			param.put("size", "10");
-			body = new HashMap<>();
-			sendPost(mainListUri, param, body, testToken);
-			
-			body = new HashMap<>();
-			body.put("id", 10L);
-			body.put("column0field0", "column0field0");
-			body.put("column0field1", 99L);
-			body.put("column0field2", 99.99D);
-			body.put("column0field3", new Date());
-			body.put("column1field0", "column1field0");
-			body.put("column1field1", 99L);
-			body.put("column1field2", 99.99D);
-			body.put("column1field3", new Date());
-			sendPost(editSaveUri, body, testToken, ErrorMessage.Domain.DOMAIN_NOT_EXIST.getCode());
-			
-			body = new HashMap<>();
-			body.put("id", 1L);
-			body.put("column0field0", "column0field0");
+			body.put("column0field0", "Test-" + i);
 			body.put("column0field1", 199L);
 			body.put("column0field2", 199.99D);
 			body.put("column0field3", new Date());
-			body.put("column1field0", "column1field0");
+			body.put("column1field0", "Test-" + i);
 			body.put("column1field1", 199L);
 			body.put("column1field2", 199.99D);
 			body.put("column1field3", new Date());
 			sendPost(editSaveUri, body, testToken);
-			
-			for (int i = 0; i < 5; i++) {
-				body = new HashMap<>();
-				body.put("column0field0", "Test-" + i);
-				body.put("column0field1", 199L);
-				body.put("column0field2", 199.99D);
-				body.put("column0field3", new Date());
-				body.put("column1field0", "Test-" + i);
-				body.put("column1field1", 199L);
-				body.put("column1field2", 199.99D);
-				body.put("column1field3", new Date());
-				sendPost(editSaveUri, body, testToken);
-			}
-			
-			body = new HashMap<>();
-			sendPost(mainBatchSaveUri, null, body, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
-			
-			body = new HashMap<>();
-			body.put("ids", Arrays.asList("2", "3", "4", "100"));
-			body.put("column0field0", buildString(513));
-			sendPost(mainBatchSaveUri, null, body, testToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
-			
-			body = new HashMap<>();
-			body.put("ids", Arrays.asList("2", "3", "4", "100"));
-			body.put("column0field0", "column0field0-test");
-			body.put("column0field3", new Date());
-			sendPost(mainBatchSaveUri, null, body, testToken);
-			
-			ExportParam exportParam = new ExportParam();
-			sendPost(mainBatchExportUri, exportParam, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
-			
-			List<String> exportFields = Arrays.asList("column0field0", "column0field1", "column0field2", "column0field3", "column1field0", "column1field1", "column1field2", "column1field3");
-			exportParam = new ExportParam();
-			exportParam.setExportFields(exportFields);
-			exportParam.setExportFileType(FileTypes.XLS.getType());
-			sendPost(mainBatchExportUri, exportParam, testToken);
-			
-			exportParam = new ExportParam();
-			exportParam.setExportFields(exportFields);
-			exportParam.setExportFileType(FileTypes.XLSX.getType());
-			sendPost(mainBatchExportUri, exportParam, testToken);
-			
-			exportParam = new ExportParam();
-			exportParam.setExportFields(exportFields);
-			exportParam.setExportFileType(FileTypes.CSV.getType());
-			sendPost(mainBatchExportUri, exportParam, testToken);
-			
-			exportParam = new ExportParam();
-			exportParam.setExportFields(exportFields);
-			exportParam.setExportFileType(FileTypes.PDF.getType());
-			sendPost(mainBatchExportUri, exportParam, testToken);
-			
-			Map<String, Object> importParam = new HashMap<>();
-			
-			importParam.put("importFileType", FileTypes.XLS.getType());
-			importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
-			ClassPathResource classPathResource = new ClassPathResource("test.xls");
-			MockMultipartFile file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
-			sendMultipart(mainBatchImportUri, importParam, testToken, file);
-			
-			importParam.put("importFileType", FileTypes.XLSX.getType());
-			importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
-			classPathResource = new ClassPathResource("test.xlsx");
-			file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
-			sendMultipart(mainBatchImportUri, importParam, testToken, file);
-			
-			importParam.put("importFileType", FileTypes.CSV.getType());
-			importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
-			classPathResource = new ClassPathResource("test.csv");
-			file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
-			sendMultipart(mainBatchImportUri, importParam, testToken, file);
-			
-			Thread.sleep(1000);
-			
-			MockMultipartFile[] files = new MockMultipartFile[agtmsProperties.getImportFileMaxSize() + 1];
-			for (int i = 0; i < agtmsProperties.getImportFileMaxSize() + 1; i++) {
-				files[i] = new MockMultipartFile("importFiles", classPathResource.getInputStream());
-			}
-			sendMultipart(mainBatchImportUri, importParam, testToken, files);
-			
-			param = new HashMap<>();
-			param.put("index", "0");
-			param.put("size", "10");
-			body = new HashMap<>();
-			String result = sendPost("/task/main/list", param, body, testToken);
-			PageResult<TaskInfo> taskPageResult = SystemUtils.fromJson(result, PageResult.class, TaskInfo.class);
-			Iterator<TaskInfo> taskIterator = taskPageResult.getRows().iterator();
-			TaskInfo xlsExportTask = taskIterator.next();
-			TaskInfo xlsxExportTask = taskIterator.next();
-			TaskInfo csvExportTask = taskIterator.next();
-			TaskInfo pdfExportTask = taskIterator.next();
-			TaskInfo xlsImportTask = taskIterator.next();
-			TaskInfo xlsxImportTask = taskIterator.next();
-			TaskInfo csvImportTask = taskIterator.next();
-			
-			param = new HashMap<>();
-			param.put("id", xlsExportTask.getId());
-			sendPost("/task/main/cancel", param, testToken, ErrorMessage.Task.TASK_CANCEL_FAILED.getCode());
-			
-			param = new HashMap<>();
-			param.put("taskId", "100");
-			sendPost("/api/cancel/task", param, testToken, -1);
-			
-			param = new HashMap<>();
-			param.put("taskId", xlsExportTask.getId());
-			sendPost("/api/cancel/task", param, testToken, -1);
-			
-			param = new HashMap<>();
-			sendPost("/task/main/grid", param, testToken);
-			
-			param = new HashMap<>();
-			param.put("id", "100");
-			param.put("uuid", "");
-			returnBinary("/task/main/download", param, null, status().isNotFound());
-			
-			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsExportTask.getHandleStatus())) {
-				param = new HashMap<>();
-				param.put("id", xlsExportTask.getId());
-				param.put("uuid", xlsExportTask.getUuid());
-				returnBinary("/task/main/download", param, null);
-			}
-			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsxExportTask.getHandleStatus())) {
-				param = new HashMap<>();
-				param.put("id", xlsxExportTask.getId());
-				param.put("uuid", xlsxExportTask.getUuid());
-				returnBinary("/task/main/download", param, null);
-			}
-			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(csvExportTask.getHandleStatus())) {
-				param = new HashMap<>();
-				param.put("id", csvExportTask.getId());
-				param.put("uuid", csvExportTask.getUuid());
-				returnBinary("/task/main/download", param, null);
-			}
-			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(pdfExportTask.getHandleStatus())) {
-				param = new HashMap<>();
-				param.put("id", pdfExportTask.getId());
-				param.put("uuid", pdfExportTask.getUuid());
-				returnBinary("/task/main/download", param, null);
-			}
-			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsImportTask.getHandleStatus())) {
-				param = new HashMap<>();
-				param.put("id", xlsImportTask.getId());
-				param.put("uuid", xlsImportTask.getUuid());
-				returnBinary("/task/main/download", param, null);
-			}
-			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsxImportTask.getHandleStatus())) {
-				param = new HashMap<>();
-				param.put("id", xlsxImportTask.getId());
-				param.put("uuid", xlsxImportTask.getUuid());
-				returnBinary("/task/main/download", param, null);
-			}
-			if (getMessage(HandleStatuses.SUCCESS.getName()).equals(csvImportTask.getHandleStatus())) {
-				param = new HashMap<>();
-				param.put("id", csvImportTask.getId());
-				param.put("uuid", csvImportTask.getUuid());
-				returnBinary("/task/main/download", param, null);
-			}
-			
-			param = new HashMap<>();
-			param.put("id", "-1");
-			sendPost("/task/main/remove", param, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
-			
-			param = new HashMap<>();
-			param.put("id", xlsExportTask.getId());
-			sendPost("/task/main/remove", param, testToken);
-			
-			List<Long> ids = new ArrayList<>();
-			sendPost("/task/main/batch/remove", ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
-			
-			ids = new ArrayList<>();
-			ids.add(1L);
-			ids.add(2L);
-			ids.add(3L);
-			sendPost("/task/main/batch/remove", ids, testToken);
-			
-			param = new HashMap<>();
-			param.put("id", "100");
-			sendPost(mainRemoveUri, param, testToken, ErrorMessage.Domain.DOMAIN_NOT_EXIST.getCode());
-			
-			param = new HashMap<>();
-			param.put("id", "1");
-			sendPost(mainRemoveUri, param, testToken);
-			
-			ids = new ArrayList<>();
-			sendPost(mainBatchRemoveUri, ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
-			
-			ids = new ArrayList<>();
-			ids.add(1L);
-			ids.add(2L);
-			ids.add(3L);
-			sendPost(mainBatchRemoveUri, ids, testToken);
 		}
+		
+		body = new HashMap<>();
+		sendPost(mainBatchSaveUri, null, body, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		body = new HashMap<>();
+		body.put("ids", Arrays.asList("2", "3", "4", "100"));
+		body.put("column0field0", buildString(513));
+		sendPost(mainBatchSaveUri, null, body, testToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
+		
+		body = new HashMap<>();
+		body.put("ids", Arrays.asList("2", "3", "4", "100"));
+		body.put("column0field0", "column0field0-test");
+		body.put("column0field3", new Date());
+		sendPost(mainBatchSaveUri, null, body, testToken);
+		
+		ExportParam exportParam = new ExportParam();
+		sendPost(mainBatchExportUri, exportParam, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		List<String> exportFields = Arrays.asList("column0field0", "column0field1", "column0field2", "column0field3", "column1field0", "column1field1", "column1field2", "column1field3");
+		exportParam = new ExportParam();
+		exportParam.setExportFields(exportFields);
+		exportParam.setExportFileType(FileTypes.XLS.getType());
+		sendPost(mainBatchExportUri, exportParam, testToken);
+		
+		exportParam = new ExportParam();
+		exportParam.setExportFields(exportFields);
+		exportParam.setExportFileType(FileTypes.XLSX.getType());
+		sendPost(mainBatchExportUri, exportParam, testToken);
+		
+		exportParam = new ExportParam();
+		exportParam.setExportFields(exportFields);
+		exportParam.setExportFileType(FileTypes.CSV.getType());
+		sendPost(mainBatchExportUri, exportParam, testToken);
+		
+		exportParam = new ExportParam();
+		exportParam.setExportFields(exportFields);
+		exportParam.setExportFileType(FileTypes.PDF.getType());
+		sendPost(mainBatchExportUri, exportParam, testToken);
+		
+		Map<String, Object> importParam = new HashMap<>();
+		
+		importParam.put("importFileType", FileTypes.XLS.getType());
+		importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
+		ClassPathResource classPathResource = new ClassPathResource("test.xls");
+		MockMultipartFile file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
+		sendMultipart(mainBatchImportUri, importParam, testToken, file);
+		
+		importParam.put("importFileType", FileTypes.XLSX.getType());
+		importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
+		classPathResource = new ClassPathResource("test.xlsx");
+		file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
+		sendMultipart(mainBatchImportUri, importParam, testToken, file);
+		
+		importParam.put("importFileType", FileTypes.CSV.getType());
+		importParam.put("importFields", Arrays.asList("column0field0", "column1field0"));
+		classPathResource = new ClassPathResource("test.csv");
+		file = new MockMultipartFile("importFiles", classPathResource.getInputStream());
+		sendMultipart(mainBatchImportUri, importParam, testToken, file);
+		
+		Thread.sleep(1000);
+		
+		MockMultipartFile[] files = new MockMultipartFile[agtmsProperties.getImportFileMaxSize() + 1];
+		for (int i = 0; i < agtmsProperties.getImportFileMaxSize() + 1; i++) {
+			files[i] = new MockMultipartFile("importFiles", classPathResource.getInputStream());
+		}
+		sendMultipart(mainBatchImportUri, importParam, testToken, files);
+		
+		param = new HashMap<>();
+		param.put("index", "0");
+		param.put("size", "10");
+		body = new HashMap<>();
+		String result = sendPost("/task/main/list", param, body, testToken);
+		PageResult<TaskInfo> taskPageResult = SystemUtils.fromJson(result, PageResult.class, TaskInfo.class);
+		Iterator<TaskInfo> taskIterator = taskPageResult.getRows().iterator();
+		TaskInfo xlsExportTask = taskIterator.next();
+		TaskInfo xlsxExportTask = taskIterator.next();
+		TaskInfo csvExportTask = taskIterator.next();
+		TaskInfo pdfExportTask = taskIterator.next();
+		TaskInfo xlsImportTask = taskIterator.next();
+		TaskInfo xlsxImportTask = taskIterator.next();
+		TaskInfo csvImportTask = taskIterator.next();
+		
+		param = new HashMap<>();
+		param.put("id", xlsExportTask.getId());
+		sendPost("/task/main/cancel", param, testToken, ErrorMessage.Task.TASK_CANCEL_FAILED.getCode());
+		
+		param = new HashMap<>();
+		param.put("taskId", "100");
+		sendPost("/api/cancel/task", param, testToken, -1);
+		
+		param = new HashMap<>();
+		param.put("taskId", xlsExportTask.getId());
+		sendPost("/api/cancel/task", param, testToken, -1);
+		
+		param = new HashMap<>();
+		sendPost("/task/main/grid", param, testToken);
+		
+		param = new HashMap<>();
+		param.put("id", "100");
+		param.put("uuid", "");
+		returnBinary("/task/main/download", param, null, status().isNotFound());
+		
+		if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsExportTask.getHandleStatus())) {
+			param = new HashMap<>();
+			param.put("id", xlsExportTask.getId());
+			param.put("uuid", xlsExportTask.getUuid());
+			returnBinary("/task/main/download", param, null);
+		}
+		if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsxExportTask.getHandleStatus())) {
+			param = new HashMap<>();
+			param.put("id", xlsxExportTask.getId());
+			param.put("uuid", xlsxExportTask.getUuid());
+			returnBinary("/task/main/download", param, null);
+		}
+		if (getMessage(HandleStatuses.SUCCESS.getName()).equals(csvExportTask.getHandleStatus())) {
+			param = new HashMap<>();
+			param.put("id", csvExportTask.getId());
+			param.put("uuid", csvExportTask.getUuid());
+			returnBinary("/task/main/download", param, null);
+		}
+		if (getMessage(HandleStatuses.SUCCESS.getName()).equals(pdfExportTask.getHandleStatus())) {
+			param = new HashMap<>();
+			param.put("id", pdfExportTask.getId());
+			param.put("uuid", pdfExportTask.getUuid());
+			returnBinary("/task/main/download", param, null);
+		}
+		if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsImportTask.getHandleStatus())) {
+			param = new HashMap<>();
+			param.put("id", xlsImportTask.getId());
+			param.put("uuid", xlsImportTask.getUuid());
+			returnBinary("/task/main/download", param, null);
+		}
+		if (getMessage(HandleStatuses.SUCCESS.getName()).equals(xlsxImportTask.getHandleStatus())) {
+			param = new HashMap<>();
+			param.put("id", xlsxImportTask.getId());
+			param.put("uuid", xlsxImportTask.getUuid());
+			returnBinary("/task/main/download", param, null);
+		}
+		if (getMessage(HandleStatuses.SUCCESS.getName()).equals(csvImportTask.getHandleStatus())) {
+			param = new HashMap<>();
+			param.put("id", csvImportTask.getId());
+			param.put("uuid", csvImportTask.getUuid());
+			returnBinary("/task/main/download", param, null);
+		}
+		
+		param = new HashMap<>();
+		param.put("id", "-1");
+		sendPost("/task/main/remove", param, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		param = new HashMap<>();
+		param.put("id", xlsExportTask.getId());
+		sendPost("/task/main/remove", param, testToken);
+		
+		List<Long> ids = new ArrayList<>();
+		sendPost("/task/main/batch/remove", ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		ids = new ArrayList<>();
+		ids.add(1L);
+		ids.add(2L);
+		ids.add(3L);
+		sendPost("/task/main/batch/remove", ids, testToken);
+		
+		param = new HashMap<>();
+		param.put("id", "100");
+		sendPost(mainRemoveUri, param, testToken, ErrorMessage.Domain.DOMAIN_NOT_EXIST.getCode());
+		
+		param = new HashMap<>();
+		param.put("id", "1");
+		sendPost(mainRemoveUri, param, testToken);
+		
+		ids = new ArrayList<>();
+		sendPost(mainBatchRemoveUri, ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		ids = new ArrayList<>();
+		ids.add(1L);
+		ids.add(2L);
+		ids.add(3L);
+		sendPost(mainBatchRemoveUri, ids, testToken);
 	}
 	/* ManagementEditController Start */
 	

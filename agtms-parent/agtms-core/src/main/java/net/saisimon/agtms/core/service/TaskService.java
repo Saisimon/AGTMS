@@ -38,19 +38,19 @@ public interface TaskService extends BaseService<Task, Long>, Ordered {
 	}
 
 	@Override
-	@CacheEvict(cacheNames="selection", key="#p0")
+	@CacheEvict(cacheNames="task", key="#p0")
 	default void update(Long id, Map<String, Object> updateMap) {
 		BaseService.super.update(id, updateMap);
 	}
 
 	@Override
-	@CacheEvict(cacheNames="selection", allEntries=true)
+	@CacheEvict(cacheNames="task", allEntries=true)
 	default void batchUpdate(FilterRequest filter, Map<String, Object> updateMap) {
 		BaseService.super.batchUpdate(filter, updateMap);
 	}
 	
 	@Override
-	@CacheEvict(cacheNames="selection", allEntries=true)
+	@CacheEvict(cacheNames="task", allEntries=true)
 	default Long delete(FilterRequest filter) {
 		return BaseService.super.delete(filter);
 	}

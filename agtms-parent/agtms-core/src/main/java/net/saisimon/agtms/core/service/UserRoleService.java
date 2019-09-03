@@ -59,8 +59,7 @@ public interface UserRoleService extends BaseService<UserRole, Long>, Ordered {
 	}
 
 	@Override
-	@CachePut(cacheNames="userRole", key="#p0.id")
-	@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, key="#p0.userId")
+	@Caching(evict=@CacheEvict(cacheNames= { Constant.Cache.RESOURCE_IDS_NAME, Constant.Cache.USER_IDS_NAME }, key="#p0.userId"), put=@CachePut(cacheNames="userRole", key="#p0.id"))
 	default UserRole saveOrUpdate(UserRole entity) {
 		return BaseService.super.saveOrUpdate(entity);
 	}

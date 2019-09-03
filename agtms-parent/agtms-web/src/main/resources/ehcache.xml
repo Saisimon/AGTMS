@@ -2,9 +2,14 @@
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
 	updateCheck="false">
-	<cache name="navigation" maxElementsInMemory="1000" timeToIdleSeconds="600" />
+	<cache name="user" maxElementsInMemory="1000" timeToIdleSeconds="600" />
+	<cache name="userRole" maxElementsInMemory="1000" timeToIdleSeconds="600" />
+	<cache name="role" maxElementsInMemory="1000" timeToIdleSeconds="600" />
+	<cache name="roleResource" maxElementsInMemory="1000" timeToIdleSeconds="600" />
+	<cache name="resource" maxElementsInMemory="1000" timeToIdleSeconds="600" />
+	<cache name="template" maxElementsInMemory="1000" timeToIdleSeconds="600" />
 	<cache name="selection" maxElementsInMemory="1000" timeToIdleSeconds="600" />
 	<cache name="task" maxElementsInMemory="1000" timeToIdleSeconds="600" />
-	<cache name="template" maxElementsInMemory="1000" timeToIdleSeconds="600" />
-	<cache name="user" maxElementsInMemory="1000" timeToIdleSeconds="600" />
+	<cache name="getResourceIds" maxElementsInMemory="1000" timeToIdleSeconds="600" />
+	<cache name="getUserIds" maxElementsInMemory="1000" timeToIdleSeconds="600" />
 </ehcache>

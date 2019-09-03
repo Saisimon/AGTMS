@@ -31,7 +31,7 @@ import redis.embedded.RedisServer;
 public class EmbeddedRedisAutoConfiguration {
 	
 	@Bean(initMethod="start", destroyMethod="stop")
-	public RedisServer embeddedRedisServer() {
+	public RedisServer embeddedRedisServer() throws Exception {
 		int port = SystemUtils.getAvailableLocalPort();
 		if (port == -1) {
 			throw new IllegalArgumentException("嵌入式 Redis 服务没有可用的端口");
