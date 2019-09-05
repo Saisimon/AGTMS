@@ -555,9 +555,12 @@ export default {
                         required: fieldRows[5][fieldColumn.field].value.value == '1' ? true : false,
                         uniqued: fieldRows[6][fieldColumn.field].value.value == '1' ? true : false,
                         hidden: fieldRows[7][fieldColumn.field].value.value == '1' ? true : false,
-                        defaultValue: fieldRows[8][fieldColumn.field].value.value != undefined ? fieldRows[8][fieldColumn.field].value.value : fieldRows[8][fieldColumn.field].value,
                         ordered: fieldColumn.ordered,
                     };
+                    var defaultValue = fieldRows[8][fieldColumn.field].value;
+                    if (defaultValue != null) {
+                        templateField['defaultValue'] = defaultValue.value != undefined ? defaultValue.value : defaultValue;
+                    }
                     if (templateField['views'] === 'selection') {
                         templateField['selection'] = fieldRows[2]['selection-' + fieldColumn.field].value.value;
                     }

@@ -10,10 +10,10 @@
                 select-label=""
                 deselect-label=""
                 selected-label=""
-                :allow-empty="false"
                 :searchable="false"
                 :options="editor.options"
                 :placeholder="''"
+                @remove="removeValue"
                 @select="updateValue" >
                 <template slot="noResult">{{ $t("no_result") }}</template>
                 <template slot="noOptions">{{ $t("no_options") }}</template>
@@ -81,6 +81,12 @@ export default {
         updateValue: function(val) {
             if (val != null) {
                 this.editor.value = val;
+                this.$emit('updateInputEditor', this.editor, this.rowKey, this.field);
+            }
+        },
+        removeValue: function(val) {
+            if (val != null) {
+                this.editor.value = null;
                 this.$emit('updateInputEditor', this.editor, this.rowKey, this.field);
             }
         }
