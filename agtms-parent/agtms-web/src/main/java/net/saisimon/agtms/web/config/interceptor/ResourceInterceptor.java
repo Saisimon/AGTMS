@@ -39,14 +39,14 @@ public class ResourceInterceptor implements HandlerInterceptor {
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		if (!(handler instanceof HandlerMethod) || hasPermission(request, response, (HandlerMethod) handler)) {
+		if (!(handler instanceof HandlerMethod) || hasPermission(request, (HandlerMethod) handler)) {
 			return true;
 		}
 		noPermission(response);
 		return false;
 	}
 	
-	private boolean hasPermission(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler) {
+	private boolean hasPermission(HttpServletRequest request, HandlerMethod handler) {
 		ResourceInfo resourceInfo = handler.getMethodAnnotation(ResourceInfo.class);
 		if (resourceInfo == null) {
 			return true;
