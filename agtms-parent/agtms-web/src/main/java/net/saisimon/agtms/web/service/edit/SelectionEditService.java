@@ -163,7 +163,7 @@ public class SelectionEditService {
 		Selection selection = ((SimpleResult<Selection>) buildResult).getData();
 		SelectTypes type = getSelectType(selection);
 		if (type == SelectTypes.OPTION) {
-			return saveSelectionOptions(body.getOptions(), selection, userId);
+			return saveSelectionOptions(body.getOptions(), selection);
 		} else if (type == SelectTypes.TEMPLATE) {
 			return saveSelectionTemplate(body.getTemplate(), selection, userId);
 		} else {
@@ -200,7 +200,7 @@ public class SelectionEditService {
 		return ResultUtils.simpleSuccess(selection);
 	}
 
-	private Result saveSelectionOptions(List<SelectionOptionParam> body, Selection selection, Long userId) {
+	private Result saveSelectionOptions(List<SelectionOptionParam> body, Selection selection) {
 		if (CollectionUtils.isEmpty(body)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}

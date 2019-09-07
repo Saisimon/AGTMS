@@ -143,7 +143,7 @@ public class NavigationMainService extends AbstractMainService {
 		if (!userIds.contains(resource.getOperatorId())) {
 			return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
 		}
-		recursiveRemove(resource, userIds);
+		recursiveRemove(resource);
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -190,7 +190,7 @@ public class NavigationMainService extends AbstractMainService {
 			if (resource == null || !userIds.contains(resource.getOperatorId())) {
 				continue;
 			}
-			recursiveRemove(resource, userIds);
+			recursiveRemove(resource);
 		}
 		return ResultUtils.simpleSuccess();
 	}
@@ -285,7 +285,7 @@ public class NavigationMainService extends AbstractMainService {
 		return SUPPORT_FUNCTIONS;
 	}
 	
-	private void recursiveRemove(Resource resource, Collection<Long> userIds) {
+	private void recursiveRemove(Resource resource) {
 		Set<Long> resourceIds = new HashSet<>();
 		ResourceService resourceService = ResourceServiceFactory.get();
 		List<Resource> childrens = resourceService.getAllChildrenResources(resource.getId(), resource.getPath());
