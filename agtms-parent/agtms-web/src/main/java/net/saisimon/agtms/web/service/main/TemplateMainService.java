@@ -39,8 +39,12 @@ import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.factory.ResourceServiceFactory;
+import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.generate.DomainGenerater;
+import net.saisimon.agtms.core.service.ResourceService;
+import net.saisimon.agtms.core.service.RoleResourceService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -139,6 +143,7 @@ public class TemplateMainService extends AbstractMainService {
 		templateService.delete(template);
 		GenerateServiceFactory.build(template).dropTable();
 		removeDomainClass(template);
+		removeResource(template.getId());
 		return ResultUtils.simpleSuccess();
 	}
 	
@@ -155,6 +160,7 @@ public class TemplateMainService extends AbstractMainService {
 				templateService.delete(template);
 				GenerateServiceFactory.build(template).dropTable();
 				removeDomainClass(template);
+				removeResource(template.getId());
 			}
 		}
 		return ResultUtils.simpleSuccess();
@@ -278,6 +284,20 @@ public class TemplateMainService extends AbstractMainService {
 		}
 		String generateClassName = domainGenerater.buildGenerateName(sign);
 		domainGenerater.removeDomainClass(TemplateUtils.getNamespace(template), generateClassName);
+	}
+	
+	private void removeResource(Long templateId) {
+		ResourceService resourceService = ResourceServiceFactory.get();
+		Resource resource = resourceService.getResource(templateId, Resource.ContentType.TEMPLATE);
+		if (resource != null) {
+			resourceService.delete(resource);
+			removeRoleResource(resource.getId());
+		}
+	}
+	
+	private void removeRoleResource(Long resourceId) {
+		RoleResourceService roleResourceService = RoleResourceServiceFactory.get();
+		roleResourceService.delete(FilterRequest.build().and("resourceId", resourceId));
 	}
 	
 }
