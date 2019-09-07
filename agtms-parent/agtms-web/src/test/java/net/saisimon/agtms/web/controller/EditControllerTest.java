@@ -68,10 +68,6 @@ import net.saisimon.agtms.web.dto.resp.TemplateInfo;
 @AutoConfigureMockMvc
 public class EditControllerTest extends AbstractControllerTest {
 	
-	@SpringBootApplication
-	@ComponentScan(basePackages="net.saisimon.agtms")
-	public static class TestMain {}
-	
 	@Autowired
 	private AgtmsProperties agtmsProperties;
 	@Autowired
@@ -950,4 +946,9 @@ public class EditControllerTest extends AbstractControllerTest {
 		}
 		return params;
 	}
+	
+	@SpringBootApplication
+	@ComponentScan(basePackages="net.saisimon.agtms")
+	public static class TestMain {}
+	
 }

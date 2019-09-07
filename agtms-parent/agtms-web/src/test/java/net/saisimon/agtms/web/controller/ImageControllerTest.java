@@ -33,10 +33,6 @@ import net.saisimon.agtms.web.config.runner.InitRunner;
 @AutoConfigureMockMvc
 public class ImageControllerTest extends AbstractControllerTest {
 	
-	@SpringBootApplication
-	@ComponentScan(basePackages="net.saisimon.agtms")
-	public static class TestMain {}
-	
 	@Autowired
 	private InitRunner initRunner;
 	
@@ -80,5 +76,9 @@ public class ImageControllerTest extends AbstractControllerTest {
 		returnBinary(uri, null, null);
 	}
 	/* ImageController End */
+	
+	@SpringBootApplication
+	@ComponentScan(basePackages="net.saisimon.agtms")
+	public static class TestMain {}
 	
 }

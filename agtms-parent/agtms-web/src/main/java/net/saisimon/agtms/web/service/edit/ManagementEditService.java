@@ -226,10 +226,8 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 			TemplateField field = entry.getValue();
 			Object fieldValue = body.get(fieldName);
 			fieldValue = DomainUtils.parseFieldValue(fieldValue, field.getFieldType());
-			if (SystemUtils.isEmpty(fieldValue)) {
-				if (field.getRequired()) {
-					return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
-				}
+			if (SystemUtils.isEmpty(fieldValue) && field.getRequired()) {
+				return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 			}
 			Result result = TemplateUtils.validate(template, field, fieldValue);
 			if (!ResultUtils.isSuccess(result)) {

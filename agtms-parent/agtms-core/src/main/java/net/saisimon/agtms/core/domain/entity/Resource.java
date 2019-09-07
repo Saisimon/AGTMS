@@ -122,14 +122,14 @@ public class Resource implements Serializable {
 		 */
 		TEMPLATE(2, "template");
 		
+		private Integer value;
+		
+		private String name;
+		
 		ContentType(Integer value, String name) {
 			this.value = value;
 			this.name = name;
 		}
-		
-		private Integer value;
-		
-		private String name;
 		
 	}
 	

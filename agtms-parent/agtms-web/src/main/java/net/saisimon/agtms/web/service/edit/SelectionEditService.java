@@ -231,7 +231,7 @@ public class SelectionEditService {
 		if (body == null) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = premissionService.getUserIds(userId);
 		Template template = TemplateUtils.getTemplate(body.getId(), userIds);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;

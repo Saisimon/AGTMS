@@ -41,10 +41,6 @@ import net.saisimon.agtms.web.dto.req.UserPasswordChangeParam;
 @AutoConfigureMockMvc
 public class MainControllerTest extends AbstractControllerTest {
 	
-	@SpringBootApplication
-	@ComponentScan(basePackages="net.saisimon.agtms")
-	public static class TestMain {}
-	
 	@Autowired
 	private AgtmsProperties agtmsProperties;
 	@Autowired
@@ -348,5 +344,9 @@ public class MainControllerTest extends AbstractControllerTest {
 		sendPost("/operation/main/list", param, body, testToken);
 	}
 	/* OperationMainController End */
+	
+	@SpringBootApplication
+	@ComponentScan(basePackages="net.saisimon.agtms")
+	public static class TestMain {}
 	
 }

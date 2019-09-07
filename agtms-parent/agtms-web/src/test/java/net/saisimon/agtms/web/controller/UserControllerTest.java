@@ -37,10 +37,6 @@ import net.saisimon.agtms.web.dto.req.UserProfileSaveParam;
 @AutoConfigureMockMvc
 public class UserControllerTest extends AbstractControllerTest {
 	
-	@SpringBootApplication
-	@ComponentScan(basePackages="net.saisimon.agtms")
-	public static class TestMain {}
-	
 	@Autowired
 	private AgtmsProperties agtmsProperties;
 	@Autowired
@@ -170,5 +166,9 @@ public class UserControllerTest extends AbstractControllerTest {
 		UserToken token = login("editor", "editor");
 		logout(token);
 	}
+	
+	@SpringBootApplication
+	@ComponentScan(basePackages="net.saisimon.agtms")
+	public static class TestMain {}
 	
 }

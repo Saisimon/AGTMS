@@ -35,10 +35,6 @@ import net.saisimon.agtms.web.domain.SimpleEntity;
 @AutoConfigureMockMvc
 public class AgtmsControllerTest extends AbstractControllerTest {
 	
-	@SpringBootApplication
-	@ComponentScan(basePackages="net.saisimon.agtms")
-	public static class TestMain {}
-	
 	@Autowired
 	private InitRunner initRunner;
 	
@@ -200,5 +196,9 @@ public class AgtmsControllerTest extends AbstractControllerTest {
 		body.put("update", updateMap);
 		sendPost("/agtms/simpleEntity/batchUpdate", body, token, -1);
 	}
+	
+	@SpringBootApplication
+	@ComponentScan(basePackages="net.saisimon.agtms")
+	public static class TestMain {}
 	
 }
