@@ -19,13 +19,13 @@ public abstract class DialectTest {
 		TemplateField field = new TemplateField();
 		field.setFieldName("field0");
 		field.setFieldTitle("Test");
-		field.setFieldType(Classes.STRING.getName());
+		field.setFieldType(Classes.STRING.getKey());
 		field.setFilter(false);
 		field.setOrdered(0);
 		field.setRequired(false);
 		field.setSorted(false);
 		field.setUniqued(false);
-		field.setViews(Views.TEXT.getView());
+		field.setViews(Views.TEXT.getKey());
 		return field;
 	}
 	

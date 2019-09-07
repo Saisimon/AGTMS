@@ -75,18 +75,18 @@ public class DomainUtilsTest {
 	@Test
 	public void testParseFieldValue() {
 		Assert.assertNull(DomainUtils.parseFieldValue(null, null));
-		Assert.assertNull(DomainUtils.parseFieldValue("", Classes.LONG.getName()));
-		Assert.assertNull(DomainUtils.parseFieldValue("", Classes.DOUBLE.getName()));
-		Assert.assertNull(DomainUtils.parseFieldValue("", Classes.DATE.getName()));
+		Assert.assertNull(DomainUtils.parseFieldValue("", Classes.LONG.getKey()));
+		Assert.assertNull(DomainUtils.parseFieldValue("", Classes.DOUBLE.getKey()));
+		Assert.assertNull(DomainUtils.parseFieldValue("", Classes.DATE.getKey()));
 		Date expected = DateUtil.parse("1970-01-01 23:59:59.999", FastDateFormat.getInstance(DatePattern.NORM_DATETIME_MS_PATTERN, TimeZone.getTimeZone("UTC"))).toJdkDate();
-		Assert.assertEquals(expected, DomainUtils.parseFieldValue("1970-01-01T23:59:59.999Z", Classes.DATE.getName()));
+		Assert.assertEquals(expected, DomainUtils.parseFieldValue("1970-01-01T23:59:59.999Z", Classes.DATE.getKey()));
 		expected = DateUtil.parse("1970-01-01", FastDateFormat.getInstance(DatePattern.NORM_DATE_PATTERN, TimeZone.getTimeZone("UTC"))).toJdkDate();
-		Assert.assertEquals(expected, DomainUtils.parseFieldValue("1970-01-01", Classes.DATE.getName()));
+		Assert.assertEquals(expected, DomainUtils.parseFieldValue("1970-01-01", Classes.DATE.getKey()));
 	}
 	
 	@Test(expected = AgtmsException.class)
 	public void testParseFieldValueWithException() {
-		DomainUtils.parseFieldValue("aaaa", Classes.DATE.getName());
+		DomainUtils.parseFieldValue("aaaa", Classes.DATE.getKey());
 	}
 	
 	@Test

@@ -211,7 +211,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 				String fieldName = param.getImportFields().get(j);
 				Object fieldValue = data.get(j);
 				TemplateField templateField = fieldInfoMap.get(fieldName);
-				if (fieldValue != null && Views.SELECTION.getView().equals(templateField.getViews())) {
+				if (fieldValue != null && Views.SELECTION.getKey().equals(templateField.getViews())) {
 					Map<String, String> textMap = fieldTextMap.get(fieldName);
 					if (textMap == null) {
 						textMap = new HashMap<>();
@@ -227,7 +227,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 					}
 					fieldValue = value;
 				}
-				if (Views.PASSWORD.getView().equals(templateField.getViews())) {
+				if (Views.PASSWORD.getKey().equals(templateField.getViews())) {
 					fieldValue = DomainUtils.encrypt(fieldValue);
 				}
 				if (fieldValue == null) {

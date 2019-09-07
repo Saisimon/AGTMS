@@ -383,17 +383,17 @@ public class ManagementMainService extends AbstractMainService {
 				String fieldName = column.getColumnName() + field.getFieldName();
 				keyValues.add(fieldName);
 				keyTexts.add(field.getFieldTitle());
-				if (Views.SELECTION.getView().equals(field.getViews())) {
+				if (Views.SELECTION.getKey().equals(field.getViews())) {
 					String selectionSign = field.selectionSign(template.getService());
 					if (selectionSign == null) {
 						continue;
 					}
 					value.put(fieldName, SelectFilter.selectSearchableFilter("", field.getFieldType(), selectionSign, userIds));
-				} else if (Classes.LONG.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {
+				} else if (Classes.LONG.getKey().equals(field.getFieldType()) || Classes.DOUBLE.getKey().equals(field.getFieldType())) {
 					value.put(fieldName, RangeFilter.rangeFilter("", field.getFieldType(), "", field.getFieldType()));
-				} else if (Classes.DATE.getName().equals(field.getFieldType())) {
+				} else if (Classes.DATE.getKey().equals(field.getFieldType())) {
 					value.put(fieldName, RangeFilter.rangeFilter("", field.getFieldType(), "", field.getFieldType()));
-				} else if (Classes.STRING.getName().equals(field.getFieldType())) {
+				} else if (Classes.STRING.getKey().equals(field.getFieldType())) {
 					value.put(fieldName, TextFilter.textFilter("", field.getFieldType(), SingleSelect.OPERATORS.get(0)));
 				}
 			}
@@ -484,7 +484,7 @@ public class ManagementMainService extends AbstractMainService {
 				field.setRequired(true);
 			}
 			Object value = templateField.getDefaultValue();
-			if (Views.PASSWORD.getView().equals(templateField.getViews())) {
+			if (Views.PASSWORD.getKey().equals(templateField.getViews())) {
 				value = DomainUtils.decrypt(value);
 			}
 			field.setValue(value);
@@ -561,7 +561,7 @@ public class ManagementMainService extends AbstractMainService {
 			if (fieldValue == null) {
 				continue;
 			}
-			if (Views.PASSWORD.getView().equals(field.getViews())) {
+			if (Views.PASSWORD.getKey().equals(field.getViews())) {
 				fieldValue = DomainUtils.encrypt(fieldValue);
 			}
 			map.put(fieldName, fieldValue);
@@ -581,11 +581,11 @@ public class ManagementMainService extends AbstractMainService {
 						.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
 						.views(templateField.getViews())
 						.build();
-				if (Classes.LONG.getName().equals(templateField.getFieldType())) {
+				if (Classes.LONG.getKey().equals(templateField.getFieldType())) {
 					column.setType("number");
-				} else if (Classes.DOUBLE.getName().equals(templateField.getFieldType())) {
+				} else if (Classes.DOUBLE.getKey().equals(templateField.getFieldType())) {
 					column.setType("decimal");
-				} else if (Classes.DATE.getName().equals(templateField.getFieldType())) {
+				} else if (Classes.DATE.getKey().equals(templateField.getFieldType())) {
 					column.setType("date");
 					column.setDateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ");
 					column.setDateOutputFormat("YYYY-MM-DD");

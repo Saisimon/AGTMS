@@ -221,10 +221,10 @@ public class UserMainService extends AbstractMainService {
 		List<String> keyValues = Arrays.asList("loginName", "nickname", "email", "cellphone");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("login.name", "nickname", "email", "cellphone")));
 		Map<String, FieldFilter> value = new HashMap<>();
-		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
-		value.put(keyValues.get(1), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
-		value.put(keyValues.get(2), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
-		value.put(keyValues.get(3), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
+		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getKey(), SingleSelect.OPERATORS.get(0)));
+		value.put(keyValues.get(1), TextFilter.textFilter("", Classes.STRING.getKey(), SingleSelect.OPERATORS.get(0)));
+		value.put(keyValues.get(2), TextFilter.textFilter("", Classes.STRING.getKey(), SingleSelect.OPERATORS.get(0)));
+		value.put(keyValues.get(3), TextFilter.textFilter("", Classes.STRING.getKey(), SingleSelect.OPERATORS.get(0)));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -232,9 +232,9 @@ public class UserMainService extends AbstractMainService {
 		keyValues = Arrays.asList("lastLoginTime", "createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("last.login.time", "create.time", "update.time")));
 		value = new HashMap<>();
-		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
-		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
-		value.put(keyValues.get(2), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
+		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
+		value.put(keyValues.get(2), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;
@@ -243,15 +243,15 @@ public class UserMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("loginName").label(messageService.getMessage("login.name")).width(200).views(Views.TEXT.getView()).build());
-		columns.add(Column.builder().field("nickname").label(messageService.getMessage("nickname")).width(200).views(Views.TEXT.getView()).build());
-		columns.add(Column.builder().field("email").label(messageService.getMessage("email")).width(200).views(Views.TEXT.getView()).build());
-		columns.add(Column.builder().field("cellphone").label(messageService.getMessage("cellphone")).width(200).views(Views.TEXT.getView()).build());
-		columns.add(Column.builder().field("avatar").label(messageService.getMessage("avatar")).width(200).views(Views.IMAGE.getView()).build());
-		columns.add(Column.builder().field("status").label(messageService.getMessage("status")).width(200).views(Views.TEXT.getView()).build());
-		columns.add(Column.builder().field("lastLoginTime").label(messageService.getMessage("last.login.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("loginName").label(messageService.getMessage("login.name")).width(200).views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder().field("nickname").label(messageService.getMessage("nickname")).width(200).views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder().field("email").label(messageService.getMessage("email")).width(200).views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder().field("cellphone").label(messageService.getMessage("cellphone")).width(200).views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder().field("avatar").label(messageService.getMessage("avatar")).width(200).views(Views.IMAGE.getKey()).build());
+		columns.add(Column.builder().field("status").label(messageService.getMessage("status")).width(200).views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder().field("lastLoginTime").label(messageService.getMessage("last.login.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}

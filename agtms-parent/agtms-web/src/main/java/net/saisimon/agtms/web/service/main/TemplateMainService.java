@@ -176,12 +176,12 @@ public class TemplateMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("navigationName").label(messageService.getMessage("navigation")).views(Views.TEXT.getView()).width(100).build());
-		columns.add(Column.builder().field("title").label(messageService.getMessage("title")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("functions").label(messageService.getMessage("functions")).views(Views.TEXT.getView()).width(300).build());
-		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getView()).width(150).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
+		columns.add(Column.builder().field("navigationName").label(messageService.getMessage("navigation")).views(Views.TEXT.getKey()).width(100).build());
+		columns.add(Column.builder().field("title").label(messageService.getMessage("title")).views(Views.TEXT.getKey()).width(200).build());
+		columns.add(Column.builder().field("functions").label(messageService.getMessage("functions")).views(Views.TEXT.getKey()).width(300).build());
+		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getKey()).width(150).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getKey()).width(150).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
 		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
@@ -209,7 +209,7 @@ public class TemplateMainService extends AbstractMainService {
 			navigationValues.add(entry.getKey());
 			navigationTexts.add(entry.getValue());
 		}
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), navigationValues, navigationTexts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getKey(), navigationValues, navigationTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -217,7 +217,7 @@ public class TemplateMainService extends AbstractMainService {
 		keyValues = Arrays.asList("title");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, keyValues));
 		value = new HashMap<>(4);
-		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
+		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getKey(), SingleSelect.OPERATORS.get(0)));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -225,8 +225,8 @@ public class TemplateMainService extends AbstractMainService {
 		keyValues = Arrays.asList("createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
 		value = new HashMap<>(4);
-		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
-		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
+		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -241,7 +241,7 @@ public class TemplateMainService extends AbstractMainService {
 			userValues.add(entry.getKey());
 			userTexts.add(entry.getValue());
 		}
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), userValues, userTexts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getKey(), userValues, userTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;

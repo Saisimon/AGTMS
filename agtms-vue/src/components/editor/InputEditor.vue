@@ -3,16 +3,18 @@
         <template v-if="editor.type == 'select'">
             <multiselect
                 v-if="show"
-                @blur.native.capture="show=false" 
+                @blur.native.capture.stop="show=false" 
                 v-model="editor.value"
                 label="text"
                 track-by="value"
                 select-label=""
                 deselect-label=""
                 selected-label=""
-                :searchable="false"
+                :searchable="true"
+                :loading="isLoading"
                 :options="editor.options"
                 :placeholder="''"
+                @search-change="search"
                 @remove="removeValue"
                 @select="updateValue" >
                 <template slot="noResult">{{ $t("no_result") }}</template>
@@ -31,7 +33,8 @@
                 :type="editor.type"
                 :placeholder="placeholder" 
                 @input="updateValue" />
-            <span class="input-editor-text" v-else-if="editor.value == ''">{{ placeholder }}</span>
+            <span class="input-editor-text" v-else-if="!editor.value || editor.value == ''">{{ placeholder }}</span>
+            <span class="input-editor-text" v-else-if="editor.type == 'password'" >******</span>
             <span class="input-editor-text" v-else >{{ editor.value }}</span>
         </template>
     </div>
@@ -47,8 +50,10 @@ export default {
                 return { 
                     show: false,
                     placeholder: this.$t("click_to_edit"),
-                    value: '',
-                    type: 'text'
+                    value: null,
+                    type: 'text',
+                    selectionSign: null,
+                    options: []
                 }
             }
         },
@@ -63,6 +68,11 @@ export default {
             default: ''
         }
     },
+    watch: {
+        "editor.selectionSign": function(newV, oldV) {
+            this.search();
+        }
+    },
     data: function() {
         var show = false;
         if (this.editor.show != null) {
@@ -74,7 +84,8 @@ export default {
         }
         return {
             show: show,
-            placeholder: placeholder
+            placeholder: placeholder,
+            isLoading: false
         }
     },
     methods: {
@@ -89,6 +100,22 @@ export default {
                 this.editor.value = null;
                 this.$emit('updateInputEditor', this.editor, this.rowKey, this.field);
             }
+        },
+        search: function(query) {
+            if (this.editor.selectionSign == null) {
+                return;
+            }
+            this.isLoading = true;
+            this.$store.dispatch('searchSelection', {
+                sign: this.editor.selectionSign,
+                keyword: query
+            }).then(resp => {
+                if (resp.data.code === 0) {
+                    var options = resp.data.data;
+                    this.editor.options = options;
+                }
+                this.isLoading = false;
+            });
         }
     }
 }

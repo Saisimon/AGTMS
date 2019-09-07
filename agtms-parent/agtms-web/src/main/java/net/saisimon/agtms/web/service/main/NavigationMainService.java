@@ -211,11 +211,11 @@ public class NavigationMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("icon").label(messageService.getMessage("icon")).width(100).views(Views.ICON.getView()).build());
-		columns.add(Column.builder().field("name").label(messageService.getMessage("title")).width(200).views(Views.TEXT.getView()).build());
-		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
+		columns.add(Column.builder().field("icon").label(messageService.getMessage("icon")).width(100).views(Views.ICON.getKey()).build());
+		columns.add(Column.builder().field("name").label(messageService.getMessage("title")).width(200).views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
 		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
@@ -238,7 +238,7 @@ public class NavigationMainService extends AbstractMainService {
 		List<Option<String>> editFieldOptions = Arrays.asList(pathOption, nameOption, iconOption);
 		batchEdit.setEditFieldOptions(editFieldOptions);
 		Map<String, Field<?>> editFields = new HashMap<>();
-		editFields.put("icon", Field.<String>builder().value(Resource.DEFAULT_ICON).name("icon").required(true).text(messageService.getMessage("icon")).type(Classes.STRING.getName()).views("icon").build());
+		editFields.put("icon", Field.<String>builder().value(Resource.DEFAULT_ICON).name("icon").required(true).text(messageService.getMessage("icon")).type(Classes.STRING.getKey()).views("icon").build());
 		batchEdit.setEditFields(editFields);
 		return batchEdit;
 	}
@@ -250,7 +250,7 @@ public class NavigationMainService extends AbstractMainService {
 		List<String> keyValues = Arrays.asList("name");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("title")));
 		Map<String, FieldFilter> value = new HashMap<>(4);
-		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getName(), SingleSelect.OPERATORS.get(0)));
+		value.put(keyValues.get(0), TextFilter.textFilter("", Classes.STRING.getKey(), SingleSelect.OPERATORS.get(0)));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -258,8 +258,8 @@ public class NavigationMainService extends AbstractMainService {
 		keyValues = Arrays.asList("createTime", "updateTime");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
 		value = new HashMap<>(4);
-		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
-		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
+		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -274,7 +274,7 @@ public class NavigationMainService extends AbstractMainService {
 			userValues.add(entry.getKey());
 			userTexts.add(entry.getValue());
 		}
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), userValues, userTexts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getKey(), userValues, userTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;

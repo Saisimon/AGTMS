@@ -22,7 +22,7 @@ public class ClassSelection extends AbstractSelection<String> {
 		Classes[] cs = Classes.values();
 		LinkedHashMap<String, String> classMap = new LinkedHashMap<>(cs.length, 1.0F);
 		for (Classes c : cs) {
-			classMap.put(c.getName(), getMessage(SystemUtils.uncapitalize(c.name().toLowerCase())));
+			classMap.put(c.getKey(), getMessage(SystemUtils.uncapitalize(c.name().toLowerCase())));
 		}
 		return classMap;
 	}

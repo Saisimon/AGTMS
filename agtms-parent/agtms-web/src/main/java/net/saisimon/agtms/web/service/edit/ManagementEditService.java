@@ -168,7 +168,7 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 				.build();
 		field.setRequired(templateField.getRequired());
 		Object value = domain == null ? null : domain.getField(fieldName);
-		if (Views.SELECTION.getView().equals(templateField.getViews())) {
+		if (Views.SELECTION.getKey().equals(templateField.getViews())) {
 			String selectionSign = templateField.selectionSign(service);
 			field.setSign(selectionSign);
 			field.setOptions(getFieldOptions(selectionSign, userIds));
@@ -176,7 +176,7 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 				value = templateField.getDefaultValue();
 			}
 			field.setValue(getFieldOptionValue(value, selectionSign, userIds));
-		} else if (Views.PASSWORD.getView().equals(field.getViews())) {
+		} else if (Views.PASSWORD.getKey().equals(field.getViews())) {
 			if (value == null) {
 				value = templateField.getDefaultValue();
 			}
@@ -237,7 +237,7 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 			}
 			if (SystemUtils.isEmpty(fieldValue) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
 				fieldValue = DomainUtils.parseFieldValue(field.getDefaultValue(), field.getFieldType());
-			} else if (Views.PASSWORD.getView().equals(field.getViews())) {
+			} else if (Views.PASSWORD.getKey().equals(field.getViews())) {
 				fieldValue = DomainUtils.encrypt(fieldValue);
 			}
 			if (fieldValue == null) {

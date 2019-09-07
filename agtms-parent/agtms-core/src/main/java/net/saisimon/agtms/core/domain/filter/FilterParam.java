@@ -29,7 +29,7 @@ public class FilterParam extends FilterRequest {
 	private static final long serialVersionUID = -4082925119637610947L;
 	
 	private String key;
-	private String type = Classes.STRING.getName();
+	private String type = Classes.STRING.getKey();
 	private String operator;
 	private Object value;
 	

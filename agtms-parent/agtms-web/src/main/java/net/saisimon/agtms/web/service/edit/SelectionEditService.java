@@ -71,7 +71,7 @@ public class SelectionEditService {
 		}
 		SelectionGrid grid = new SelectionGrid();
 		grid.setBreadcrumbs(breadcrumbs(id));
-		Field<String> titleField = Field.<String>builder().name("title").text(messageService.getMessage("title")).type(Classes.STRING.getName()).required(true).build();
+		Field<String> titleField = Field.<String>builder().name("title").text(messageService.getMessage("title")).type(Classes.STRING.getKey()).required(true).build();
 		List<Option<Integer>> selectTypeOptions = Select.buildOptions(selectTypeSelection.select());
 		Field<Option<Integer>> typeField = Field.<Option<Integer>>builder().name("type").text(messageService.getMessage("type")).required(true).type("select").options(selectTypeOptions).build();
 		List<Option<String>> templateOptions = Select.buildOptions(templateSelection.select());
@@ -88,8 +88,8 @@ public class SelectionEditService {
 				List<SelectionOption> selectionOptions = selectionService.getSelectionOptions(selection);
 				for (SelectionOption selectionOption : selectionOptions) {
 					SelectionGrid.OptionField option = new SelectionGrid.OptionField();
-					option.setValue(Field.builder().type(Classes.STRING.getName()).value(selectionOption.getValue()).build());
-					option.setText(Field.builder().type(Classes.STRING.getName()).value(selectionOption.getText()).build());
+					option.setValue(Field.builder().type(Classes.STRING.getKey()).value(selectionOption.getValue()).build());
+					option.setText(Field.builder().type(Classes.STRING.getKey()).value(selectionOption.getText()).build());
 					options.add(option);
 				}
 				templateField.setValue(templateOptions.get(0));
@@ -108,8 +108,8 @@ public class SelectionEditService {
 				templateText.setOptions(domainFieldOptions);
 				templateText.setValue(Select.getOption(domainFieldOptions, selectionTemplate.getTextFieldName()));
 				SelectionGrid.OptionField option = new SelectionGrid.OptionField();
-				option.setValue(Field.builder().type(Classes.STRING.getName()).build());
-				option.setText(Field.builder().type(Classes.STRING.getName()).build());
+				option.setValue(Field.builder().type(Classes.STRING.getKey()).build());
+				option.setText(Field.builder().type(Classes.STRING.getKey()).build());
 				options.add(option);
 			}
 		} else {
@@ -118,8 +118,8 @@ public class SelectionEditService {
 			templateValue.setOptions(new ArrayList<>());
 			templateText.setOptions(new ArrayList<>());
 			SelectionGrid.OptionField option = new SelectionGrid.OptionField();
-			option.setValue(Field.builder().type(Classes.STRING.getName()).build());
-			option.setText(Field.builder().type(Classes.STRING.getName()).build());
+			option.setValue(Field.builder().type(Classes.STRING.getKey()).build());
+			option.setText(Field.builder().type(Classes.STRING.getKey()).build());
 			options.add(option);
 		}
 		grid.setTitle(titleField);

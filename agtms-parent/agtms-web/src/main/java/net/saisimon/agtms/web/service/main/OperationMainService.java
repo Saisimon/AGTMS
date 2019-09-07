@@ -132,8 +132,8 @@ public class OperationMainService extends AbstractMainService {
 		Map<Integer, String> operateTypeMap = operateTypeSelection.select();
 		List<Integer> values = new ArrayList<>(operateTypeMap.keySet());
 		List<String> texts = new ArrayList<>(operateTypeMap.values());
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), values, texts));
-		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getKey(), values, texts));
+		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -148,7 +148,7 @@ public class OperationMainService extends AbstractMainService {
 			userValues.add(entry.getKey());
 			userTexts.add(entry.getValue());
 		}
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), userValues, userTexts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getKey(), userValues, userTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;
@@ -157,11 +157,11 @@ public class OperationMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("operateContent").label(messageService.getMessage("operate.content")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("operateType").label(messageService.getMessage("operate.type")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("operateTime").label(messageService.getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).orderBy("").build());
-		columns.add(Column.builder().field("operateIp").label(messageService.getMessage("operate.ip")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
+		columns.add(Column.builder().field("operateContent").label(messageService.getMessage("operate.content")).views(Views.TEXT.getKey()).width(200).build());
+		columns.add(Column.builder().field("operateType").label(messageService.getMessage("operate.type")).views(Views.TEXT.getKey()).width(200).build());
+		columns.add(Column.builder().field("operateTime").label(messageService.getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).orderBy("").build());
+		columns.add(Column.builder().field("operateIp").label(messageService.getMessage("operate.ip")).views(Views.TEXT.getKey()).width(200).build());
+		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
 		return columns;
 	}
 

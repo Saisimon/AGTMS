@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -34,6 +35,7 @@ import cn.hutool.core.util.NetUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.saisimon.agtms.core.enums.BaseEnum;
 
 /**
  * 系统相关工具类
@@ -320,6 +322,18 @@ public final class SystemUtils extends StringUtils {
 		try (PrintWriter out = response.getWriter()) {
 			out.append(toJson(obj));
 		}
+	}
+	
+	public static <K, T extends BaseEnum<K>> T parseEnum(Class<T> enumClass, K key) {
+		if (!enumClass.isEnum()) {
+			return null;
+		}
+		for (T t : enumClass.getEnumConstants()) {
+			if (Objects.equals(key, t.getKey())) {
+				return t;
+			}
+		}
+		return null;
 	}
 	
 	public static void putTaskFuture(Long taskId, Future<?> future) {

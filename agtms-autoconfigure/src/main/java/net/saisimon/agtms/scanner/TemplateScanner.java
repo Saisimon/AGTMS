@@ -140,14 +140,14 @@ public class TemplateScanner {
 			templateField.setDefaultValue(fieldInfo.defaultValue());
 			templateField.setFieldName(field.getName());
 			templateField.setFieldTitle(fieldInfo.fieldTitle());
-			templateField.setFieldType(fieldInfo.fieldType().getName());
+			templateField.setFieldType(fieldInfo.fieldType().getKey());
 			templateField.setFilter(fieldInfo.filter());
 			templateField.setHidden(fieldInfo.hidden());
 			templateField.setOrdered(fieldInfo.fieldOrdered());
 			templateField.setRequired(fieldInfo.required());
 			templateField.setSorted(fieldInfo.sorted());
 			templateField.setUniqued(fieldInfo.uniqued());
-			templateField.setViews(fieldInfo.view().getView());
+			templateField.setViews(fieldInfo.view().getKey());
 			if (Views.SELECTION == fieldInfo.view()) {
 				SelectionResolver selectionResolver = new SelectionResolver(fieldInfo.selection());
 				selectionResolverMap.put(fieldInfo.selection().getSimpleName(), selectionResolver);

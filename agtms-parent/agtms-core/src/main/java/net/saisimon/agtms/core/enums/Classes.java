@@ -6,7 +6,7 @@ package net.saisimon.agtms.core.enums;
  * @author saisimon
  *
  */
-public enum Classes {
+public enum Classes implements BaseEnum<String> {
 	
 	/**
 	 * 字符串
@@ -31,7 +31,8 @@ public enum Classes {
 		this.name = name;
 	}
 	
-	public String getName() {
+//	@Override
+	public String getKey() {
 		return this.name;
 	}
 	

@@ -62,9 +62,48 @@ export default {
     },
     methods: {
         updateValue: function(val) {
-            if (val != null) {
-                this.editor.value = val;
-                this.$emit('updateSelectEditor', this.editor, this.rowKey, this.field);
+            if (!val) {
+                return;
+            }
+            this.editor.value = val;
+            this.$emit('updateSelectEditor', this.editor, this.rowKey, this.field);
+            this.updateDefaultType(val);
+        },
+        updateDefaultType: function(val) {
+            if (this.rowKey !== 'fieldType' && this.rowKey !== 'showType') {
+                return;
+            }
+            var defaultValue = Object.create({
+                className: this.field,
+                selectionSign: null,
+                options: [],
+                value: null
+            });
+            if (this.field.startsWith('selection-')) {
+                defaultValue['type'] = "select";
+                defaultValue['selectionSign'] = val.value;
+                this.$emit('syncDefaultType', defaultValue, this.field);
+            } else if (val.value === 'long' || val.value === 'double') {
+                defaultValue['type'] = "number";
+                this.$emit('syncDefaultType', defaultValue, this.field);
+            } else if (val.value === 'date') {
+                defaultValue['type'] = "date";
+                this.$emit('syncDefaultType', defaultValue, this.field);
+            } else if (val.value === 'password') {
+                defaultValue['type'] = "password";
+                this.$emit('syncDefaultType', defaultValue, this.field);
+            } else if (val.value === 'link') {
+                defaultValue['type'] = "url";
+                this.$emit('syncDefaultType', defaultValue, this.field);
+            } else if (val.value === 'email') {
+                defaultValue['type'] = "email";
+                this.$emit('syncDefaultType', defaultValue, this.field);
+            } else if (val.value === 'selection') {
+                defaultValue['type'] = "select";
+                this.$emit('syncDefaultType', defaultValue, this.field);
+            } else {
+                defaultValue['type'] = "text";
+                this.$emit('syncDefaultType', defaultValue, this.field);
             }
         }
     }

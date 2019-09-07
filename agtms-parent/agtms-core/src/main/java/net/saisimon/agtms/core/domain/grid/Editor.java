@@ -13,6 +13,8 @@ public class Editor<T> {
 	
 	private String type;
 	
+	private String selectionSign;
+	
 	private List<T> options;
 	
 	public Editor(T value, String className) {
@@ -20,17 +22,18 @@ public class Editor<T> {
 	}
 	
 	public Editor(T value, String className, String type) {
-		this(value, className, type, null);
+		this(value, className, type, null, null);
 	}
 	
-	public Editor(T value, String className, List<T> options) {
-		this(value, className, "select", options);
+	public Editor(T value, String className, String selectionSign, List<T> options) {
+		this(value, className, "select", selectionSign, options);
 	}
 	
-	public Editor(T value, String className, String type, List<T> options) {
+	public Editor(T value, String className, String type, String selectionSign, List<T> options) {
 		this.value = value;
 		this.className = className;
 		this.type = type;
+		this.selectionSign = selectionSign;
 		this.options = options;
 	}
 	

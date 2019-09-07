@@ -113,17 +113,17 @@ public class DomainUtils {
 	public static Object parseFieldValue(Object fieldValue, String fieldType) {
 		if (fieldValue != null && fieldType != null) {
 			try {
-				if (Classes.LONG.getName().equals(fieldType)) {
+				if (Classes.LONG.getKey().equals(fieldType)) {
 					if (StringUtils.isEmpty(fieldValue)) {
 						return null;
 					}
 					return Long.valueOf(fieldValue.toString());
-				} else if (Classes.DOUBLE.getName().equals(fieldType)) {
+				} else if (Classes.DOUBLE.getKey().equals(fieldType)) {
 					if (StringUtils.isEmpty(fieldValue)) {
 						return null;
 					}
 					return Double.valueOf(fieldValue.toString());
-				} else if (Classes.DATE.getName().equals(fieldType)) {
+				} else if (Classes.DATE.getKey().equals(fieldType)) {
 					if (StringUtils.isEmpty(fieldValue)) {
 						return null;
 					}
@@ -205,7 +205,7 @@ public class DomainUtils {
 			if (value == null) {
 				continue;
 			}
-			if (Views.SELECTION.getView().equals(templateField.getViews())) {
+			if (Views.SELECTION.getKey().equals(templateField.getViews())) {
 				Set<String> values = valueMap.get(fieldName);
 				if (values == null) {
 					values = new HashSet<>();
@@ -213,7 +213,7 @@ public class DomainUtils {
 				}
 				values.add(value.toString());
 			}
-			if (Views.PASSWORD.getView().equals(templateField.getViews())) {
+			if (Views.PASSWORD.getKey().equals(templateField.getViews())) {
 				value = decrypt(value);
 			}
 			value = marking(value, templateField);

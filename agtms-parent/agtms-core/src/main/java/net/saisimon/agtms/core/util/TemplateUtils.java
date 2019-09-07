@@ -20,6 +20,7 @@ import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.FieldHandlerFactory;
@@ -298,6 +299,17 @@ public class TemplateUtils {
 			if (!checkRequired(service, templateField)) {
 				return false;
 			}
+			Classes fieldType = SystemUtils.parseEnum(Classes.class, templateField.getFieldType());
+			if (fieldType == null) {
+				return false;
+			}
+			Views views = SystemUtils.parseEnum(Views.class, templateField.getViews());
+			if (views == null) {
+				return false;
+			}
+			if (fieldType != Classes.STRING) {
+				templateField.setViews(Views.TEXT.getKey());
+			}
 		}
 		return true;
 	}
@@ -316,7 +328,7 @@ public class TemplateUtils {
 		if (SystemUtils.isBlank(templateField.getFieldTitle())) {
 			return false;
 		}
-		return !(Views.SELECTION.getView().equals(templateField.getViews()) && templateField.selectionSign(service) == null);
+		return !(Views.SELECTION.getKey().equals(templateField.getViews()) && templateField.selectionSign(service) == null);
 	}
 	
 	/**

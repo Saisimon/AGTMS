@@ -151,7 +151,7 @@ export default {
                 } else {
                     field.state = null;
                 }
-                if (field.views === 'selection') {
+                if (field.views === 'selection' && field.value) {
                     data[field.name] = field.value.value;
                 } else {
                     data[field.name] = field.value;

@@ -25,6 +25,7 @@
                             :field="props.column.field" 
                             :rowKey="props.row.key"
                             :class="'editor-text'"
+                            @syncDefaultType="syncDefaultType"
                             @updateSelectEditor="updateTableEditor" ></select-editor>
                     </div>
                     <div class="flex-fill" v-if="props.row.key == 'showType' && props.formattedRow[props.column.field].value.value == 'selection'">
@@ -33,6 +34,7 @@
                             :field="'selection-' + props.column.field" 
                             :rowKey="props.row.key"
                             :class="'editor-text'"
+                            @syncDefaultType="syncDefaultType"
                             @updateSelectEditor="updateTableEditor" ></select-editor>
                     </div>
                 </div>
@@ -188,6 +190,25 @@ export default {
                 if (row.key == rowKey) {
                     row[field] = editor;
                     break;
+                }
+            }
+            this.table.rows = this.rows;
+            this.table.columns = this.columns;
+            this.$emit('updateTableEditor', this.table, this.rowKey, this.field);
+        },
+        syncDefaultType: function(defaultValue, field) {
+            var defaultRow = this.rows[8];
+            if (defaultValue && defaultValue.type) {
+                if (defaultValue.type === 'select' && !defaultValue.selectionSign) {
+                    var selectionField = this.rows[2]["selection-" + field];
+                    if (selectionField && selectionField.value && selectionField.value.value) {
+                        defaultValue['selectionSign'] = selectionField.value.value;
+                    }
+                }
+                if (field.startsWith('selection-')) {
+                    defaultRow[field.substring(10)] = defaultValue;
+                } else {
+                    defaultRow[field] = defaultValue;
                 }
             }
             this.table.rows = this.rows;

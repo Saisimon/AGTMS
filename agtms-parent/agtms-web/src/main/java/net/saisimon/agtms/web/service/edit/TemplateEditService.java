@@ -202,7 +202,7 @@ public class TemplateEditService {
 		template.setUpdateTime(time);
 		for (TemplateColumn column : template.getColumns()) {
 			for (TemplateField field : column.getFields()) {
-				if (Views.PASSWORD.getView().equals(field.getViews()) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
+				if (Views.PASSWORD.getKey().equals(field.getViews()) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
 					Object value = DomainUtils.encrypt(field.getDefaultValue());
 					field.setDefaultValue(value == null ? null : value.toString());
 				}
@@ -229,7 +229,7 @@ public class TemplateEditService {
 						field.setId(oldField.getId());
 						oldTemplateColumn.removeField(oldField);
 					}
-					if (Views.PASSWORD.getView().equals(field.getViews()) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
+					if (Views.PASSWORD.getKey().equals(field.getViews()) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
 						Object value = DomainUtils.encrypt(field.getDefaultValue());
 						field.setDefaultValue(value == null ? null : value.toString());
 					}
@@ -242,7 +242,7 @@ public class TemplateEditService {
 				oldTemplate.removeColumn(oldTemplateColumn);
 			} else {
 				for (TemplateField field : column.getFields()) {
-					if (Views.PASSWORD.getView().equals(field.getViews()) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
+					if (Views.PASSWORD.getKey().equals(field.getViews()) && SystemUtils.isNotEmpty(field.getDefaultValue())) {
 						Object value = DomainUtils.encrypt(field.getDefaultValue());
 						field.setDefaultValue(value == null ? null : value.toString());
 					}
@@ -418,17 +418,18 @@ public class TemplateEditService {
 	}
 	
 	private void handleDefaultMap(Map<String, Object> defaultRow, TemplateField field, String service, Collection<Long> operatorIds) {
-		if (Views.SELECTION.getView().equals(field.getViews())) {
-			List<Option<Object>> options = SelectionUtils.getSelectionOptions(field.selectionSign(service), null, operatorIds);
-			defaultRow.put(field.getFieldName(), new Editor<>(Select.getOption(options, field.getDefaultValue()), field.getFieldName(), options));
-		} else if (Views.PASSWORD.getView().equals(field.getViews())) {
+		if (Views.SELECTION.getKey().equals(field.getViews())) {
+			String selectionSign = field.selectionSign(service);
+			List<Option<Object>> options = SelectionUtils.getSelectionOptions(selectionSign, null, operatorIds);
+			defaultRow.put(field.getFieldName(), new Editor<>(Select.getOption(options, field.getDefaultValue()), field.getFieldName(), selectionSign, options));
+		} else if (Views.PASSWORD.getKey().equals(field.getViews())) {
 			Object value = DomainUtils.decrypt(field.getDefaultValue());
-			defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(value) ? "" : value, field.getFieldName()));
+			defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(value) ? "" : value, field.getFieldName(), "password"));
 		} else {
 			String type = "text";
-			if (Classes.LONG.getName().equals(field.getFieldType()) || Classes.DOUBLE.getName().equals(field.getFieldType())) {
+			if (Classes.LONG.getKey().equals(field.getFieldType()) || Classes.DOUBLE.getKey().equals(field.getFieldType())) {
 				type = "number";
-			} else if (Classes.DATE.getName().equals(field.getFieldType())) {
+			} else if (Classes.DATE.getKey().equals(field.getFieldType())) {
 				type = "date";
 			}
 			defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(field.getDefaultValue()) ? "" : field.getDefaultValue(), field.getFieldName(), type));

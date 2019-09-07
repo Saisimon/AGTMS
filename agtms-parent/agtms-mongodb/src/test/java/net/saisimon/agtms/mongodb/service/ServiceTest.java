@@ -579,14 +579,14 @@ public class ServiceTest {
 				field.setDefaultValue("");
 				field.setFieldName("field" + j);
 				field.setFieldTitle("属性" + j);
-				field.setFieldType(Classes.STRING.getName());
+				field.setFieldType(Classes.STRING.getKey());
 				field.setFilter(Boolean.FALSE);
 				field.setHidden(Boolean.FALSE);
 				field.setOrdered(j);
 				field.setRequired(Boolean.FALSE);
 				field.setSorted(Boolean.FALSE);
 				field.setUniqued(Boolean.FALSE);
-				field.setViews(Views.TEXT.getView());
+				field.setViews(Views.TEXT.getKey());
 				column.addField(field);
 			}
 			column.setFieldIndex(column.getFields().size());
@@ -608,14 +608,14 @@ public class ServiceTest {
 			field.setDefaultValue("");
 			field.setFieldName("field0");
 			field.setFieldTitle("属性0");
-			field.setFieldType(Classes.STRING.getName());
+			field.setFieldType(Classes.STRING.getKey());
 			field.setFilter(Boolean.FALSE);
 			field.setHidden(Boolean.FALSE);
 			field.setOrdered(0);
 			field.setRequired(Boolean.FALSE);
 			field.setSorted(Boolean.FALSE);
 			field.setUniqued(Boolean.FALSE);
-			field.setViews(Views.TEXT.getView());
+			field.setViews(Views.TEXT.getKey());
 			column.addField(field);
 			column.setFieldIndex(column.getFields().size());
 			template.addColumn(column);

@@ -80,23 +80,23 @@ public class MySQLDialect implements Dialect {
 			return null;
 		}
 		String column = "";
-		if (Classes.LONG.getName().equals(field.getFieldType())) {
+		if (Classes.LONG.getKey().equals(field.getFieldType())) {
 			column = "BIGINT";
-		} else if (Classes.DOUBLE.getName().equals(field.getFieldType())) {
+		} else if (Classes.DOUBLE.getKey().equals(field.getFieldType())) {
 			column = "DOUBLE";
-		} else if (Classes.DATE.getName().equals(field.getFieldType())) {
+		} else if (Classes.DATE.getKey().equals(field.getFieldType())) {
 			column = "DATETIME";
-		} else if (Views.TEXTAREA.getView().equals(field.getViews())) {
+		} else if (Views.TEXTAREA.getKey().equals(field.getViews())) {
 			column = "TEXT";
-		} else if (Views.PHONE.getView().equals(field.getViews())) {
+		} else if (Views.PHONE.getKey().equals(field.getViews())) {
 			column = "VARCHAR(32)";
-		} else if (Views.EMAIL.getView().equals(field.getViews())) {
+		} else if (Views.EMAIL.getKey().equals(field.getViews())) {
 			column = "VARCHAR(256)";
-		} else if (Views.LINK.getView().equals(field.getViews())) {
+		} else if (Views.LINK.getKey().equals(field.getViews())) {
 			column = "VARCHAR(1024)";
-		} else if (Views.ICON.getView().equals(field.getViews())) {
+		} else if (Views.ICON.getKey().equals(field.getViews())) {
 			column = "VARCHAR(64)";
-		} else if (Views.IMAGE.getView().equals(field.getViews())) {
+		} else if (Views.IMAGE.getKey().equals(field.getViews())) {
 			column = "VARCHAR(64)";
 		} else {
 			column = "VARCHAR(512)";

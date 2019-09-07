@@ -898,30 +898,30 @@ public class EditControllerTest extends AbstractControllerTest {
 				templateField.setFieldName("field" + j);
 				templateField.setFieldTitle("TestField-" + j);
 				if (j == 1) {
-					templateField.setFieldType(Classes.LONG.getName());
-					templateField.setViews(Views.TEXT.getView());
+					templateField.setFieldType(Classes.LONG.getKey());
+					templateField.setViews(Views.TEXT.getKey());
 					templateField.setDefaultValue("1");
 				} else if (j == 2) {
-					templateField.setFieldType(Classes.DOUBLE.getName());
-					templateField.setViews(Views.TEXT.getView());
+					templateField.setFieldType(Classes.DOUBLE.getKey());
+					templateField.setViews(Views.TEXT.getKey());
 					templateField.setDefaultValue("1.1");
 				} else if (j == 3) {
-					templateField.setFieldType(Classes.DATE.getName());
-					templateField.setViews(Views.TEXT.getView());
+					templateField.setFieldType(Classes.DATE.getKey());
+					templateField.setViews(Views.TEXT.getKey());
 					templateField.setDefaultValue("2019-07-25");
 				} else {
-					templateField.setFieldType(Classes.STRING.getName());
+					templateField.setFieldType(Classes.STRING.getKey());
 					if (j == 4) {
-						templateField.setViews(Views.PASSWORD.getView());
+						templateField.setViews(Views.PASSWORD.getKey());
 						templateField.setDefaultValue("123456789");
 					} else if (j == 5) {
-						templateField.setViews(Views.EMAIL.getView());
+						templateField.setViews(Views.EMAIL.getKey());
 						templateField.setDefaultValue("88888888@test.org");
 					} else if (j == 6) {
-						templateField.setViews(Views.PHONE.getView());
+						templateField.setViews(Views.PHONE.getKey());
 						templateField.setDefaultValue("13888888888");
 					} else {
-						templateField.setViews(Views.TEXT.getView());
+						templateField.setViews(Views.TEXT.getKey());
 						templateField.setDefaultValue("");
 					}
 				}

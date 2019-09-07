@@ -292,8 +292,8 @@ public class TaskMainService extends AbstractMainService {
 		Map<String, String> taskTypeMap = taskTypeSelection.select();
 		List<String> values = new ArrayList<>(taskTypeMap.keySet());
 		List<String> texts = new ArrayList<>(taskTypeMap.values());
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), values, texts));
-		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getKey(), values, texts));
+		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -302,8 +302,8 @@ public class TaskMainService extends AbstractMainService {
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("handle.status", "handle.time")));
 		value = new HashMap<>(4);
 		Map<Integer, String> handleStatusMap = handleStatusSelection.select();
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), new ArrayList<>(handleStatusMap.keySet()), new ArrayList<>(handleStatusMap.values())));
-		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getName(), "", Classes.DATE.getName()));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getKey(), new ArrayList<>(handleStatusMap.keySet()), new ArrayList<>(handleStatusMap.values())));
+		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
 		filter.setValue(value);
 		filters.add(filter);
 		
@@ -318,7 +318,7 @@ public class TaskMainService extends AbstractMainService {
 			userValues.add(entry.getKey());
 			userTexts.add(entry.getValue());
 		}
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getName(), userValues, userTexts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getKey(), userValues, userTexts));
 		filter.setValue(value);
 		filters.add(filter);
 		return filters;
@@ -327,13 +327,13 @@ public class TaskMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("taskContent").label(messageService.getMessage("task.content")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("taskType").label(messageService.getMessage("task.type")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("taskTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("handleStatus").label(messageService.getMessage("handle.status")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("handleResult").label(messageService.getMessage("handle.result")).views(Views.TEXT.getView()).width(200).build());
-		columns.add(Column.builder().field("handleTime").label(messageService.getMessage("handle.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getView()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getView()).build());
+		columns.add(Column.builder().field("taskContent").label(messageService.getMessage("task.content")).views(Views.TEXT.getKey()).width(200).build());
+		columns.add(Column.builder().field("taskType").label(messageService.getMessage("task.type")).views(Views.TEXT.getKey()).width(200).build());
+		columns.add(Column.builder().field("taskTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("handleStatus").label(messageService.getMessage("handle.status")).views(Views.TEXT.getKey()).width(200).build());
+		columns.add(Column.builder().field("handleResult").label(messageService.getMessage("handle.result")).views(Views.TEXT.getKey()).width(200).build());
+		columns.add(Column.builder().field("handleTime").label(messageService.getMessage("handle.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
 		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}

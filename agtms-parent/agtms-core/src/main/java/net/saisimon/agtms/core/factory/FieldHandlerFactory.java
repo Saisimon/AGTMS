@@ -40,7 +40,7 @@ public class FieldHandlerFactory implements BeanPostProcessor {
 		if (view == null) {
 			return bean;
 		}
-		HANDLER_MAP.put(view.getView(), fieldHandler);
+		HANDLER_MAP.put(view.getKey(), fieldHandler);
 		return bean;
 	}
 	

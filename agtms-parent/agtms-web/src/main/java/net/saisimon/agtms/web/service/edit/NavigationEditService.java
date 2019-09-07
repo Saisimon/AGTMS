@@ -106,9 +106,9 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 		List<Field<?>> fields = new ArrayList<>();
 		String path = resource == null ? null : resource.getPath() + "/" + resource.getId();
 		List<Option<String>> options = Select.buildOptions(resourceSelection.selectWithParent(path, Resource.ContentType.NAVIGATION));
-		Field<Option<String>> pathField = Field.<Option<String>>builder().name("path").text(messageService.getMessage("parent.navigation")).required(true).views(Views.SELECTION.getView()).options(options).build();
-		Field<String> iconField = Field.<String>builder().name("icon").text(messageService.getMessage("icon")).type(Classes.STRING.getName()).required(true).views(Views.ICON.getView()).build();
-		Field<String> titleField = Field.<String>builder().name("name").text(messageService.getMessage("title")).type(Classes.STRING.getName()).required(true).build();
+		Field<Option<String>> pathField = Field.<Option<String>>builder().name("path").text(messageService.getMessage("parent.navigation")).required(true).views(Views.SELECTION.getKey()).options(options).build();
+		Field<String> iconField = Field.<String>builder().name("icon").text(messageService.getMessage("icon")).type(Classes.STRING.getKey()).required(true).views(Views.ICON.getKey()).build();
+		Field<String> titleField = Field.<String>builder().name("name").text(messageService.getMessage("title")).type(Classes.STRING.getKey()).required(true).build();
 		if (resource != null) {
 			pathField.setValue(Select.getOption(options, resource.getPath()));
 			iconField.setValue(resource.getIcon());

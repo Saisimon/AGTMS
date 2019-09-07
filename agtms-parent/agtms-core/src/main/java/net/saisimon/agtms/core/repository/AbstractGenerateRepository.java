@@ -97,12 +97,12 @@ public abstract class AbstractGenerateRepository implements BaseRepository<Domai
 			String fieldName = field.getName();
 			Object value = caseInsensitiveMap.get(fieldName);
 			if (value != null) {
-				value = convertValue(value, field.getType());
 				try {
+					value = convertValue(value, field.getType());
 					field.setAccessible(true);
 					field.set(domain, value);
 				} catch (Exception e) {
-					log.error(String.format("%s设置%s属性错误", domain.getClass().getName(), fieldName), e);
+					log.warn(String.format("%s设置%s属性错误", domain.getClass().getName(), fieldName));
 				}
 			}
 		});

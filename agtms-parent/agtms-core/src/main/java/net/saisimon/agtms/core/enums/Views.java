@@ -6,7 +6,7 @@ package net.saisimon.agtms.core.enums;
  * @author saisimon
  *
  */
-public enum Views {
+public enum Views implements BaseEnum<String> {
 	
 	/**
 	 * 文本类型
@@ -53,7 +53,8 @@ public enum Views {
 		this.size = size;
 	}
 	
-	public String getView() {
+	@Override
+	public String getKey() {
 		return view;
 	}
 	

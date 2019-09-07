@@ -23,7 +23,7 @@ public class ViewSelection extends AbstractSelection<String> {
 		Views[] vs = Views.values();
 		Map<String, String> viewMap = MapUtil.newHashMap(vs.length, true);
 		for (Views v : vs) {
-			viewMap.put(v.getView(), getMessage(SystemUtils.humpToCode(v.getView(), ".")));
+			viewMap.put(v.getKey(), getMessage(SystemUtils.humpToCode(v.getKey(), ".")));
 		}
 		return viewMap;
 	}

@@ -156,13 +156,13 @@ public class UserEditService extends AbstractEditService<User> {
 	@Override
 	protected List<Field<?>> fields(User user, Object key) {
 		List<Field<?>> fields = new ArrayList<>();
-		Field<String> loginNameField = Field.<String>builder().name("loginName").text(messageService.getMessage("login.name")).type(Classes.STRING.getName()).required(true).build();
-		Field<String> passwordField = Field.<String>builder().name("password").text(messageService.getMessage("password")).type(Classes.STRING.getName()).views(Views.PASSWORD.getView()).required(true).build();
-		Field<String> nicknameField = Field.<String>builder().name("nickname").text(messageService.getMessage("nickname")).type(Classes.STRING.getName()).build();
-		Field<String> cellphoneField = Field.<String>builder().name("cellphone").text(messageService.getMessage("cellphone")).type(Classes.STRING.getName()).views(Views.PHONE.getView()).required(true).build();
-		Field<String> emailField = Field.<String>builder().name("email").text(messageService.getMessage("email")).type(Classes.STRING.getName()).views(Views.EMAIL.getView()).required(true).build();
-		Field<String> avatarField = Field.<String>builder().name("avatar").text(messageService.getMessage("avatar")).type(Classes.STRING.getName()).views(Views.IMAGE.getView()).build();
-		Field<String> remarkField = Field.<String>builder().name("remark").text(messageService.getMessage("remark")).type(Classes.STRING.getName()).views(Views.TEXTAREA.getView()).build();
+		Field<String> loginNameField = Field.<String>builder().name("loginName").text(messageService.getMessage("login.name")).type(Classes.STRING.getKey()).required(true).build();
+		Field<String> passwordField = Field.<String>builder().name("password").text(messageService.getMessage("password")).type(Classes.STRING.getKey()).views(Views.PASSWORD.getKey()).required(true).build();
+		Field<String> nicknameField = Field.<String>builder().name("nickname").text(messageService.getMessage("nickname")).type(Classes.STRING.getKey()).build();
+		Field<String> cellphoneField = Field.<String>builder().name("cellphone").text(messageService.getMessage("cellphone")).type(Classes.STRING.getKey()).views(Views.PHONE.getKey()).required(true).build();
+		Field<String> emailField = Field.<String>builder().name("email").text(messageService.getMessage("email")).type(Classes.STRING.getKey()).views(Views.EMAIL.getKey()).required(true).build();
+		Field<String> avatarField = Field.<String>builder().name("avatar").text(messageService.getMessage("avatar")).type(Classes.STRING.getKey()).views(Views.IMAGE.getKey()).build();
+		Field<String> remarkField = Field.<String>builder().name("remark").text(messageService.getMessage("remark")).type(Classes.STRING.getKey()).views(Views.TEXTAREA.getKey()).build();
 		if (user != null) {
 			loginNameField.setValue(user.getLoginName());
 			passwordField.setDisabled(true);
