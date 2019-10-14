@@ -7,14 +7,14 @@
                     <input-editor :editor="templateGrid.title" @updateInputEditor="updateTitle" :class="'editor-text'"></input-editor>
                 </b-col>
                 <b-col sm="9" class="text-right">
-                    <b-form-checkbox v-model="draggable" class="draggable-switch">
-                        {{ $t("draggable_mode") }}
-                        <i class="fa fa-fw fa-question-circle" v-b-tooltip :title="$t('draggable_desc')"></i>
-                    </b-form-checkbox>
-                    <b-button variant="primary" size="sm" @click="addColumn" :disabled="draggable">
+                    <b-button variant="primary" size="sm" @click="addColumn" :disabled="draggable" class="float-right">
                         <i class="fa fa-fw fa-plus-circle"></i>
                         {{ $t("add_column") }}
                     </b-button>
+                    <b-form-checkbox v-model="draggable" size="sm" class="draggable-switch float-right">
+                        {{ $t("draggable_mode") }}
+                        <i class="fa fa-fw fa-question-circle" v-b-tooltip :title="$t('draggable_desc')"></i>
+                    </b-form-checkbox>
                 </b-col>
             </b-row>
             <div class="draggable-container draggable-table mb-3" v-if="draggable">
@@ -763,7 +763,6 @@ export default {
 .draggable-table {
     width: 100%;
     min-width: 100%;
-    font-size: 14px;
     border: 1px solid #DCDFE6;
     border-left: 0px;
     border-top: 0px;
@@ -774,7 +773,7 @@ export default {
     cursor: move;
 }
 .draggable-field {
-    padding: 0.25em 0.5em;
+    padding: 0.25rem 0.5rem;
     border-top: 1px solid #DCDFE6;
     white-space: pre;
 }
@@ -783,7 +782,8 @@ export default {
     line-height: 31px;
 }
 .draggable-switch {
-    padding-right: 5px;
+    padding-top: 0.5rem;
+    padding-right: 1rem;
     color: #606266;
 }
 </style>

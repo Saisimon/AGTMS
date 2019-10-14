@@ -1,6 +1,6 @@
 <template>
     <!-- 导航栏 -->
-    <b-navbar class="main-navbar" toggleable>
+    <b-navbar class="main-navbar" toggleable="lg">
         <b-navbar-toggle target="nav-bar"></b-navbar-toggle>
         <!-- 导航栏标题 -->
         <b-navbar-brand class="nav-bar-title">

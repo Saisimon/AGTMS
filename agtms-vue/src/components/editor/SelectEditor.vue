@@ -111,3 +111,16 @@ export default {
     }
 }
 </script>
+
+<style>
+.select-editor .vue-treeselect__control {
+    height: 30px;
+    line-height: 30px;
+    border-collapse: separate;
+    border-radius: 0.2rem;
+    border-color: #e8e8e8;
+}
+.select-editor .vue-treeselect__value-container {
+    position: inherit;
+}
+</style>
