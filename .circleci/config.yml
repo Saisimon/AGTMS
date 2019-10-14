@@ -12,7 +12,8 @@ jobs:
       - checkout
       - run: echo "127.0.0.1 zookeeperserver" | sudo tee -a /etc/hosts
       - run: chmod +x mvnw
-      - run: sudo apt-get install jq wget
+      - run: curl --silent --show-error --location --fail --retry 3 --output /usr/bin/jq https://circle-downloads.s3.amazonaws.com/circleci-images/cache/linux-amd64/jq-latest && chmod +x /usr/bin/jq && jq --version
+      - run: sudo apt-get install wget
       - restore_cache:
           keys:
             - agtms-{{ .Branch }}-{{ checksum "pom.xml" }}
