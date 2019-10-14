@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -79,9 +81,10 @@ public class UserInfoService {
 	public Result nav() {
 		NavigationTree root = new NavigationTree();
 		root.setId("-1");
-		Map<Long, Integer> roleResourceIdMap = premissionService.getRoleResourceMap(AuthUtils.getUid());
+		Map<String, Integer> roleResourceIdMap = premissionService.getRoleResourceMap(AuthUtils.getUid());
 		if (!CollectionUtils.isEmpty(roleResourceIdMap)) {
-			List<Resource> resources = ResourceServiceFactory.get().getResources(roleResourceIdMap.keySet());
+			Set<Long> resourceIds = roleResourceIdMap.keySet().parallelStream().map(s -> Long.valueOf(s)).collect(Collectors.toSet());
+			List<Resource> resources = ResourceServiceFactory.get().getResources(resourceIds);
 			root.setChildrens(buildTree(resources, root, ""));
 			for (Template template : remoteTemplates()) {
 				NavigationLink link = new NavigationLink();

@@ -24,7 +24,7 @@ import net.saisimon.agtms.core.service.RoleService;
 public class PremissionService {
 	
 	@Cacheable(cacheNames=Constant.Cache.RESOURCE_IDS_NAME, key="#p0")
-	public Map<Long, Integer> getRoleResourceMap(Long userId) {
+	public Map<String, Integer> getRoleResourceMap(Long userId) {
 		if (userId == null) {
 			return Collections.emptyMap();
 		}
@@ -35,7 +35,7 @@ public class PremissionService {
 		return RoleResourceServiceFactory.get()
 				.getRoleResources(roleIds, null)
 				.parallelStream()
-				.collect(Collectors.toMap(RoleResource::getResourceId, RoleResource::getResourceFunctions, (v1, v2) -> {
+				.collect(Collectors.toMap(r -> r.getResourceId().toString(), RoleResource::getResourceFunctions, (v1, v2) -> {
 					return v1 | v2;
 				}));
 	}

@@ -235,12 +235,12 @@ public abstract class AbstractMainService {
 	}
 	
 	protected List<Functions> functions(String link, Long contentId, List<Functions> supportFunctions) {
-		Map<Long, Integer> ownRoleResourceMap = premissionService.getRoleResourceMap(AuthUtils.getUid());
+		Map<String, Integer> ownRoleResourceMap = premissionService.getRoleResourceMap(AuthUtils.getUid());
 		Resource resource = ResourceServiceFactory.get().getResourceByLinkAndContentId(link, contentId);
 		if (resource == null) {
 			return Collections.emptyList();
 		}
-		Integer ownFunc = ownRoleResourceMap.get(resource.getId());
+		Integer ownFunc = ownRoleResourceMap.get(resource.getId().toString());
 		if (ownFunc == null) {
 			return Collections.emptyList();
 		}

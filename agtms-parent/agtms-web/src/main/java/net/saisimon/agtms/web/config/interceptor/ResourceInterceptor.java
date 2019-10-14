@@ -53,7 +53,7 @@ public class ResourceInterceptor implements HandlerInterceptor {
 		if (controllerInfo == null || SystemUtils.isBlank(controllerInfo.link())) {
 			return true;
 		}
-		Map<Long, Integer> ownRoleResourceMap = premissionService.getRoleResourceMap(AuthUtils.getUid());
+		Map<String, Integer> ownRoleResourceMap = premissionService.getRoleResourceMap(AuthUtils.getUid());
 		if (CollectionUtils.isEmpty(ownRoleResourceMap)) {
 			return false;
 		}
@@ -61,7 +61,7 @@ public class ResourceInterceptor implements HandlerInterceptor {
 		if (resource == null) {
 			return false;
 		}
-		Integer ownFunc = ownRoleResourceMap.get(resource.getId());
+		Integer ownFunc = ownRoleResourceMap.get(resource.getId().toString());
 		if (ownFunc == null) {
 			return false;
 		}

@@ -189,11 +189,11 @@ public class TemplateEditService {
 		if (resource == null) {
 			return null;
 		}
-		Map<Long, Integer> roleResourceMap = premissionService.getRoleResourceMap(userId);
+		Map<String, Integer> roleResourceMap = premissionService.getRoleResourceMap(userId);
 		if (CollectionUtils.isEmpty(roleResourceMap)) {
 			return null;
 		}
-		return roleResourceMap.get(resource.getId());
+		return roleResourceMap.get(resource.getId().toString());
 	}
 	
 	private void updateOldResource(Template template, Template oldTemplate, Long userId) {
