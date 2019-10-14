@@ -10,27 +10,6 @@ spring:
   jpa:
     showSql: true
     generateDdl: true
-  datasource:
-    url: jdbc:mysql://dbserver:3306/agtms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
-    username: root
-    password: 1qaz1QAZ
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  data:
-    mongodb:
-      host: mongodbserver
-      port: 27017
-      username: agtms
-      password: 1qaz1QAZ
-      database: agtms
-  redis:
-    database: 0
-    host: redisserver
-    port: 6379
-    password: 1qaz1QAZ
-    embedded:
-      enabled: false
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration
 
 ribbon:
   ReadTimeout: 5000
