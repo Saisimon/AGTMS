@@ -3,6 +3,7 @@ package net.saisimon.agtms.web.service.common;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,15 +24,20 @@ import net.saisimon.agtms.core.service.RoleService;
 public class PremissionService {
 	
 	@Cacheable(cacheNames=Constant.Cache.RESOURCE_IDS_NAME, key="#p0")
-	public Set<Long> getResourceIds(Long userId) {
+	public Map<Long, Integer> getRoleResourceMap(Long userId) {
 		if (userId == null) {
-			return Collections.emptySet();
+			return Collections.emptyMap();
 		}
 		Set<Long> roleIds = getRoleIds(userId, true);
 		if (CollectionUtils.isEmpty(roleIds)) {
-			return Collections.emptySet();
+			return Collections.emptyMap();
 		}
-		return RoleResourceServiceFactory.get().getRoleResources(roleIds).parallelStream().map(RoleResource::getResourceId).collect(Collectors.toSet());
+		return RoleResourceServiceFactory.get()
+				.getRoleResources(roleIds, null)
+				.parallelStream()
+				.collect(Collectors.toMap(RoleResource::getResourceId, RoleResource::getResourceFunctions, (v1, v2) -> {
+					return v1 | v2;
+				}));
 	}
 	
 	@Cacheable(cacheNames=Constant.Cache.USER_IDS_NAME, key="#p0")

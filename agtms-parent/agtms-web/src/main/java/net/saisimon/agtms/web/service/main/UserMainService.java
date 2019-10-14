@@ -17,20 +17,27 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import cn.hutool.core.util.NumberUtil;
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.User;
+import net.saisimon.agtms.core.domain.entity.UserRole;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
+import net.saisimon.agtms.core.domain.grid.BatchOperate;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.Field;
 import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
+import net.saisimon.agtms.core.domain.tag.Option;
+import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
@@ -38,13 +45,17 @@ import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.TokenFactory;
+import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.service.UserRoleService;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.resp.UserInfo;
+import net.saisimon.agtms.web.selection.RoleSelection;
 import net.saisimon.agtms.web.selection.UserStatusSelection;
 import net.saisimon.agtms.web.service.base.AbstractMainService;
 
@@ -64,7 +75,8 @@ public class UserMainService extends AbstractMainService {
 			Functions.EDIT,
 			Functions.LOCK,
 			Functions.UNLOCK,
-			Functions.RESET_PASSWORD
+			Functions.RESET_PASSWORD,
+			Functions.GRANT
 	);
 	
 	private static final String USER_FILTERS = USER + FILTER_SUFFIX;
@@ -76,14 +88,16 @@ public class UserMainService extends AbstractMainService {
 		USER_FILTER_FIELDS.add("email");
 		USER_FILTER_FIELDS.add("cellphone");
 		USER_FILTER_FIELDS.add("lastLoginTime");
-		USER_FILTER_FIELDS.add("createTime");
-		USER_FILTER_FIELDS.add("updateTime");
+		USER_FILTER_FIELDS.add(Constant.CREATETIME);
+		USER_FILTER_FIELDS.add(Constant.UPDATETIME);
 	}
 	
 	@Autowired
 	private UserStatusSelection userStatusSelection;
 	@Autowired
 	private AgtmsProperties agtmsProperties;
+	@Autowired
+	private RoleSelection roleSelection;
 	
 	public Result grid() {
 		return ResultUtils.simpleSuccess(getMainGrid(USER));
@@ -113,32 +127,16 @@ public class UserMainService extends AbstractMainService {
 			result.setUpdateTime(user.getUpdateTime());
 			result.setStatus(userStatusMap.get(user.getStatus()));
 			result.setAction(USER);
-			if (user.getId().equals(AuthUtils.getUid())) {
-				// edit
-				result.getDisableActions().add(Boolean.FALSE);
-				// unlock
-				result.getDisableActions().add(Boolean.TRUE);
-				// lock
-				result.getDisableActions().add(Boolean.TRUE);
-				// reset password
-				result.getDisableActions().add(Boolean.FALSE);
-			} else {
-				// edit
-				result.getDisableActions().add(Boolean.FALSE);
-				if (UserStatuses.LOCKED.getStatus().equals(user.getStatus())) {
-					// unlock
-					result.getDisableActions().add(Boolean.FALSE);
-					// lock
-					result.getDisableActions().add(Boolean.TRUE);
-				} else {
-					// unlock
-					result.getDisableActions().add(Boolean.TRUE);
-					// lock
-					result.getDisableActions().add(Boolean.FALSE);
-				}
-				// reset password
-				result.getDisableActions().add(Boolean.FALSE);
-			}
+			boolean self = user.getId().equals(AuthUtils.getUid());
+			boolean locked = UserStatuses.LOCKED.getStatus().equals(user.getStatus());
+			// edit
+			result.getDisableActions().add(Boolean.FALSE);
+			// unlock
+			result.getDisableActions().add(self || !locked);
+			// lock
+			result.getDisableActions().add(self || locked);
+			// reset password
+			result.getDisableActions().add(Boolean.FALSE);
 			results.add(result);
 		}
 		request.getSession().setAttribute(USER_FILTERS, filterMap);
@@ -190,6 +188,54 @@ public class UserMainService extends AbstractMainService {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	public Result batchGrid(String type, String func) {
+		return ResultUtils.simpleSuccess(getBatchGrid(USER, type, func));
+	}
+	
+	@Transactional(rollbackOn = Exception.class)
+	public Result grant(Map<String, Object> body) {
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
+		if (CollectionUtils.isEmpty(ids)) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		List<String> rolePaths = SystemUtils.transformList(body.get("roles"));
+		Map<String, String> roleMap = roleSelection.select();
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
+			User user = UserServiceFactory.get().findById(id).orElse(null);
+			if (user == null) {
+				continue;
+			}
+			grantRole(user.getId(), roleMap, rolePaths);
+		}
+		return ResultUtils.simpleSuccess();
+	}
+	
+	public void grantRole(Long userId, Map<String, String> roleMap, List<String> rolePaths) {
+		if (userId == null) {
+			return;
+		}
+		UserRoleService userRoleService = UserRoleServiceFactory.get();
+		userRoleService.delete(FilterRequest.build().and("userId", userId));
+		if (roleMap == null || CollectionUtils.isEmpty(rolePaths)) {
+			return;
+		}
+		for (String rolePath : rolePaths) {
+			if (!roleMap.containsKey(rolePath)) {
+				continue;
+			}
+			int idx = rolePath.lastIndexOf('/');
+			UserRole userRole = new UserRole();
+			userRole.setRoleId(Long.valueOf(rolePath.substring(idx + 1)));
+			userRole.setRolePath(rolePath.substring(0, idx));
+			userRole.setUserId(userId);
+			userRoleService.saveOrUpdate(userRole);
+		}
+	}
+	
 	public boolean checkToken(String uid, String token) {
 		if (!NumberUtil.isLong(uid)) {
 			return false;
@@ -202,8 +248,12 @@ public class UserMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected Header header(Object key) {
-		return Header.builder().title(messageService.getMessage("user.management")).createUrl("/user/edit").build();
+	protected Header header(Object key, List<Functions> functions) {
+		Header header = Header.builder().title(messageService.getMessage("user.management")).build();
+		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
+			header.setCreateUrl("/user/edit");
+		}
+		return header;
 	}
 
 	@Override
@@ -229,7 +279,7 @@ public class UserMainService extends AbstractMainService {
 		filters.add(filter);
 		
 		filter = new Filter();
-		keyValues = Arrays.asList("lastLoginTime", "createTime", "updateTime");
+		keyValues = Arrays.asList("lastLoginTime", Constant.CREATETIME, Constant.UPDATETIME);
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("last.login.time", "create.time", "update.time")));
 		value = new HashMap<>();
 		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
@@ -250,25 +300,50 @@ public class UserMainService extends AbstractMainService {
 		columns.add(Column.builder().field("avatar").label(messageService.getMessage("avatar")).width(200).views(Views.IMAGE.getKey()).build());
 		columns.add(Column.builder().field("status").label(messageService.getMessage("status")).width(200).views(Views.TEXT.getKey()).build());
 		columns.add(Column.builder().field("lastLoginTime").label(messageService.getMessage("last.login.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field(Constant.CREATETIME).label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field(Constant.UPDATETIME).label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
 	
 	@Override
-	protected List<Action> actions(Object key) {
+	protected List<Action> actions(Object key, List<Functions> functions) {
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().key("edit").to("/user/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
-		actions.add(Action.builder().key("unlock").icon("unlock").to("/user/main/unlock").text(messageService.getMessage("unlock")).variant("outline-warning").type("modal").build());
-		actions.add(Action.builder().key("lock").icon("lock").to("/user/main/lock").text(messageService.getMessage("lock")).variant("outline-warning").type("modal").build());
-		actions.add(Action.builder().key("reset").icon("key").to("/user/main/reset/password").text(messageService.getMessage("reset.password")).variant("outline-danger").type("modal").build());
+		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
+			actions.add(Action.builder().key("edit").to("/user/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
+		}
+		if (SystemUtils.hasFunction(Functions.UNLOCK.getCode(), functions)) {
+			actions.add(Action.builder().key("unlock").icon("unlock").to("/user/main/unlock").text(messageService.getMessage("unlock")).variant("outline-warning").type("modal").build());
+		}
+		if (SystemUtils.hasFunction(Functions.LOCK.getCode(), functions)) {
+			actions.add(Action.builder().key("lock").icon("lock").to("/user/main/lock").text(messageService.getMessage("lock")).variant("outline-warning").type("modal").build());
+		}
+		if (SystemUtils.hasFunction(Functions.RESET_PASSWORD.getCode(), functions)) {
+			actions.add(Action.builder().key("reset").icon("key").to("/user/main/reset/password").text(messageService.getMessage("reset.password")).variant("outline-danger").type("modal").build());
+		}
 		return actions;
 	}
 	
 	@Override
 	protected List<Functions> functions(Object key) {
-		return SUPPORT_FUNCTIONS;
+		return functions("/user/main", null, SUPPORT_FUNCTIONS);
+	}
+
+	@Override
+	protected BatchOperate batchOperate(Object key, String func) {
+		BatchOperate batchOperate = new BatchOperate();
+		switch (func) {
+		case "grant":
+			batchOperate.setPath("/grant");
+			List<Field<?>> operateFields = new ArrayList<>(1);
+			Field<Option<String>> rolesField = Field.<Option<String>>builder().name("roles").text(messageService.getMessage("role.name"))
+					.type("select").views(Views.SELECTION.getKey()).options(roleSelection.buildNestedOptions(null)).multiple(true).build();
+			operateFields.add(rolesField);
+			batchOperate.setOperateFields(operateFields);
+			return batchOperate;
+		default:
+			return null;
+		}
 	}
 	
 }

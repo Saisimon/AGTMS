@@ -1,12 +1,12 @@
 <template>
-    <b-row class="mb-3">
+    <b-row class="mb-2">
         <b-col>
-            <label :for="field.name + '-input'" class="form-label font-weight-bold">
-                {{ field.text }}
+            <label :for="field.name + '-input'" class="form-label">
                 <span class="text-danger" v-if="field.required">*</span>
+                {{ field.text }} :
             </label>
             <b-input-group>
-                <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" 
+                <b-form-input
                     v-if="show" 
                     :id="field.name + '-input'" 
                     :name="field.name" 
@@ -14,7 +14,7 @@
                     :disabled="field.disabled" 
                     :state="field.state" 
                     type="text" />
-                <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" 
+                <b-form-input
                     v-else 
                     :id="field.name + '-input'" 
                     :name="field.name" 
@@ -22,7 +22,7 @@
                     :disabled="field.disabled" 
                     :state="field.state" 
                     type="password" />
-                <b-input-group-text class="border-top-0 border-right-0 border-left-0 rounded-0" slot="append" style="cursor: pointer;">
+                <b-input-group-text slot="append" style="cursor: pointer;">
                     <i class="fa fa-eye-slash" @click="show = false" v-if="show"></i>
                     <i class="fa fa-eye" @click="show = true" v-else></i>
                 </b-input-group-text>

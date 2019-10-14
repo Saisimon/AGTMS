@@ -28,11 +28,19 @@ public interface RoleResourceService extends BaseService<RoleResource, Long>, Or
 		return count(filter) > 0;
 	}
 	
-	default List<RoleResource> getRoleResources(Collection<Long> roleIds) {
+	default List<RoleResource> getRoleResources(Collection<Long> roleIds, Long resourceId) {
 		if (CollectionUtils.isEmpty(roleIds)) {
 			return Collections.emptyList();
 		}
-		FilterRequest filter = FilterRequest.build().and("roleId", roleIds, Operator.IN);
+		FilterRequest filter = FilterRequest.build();
+		if (roleIds.size() == 1) {
+			filter.and("roleId", roleIds.iterator().next());
+		} else {
+			filter.and("roleId", roleIds, Operator.IN);
+		}
+		if (resourceId != null) {
+			filter.and("resourceId", resourceId);
+		}
 		return findList(filter);
 	}
 	

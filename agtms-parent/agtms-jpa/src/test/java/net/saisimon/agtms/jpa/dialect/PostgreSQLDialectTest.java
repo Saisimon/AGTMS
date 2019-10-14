@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-public class PostgreSQLDialectTest extends DialectTest {
+public class PostgreSQLDialectTest extends AbstractDialectTest {
 	
 	private Dialect dialect = new PostgreSQLDialect();
 	

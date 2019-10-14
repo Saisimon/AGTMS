@@ -1,19 +1,21 @@
-import Vue from 'vue'
-import BootstrapVue from 'bootstrap-vue'
+import Vue from 'vue';
+import BootstrapVue from 'bootstrap-vue';
 import VueGoodTablePlugin from 'vue-good-table';
-import Multiselect from 'vue-multiselect'
+import Multiselect from 'vue-multiselect';
 import Datepicker from 'vuejs-datepicker';
-import App from './App.vue'
-import router from './router'
-import store from './store/store'
-import i18n from './i18n/i18n'
-import axios from 'axios'
+import Treeselect from '@riophae/vue-treeselect';
+import App from './App.vue';
+import router from './router';
+import store from './store/store';
+import i18n from './i18n/i18n';
+import axios from 'axios';
 
-import 'font-awesome/css/font-awesome.css'
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
-import 'vue-good-table/dist/vue-good-table.css'
-import 'vue-multiselect/dist/vue-multiselect.min.css'
+import 'font-awesome/css/font-awesome.css';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-vue/dist/bootstrap-vue.css';
+import 'vue-good-table/dist/vue-good-table.css';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = true;
@@ -21,6 +23,7 @@ Vue.use(BootstrapVue);
 Vue.use(VueGoodTablePlugin);
 Vue.component('multiselect', Multiselect);
 Vue.component('datepicker', Datepicker);
+Vue.component('treeselect', Treeselect);
 Vue.prototype.cloneObject = function (obj) {
     var newObj = {};
 	if (obj instanceof Array) {
@@ -51,6 +54,17 @@ Vue.prototype.isNullEmpty = function (a) {
 	} else {
 		return true;
 	}
+}
+
+Vue.prototype.getLabel = function (options, id) {
+	if (options != null && options.length > 0) {
+		for (var i = 0; i < options.length; i++) {
+			if (options[i].id === id) {
+				return options[i].label;
+			}
+		}
+	}
+	return null;
 }
 
 new Vue({

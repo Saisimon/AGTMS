@@ -31,12 +31,10 @@ import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
-import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.repository.AbstractGenerateRepository;
 import net.saisimon.agtms.core.repository.BaseRepository;
 import net.saisimon.agtms.core.util.SystemUtils;
-import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.remote.exception.RemoteException;
 import net.saisimon.agtms.remote.service.ApiService;
 
@@ -210,9 +208,6 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
-		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
-			return null;
-		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> filterMap = MapUtil.newHashMap(0);
 		if (filter != null) {
@@ -233,9 +228,6 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
-		if (!TemplateUtils.hasOneOfFunctions(template, Functions.REMOVE, Functions.BATCH_REMOVE)) {
-			return;
-		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		try {
 			@SuppressWarnings("unchecked")
@@ -254,9 +246,6 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
-		if (!TemplateUtils.hasOneOfFunctions(template, Functions.CREATE, Functions.EDIT, Functions.BATCH_EDIT)) {
-			return null;
-		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		@SuppressWarnings("unchecked")
 		Map<String, Object> body = SystemUtils.fromJson(SystemUtils.toJson(entity), HashMap.class, String.class, Object.class);
@@ -279,9 +268,6 @@ public class GenerateRemoteRepository extends AbstractGenerateRepository impleme
 		Template template = template();
 		Assert.notNull(template.getService(), "template service name can not be null");
 		Assert.notNull(template.getKey(), "template key can not be null");
-		if (!TemplateUtils.hasOneOfFunctions(template, Functions.BATCH_EDIT)) {
-			return;
-		}
 		ApiService apiService = Feign.builder().decoder(decoder).encoder(encoder).client(client).contract(contract).target(ApiService.class, "http://" + template.getService());
 		Map<String, Object> body = MapUtil.newHashMap(2);
 		Map<String, Object> filterMap = null;

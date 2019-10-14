@@ -1,5 +1,5 @@
 <template>
-    <div :class="{'text-nowrap': nowrap, 'text-wrap': !nowrap}" @click.stop="nowrap=!nowrap">
+    <div class="ellipsis-text" v-b-tooltip.topright :title="rowData[field]" >
         <span>{{ rowData[field] }}</span>
     </div>
 </template>
@@ -25,17 +25,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-.text-nowrap {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-}
-.text-wrap {
-    word-wrap: break-word;
-    word-break: normal;
-    cursor: pointer;
-}
-</style>

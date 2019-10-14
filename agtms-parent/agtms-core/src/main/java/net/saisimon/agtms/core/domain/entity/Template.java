@@ -59,12 +59,6 @@ public class Template implements Cloneable, Serializable {
 	private String path;
 	
 	/**
-	 * 模板支持的功能
-	 */
-	@Column
-	private Integer functions;
-	
-	/**
 	 * 模板下属的列信息
 	 */
 	@OneToMany(targetEntity=TemplateColumn.class, cascade=CascadeType.ALL, mappedBy="template", orphanRemoval=true)
@@ -107,6 +101,10 @@ public class Template implements Cloneable, Serializable {
 	@Transient
 	@javax.persistence.Transient
 	private String key;
+	
+	@Transient
+	@javax.persistence.Transient
+	private Integer functions;
 	
 	public void addColumn(TemplateColumn column) {
 		if (column == null) {

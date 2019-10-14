@@ -70,18 +70,15 @@ public class ImportActuator implements Actuator<ImportParam> {
 	@Override
 	@Transactional(rollbackOn = Exception.class)
 	public Result execute(ImportParam param) throws Exception {
-		Set<Long> userIds = premissionService.getUserIds(param.getUserId());
-		Template template = TemplateUtils.getTemplate(param.getTemplateId(), userIds);
+		Template template = TemplateUtils.getTemplate(param.getTemplateId());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
-		}
-		if (!TemplateUtils.hasFunction(template, Functions.IMPORT)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		File file = createImportFile(param);
 		if (!file.exists()) {
 			return ErrorMessage.Task.Import.TASK_IMPORT_FAILED;
 		}
+		Set<Long> userIds = premissionService.getUserIds(param.getUserId());
 		importDatas(param, template, file, userIds);
 		return ResultUtils.simpleSuccess();
 	}
@@ -109,8 +106,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		Set<Long> userIds = premissionService.getUserIds(param.getUserId());
-		Template template = TemplateUtils.getTemplate(param.getTemplateId(), userIds);
+		Template template = TemplateUtils.getTemplate(param.getTemplateId());
 		if (template == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
@@ -221,7 +217,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 					if (value == null) {
 						Set<String> texts = new HashSet<>();
 						texts.add(fieldValue.toString());
-						Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap(templateField.selectionSign(template.getService()), texts, operatorIds);
+						Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap(templateField.selectionSign(template.getService()), texts);
 						textMap.putAll(textValueMap);
 						value = textValueMap.get(fieldValue.toString());
 					}

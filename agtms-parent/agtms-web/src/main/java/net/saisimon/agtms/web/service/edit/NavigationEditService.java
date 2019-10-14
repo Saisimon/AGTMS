@@ -13,14 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Resource;
 import net.saisimon.agtms.core.domain.entity.RoleResource;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.UserRole;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.EditGrid.FieldGroup;
 import net.saisimon.agtms.core.domain.grid.Field;
 import net.saisimon.agtms.core.domain.tag.Option;
-import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Views;
@@ -34,6 +35,7 @@ import net.saisimon.agtms.core.service.RoleResourceService;
 import net.saisimon.agtms.core.service.TemplateService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.NavigationParam;
 import net.saisimon.agtms.web.selection.ResourceSelection;
@@ -81,6 +83,9 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 		if (body.getIcon().length() > 64) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(messageService.getMessage("icon"), 64);
 		}
+		if (body.getPath() == null) {
+			body.setPath("");
+		}
 		if (null != body.getId() && body.getId() > 0) {
 			return updateResource(body);
 		} else {
@@ -102,32 +107,31 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 	}
 	
 	@Override
-	protected List<Field<?>> fields(Resource resource, Object key) {
-		List<Field<?>> fields = new ArrayList<>();
+	protected List<FieldGroup> groups(Resource resource, Object key) {
 		String path = resource == null ? null : resource.getPath() + "/" + resource.getId();
-		List<Option<String>> options = Select.buildOptions(resourceSelection.selectWithParent(path, Resource.ContentType.NAVIGATION));
-		Field<Option<String>> pathField = Field.<Option<String>>builder().name("path").text(messageService.getMessage("parent.navigation")).required(true).views(Views.SELECTION.getKey()).options(options).build();
-		Field<String> iconField = Field.<String>builder().name("icon").text(messageService.getMessage("icon")).type(Classes.STRING.getKey()).required(true).views(Views.ICON.getKey()).build();
-		Field<String> titleField = Field.<String>builder().name("name").text(messageService.getMessage("title")).type(Classes.STRING.getKey()).required(true).build();
+		List<Option<String>> options = resourceSelection.buildNestedOptions(path, Resource.ContentType.NAVIGATION, false);
+		Field<Option<String>> pathField = Field.<Option<String>>builder().name("path").text(messageService.getMessage("parent.navigation"))
+				.type("select").views(Views.SELECTION.getKey()).options(options).build();
+		Field<String> iconField = Field.<String>builder().name("icon").text(messageService.getMessage("icon"))
+				.type(Classes.STRING.getKey()).required(true).views(Views.ICON.getKey()).build();
+		Field<String> titleField = Field.<String>builder().name("name").text(messageService.getMessage("title"))
+				.type(Classes.STRING.getKey()).required(true).build();
 		if (resource != null) {
-			pathField.setValue(Select.getOption(options, resource.getPath()));
+			pathField.setValue(SystemUtils.isEmpty(resource.getPath()) ? null : resource.getPath());
 			iconField.setValue(resource.getIcon());
 			titleField.setValue(resource.getName());
 		} else {
-			pathField.setValue(options.get(0));
 			iconField.setValue(Resource.DEFAULT_ICON);
 			titleField.setValue("");
 		}
-		fields.add(pathField);
-		fields.add(iconField);
-		fields.add(titleField);
-		return fields;
+		List<FieldGroup> groups = new ArrayList<>();
+		groups.add(buildFieldGroup(messageService.getMessage("navigation.info"), 0, pathField, iconField, titleField));
+		return groups;
 	}
 	
 	private Result updateResource(NavigationParam body) {
 		ResourceService resourceService = ResourceServiceFactory.get();
-		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = premissionService.getUserIds(userId);
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Resource oldResource = resourceService.findById(body.getId()).orElse(null);
 		if (oldResource == null) {
 			return ErrorMessage.Navigation.NAVIGATION_NOT_EXIST;
@@ -138,13 +142,12 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 		if (body.getPath().equals(oldResource.getPath() + "/" + oldResource.getId())) {
 			return ErrorMessage.Common.PARAM_ERROR;
 		}
-		List<Resource> resources = resourceService.getResources(oldResource.getPath() + "/" + oldResource.getId(), Resource.ContentType.NAVIGATION, userIds);
-		if (!validatePath(body.getPath(), resources)) {
+		if (!validatePath(body.getPath(), oldResource.getPath() + "/" + oldResource.getId(), userIds)) {
 			return ErrorMessage.Common.PARAM_ERROR;
 		}
 		if (!checkDepth(body.getPath())) {
 			Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
-			result.setMessageArgs(new Object[]{ agtmsProperties.getNavigationMaxDepth() });
+			result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
 			return result;
 		}
 		Date time = new Date();
@@ -157,7 +160,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 				oldPath = oldPath.replaceFirst(oldPathPrefix, newPathPrefix);
 				if (Resource.ContentType.NAVIGATION.getValue().equals(children.getContentType()) && !checkDepth(oldPath)) {
 					Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
-					result.setMessageArgs(new Object[]{ agtmsProperties.getNavigationMaxDepth() });
+					result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
 					return result;
 				}
 				children.setPath(oldPath);
@@ -171,7 +174,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 					if (template != null) {
 						Map<String, Object> updateMap = new HashMap<>();
 						updateMap.put("path", children.getPath());
-						updateMap.put("updateTime", time);
+						updateMap.put(Constant.UPDATETIME, time);
 						templateService.update(template.getId(), updateMap);
 					}
 				}
@@ -192,18 +195,16 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 		if (resourceService.exists(body.getName(), Resource.ContentType.NAVIGATION, userIds)) {
 			return ErrorMessage.Navigation.NAVIGATION_ALREADY_EXISTS;
 		}
-		List<Resource> resources = resourceService.getResources(null, Resource.ContentType.NAVIGATION, userIds);
-		if (!validatePath(body.getPath(), resources)) {
+		if (!validatePath(body.getPath(), null, userIds)) {
 			return ErrorMessage.Common.PARAM_ERROR;
 		}
 		if (!checkDepth(body.getPath())) {
 			Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
-			result.setMessageArgs(new Object[]{ agtmsProperties.getNavigationMaxDepth() });
+			result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
 			return result;
 		}
 		Date time = new Date();
 		Resource newResource = new Resource();
-		newResource.setFunctions(0);
 		newResource.setPath(body.getPath());
 		newResource.setIcon(body.getIcon());
 		newResource.setName(body.getName());
@@ -212,21 +213,24 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 		newResource.setUpdateTime(time);
 		newResource.setContentType(Resource.ContentType.NAVIGATION.getValue());
 		resourceService.saveOrUpdate(newResource);
-		List<UserRole> useRoles = UserRoleServiceFactory.get().getUserRoles(newResource.getOperatorId());
+		List<UserRole> useRoles = UserRoleServiceFactory.get().getUserRoles(userId);
 		RoleResourceService roleResourceService = RoleResourceServiceFactory.get();
 		for (UserRole userRole : useRoles) {
 			RoleResource roleResource = new RoleResource();
 			roleResource.setResourceId(newResource.getId());
+			roleResource.setResourcePath(newResource.getPath());
+			roleResource.setResourceFunctions(0);
 			roleResource.setRoleId(userRole.getRoleId());
 			roleResourceService.saveOrUpdate(roleResource);
 		}
 		return ResultUtils.simpleSuccess();
 	}
 	
-	private boolean validatePath(String path, List<Resource> resources) {
+	public boolean validatePath(String path, String excludePath, Set<Long> userIds) {
 		if ("".equals(path)) {
 			return true;
 		}
+		List<Resource> resources = ResourceServiceFactory.get().getResources(null, Resource.ContentType.NAVIGATION, userIds);
 		for (Resource resource : resources) {
 			if (path.equals(resource.getPath() + "/" + resource.getId())) {
 				return true;
@@ -240,7 +244,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 			return true;
 		}
 		String[] strs = path.split("/");
-		return strs.length <= agtmsProperties.getNavigationMaxDepth();
+		return strs.length <= agtmsProperties.getMaxDepth();
 	}
 	
 }

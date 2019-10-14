@@ -5,6 +5,7 @@ import java.util.List;
 
 import lombok.Builder;
 import lombok.Data;
+import net.saisimon.agtms.core.constant.Constant;
 
 @Data
 @Builder
@@ -12,7 +13,7 @@ public class Field<T> {
 	
 	private String name;
 	
-	private T value;
+	private Object value;
 	
 	private String type;
 	
@@ -21,6 +22,13 @@ public class Field<T> {
 	private boolean required;
 	
 	private boolean disabled;
+	
+	private boolean multiple;
+	
+	private boolean flat;
+	
+	@Builder.Default
+	private String consists = Constant.Field.BRANCH_PRIORITY;
 	
 	private String state;
 	

@@ -1,11 +1,11 @@
 <template>
-    <b-row class="mb-3">
+    <b-row class="mb-2">
         <b-col>
-            <label :for="field.name + '-input'" class="form-label font-weight-bold">
-                {{ field.text }}
+            <label :for="field.name + '-input'" class="form-label">
                 <span class="text-danger" v-if="field.required">*</span>
+                {{ field.text }} :
             </label>
-            <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" 
+            <b-form-input
                 :id="field.name + '-input'" 
                 :name="field.name" 
                 v-model.trim="field.value" 

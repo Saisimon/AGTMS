@@ -65,4 +65,17 @@ public class UserMainController {
 		return userMainService.resetPassword(id);
 	}
 	
+	@ResourceInfo(func=Functions.GRANT)
+	@PostMapping("/batch/grid")
+	public Result batchGrid(@RequestParam("type") String type, @RequestParam("func") String func) {
+		return userMainService.batchGrid(type, func);
+	}
+	
+	@ResourceInfo(func=Functions.GRANT)
+	@Operate(type=OperateTypes.EDIT, value="grant")
+	@PostMapping("/grant")
+	public Result grant(@RequestBody Map<String, Object> body) {
+		return userMainService.grant(body);
+	}
+	
 }

@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-public class SQLServerDialectTest extends DialectTest {
+public class SQLServerDialectTest extends AbstractDialectTest {
 
 	private Dialect dialect = new SQLServerDialect();
 	

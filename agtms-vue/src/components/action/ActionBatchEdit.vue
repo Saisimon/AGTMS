@@ -9,31 +9,27 @@
             <div class="form-container">
                 <b-row class="mb-3">
                     <b-col>
-                        <multiselect v-model="editFieldSelects"
-                            style="z-index: 11"
-                            label="text"
-                            track-by="value"
-                            select-label=""
-                            deselect-label=""
-                            selected-label=""
-                            :limit="3"
-                            :searchable="false"
-                            :multiple="true"
+                        <treeselect 
+                            v-model="editFieldSelects"
                             :options="batchEdit.editFieldOptions"
-                            :placeholder="$t('select_edit_fields')" >
-                            <template slot="noResult">{{ $t("no_result") }}</template>
-                            <template slot="noOptions">{{ $t("no_options") }}</template>
-                        </multiselect>
+                            :multiple="true" 
+                            :searchable="false"
+                            :clearable="false"
+                            :limit="3"
+                            :noChildrenText="$t('no_childrens')"
+                            :noOptionsText="$t('no_options')"
+                            :noResultsText="$t('no_result')"
+                            :placeholder="$t('select_edit_fields')" />
                     </b-col>
                 </b-row>
                 <template v-for="(editFieldSelect, index) in editFieldSelects" >
-                    <select-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-if="batchEdit.editFields[editFieldSelect.value].views == 'selection'" />
-                    <date-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].type == 'date'" />
-                    <textarea-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'textarea'" />
-                    <icon-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'icon'" />
-                    <image-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'image'" />
-                    <password-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect.value].views == 'password'" />
-                    <text-form :field="batchEdit.editFields[editFieldSelect.value]" :key="index" v-else />
+                    <select-form :field="batchEdit.editFields[editFieldSelect]" :key="index" v-if="batchEdit.editFields[editFieldSelect].views == 'selection'" />
+                    <date-form :field="batchEdit.editFields[editFieldSelect]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect].type == 'date'" />
+                    <textarea-form :field="batchEdit.editFields[editFieldSelect]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect].views == 'textarea'" />
+                    <icon-form :field="batchEdit.editFields[editFieldSelect]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect].views == 'icon'" />
+                    <image-form :field="batchEdit.editFields[editFieldSelect]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect].views == 'image'" />
+                    <password-form :field="batchEdit.editFields[editFieldSelect]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect].views == 'password'" />
+                    <text-form :field="batchEdit.editFields[editFieldSelect]" :key="index" v-else />
                 </template>
                 <b-row class="mb-3" v-if="editFieldSelects.length > 0">
                     <b-col class="text-right">
@@ -94,19 +90,14 @@ export default {
             var pass = true;
             for (var i in this.editFieldSelects) {
                 var editFieldSelect = this.editFieldSelects[i];
-                var key = editFieldSelect.value;
-                var field = this.batchEdit.editFields[key];
+                var field = this.batchEdit.editFields[editFieldSelect];
                 var value = field.value;
-                if (field.required && (value == undefined || value == "")) {
+                if (field.required && this.isNullEmpty(value)) {
                     pass = false;
                     field.state = false;
                 } else {
                     field.state = null;
-                    if (field.views === 'selection') {
-                        data[key] = value.value;
-                    } else {
-                        data[key] = value;
-                    }
+                    data[editFieldSelect] = value;
                 }
             }
             if (pass) {
@@ -123,6 +114,7 @@ export default {
                     }
                     this.submit = false;
                 }).catch(err => {
+                    this.$emit('failed');
                     this.submit = false;
                 });
             } else {

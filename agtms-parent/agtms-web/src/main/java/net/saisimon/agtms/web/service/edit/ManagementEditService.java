@@ -3,7 +3,6 @@ package net.saisimon.agtms.web.service.edit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,10 +21,10 @@ import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.EditGrid.FieldGroup;
 import net.saisimon.agtms.core.domain.grid.Field;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.dto.Result;
-import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
@@ -55,13 +54,13 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 	private PremissionService premissionService;
 	
 	public Result grid(String key, Long id) {
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		Template template = TemplateUtils.getTemplate(key, userIds);
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
 		Domain domain = null;
 		if (id != null) {
+			Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 			domain = GenerateServiceFactory.build(template).findById(id, userIds);
 			if (domain == null) {
 				return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
@@ -73,8 +72,7 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 	@Transactional(rollbackOn = Exception.class)
 	public Result save(String key, Map<String, Object> body) {
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = premissionService.getUserIds(userId);
-		Template template = TemplateUtils.getTemplate(key, userIds);
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -83,15 +81,13 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 		if (idObj != null) {
 			id = Long.valueOf(idObj.toString());
 		}
-		if (!checkFunction(template, id)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
-		}
 		try {
 			Domain domain = GenerateServiceFactory.build(template).newGenerate();
 			Result result = populate(domain, template, body);
 			if (!ResultUtils.isSuccess(result)) {
 				return result;
 			}
+			Set<Long> userIds = premissionService.getUserIds(userId);
 			if (id == null) {
 				result = saveDomain(domain, template, userIds, userId);
 			} else {
@@ -134,35 +130,41 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 	}
 
 	@Override
-	protected List<Field<?>> fields(Domain domain, Object key) {
+	protected List<FieldGroup> groups(Domain domain, Object key) {
 		if (!(key instanceof Template)) {
 			return null;
 		}
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Template template = (Template) key;
-		List<Field<?>> fields = new ArrayList<>();
 		if (CollectionUtils.isEmpty(template.getColumns())) {
 			return null;
 		}
+		List<FieldGroup> groups = new ArrayList<>();
 		for (TemplateColumn templateColumn : template.getColumns()) {
 			if (CollectionUtils.isEmpty(templateColumn.getFields())) {
 				continue;
 			}
+			List<Field<?>> fields = new ArrayList<>();
 			for (TemplateField templateField : templateColumn.getFields()) {
-				fields.add(buildField(domain, templateColumn, templateField, template.getService(), userIds));
+				fields.add(buildField(domain, templateColumn.getColumnName(), templateField, template.getService()));
 			}
+			Collections.sort(fields, Field.COMPARATOR);
+			FieldGroup group = new FieldGroup();
+			group.setFields(fields);
+			group.setOrdered(templateColumn.getOrdered());
+			group.setText(templateColumn.getTitle());
+			groups.add(group);
 		}
-		Collections.sort(fields, Field.COMPARATOR);
-		return fields;
+		Collections.sort(groups, FieldGroup.COMPARATOR);
+		return groups;
 	}
 	
-	private Field<Object> buildField(Domain domain, TemplateColumn templateColumn, TemplateField templateField, String service, Collection<Long> userIds) {
-		String fieldName = templateColumn.getColumnName() + templateField.getFieldName();
+	private Field<Object> buildField(Domain domain, String columnName, TemplateField templateField, String service) {
+		String fieldName = columnName + templateField.getFieldName();
 		Field<Object> field = Field.<Object>builder()
 				.name(fieldName)
 				.text(templateField.getFieldTitle())
 				.type(templateField.getFieldType())
-				.ordered(templateColumn.getOrdered() * 10 + templateField.getOrdered())
+				.ordered(templateField.getOrdered())
 				.views(templateField.getViews())
 				.searchable(true)
 				.build();
@@ -171,11 +173,11 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 		if (Views.SELECTION.getKey().equals(templateField.getViews())) {
 			String selectionSign = templateField.selectionSign(service);
 			field.setSign(selectionSign);
-			field.setOptions(getFieldOptions(selectionSign, userIds));
+			field.setOptions(getFieldOptions(selectionSign));
 			if (value == null) {
 				value = templateField.getDefaultValue();
 			}
-			field.setValue(getFieldOptionValue(value, selectionSign, userIds));
+			field.setValue(value);
 		} else if (Views.PASSWORD.getKey().equals(field.getViews())) {
 			if (value == null) {
 				value = templateField.getDefaultValue();
@@ -187,36 +189,13 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 		return field;
 	}
 	
-	private List<Object> getFieldOptions(String selectionSign, Collection<Long> userIds) {
-		List<Option<Object>> selectionOptions = SelectionUtils.getSelectionOptions(selectionSign, null, userIds);
+	private List<Object> getFieldOptions(String selectionSign) {
+		List<Option<Object>> selectionOptions = SelectionUtils.getSelectionOptions(selectionSign, null);
 		List<Object> options = new ArrayList<>();
 		for (Option<Object> option : selectionOptions) {
 			options.add(option);
 		}
 		return options;
-	}
-	
-	private Object getFieldOptionValue(Object value, String selectionSign, Collection<Long> userIds) {
-		if (value == null) {
-			return value;
-		}
-		Set<String> values = new HashSet<>();
-		values.add(value.toString());
-		Map<String, String> textMap = SelectionUtils.getSelectionValueTextMap(selectionSign, values, userIds);
-		String text = textMap.get(value.toString());
-		if (text != null) {
-			return new Option<>(value, text);
-		}
-		return value;
-	}
-	
-	private boolean checkFunction(Template template, Long id) {
-		if (id == null && !TemplateUtils.hasFunction(template, Functions.CREATE)) {
-			return false;
-		} else if (id != null && !TemplateUtils.hasFunction(template, Functions.EDIT)) {
-			return false;
-		}
-		return true;
 	}
 	
 	private Result populate(Domain domain, Template template, Map<String, Object> body) {

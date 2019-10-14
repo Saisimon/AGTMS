@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.factory.OperationServiceFactory;
@@ -132,13 +133,13 @@ public class MainControllerTest extends AbstractControllerTest {
 		body = new HashMap<>();
 		andFilters = new ArrayList<>();
 		Map<String, Object> gte = new HashMap<>();
-		gte.put("key", "createTime");
+		gte.put("key", Constant.CREATETIME);
 		gte.put("operator", "$gte");
 		gte.put("type", "date");
 		gte.put("value", "2019-04-01T00:00:00.000Z");
 		andFilters.add(gte);
 		Map<String, Object> lte = new HashMap<>();
-		lte.put("key", "createTime");
+		lte.put("key", Constant.CREATETIME);
 		lte.put("operator", "$lte");
 		lte.put("type", "date");
 		lte.put("value", "2019-04-30T00:00:00.000Z");
@@ -226,10 +227,12 @@ public class MainControllerTest extends AbstractControllerTest {
 	@Test
 	public void testNavigationMainBatchGrid() throws Exception {
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
-		sendPost("/navigation/main/batch/grid", null, null, adminToken);
+		sendPost(String.format("/navigation/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "batchRemove"), null, null, adminToken);
+		sendPost(String.format("/user/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "grant"), null, null, adminToken);
 		
 		UserToken testToken = login("editor", "editor");
-		sendPost("/navigation/main/batch/grid", null, null, testToken);
+		sendPost(String.format("/navigation/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "batchRemove"), null, null, testToken);
+		sendPost(String.format("/navigation/main/batch/grid?type=%s&func=%s", Constant.Batch.EDIT, "batchEdit"), null, null, testToken);
 	}
 	/* NavigationMainController End */
 	

@@ -86,12 +86,6 @@ public class Resource implements Serializable {
 	private String path;
 	
 	/**
-	 * 功能值
-	 */
-	@Column
-	private Integer functions;
-	
-	/**
 	 * 资源对应内容ID
 	 */
 	@Column

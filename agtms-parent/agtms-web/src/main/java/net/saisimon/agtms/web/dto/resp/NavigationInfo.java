@@ -16,8 +16,6 @@ public class NavigationInfo extends BaseInfo {
 	
 	private String icon;
 	
-	private String parentId;
-	
 	private String operator;
 	
 	private Date createTime;

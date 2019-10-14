@@ -16,7 +16,34 @@ public class Constant {
 	public static final String CREATETIME = "createTime";
 	public static final String UPDATETIME = "updateTime";
 	
+	public static class Batch {
+		
+		public static final String OPERATE = "operate";
+		public static final String EDIT = "edit";
+		public static final String EXPORT = "export";
+		public static final String IMPORT = "import";
+		
+	}
+	
+	public static class Field {
+		
+		public static final String ALL = "ALL";
+		public static final String BRANCH_PRIORITY = "BRANCH_PRIORITY";
+		public static final String LEAF_PRIORITY = "LEAF_PRIORITY";
+		public static final String ALL_WITH_INDETERMINATE = "ALL_WITH_INDETERMINATE";
+		
+	}
+	
+	public static class Filter {
+		
+		public static final String STRICT = "strict";
+		public static final String FUZZY = "fuzzy";
+		public static final String SEPARATOR = "separator";
+		
+	}
+	
 	public static class Param {
+		
 		public static final String TOTAL = "total";
 		public static final String ROWS = "rows";
 		public static final String UPDATE = "update";
@@ -28,9 +55,11 @@ public class Constant {
 		public static final String SORT = "sort";
 		public static final String PARAM = "param";
 		public static final String COUNT = "count";
+		
 	}
 	
 	public static class Operator {
+		
 		public static final String AND = "$and";
 		public static final String OR = "$or";
 		public static final String NOR = "$nor";
@@ -49,6 +78,7 @@ public class Constant {
 		public static final String IN = "$in";
 		public static final String NIN = "$nin";
 		public static final String EXISTS = "$exists";
+		
 	}
 	
 	public static class File {

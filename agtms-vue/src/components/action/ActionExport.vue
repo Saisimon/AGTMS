@@ -14,10 +14,10 @@
                 </b-row>
                 <b-row class="mb-3">
                     <b-col>
-                        <multiselect style="z-index: 10"
+                        <!-- <multiselect style="z-index: 10"
                             v-model="exportFieldSelects"
-                            label="text"
-                            track-by="value"
+                            label="label"
+                            track-by="id"
                             select-label=""
                             select-group-label=""
                             deselect-label=""
@@ -33,15 +33,25 @@
                             :placeholder="$t('select_export_fields')" >
                             <template slot="noResult">{{ $t("no_result") }}</template>
                             <template slot="noOptions">{{ $t("no_options") }}</template>
-                        </multiselect>
+                        </multiselect> -->
+                        <treeselect 
+                            v-model="exportFieldSelects"
+                            :options="exportFieldOptions"
+                            :multiple="true" 
+                            :searchable="false"
+                            :limit="3"
+                            :noChildrenText="$t('no_childrens')"
+                            :noOptionsText="$t('no_options')"
+                            :noResultsText="$t('no_result')"
+                            :placeholder="$t('select_export_fields')" />
                     </b-col>
                 </b-row>
                 <b-row class="mb-3">
                     <b-col>
-                        <multiselect class="batch-select"
+                        <!-- <multiselect class="batch-select"
                             v-model="exportFileType"
-                            label="text"
-                            track-by="value"
+                            label="label"
+                            track-by="id"
                             select-label=""
                             deselect-label=""
                             selected-label=""
@@ -51,7 +61,17 @@
                             :placeholder="$t('select_export_file_type')" >
                             <template slot="noResult">{{ $t("no_result") }}</template>
                             <template slot="noOptions">{{ $t("no_options") }}</template>
-                        </multiselect>
+                        </multiselect> -->
+                        <treeselect 
+                            v-model="exportFileType"
+                            :options="batchExport.exportFileTypeOptions"
+                            :multiple="false" 
+                            :searchable="false"
+                            :clearable="false"
+                            :noChildrenText="$t('no_childrens')"
+                            :noOptionsText="$t('no_options')"
+                            :noResultsText="$t('no_result')"
+                            :placeholder="$t('select_export_file_type')" />
                     </b-col>
                 </b-row>
                 <b-row class="mb-3" v-if="exportFieldSelects.length > 0 && exportFileType != null">
@@ -79,10 +99,7 @@ export default {
     ],
     computed: {
         exportFieldOptions: function() {
-            return [{
-                group: this.$t('select_all'),
-                options: this.batchExport.exportFieldOptions
-            }]
+            return this.batchExport.exportFieldOptions;
         }
     },
     data: function() {
@@ -108,10 +125,10 @@ export default {
             var exportFields = [];
             for (var i = 0; i < this.exportFieldSelects.length; i++) {
                 var exportFieldSelect = this.exportFieldSelects[i];
-                exportFields.push(exportFieldSelect.value);
+                exportFields.push(exportFieldSelect);
             }
             data['exportFields'] = exportFields;
-            data['exportFileType'] = this.exportFileType.value;
+            data['exportFileType'] = this.exportFileType;
             data['exportFileName'] = this.batchExport.exportFileName;
             this.$store.dispatch('batchExportData', {
                 url: this.$route.path,

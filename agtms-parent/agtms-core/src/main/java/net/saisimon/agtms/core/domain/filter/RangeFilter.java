@@ -27,8 +27,12 @@ public class RangeFilter<T> extends FieldFilter {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		RangeFilter<T> rangeFilter = (RangeFilter<T>) super.clone();
-		rangeFilter.from = (Input<T>) rangeFilter.from.clone();
-		rangeFilter.to = (Input<T>) rangeFilter.to.clone();
+		if (this.from != null) {
+			rangeFilter.from = (Input<T>) this.from.clone();
+		}
+		if (this.to != null) {
+			rangeFilter.to = (Input<T>) this.to.clone();
+		}
 		return rangeFilter;
 	}
 	

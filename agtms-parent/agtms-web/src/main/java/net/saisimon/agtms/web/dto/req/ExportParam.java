@@ -8,11 +8,11 @@ import javax.validation.constraints.NotEmpty;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import net.saisimon.agtms.core.dto.TaskParam;
+import net.saisimon.agtms.core.dto.BaseTaskParam;
 
 @Data
 @EqualsAndHashCode(callSuper=false)
-public class ExportParam extends TaskParam {
+public class ExportParam extends BaseTaskParam {
 	
 	@NotEmpty
 	private List<String> exportFields;

@@ -2,13 +2,17 @@ import { editGrid, save } from '@/api/edit'
 
 const state = {
     reset: {},
-    fields: []
+    groups: []
 };
 
 const mutations = {
-    setFields(state, fields) {
-        if (fields) {
-            state.fields = fields;
+    initState(state) {
+        state.reset = {};
+        state.groups = [];
+    },
+    setGroups(state, groups) {
+        if (groups) {
+            state.groups = groups;
         }
     }
 };

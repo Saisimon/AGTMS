@@ -1,55 +1,26 @@
 <template>
-    <b-row class="mb-3">
+    <b-row class="mb-2">
         <b-col :class="'invalid'">
-            <label :for="field.name + '-input'" class="form-label font-weight-bold">
-                {{ field.text }}
+            <label :for="field.name + '-input'" class="form-label">
                 <span class="text-danger" v-if="field.required">*</span>
+                {{ field.text }} :
             </label>
-            <multiselect
-                v-if="field.multiple"
+            <treeselect 
+                :id="field.name + '-input'" 
                 v-model="field.value"
-                style="z-index: 11"
-                label="text"
-                track-by="value"
-                select-label=""
-                select-group-label=""
-                deselect-label=""
-                deselect-group-label=""
-                selected-label=""
-                group-values="options" 
-                group-label="group" 
-                :group-select="true"
-                :allow-empty="!field.required"
-                :disabled="field.disabled"
-                :searchable="field.searchable"
-                :loading="isLoading"
                 :options="options"
+                :multiple="field.multiple" 
                 :limit="3"
-                :multiple="true"
-                :placeholder="''"
-                @search-change="search" >
-                <template slot="noResult">{{ $t("no_result") }}</template>
-                <template slot="noOptions">{{ $t("no_options") }}</template>
-            </multiselect>
-            <multiselect
-                v-else
-                v-model="field.value"
-                style="z-index: 11"
-                label="text"
-                track-by="value"
-                select-label=""
-                deselect-label=""
-                selected-label=""
-                :allow-empty="!field.required"
-                :disabled="field.disabled"
                 :searchable="field.searchable"
-                :loading="isLoading"
-                :options="options"
+                :clearable="field.required"
+                :disabled="field.disabled"
+                :flat="field.flat"
+                :value-consists-of="field.consists"
+                :noChildrenText="$t('no_childrens')"
+                :noOptionsText="$t('no_options')"
+                :noResultsText="$t('no_result')"
                 :placeholder="''"
-                @search-change="search" >
-                <template slot="noResult">{{ $t("no_result") }}</template>
-                <template slot="noOptions">{{ $t("no_options") }}</template>
-            </multiselect>
+                @search-change="search" />
             <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required" :class="{'d-block': field.state == false}">
                 {{ $t('please_select_valid') }}{{ field.text }}
             </b-form-invalid-feedback>
@@ -72,14 +43,7 @@ export default {
             if (options == null) {
                 options = [];
             }
-            if (this.field.multiple) {
-                return [{
-                    group: this.$t('select_all'),
-                    options: options
-                }];
-            } else {
-                return options;
-            }
+            return options;
         }
     },
     methods: {

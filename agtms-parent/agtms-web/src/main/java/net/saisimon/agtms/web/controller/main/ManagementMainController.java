@@ -58,10 +58,10 @@ public class ManagementMainController {
 		return managementMainService.remove(key, id);
 	}
 	
-	@ResourceInfo(func= { Functions.BATCH_EDIT, Functions.EXPORT, Functions.IMPORT })
+	@ResourceInfo(func={ Functions.BATCH_EDIT, Functions.BATCH_REMOVE, Functions.EXPORT, Functions.IMPORT })
 	@PostMapping("/batch/grid")
-	public Result batchGrid(@PathVariable("key") String key) {
-		return managementMainService.batchGrid(key);
+	public Result batchGrid(@PathVariable("key") String key, @RequestParam("type") String type, @RequestParam("func") String func) {
+		return managementMainService.batchGrid(key, type, func);
 	}
 	
 	@ResourceInfo(func=Functions.BATCH_EDIT)
@@ -74,8 +74,8 @@ public class ManagementMainController {
 	@ResourceInfo(func=Functions.BATCH_REMOVE)
 	@Operate(type=OperateTypes.BATCH_REMOVE)
 	@PostMapping("/batch/remove")
-	public Result batchRemove(@PathVariable("key") String key, @RequestBody List<Long> ids) {
-		return managementMainService.batchRemove(key, ids);
+	public Result batchRemove(@PathVariable("key") String key, @RequestBody Map<String, Object> body) {
+		return managementMainService.batchRemove(key, body);
 	}
 	
 	@ResourceInfo(func=Functions.EXPORT)

@@ -1,5 +1,5 @@
 <template>
-    <div class="marquee">
+    <div>
         <i class="fa" :class="'fa-' + rowData[field]"></i>
     </div>
 </template>

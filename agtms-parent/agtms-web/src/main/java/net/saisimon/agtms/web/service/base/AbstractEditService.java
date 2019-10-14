@@ -1,5 +1,6 @@
 package net.saisimon.agtms.web.service.base;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.EditGrid;
 import net.saisimon.agtms.core.domain.grid.Field;
+import net.saisimon.agtms.core.domain.grid.EditGrid.FieldGroup;
 import net.saisimon.agtms.web.service.common.MessageService;
 
 /**
@@ -30,7 +32,7 @@ public abstract class AbstractEditService<T> {
 	protected EditGrid getEditGrid(T entity, Object key) {
 		EditGrid editGrid = new EditGrid();
 		editGrid.setBreadcrumbs(breadcrumbs(entity, key));
-		editGrid.setFields(fields(entity, key));
+		editGrid.setGroups(groups(entity, key));
 		return editGrid;
 	}
 	
@@ -49,6 +51,23 @@ public abstract class AbstractEditService<T> {
 	 * @param key 关键词
 	 * @return 编辑字段信息
 	 */
-	protected abstract List<Field<?>> fields(T entity, Object key);
+	protected abstract List<FieldGroup> groups(T entity, Object key);
+	
+	protected FieldGroup buildFieldGroup(String text, Integer ordered, Field<?>... fields) {
+		FieldGroup group = new FieldGroup();
+		List<Field<?>> fieldList = new ArrayList<>();
+		if (fields != null) {
+			for (Field<?> field : fields) {
+				if (field == null) {
+					continue;
+				}
+				fieldList.add(field);
+			}
+		}
+		group.setFields(fieldList);
+		group.setOrdered(ordered);
+		group.setText(text);
+		return group;
+	}
 	
 }

@@ -1,6 +1,9 @@
 package net.saisimon.agtms.web.config.runner;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
@@ -14,6 +17,7 @@ import net.saisimon.agtms.core.domain.entity.Role;
 import net.saisimon.agtms.core.domain.entity.RoleResource;
 import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.domain.entity.UserRole;
+import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
@@ -27,9 +31,11 @@ import net.saisimon.agtms.core.service.RoleService;
 import net.saisimon.agtms.core.service.UserRoleService;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
-import net.saisimon.agtms.core.util.TemplateUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
+import net.saisimon.agtms.web.service.main.ManagementMainService;
 import net.saisimon.agtms.web.service.main.NavigationMainService;
 import net.saisimon.agtms.web.service.main.OperationMainService;
+import net.saisimon.agtms.web.service.main.RoleMainService;
 import net.saisimon.agtms.web.service.main.SelectionMainService;
 import net.saisimon.agtms.web.service.main.TaskMainService;
 import net.saisimon.agtms.web.service.main.TemplateMainService;
@@ -47,12 +53,20 @@ public class InitRunner implements CommandLineRunner {
 	private static final String EDITOR_USERNAME = "editor";
 	private static final String EDITOR_PASSWORD = "editor";
 	
-	private static final String VIEWER_USERNAME = "viewer";
-	private static final String VIEWER_PASSWORD = "viewer";
+	private static final String ADMIN_ROLE_NAME = "system.admin";
+	private static final String EDITOR_ROLE_NAME = "template.editor";
 	
-	private static final String ADMIN_ROLE_NAME = "ADMIN";
-	private static final String EDITOR_ROLE_NAME = "EDITOR";
-	private static final String VIEWER_ROLE_NAME = "VIEWER";
+	public static final Map<String, List<Functions>> FUNCTION_MAP = new HashMap<>();
+	static {
+		FUNCTION_MAP.put("/user/main", UserMainService.SUPPORT_FUNCTIONS);
+		FUNCTION_MAP.put("/role/main", RoleMainService.SUPPORT_FUNCTIONS);
+		FUNCTION_MAP.put("/navigation/main", NavigationMainService.SUPPORT_FUNCTIONS);
+		FUNCTION_MAP.put("/template/main", TemplateMainService.SUPPORT_FUNCTIONS);
+		FUNCTION_MAP.put("/selection/main", SelectionMainService.SUPPORT_FUNCTIONS);
+		FUNCTION_MAP.put("/task/main", TaskMainService.SUPPORT_FUNCTIONS);
+		FUNCTION_MAP.put("/operation/main", OperationMainService.SUPPORT_FUNCTIONS);
+		FUNCTION_MAP.put("/management/main", ManagementMainService.SUPPORT_FUNCTIONS);
+	}
 	
 	@Autowired
 	private AgtmsProperties agtmsProperties;
@@ -60,43 +74,46 @@ public class InitRunner implements CommandLineRunner {
 	@Override
 	@Transactional(rollbackOn=Exception.class)
 	public void run(String... args) throws Exception {
-		Resource userModuleResource = buildResource("user.module", "users", null, null, 0);
-		Resource userManagementResource = buildResource("user.management", "link", "/user/main", userModuleResource, TemplateUtils.getFunctions(UserMainService.SUPPORT_FUNCTIONS));
+		Resource userModuleResource = buildResource("user.module", "users", null, null);
+		Resource userManagementResource = buildResource("user.management", "link", "/user/main", userModuleResource);
+		Resource roleManagementResource = buildResource("role.management", "link", "/role/main", userModuleResource);
 		
-		Resource systemModuleResource = buildResource("system.module", "cogs", null, null, 0);
-		Resource navigationManagementResource = buildResource("navigation.management", "link", "/navigation/main", systemModuleResource, TemplateUtils.getFunctions(NavigationMainService.SUPPORT_FUNCTIONS));
-		Resource templateManagementResource = buildResource("template.management", "link", "/template/main", systemModuleResource, TemplateUtils.getFunctions(TemplateMainService.SUPPORT_FUNCTIONS));
-		Resource selectionManagementResource = buildResource("selection.management", "link", "/selection/main", systemModuleResource, TemplateUtils.getFunctions(SelectionMainService.SUPPORT_FUNCTIONS));
-		Resource taskManagementResource = buildResource("task.management", "link", "/task/main", systemModuleResource, TemplateUtils.getFunctions(TaskMainService.SUPPORT_FUNCTIONS));
-		Resource operationManagementResource = buildResource("operation.management", "link", "/operation/main", systemModuleResource, TemplateUtils.getFunctions(OperationMainService.SUPPORT_FUNCTIONS));
+		Resource systemModuleResource = buildResource("system.module", "cogs", null, null);
+		Resource navigationManagementResource = buildResource("navigation.management", "link", "/navigation/main", systemModuleResource);
+		Resource templateManagementResource = buildResource("template.management", "link", "/template/main", systemModuleResource);
+		Resource selectionManagementResource = buildResource("selection.management", "link", "/selection/main", systemModuleResource);
+		Resource taskManagementResource = buildResource("task.management", "link", "/task/main", systemModuleResource);
+		Resource operationManagementResource = buildResource("operation.management", "link", "/operation/main", systemModuleResource);
 		
 		Role adminRole = buildRole(ADMIN_ROLE_NAME, null);
-		buildRoleResource(adminRole, userModuleResource, userManagementResource);
+		buildRoleResource(adminRole, userModuleResource);
+		buildRoleResource(adminRole, userManagementResource);
+		buildRoleResource(adminRole, roleManagementResource);
 		User adminUser = buildAdminUser();
 		buildUserRole(adminUser, adminRole);
 		
 		Role editorRole = buildRole(EDITOR_ROLE_NAME, adminRole);
-		buildRoleResource(editorRole, systemModuleResource, navigationManagementResource, templateManagementResource, selectionManagementResource);
+		buildRoleResource(editorRole, systemModuleResource);
+		buildRoleResource(editorRole, navigationManagementResource);
+		buildRoleResource(editorRole, templateManagementResource);
+		buildRoleResource(editorRole, selectionManagementResource);
+		buildRoleResource(editorRole, taskManagementResource);
+		buildRoleResource(editorRole, operationManagementResource);
 		User editorUser = buildUser(EDITOR_USERNAME, EDITOR_PASSWORD);
 		buildUserRole(editorUser, editorRole);
-		
-		Role viewerRole = buildRole(VIEWER_ROLE_NAME, editorRole);
-		buildRoleResource(viewerRole, systemModuleResource, taskManagementResource, operationManagementResource);
-		User viewerUser = buildUser(VIEWER_USERNAME, VIEWER_PASSWORD);
-		buildUserRole(viewerUser, viewerRole);
 	}
 	
-	private void buildRoleResource(Role role, Resource... resources) {
+	private void buildRoleResource(Role role, Resource resource) {
 		RoleResourceService roleResourceService = RoleResourceServiceFactory.get();
-		for (Resource resource : resources) {
-			if (roleResourceService.exists(role.getId(), resource.getId())) {
-				continue;
-			}
-			RoleResource roleResource = new RoleResource();
-			roleResource.setResourceId(resource.getId());
-			roleResource.setRoleId(role.getId());
-			roleResourceService.saveOrUpdate(roleResource);
+		if (roleResourceService.exists(role.getId(), resource.getId())) {
+			return;
 		}
+		RoleResource roleResource = new RoleResource();
+		roleResource.setResourceId(resource.getId());
+		roleResource.setResourcePath(resource.getPath());
+		roleResource.setResourceFunctions(SystemUtils.getFunctions(FUNCTION_MAP.get(resource.getLink())));
+		roleResource.setRoleId(role.getId());
+		roleResourceService.saveOrUpdate(roleResource);
 	}
 	
 	private void buildUserRole(User user, Role... roles) {
@@ -113,16 +130,15 @@ public class InitRunner implements CommandLineRunner {
 		}
 	}
 	
-	private Resource buildResource(String name, String icon, String link, Resource parentResource, Integer functions) {
+	private Resource buildResource(String name, String icon, String link, Resource parentResource) {
 		ResourceService resourceService = ResourceServiceFactory.get();
-		Resource resource = resourceService.getResource(name, Constant.SYSTEM_OPERATORID);
+		Resource resource = resourceService.getResourceByNameAndOperatorId(name, Constant.SYSTEM_OPERATORID);
 		if (resource != null) {
 			return resource;
 		}
 		resource = new Resource();
 		Date time = new Date();
 		resource.setCreateTime(time);
-		resource.setFunctions(functions);
 		resource.setIcon(icon);
 		resource.setLink(link);
 		resource.setName(name);
@@ -154,7 +170,7 @@ public class InitRunner implements CommandLineRunner {
 		}
 		role.setPath(path);
 		role.setOperatorId(Constant.SYSTEM_OPERATORID);
-		role.setRemark(name.toLowerCase() + ".role");
+		role.setRemark(name);
 		roleService.saveOrUpdate(role);
 		return role;
 	}

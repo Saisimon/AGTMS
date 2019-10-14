@@ -30,7 +30,8 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
-import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchEdit;
+import net.saisimon.agtms.core.domain.grid.BatchEdit;
+import net.saisimon.agtms.core.domain.grid.BatchOperate;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
 import net.saisimon.agtms.core.domain.grid.Filter;
@@ -83,8 +84,8 @@ public class NavigationMainService extends AbstractMainService {
 	private static final Set<String> NAVIGATION_FILTER_FIELDS = new HashSet<>();
 	static {
 		NAVIGATION_FILTER_FIELDS.add("name");
-		NAVIGATION_FILTER_FIELDS.add("createTime");
-		NAVIGATION_FILTER_FIELDS.add("updateTime");
+		NAVIGATION_FILTER_FIELDS.add(Constant.CREATETIME);
+		NAVIGATION_FILTER_FIELDS.add(Constant.UPDATETIME);
 		NAVIGATION_FILTER_FIELDS.add(Constant.OPERATORID);
 	}
 	
@@ -147,21 +148,25 @@ public class NavigationMainService extends AbstractMainService {
 		return ResultUtils.simpleSuccess();
 	}
 	
-	public Result batchGrid() {
-		return ResultUtils.simpleSuccess(getBatchGrid(NAVIGATION));
+	public Result batchGrid(String type, String func) {
+		return ResultUtils.simpleSuccess(getBatchGrid(NAVIGATION, type, func));
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
 	public Result batchSave(Map<String, Object> body) {
-		List<String> ids = SystemUtils.transformList(body.get("ids"));
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
 		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		String icon = (String) body.get("icon");
 		ResourceService resourceService = ResourceServiceFactory.get();
-		for (String id : ids) {
-			Resource resource = resourceService.findById(Long.valueOf(id)).orElse(null);
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
+			Resource resource = resourceService.findById(id).orElse(null);
 			if (resource == null || !userIds.contains(resource.getOperatorId())) {
 				continue;
 			}
@@ -179,14 +184,19 @@ public class NavigationMainService extends AbstractMainService {
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
-	public Result batchRemove(List<Long> ids) {
-		if (ids.size() == 0) {
+	public Result batchRemove(Map<String, Object> body) {
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
+		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		ResourceService resourceService = ResourceServiceFactory.get();
 		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		for (Long id : ids) {
-			Resource resource = resourceService.findById(id.longValue()).orElse(null);
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
+			Resource resource = resourceService.findById(id).orElse(null);
 			if (resource == null || !userIds.contains(resource.getOperatorId())) {
 				continue;
 			}
@@ -196,8 +206,12 @@ public class NavigationMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected Header header(Object key) {
-		return Header.builder().title(messageService.getMessage("navigation.management")).createUrl("/navigation/edit").build();
+	protected Header header(Object key, List<Functions> functions) {
+		Header header = Header.builder().title(messageService.getMessage("navigation.management")).build();
+		if (SystemUtils.hasFunction(Functions.CREATE.getCode(), functions)) {
+			header.setCreateUrl("/navigation/edit");
+		}
+		return header;
 	}
 
 	@Override
@@ -213,19 +227,22 @@ public class NavigationMainService extends AbstractMainService {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("icon").label(messageService.getMessage("icon")).width(100).views(Views.ICON.getKey()).build());
 		columns.add(Column.builder().field("name").label(messageService.getMessage("title")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field(Constant.CREATETIME).label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field(Constant.UPDATETIME).label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
 		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
 	
 	@Override
-	protected List<Action> actions(Object key) {
+	protected List<Action> actions(Object key, List<Functions> functions) {
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().key("template").to("/template/edit?nid=").icon("plus").text(messageService.getMessage("add.template")).variant("outline-dark").type("link").build());
-		actions.add(Action.builder().key("edit").to("/navigation/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
-		actions.add(Action.builder().key("remove").icon("trash").to("/navigation/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
+			actions.add(Action.builder().key("edit").to("/navigation/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
+		}
+		if (SystemUtils.hasFunction(Functions.REMOVE.getCode(), functions)) {
+			actions.add(Action.builder().key("remove").icon("trash").to("/navigation/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+		}
 		return actions;
 	}
 
@@ -238,7 +255,7 @@ public class NavigationMainService extends AbstractMainService {
 		List<Option<String>> editFieldOptions = Arrays.asList(pathOption, nameOption, iconOption);
 		batchEdit.setEditFieldOptions(editFieldOptions);
 		Map<String, Field<?>> editFields = new HashMap<>();
-		editFields.put("icon", Field.<String>builder().value(Resource.DEFAULT_ICON).name("icon").required(true).text(messageService.getMessage("icon")).type(Classes.STRING.getKey()).views("icon").build());
+		editFields.put("icon", Field.<String>builder().value(Resource.DEFAULT_ICON).name("icon").required(true).text(messageService.getMessage("icon")).type(Classes.STRING.getKey()).views(Views.ICON.getKey()).build());
 		batchEdit.setEditFields(editFields);
 		return batchEdit;
 	}
@@ -255,7 +272,7 @@ public class NavigationMainService extends AbstractMainService {
 		filters.add(filter);
 		
 		filter = new Filter();
-		keyValues = Arrays.asList("createTime", "updateTime");
+		keyValues = Arrays.asList(Constant.CREATETIME, Constant.UPDATETIME);
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
 		value = new HashMap<>(4);
 		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
@@ -264,7 +281,7 @@ public class NavigationMainService extends AbstractMainService {
 		filters.add(filter);
 		
 		filter = new Filter();
-		keyValues = Arrays.asList("operatorId");
+		keyValues = Arrays.asList(Constant.OPERATORID);
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
 		Map<String, String> userMap = userSelection.select();
@@ -282,7 +299,19 @@ public class NavigationMainService extends AbstractMainService {
 	
 	@Override
 	protected List<Functions> functions(Object key) {
-		return SUPPORT_FUNCTIONS;
+		return functions("/navigation/main", null, SUPPORT_FUNCTIONS);
+	}
+	
+	@Override
+	protected BatchOperate batchOperate(Object key, String func) {
+		BatchOperate batchOperate = new BatchOperate();
+		switch (func) {
+		case "batchRemove":
+			batchOperate.setPath("/batch/remove");
+			return batchOperate;
+		default:
+			return null;
+		}
 	}
 	
 	private void recursiveRemove(Resource resource) {

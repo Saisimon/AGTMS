@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.dto.Result;
-import net.saisimon.agtms.core.dto.TaskParam;
+import net.saisimon.agtms.core.dto.BaseTaskParam;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
@@ -17,7 +17,7 @@ import net.saisimon.agtms.core.util.SystemUtils;
  *
  * @param <P>
  */
-public interface Actuator<P extends TaskParam> {
+public interface Actuator<P extends BaseTaskParam> {
 	
 	/**
 	 * 根据输入参数执行操作

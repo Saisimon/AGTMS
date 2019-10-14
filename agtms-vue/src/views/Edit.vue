@@ -15,14 +15,25 @@
             </b-row>
             <!-- 表单 -->
             <div class="form-container">
-                <template v-for="(field, key) in fields">
-                    <select-form :field="field" :key="key" v-if="field.views == 'selection'" />
-                    <date-form :field="field" :key="key" v-else-if="field.type == 'date'" />
-                    <textarea-form :field="field" :key="key" v-else-if="field.views == 'textarea'" />
-                    <icon-form :field="field" :key="key" v-else-if="field.views == 'icon'" />
-                    <image-form :field="field" :key="key" v-else-if="field.views == 'image'" />
-                    <password-form :field="field" :key="key" v-else-if="field.views == 'password'" />
-                    <text-form :field="field" :key="key" v-else />
+                <template v-for="(group, key) in groups">
+                    <b-row :key="key" class="mb-2 pb-2 border-bottom">
+                        <b-col>
+                            <label :for="'form-group-' + key" class="form-label font-weight-bold form-group-label">
+                                {{ group.text }}
+                            </label>
+                            <div :id="'form-group-' + key">
+                                <template v-for="(field, key) in group.fields">
+                                    <select-form :field="field" :key="key" v-if="field.views == 'selection'" />
+                                    <date-form :field="field" :key="key" v-else-if="field.type == 'date'" />
+                                    <textarea-form :field="field" :key="key" v-else-if="field.views == 'textarea'" />
+                                    <icon-form :field="field" :key="key" v-else-if="field.views == 'icon'" />
+                                    <image-form :field="field" :key="key" v-else-if="field.views == 'image'" />
+                                    <password-form :field="field" :key="key" v-else-if="field.views == 'password'" />
+                                    <text-form :field="field" :key="key" v-else />
+                                </template>
+                            </div>
+                        </b-col>
+                    </b-row>
                 </template>
             </div>
             <!-- 尾部 -->
@@ -91,12 +102,12 @@ export default {
     data: function() {
         return {
             backUrl: "",
-            resetFields: []
+            resetGroups: []
         }
     },
     computed: {
-        fields: function() {
-            return this.$store.state.edit.fields;
+        groups: function() {
+            return this.$store.state.edit.groups;
         }
     },
     components: {
@@ -109,6 +120,7 @@ export default {
         'password-form': PasswordForm
     },
     created: function() {
+        this.$store.commit('initState');
         if (this.$store.state.base.user !== '') {
             var vm = this;
             this.$store.dispatch('getEditGrid', {
@@ -126,9 +138,9 @@ export default {
                             }
                         }
                     }
-                    var fields = resp.data.data.fields;
-                    vm.$store.commit('setFields', fields);
-                    vm.resetFields = vm.cloneObject(fields);
+                    var groups = resp.data.data.groups;
+                    vm.$store.commit('setGroups', groups);
+                    vm.resetGroups = vm.cloneObject(groups);
                 }
                 vm.$store.commit('clearProgress');
             });
@@ -138,23 +150,26 @@ export default {
     },
     methods: {
         reset: function() {
-            this.$store.commit('setFields', this.cloneObject(this.resetFields));
+            this.$store.commit('setGroups', this.cloneObject(this.resetGroups));
         },
         save: function() {
             var data = {};
             var pass = true;
-            for (var i = 0; i < this.fields.length; i++) {
-                var field = this.fields[i];
-                if (field.required && this.isNullEmpty(field.value)) {
-                    pass = false;
-                    field.state = false;
-                } else {
-                    field.state = null;
+            for (var i = 0; i < this.groups.length; i++) {
+                var group = this.groups[i];
+                if (!group.fields) {
+                    continue;
                 }
-                if (field.views === 'selection' && field.value) {
-                    data[field.name] = field.value.value;
-                } else {
-                    data[field.name] = field.value;
+                for (var j = 0; j < group.fields.length; j++) {
+                    var field = group.fields[j];
+                    var value = field.value;
+                    if (field.required && this.isNullEmpty(value)) {
+                        pass = false;
+                        field.state = false;
+                    } else {
+                        field.state = null;
+                    }
+                    data[field.name] = value;
                 }
             }
             if (pass) {

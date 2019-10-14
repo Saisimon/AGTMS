@@ -1,5 +1,8 @@
 package net.saisimon.agtms.core.domain.tag;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Data;
 
 /**
@@ -12,29 +15,45 @@ import lombok.Data;
 @Data
 public class Option<T> implements Cloneable {
 	
-	public static final Option<String> STRICT = new Option<>("strict", "strict");
-	public static final Option<String> FUZZY = new Option<>("fuzzy", "fuzzy");
-	public static final Option<String> SEPARATOR = new Option<>("separator", "separator");
+	private T id;
 	
-	private T value;
+	private String label;
 	
-	private String text;
+	private List<Option<T>> children;
 	
-	private boolean disable;
+	private Boolean isDisabled;
 	
-	public Option(T value, String text) {
-		this(value, text, false);
+	public Option(T id, String label) {
+		this(id, label, false);
 	}
 	
-	public Option(T value, String text, boolean disable) {
-		this.value = value;
-		this.text = text;
-		this.disable = disable;
+	public Option(T id, String label, boolean disabled) {
+		this(id, label, disabled, null);
 	}
 	
+	public Option(T id, String label, List<Option<T>> children) {
+		this(id, label, false, children);
+	}
+	
+	public Option(T id, String label, boolean disabled, List<Option<T>> children) {
+		this.id = id;
+		this.label = label;
+		this.isDisabled = disabled;
+		this.children = children;
+	}
+	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		return super.clone();
+		Option<T> option = (Option<T>) super.clone();
+		if (this.children != null) {
+			List<Option<T>> children = new ArrayList<>(this.children.size());
+			for (Option<T> childrenOption : this.children) {
+				children.add((Option<T>) childrenOption.clone());
+			}
+			option.children = children;
+		}
+		return option;
 	}
 	
 }

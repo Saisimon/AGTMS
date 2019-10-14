@@ -39,7 +39,6 @@ import net.saisimon.agtms.web.dto.req.SelectionParam.SelectionTemplateParam;
 import net.saisimon.agtms.web.selection.SelectTypeSelection;
 import net.saisimon.agtms.web.selection.TemplateSelection;
 import net.saisimon.agtms.web.service.common.MessageService;
-import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 下拉列表编辑服务
@@ -56,32 +55,31 @@ public class SelectionEditService {
 	private TemplateSelection templateSelection;
 	@Autowired
 	private MessageService messageService;
-	@Autowired
-	private PremissionService premissionService;
-	
 	
 	public Result grid(Long id) {
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Selection selection = null;
 		if (id != null) {
-			selection = SelectionUtils.getSelection(id, userIds);
+			selection = SelectionUtils.getSelection(id);
 			if (selection == null) {
 				return ErrorMessage.Selection.SELECTION_NOT_EXIST;
 			}
 		}
 		SelectionGrid grid = new SelectionGrid();
 		grid.setBreadcrumbs(breadcrumbs(id));
-		Field<String> titleField = Field.<String>builder().name("title").text(messageService.getMessage("title")).type(Classes.STRING.getKey()).required(true).build();
+		Field<String> titleField = Field.<String>builder().name("title").text(messageService.getMessage("title"))
+				.type(Classes.STRING.getKey()).required(true).build();
 		List<Option<Integer>> selectTypeOptions = Select.buildOptions(selectTypeSelection.select());
-		Field<Option<Integer>> typeField = Field.<Option<Integer>>builder().name("type").text(messageService.getMessage("type")).required(true).type("select").options(selectTypeOptions).build();
+		Field<Option<Integer>> typeField = Field.<Option<Integer>>builder().name("type").text(messageService.getMessage("type"))
+				.type("select").options(selectTypeOptions).required(true).build();
 		List<Option<String>> templateOptions = Select.buildOptions(templateSelection.select());
-		Field<Option<String>> templateField = Field.<Option<String>>builder().name("template").text(messageService.getMessage("template")).required(true).type("select").options(templateOptions).build();
+		Field<Option<String>> templateField = Field.<Option<String>>builder().name("template").text(messageService.getMessage("template"))
+				.type("select").options(templateOptions).required(true).build();
 		Field<Option<String>> templateValue = Field.<Option<String>>builder().type("select").build();
 		Field<Option<String>> templateText = Field.<Option<String>>builder().type("select").build();
 		List<SelectionGrid.OptionField> options = new ArrayList<>();
 		if (selection != null) {
 			typeField.setDisabled(true);
-			typeField.setValue(Select.getOption(selectTypeOptions, selection.getType()));
+			typeField.setValue(selection.getType());
 			titleField.setValue(selection.getTitle());
 			SelectionService selectionService = SelectionServiceFactory.get();
 			if (SelectTypes.OPTION.getType().equals(selection.getType())) {
@@ -92,29 +90,29 @@ public class SelectionEditService {
 					option.setText(Field.builder().type(Classes.STRING.getKey()).value(selectionOption.getText()).build());
 					options.add(option);
 				}
-				templateField.setValue(templateOptions.get(0));
+				templateField.setValue(templateOptions.get(0).getId());
 				templateValue.setOptions(new ArrayList<>());
 				templateText.setOptions(new ArrayList<>());
 			} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
 				SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection);
-				Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), userIds);
+				Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId());
 				if (template == null) {
 					return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 				}
-				templateField.setValue(Select.getOption(templateOptions, selectionTemplate.getTemplateId().toString()));
+				templateField.setValue(selectionTemplate.getTemplateId());
 				List<Option<String>> domainFieldOptions = buildSelectionOptions(template);
 				templateValue.setOptions(domainFieldOptions);
-				templateValue.setValue(Select.getOption(domainFieldOptions, selectionTemplate.getValueFieldName()));
+				templateValue.setValue(selectionTemplate.getValueFieldName());
 				templateText.setOptions(domainFieldOptions);
-				templateText.setValue(Select.getOption(domainFieldOptions, selectionTemplate.getTextFieldName()));
+				templateText.setValue(selectionTemplate.getTextFieldName());
 				SelectionGrid.OptionField option = new SelectionGrid.OptionField();
 				option.setValue(Field.builder().type(Classes.STRING.getKey()).build());
 				option.setText(Field.builder().type(Classes.STRING.getKey()).build());
 				options.add(option);
 			}
 		} else {
-			typeField.setValue(selectTypeOptions.get(0));
-			templateField.setValue(templateOptions.get(0));
+			typeField.setValue(selectTypeOptions.get(0).getId());
+			templateField.setValue(templateOptions.get(0).getId());
 			templateValue.setOptions(new ArrayList<>());
 			templateText.setOptions(new ArrayList<>());
 			SelectionGrid.OptionField option = new SelectionGrid.OptionField();
@@ -134,8 +132,7 @@ public class SelectionEditService {
 	}
 	
 	public Result template(Long id) {
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		Template template = TemplateUtils.getTemplate(id, userIds);
+		Template template = TemplateUtils.getTemplate(id);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -144,8 +141,7 @@ public class SelectionEditService {
 	}
 	
 	public Result search(String sign, String keyword) {
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		List<Option<Object>> options = SelectionUtils.getSelectionOptions(sign, keyword, userIds);
+		List<Option<Object>> options = SelectionUtils.getSelectionOptions(sign, keyword);
 		return ResultUtils.simpleSuccess(options);
 	}
 	
@@ -176,8 +172,7 @@ public class SelectionEditService {
 		Date time = new Date();
 		Selection selection = null;
 		if (null != body.getId() && body.getId() > 0) {
-			Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-			selection = SelectionUtils.getSelection(body.getId(), userIds);
+			selection = SelectionUtils.getSelection(body.getId());
 			if (selection == null) {
 				return ErrorMessage.Selection.SELECTION_NOT_EXIST;
 			}
@@ -231,8 +226,7 @@ public class SelectionEditService {
 		if (body == null) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = premissionService.getUserIds(userId);
-		Template template = TemplateUtils.getTemplate(body.getId(), userIds);
+		Template template = TemplateUtils.getTemplate(body.getId());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}

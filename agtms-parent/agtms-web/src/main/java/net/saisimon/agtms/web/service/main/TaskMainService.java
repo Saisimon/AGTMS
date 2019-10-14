@@ -25,6 +25,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
@@ -38,6 +39,7 @@ import net.saisimon.agtms.core.domain.filter.FilterPageable;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
+import net.saisimon.agtms.core.domain.grid.BatchOperate;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
@@ -45,7 +47,7 @@ import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
-import net.saisimon.agtms.core.dto.TaskParam;
+import net.saisimon.agtms.core.dto.BaseTaskParam;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
@@ -114,7 +116,7 @@ public class TaskMainService extends AbstractMainService {
 		return ResultUtils.simpleSuccess(getMainGrid(TASK));
 	}
 	
-	public <P extends TaskParam> Result list(Map<String, Object> body) {
+	public <P extends BaseTaskParam> Result list(Map<String, Object> body) {
 		Map<String, Object> filterMap = get(body, FILTER);
 		Map<String, Object> pageableMap = get(body, PAGEABLE);
 		FilterRequest filter = FilterRequest.build(filterMap, TASK_FILTER_FIELDS);
@@ -169,7 +171,7 @@ public class TaskMainService extends AbstractMainService {
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
-	public <P extends TaskParam> void download(Long id, String uuid) throws IOException {
+	public <P extends BaseTaskParam> void download(Long id, String uuid) throws IOException {
 		TaskService taskService = TaskServiceFactory.get();
 		Task task = taskService.findById(id).orElse(null);
 		if (task == null) {
@@ -241,14 +243,23 @@ public class TaskMainService extends AbstractMainService {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	public Result batchGrid(String type, String func) {
+		return ResultUtils.simpleSuccess(getBatchGrid(TASK, type, func));
+	}
+	
 	@Transactional(rollbackOn = Exception.class)
-	public Result batchRemove(List<Long> ids) {
-		if (ids.size() == 0) {
+	public Result batchRemove(Map<String, Object> body) {
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
+		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
 		TaskService taskService = TaskServiceFactory.get();
 		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		for (Long id : ids) {
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
 			Task task = taskService.findById(id).orElse(null);
 			if (task == null || !userIds.contains(task.getOperatorId())) {
 				continue;
@@ -270,7 +281,7 @@ public class TaskMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected Header header(Object key) {
+	protected Header header(Object key, List<Functions> functions) {
 		return Header.builder().title(messageService.getMessage("task.management")).build();
 	}
 
@@ -308,7 +319,7 @@ public class TaskMainService extends AbstractMainService {
 		filters.add(filter);
 		
 		filter = new Filter();
-		keyValues = Arrays.asList("operatorId");
+		keyValues = Arrays.asList(Constant.OPERATORID);
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
 		Map<String, String> userMap = userSelection.select();
@@ -339,20 +350,36 @@ public class TaskMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected List<Action> actions(Object key) {
+	protected List<Action> actions(Object key, List<Functions> functions) {
 		List<Action> actions = new ArrayList<>();
 		actions.add(Action.builder().key("download").icon("download").to("/task/main/download").text(messageService.getMessage("result")).type("download").build());
-		actions.add(Action.builder().key("cancel").icon("ban").to("/task/main/cancel").text(messageService.getMessage("cancel")).variant("outline-warning").type("modal").build());
-		actions.add(Action.builder().key("remove").icon("trash").to("/task/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
+			actions.add(Action.builder().key("cancel").icon("ban").to("/task/main/cancel").text(messageService.getMessage("cancel")).variant("outline-warning").type("modal").build());
+		}
+		if (SystemUtils.hasFunction(Functions.REMOVE.getCode(), functions)) {
+			actions.add(Action.builder().key("remove").icon("trash").to("/task/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+		}
 		return actions;
 	}
 	
 	@Override
 	protected List<Functions> functions(Object key) {
-		return SUPPORT_FUNCTIONS;
+		return functions("/task/main", null, SUPPORT_FUNCTIONS);
 	}
 	
-	private <P extends TaskParam> void deleteTaskFile(Task task) {
+	@Override
+	protected BatchOperate batchOperate(Object key, String func) {
+		BatchOperate batchOperate = new BatchOperate();
+		switch (func) {
+		case "batchRemove":
+			batchOperate.setPath("/batch/remove");
+			return batchOperate;
+		default:
+			return null;
+		}
+	}
+	
+	private <P extends BaseTaskParam> void deleteTaskFile(Task task) {
 		if (task == null) {
 			return;
 		}

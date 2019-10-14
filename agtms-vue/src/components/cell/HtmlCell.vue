@@ -1,7 +1,5 @@
 <template>
-    <div class="marquee">
-        <div v-html="rowData[field]"></div>
-    </div>
+    <div v-html="rowData[field]" class="ellipsis-text" v-b-tooltip.topright :title="rowData[field]"></div>
 </template>
 
 <script>

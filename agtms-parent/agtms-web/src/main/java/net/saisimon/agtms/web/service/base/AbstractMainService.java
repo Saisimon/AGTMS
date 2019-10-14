@@ -1,6 +1,7 @@
 package net.saisimon.agtms.web.service.base;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,15 +17,16 @@ import org.springframework.util.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
+import net.saisimon.agtms.core.domain.entity.Resource;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
-import net.saisimon.agtms.core.domain.grid.BatchGrid;
-import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchEdit;
-import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchExport;
-import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchImport;
+import net.saisimon.agtms.core.domain.grid.BatchEdit;
+import net.saisimon.agtms.core.domain.grid.BatchExport;
+import net.saisimon.agtms.core.domain.grid.BatchImport;
+import net.saisimon.agtms.core.domain.grid.BatchOperate;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid;
@@ -37,7 +39,11 @@ import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.core.factory.ResourceServiceFactory;
+import net.saisimon.agtms.core.util.AuthUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.service.common.MessageService;
+import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 主列表页面抽象服务
@@ -54,6 +60,8 @@ public abstract class AbstractMainService {
 	@Autowired
 	protected MessageService messageService;
 	@Autowired
+	protected PremissionService premissionService;
+	@Autowired
 	protected HttpServletRequest request;
 	@Autowired
 	protected HttpServletResponse response;
@@ -64,7 +72,7 @@ public abstract class AbstractMainService {
 	 * @param key 关键词
 	 * @return 面包屑导航
 	 */
-	protected abstract Header header(Object key);
+	protected abstract Header header(Object key, List<Functions> functions);
 	
 	/**
 	 * 前端面包屑导航配置
@@ -96,7 +104,7 @@ public abstract class AbstractMainService {
 	 * @param key 关键词
 	 * @return 操作列信息
 	 */
-	protected List<Action> actions(Object key) {
+	protected List<Action> actions(Object key, List<Functions> functions) {
 		return null;
 	}
 	
@@ -107,6 +115,16 @@ public abstract class AbstractMainService {
 	 * @return 功能信息
 	 */
 	protected List<Functions> functions(Object key) {
+		return null;
+	}
+	
+	/**
+	 * 前端批量操作配置
+	 * 
+	 * @param key 关键词
+	 * @return 批量操作信息
+	 */
+	protected BatchOperate batchOperate(Object key, String func) {
 		return null;
 	}
 	
@@ -155,12 +173,16 @@ public abstract class AbstractMainService {
 			return null;
 		}
 		MainGrid mainGrid = new MainGrid();
-		mainGrid.setHeader(header(key));
+		List<Functions> functions = functions(key);
+		if (functions != null) {
+			mainGrid.setFunctions(functions.stream().map(Functions::getFunction).collect(Collectors.toList()));
+		}
+		mainGrid.setHeader(header(key, functions));
 		mainGrid.setBreadcrumbs(breadcrumbs(key));
 		List<Column> columns = columns(key);
 		previousSort(columns, sign + PAGEABLE_SUFFIX);
 		mainGrid.setColumns(columns);
-		List<Action> actions = actions(key);
+		List<Action> actions = actions(key, functions);
 		mainGrid.setActions(actions);
 		List<Filter> filters = filters(key);
 		boolean showFilters = previousFilter(filters, sign + FILTER_SUFFIX);
@@ -170,10 +192,6 @@ public abstract class AbstractMainService {
 		Pageable pageable = pageable();
 		previousPageable(pageable, sign + PAGEABLE_SUFFIX);
 		mainGrid.setPageable(pageable);
-		List<Functions> functions = functions(key);
-		if (functions != null) {
-			mainGrid.setFunctions(functions.stream().map(Functions::getFunction).collect(Collectors.toList()));
-		}
 		return mainGrid;
 	}
 	
@@ -194,22 +212,39 @@ public abstract class AbstractMainService {
 	 * @param key 关键词
 	 * @return 批量处理相关信息
 	 */
-	protected BatchGrid getBatchGrid(Object key) {
+	protected Object getBatchGrid(Object key, String type, String func) {
 		if (key == null) {
 			return null;
 		}
-		BatchGrid batchGrid = new BatchGrid();
-		BatchEdit batchEdit = batchEdit(key);
-		batchGrid.setBatchEdit(batchEdit);
-		BatchExport batchExport = batchExport(key);
-		batchGrid.setBatchExport(batchExport);
-		BatchImport batchImport = batchImport(key);
-		batchGrid.setBatchImport(batchImport);
-		return batchGrid;
+		switch (type) {
+		case Constant.Batch.OPERATE:
+			return batchOperate(key, func);
+		case Constant.Batch.EDIT:
+			return batchEdit(key);
+		case Constant.Batch.EXPORT:
+			return batchExport(key);
+		case Constant.Batch.IMPORT:
+			return batchImport(key);
+		default:
+			return null;
+		}
 	}
 	
 	protected Pageable pageable() {
 		return Pageable.builder().pageIndex(1).pageSize(10).build();
+	}
+	
+	protected List<Functions> functions(String link, Long contentId, List<Functions> supportFunctions) {
+		Map<Long, Integer> ownRoleResourceMap = premissionService.getRoleResourceMap(AuthUtils.getUid());
+		Resource resource = ResourceServiceFactory.get().getResourceByLinkAndContentId(link, contentId);
+		if (resource == null) {
+			return Collections.emptyList();
+		}
+		Integer ownFunc = ownRoleResourceMap.get(resource.getId());
+		if (ownFunc == null) {
+			return Collections.emptyList();
+		}
+		return SystemUtils.getFunctions(ownFunc, supportFunctions);
 	}
 	
 	private List<Filter> internationFilters(List<Filter> filters) {
@@ -238,20 +273,9 @@ public abstract class AbstractMainService {
 	}
 	
 	private <T> void internationFilterSelect(Select<T> filterSelect) {
-		if (filterSelect instanceof SingleSelect) {
-			SingleSelect<T> filterSingleSelect = (SingleSelect<T>) filterSelect;
-			Option<T> selected = filterSingleSelect.getSelected();
-			selected.setText(messageService.getMessage(selected.getText()));
-		} else if (filterSelect instanceof MultipleSelect) {
-			MultipleSelect<T> filterMultipleSelect = (MultipleSelect<T>) filterSelect;
-			List<Option<T>> selected = filterMultipleSelect.getSelected();
-			for (Option<T> selectedOption : selected) {
-				selectedOption.setText(messageService.getMessage(selectedOption.getText()));
-			}
-		}
 		List<Option<T>> options = filterSelect.getOptions();
 		for (Option<T> option : options) {
-			option.setText(messageService.getMessage(option.getText()));
+			option.setLabel(messageService.getMessage(option.getLabel()));
 		}
 	}
 	
@@ -333,8 +357,8 @@ public abstract class AbstractMainService {
 		for (Filter filter : filters) {
 			SingleSelect<String> keySelect = filter.getKey();
 			for (Option<String> option : keySelect.getOptions()) {
-				if (option.getValue().equals(key)) {
-					keySelect.setSelected(option);
+				if (option.getId().equals(key)) {
+					keySelect.setSelected(option.getId());
 					break;
 				}
 			}
@@ -361,11 +385,11 @@ public abstract class AbstractMainService {
 	private void populateTextFilter(TextFilter<Object> textFilter, Object value, String operator) {
 		textFilter.getInput().setValue(value);
 		if (Operator.EQ.equals(operator)) {
-			textFilter.getOperator().setSelected(Option.STRICT);
+			textFilter.getOperator().setSelected(Constant.Filter.STRICT);
 		} else if (Operator.REGEX.equals(operator)) {
-			textFilter.getOperator().setSelected(Option.FUZZY);
+			textFilter.getOperator().setSelected(Constant.Filter.FUZZY);
 		} else if (Operator.IN.equals(operator)) {
-			textFilter.getOperator().setSelected(Option.SEPARATOR);
+			textFilter.getOperator().setSelected(Constant.Filter.SEPARATOR);
 		}
 	}
 
@@ -374,11 +398,11 @@ public abstract class AbstractMainService {
 		if (selectFilter.isMultiple()) {
 			MultipleSelect<Object> filterMultipleSelect = (MultipleSelect<Object>) selectFilter.getSelect();
 			List<Object> list = (List<Object>) value;
-			List<Option<Object>> selected = new ArrayList<>();
+			List<Object> selected = new ArrayList<>();
 			for (Option<Object> option : filterMultipleSelect.getOptions()) {
 				for (Object obj : list) {
-					if (option.getValue().toString().equals(obj.toString())) {
-						selected.add(option);
+					if (option.getId().toString().equals(obj.toString())) {
+						selected.add(option.getId());
 					}
 				}
 			}
@@ -386,8 +410,8 @@ public abstract class AbstractMainService {
 		} else {
 			SingleSelect<Object> filterSingleSelect = (SingleSelect<Object>) selectFilter.getSelect();
 			for (Option<Object> option : filterSingleSelect.getOptions()) {
-				if (option.getValue().toString().equals(value.toString())) {
-					filterSingleSelect.setSelected(option);
+				if (option.getId().toString().equals(value.toString())) {
+					filterSingleSelect.setSelected(option.getId());
 					break;
 				}
 			}

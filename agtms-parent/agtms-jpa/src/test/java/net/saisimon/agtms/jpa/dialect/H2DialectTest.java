@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-public class H2DialectTest extends DialectTest {
+public class H2DialectTest extends AbstractDialectTest {
 	
 	private Dialect dialect = new H2Dialect();
 	

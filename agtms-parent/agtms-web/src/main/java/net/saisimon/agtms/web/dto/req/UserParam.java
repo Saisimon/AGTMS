@@ -1,5 +1,7 @@
 package net.saisimon.agtms.web.dto.req;
 
+import java.util.List;
+
 import javax.validation.constraints.NotBlank;
 
 import lombok.Data;
@@ -14,6 +16,8 @@ public class UserParam {
 	
 	@NotBlank
 	private String password;
+	
+	private List<String> roles;
 	
 	private String nickname;
 	

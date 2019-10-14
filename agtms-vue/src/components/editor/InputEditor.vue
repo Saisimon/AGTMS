@@ -1,26 +1,21 @@
 <template>
     <div :class="editor.type == 'select' ? 'select-editor' : 'input-editor'" @click="show=true">
         <template v-if="editor.type == 'select'">
-            <multiselect
+            <treeselect 
                 v-if="show"
                 @blur.native.capture.stop="show=false" 
                 v-model="editor.value"
-                label="text"
-                track-by="value"
-                select-label=""
-                deselect-label=""
-                selected-label=""
-                :searchable="true"
-                :loading="isLoading"
                 :options="editor.options"
+                :multiple="false" 
+                :searchable="true"
+                :noChildrenText="$t('no_childrens')"
+                :noOptionsText="$t('no_options')"
+                :noResultsText="$t('no_result')"
                 :placeholder="''"
                 @search-change="search"
-                @remove="removeValue"
-                @select="updateValue" >
-                <template slot="noResult">{{ $t("no_result") }}</template>
-                <template slot="noOptions">{{ $t("no_options") }}</template>
-            </multiselect>
-            <span class="select-editor-text" v-else-if="editor.value != null" >{{ editor.value.text }}</span>
+                @select="updateValue"
+                @deselect="removeValue" />
+            <span class="select-editor-text" v-else-if="label != null" >{{ label }}</span>
             <span class="select-editor-text" v-else >{{ placeholder }}</span>
         </template>
         <template v-else>
@@ -33,9 +28,8 @@
                 :type="editor.type"
                 :placeholder="placeholder" 
                 @input="updateValue" />
-            <span class="input-editor-text" v-else-if="!editor.value || editor.value == ''">{{ placeholder }}</span>
-            <span class="input-editor-text" v-else-if="editor.type == 'password'" >******</span>
-            <span class="input-editor-text" v-else >{{ editor.value }}</span>
+            <span class="select-editor-text" v-else-if="label != null" >{{ label }}</span>
+            <span class="select-editor-text" v-else >{{ placeholder }}</span>
         </template>
     </div>
 </template>
@@ -71,6 +65,19 @@ export default {
     watch: {
         "editor.selectionSign": function(newV, oldV) {
             this.search();
+        }
+    },
+    computed: {
+        label: function() {
+            if (this.editor.type == 'select') {
+                return this.getLabel(this.editor.options, this.editor.value);
+            } else {
+                if (this.editor.type == 'password') {
+                    return '******';
+                } else if (this.editor.value != '') {
+                    return this.editor.value;
+                }
+            }
         }
     },
     data: function() {

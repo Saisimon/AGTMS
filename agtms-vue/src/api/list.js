@@ -11,12 +11,12 @@ export function mainGrid(user, url) {
     return request(user, url + '/grid');
 }
 
-export function batchGrid(user, url) {
-    return request(user, url + '/batch/grid');
+export function batchGrid(user, url, type, func) {
+    return request(user, url + '/batch/grid?type=' + type + "&func=" + func);
 }
 
-export function batchRemove(user, url, ids) {
-    return request(user, url + '/batch/remove', ids);
+export function batchOperate(user, url, path, data) {
+    return request(user, url + path, data);
 }
 
 export function batchSave(user, url, data) {

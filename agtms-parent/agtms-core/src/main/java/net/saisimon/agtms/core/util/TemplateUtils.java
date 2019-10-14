@@ -1,11 +1,8 @@
 package net.saisimon.agtms.core.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +18,6 @@ import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
-import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.FieldHandlerFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
@@ -45,7 +41,7 @@ public class TemplateUtils {
 	 * @param operatorIds 用户ID集合
 	 * @return 模板对象
 	 */
-	public static Template getTemplate(Object key, Collection<Long> operatorIds) {
+	public static Template getTemplate(Object key) {
 		if (key == null) {
 			return null;
 		}
@@ -57,11 +53,7 @@ public class TemplateUtils {
 		if (!optional.isPresent()) {
 			return null;
 		}
-		Template template = optional.get();
-		if (operatorIds.contains(template.getOperatorId())) {
-			return template;
-		}
-		return null;
+		return optional.get();
 	}
 	
 	/**
@@ -344,103 +336,6 @@ public class TemplateUtils {
 			return handler.validate(template, field, value);
 		}
 		return ResultUtils.simpleSuccess();
-	}
-	
-	/**
-	 * 获取模板所包含的功能值集合
-	 * 
-	 * @param template 模板对象
-	 * @return 功能值集合
-	 */
-	public static List<Integer> getFunctionCodes(Template template) {
-		List<Integer> functions = new ArrayList<>();
-		if (template == null || template.getFunctions() == null || template.getFunctions() == 0) {
-			return functions;
-		}
-		Integer function = template.getFunctions();
-		for (Functions func : Functions.values()) {
-			if (func.getCode().equals((function & func.getCode()))) {
-				functions.add(func.getCode());
-			}
-		}
-		return functions;
-	}
-	
-	/**
-	 * 获取模板所包含的功能名称集合
-	 * 
-	 * @param template 模板对象
-	 * @return 功能名称集合
-	 */
-	public static List<Functions> getFunctions(Template template) {
-		List<Functions> functions = new ArrayList<>();
-		if (template == null || template.getFunctions() == null || template.getFunctions() == 0) {
-			return functions;
-		}
-		for (Functions function : Functions.values()) {
-			if (hasFunction(template.getFunctions(), function)) {
-				functions.add(function);
-			}
-		}
-		return functions;
-	}
-	
-	public static int getFunctions(List<Functions> functions) {
-		if (functions == null) {
-			return 0;
-		}
-		int func = 0;
-		for (Functions function : functions) {
-			func += function.getCode();
-		}
-		return func;
-	}
-	
-	/**
-	 * 指定模板中是否包含指定的功能
-	 * 
-	 * @param template 模板对象
-	 * @param func 待判断的功能
-	 * @return 是否包含指定的功能
-	 */
-	public static boolean hasFunction(Template template, Functions function) {
-		if (template == null || template.getFunctions() == null || function == null) {
-			return false;
-		}
-		return hasFunction(template.getFunctions(), function);
-	}
-	
-	/**
-	 * 指定模板中是否包含指定的功能集合中的某一个
-	 * 
-	 * @param template 模板对象
-	 * @param funcs 待判断的功能集合
-	 * @return 是否包含指定的功能集合中的某一个
-	 */
-	public static boolean hasOneOfFunctions(Template template, Functions... functions) {
-		if (template == null || template.getFunctions() == null || template.getFunctions() == 0 || functions == null) {
-			return false;
-		}
-		for (Functions function : functions) {
-			if (hasFunction(template.getFunctions(), function)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * 是否存在指定功能
-	 * 
-	 * @param function
-	 * @param func
-	 * @return
-	 */
-	public static boolean hasFunction(int function, Functions func) {
-		if (func == null) {
-			return false;
-		}
-		return func.getCode().equals((function & func.getCode()));
 	}
 	
 	private static Class<?> parseClass(String className) {

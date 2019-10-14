@@ -1,22 +1,19 @@
 <template>
     <div class="select-editor" :class="editor.className" @click="show=true">
-        <multiselect v-if="show" 
-            @blur.native.capture="show=false" 
+        <treeselect 
+            v-if="show"
+            @blur.native.capture.stop="show=false" 
             v-model="editor.value"
-            label="text"
-            track-by="value"
-            select-label=""
-            deselect-label=""
-            selected-label=""
-            :allow-empty="false"
-            :searchable="false"
             :options="editor.options"
+            :multiple="false" 
+            :searchable="false"
+            :clearable="false"
+            :noChildrenText="$t('no_childrens')"
+            :noOptionsText="$t('no_options')"
+            :noResultsText="$t('no_result')"
             :placeholder="''"
-            @select="updateValue" >
-            <template slot="noResult">{{ $t("no_result") }}</template>
-            <template slot="noOptions">{{ $t("no_options") }}</template>
-        </multiselect>
-        <span class="select-editor-text" v-else-if="editor.value != null" >{{ editor.value.text }}</span>
+            @select="updateValue" />
+        <span class="select-editor-text" v-else-if="label != null" >{{ label }}</span>
         <span class="select-editor-text" v-else >{{ placeholder }}</span>
     </div>
 </template>
@@ -46,6 +43,11 @@ export default {
             default: ''
         }
     },
+    computed: {
+        label: function() {
+            return this.getLabel(this.editor.options, this.editor.value);
+        }
+    },
     data: function() {
         var show = false;
         if (this.editor.show != null) {
@@ -65,7 +67,7 @@ export default {
             if (!val) {
                 return;
             }
-            this.editor.value = val;
+            this.editor.value = val.id;
             this.$emit('updateSelectEditor', this.editor, this.rowKey, this.field);
             this.updateDefaultType(val);
         },
@@ -81,24 +83,24 @@ export default {
             });
             if (this.field.startsWith('selection-')) {
                 defaultValue['type'] = "select";
-                defaultValue['selectionSign'] = val.value;
+                defaultValue['selectionSign'] = val.id;
                 this.$emit('syncDefaultType', defaultValue, this.field);
-            } else if (val.value === 'long' || val.value === 'double') {
+            } else if (val.id === 'long' || val.id === 'double') {
                 defaultValue['type'] = "number";
                 this.$emit('syncDefaultType', defaultValue, this.field);
-            } else if (val.value === 'date') {
+            } else if (val.id === 'date') {
                 defaultValue['type'] = "date";
                 this.$emit('syncDefaultType', defaultValue, this.field);
-            } else if (val.value === 'password') {
+            } else if (val.id === 'password') {
                 defaultValue['type'] = "password";
                 this.$emit('syncDefaultType', defaultValue, this.field);
-            } else if (val.value === 'link') {
+            } else if (val.id === 'link') {
                 defaultValue['type'] = "url";
                 this.$emit('syncDefaultType', defaultValue, this.field);
-            } else if (val.value === 'email') {
+            } else if (val.id === 'email') {
                 defaultValue['type'] = "email";
                 this.$emit('syncDefaultType', defaultValue, this.field);
-            } else if (val.value === 'selection') {
+            } else if (val.id === 'selection') {
                 defaultValue['type'] = "select";
                 this.$emit('syncDefaultType', defaultValue, this.field);
             } else {

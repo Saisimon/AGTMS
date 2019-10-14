@@ -3,8 +3,8 @@ package net.saisimon.agtms.web.service.user;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -77,16 +77,18 @@ public class UserInfoService {
 	}
 	
 	public Result nav() {
-		Set<Long> resourceIds = premissionService.getResourceIds(AuthUtils.getUid());
-		List<Resource> resources = ResourceServiceFactory.get().getResources(resourceIds);
 		NavigationTree root = new NavigationTree();
 		root.setId("-1");
-		root.setChildrens(buildTree(resources, root, ""));
-		for (Template template : remoteTemplates()) {
-			NavigationLink link = new NavigationLink();
-			link.setLink("/management/main/" + template.sign());
-			link.setName(template.getTitle());
-			root.getLinks().add(link);
+		Map<Long, Integer> roleResourceIdMap = premissionService.getRoleResourceMap(AuthUtils.getUid());
+		if (!CollectionUtils.isEmpty(roleResourceIdMap)) {
+			List<Resource> resources = ResourceServiceFactory.get().getResources(roleResourceIdMap.keySet());
+			root.setChildrens(buildTree(resources, root, ""));
+			for (Template template : remoteTemplates()) {
+				NavigationLink link = new NavigationLink();
+				link.setLink("/management/main/" + template.sign());
+				link.setName(template.getTitle());
+				root.getLinks().add(link);
+			}
 		}
 		return ResultUtils.simpleSuccess(root);
 	}

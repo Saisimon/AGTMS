@@ -26,10 +26,18 @@
                                     <draggable v-model="field.columns" :move="draggableMove">
                                         <transition-group class="d-flex" tag="div">
                                             <div class="draggable-column" v-for="column in field.columns" :key="column.id" :class="column.class">
-                                                <div class="draggable-field" v-for="field in column.fields" :key="field.id">
-                                                    <div class="draggable-cell" v-if="field.type == 'select'" v-html="field.value.text"></div>
+                                                <div class="draggable-field" v-for="(columnField, idx) in column.fields" :key="columnField.id">
+                                                    <div class="draggable-cell" v-if="idx == 1" 
+                                                        v-html="getLabel(templateGrid.classOptions, columnField.value)">
+                                                    </div>
+                                                    <div class="draggable-cell" v-else-if="idx == 2" 
+                                                        v-html="getLabel(templateGrid.viewOptions, columnField.value)">
+                                                    </div>
+                                                    <div class="draggable-cell" v-else-if="idx == 3 || idx == 4 || idx == 5 || idx == 6 || idx == 7" 
+                                                        v-html="getLabel(templateGrid.whetherOptions, columnField.value)">
+                                                    </div>
                                                     <div class="draggable-cell" v-else>
-                                                        <span>{{ field.value }}</span>
+                                                        <span>{{ columnField.value }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -38,10 +46,10 @@
                                 </div>
                                 <div v-else-if="field.columns != null" class="draggable-table">
                                     <div class="draggable-column" v-for="column in field.columns" :key="column.id" :class="column.class">
-                                        <div class="draggable-field" v-for="field in column.fields" :key="field.id">
+                                        <div class="draggable-field" v-for="columnField in column.fields" :key="columnField.id">
                                             <div class="draggable-cell">
-                                                <span >{{ field.value }}</span>
-                                                <span class="text-danger" v-if="field.required">*</span>
+                                                <span >{{ columnField.value }}</span>
+                                                <span class="text-danger" v-if="columnField.required">*</span>
                                             </div>
                                         </div>
                                     </div>
@@ -351,16 +359,18 @@ export default {
                 name: 'functions',
                 text: this.$t('function'),
                 multiple: true,
+                disabled: this.$route.query.id != null,
                 options: [],
                 value: []
             },
             navigationField: {
                 name: 'path',
                 text: this.$t('navigation'),
-                required: true,
+                required: false,
                 options: [],
                 value: {}
-            },dataSourceField: {
+            },
+            dataSourceField: {
                 name: 'source',
                 text: this.$t('datasource'),
                 required: false,
@@ -393,6 +403,10 @@ export default {
                         value: ''
                     }
                 } else if (row.key == 'field') {
+                    var selectionValue = null;
+                    if (this.templateGrid.selectionOptions.length > 0) {
+                        selectionValue = this.templateGrid.selectionOptions[0].id;
+                    }
                     row[columnKey] = {
                         idx: 1,
                         columns: [
@@ -401,13 +415,13 @@ export default {
                         ],
                         rows: [
                             { editor: "input", field0: {value: "", className: "field0"}, key: "fieldName" },
-                            { editor: "select", field0: {value: this.templateGrid.classOptions[0], options: this.templateGrid.classOptions, className: "field0"}, key: "fieldType" },
-                            { editor: "select", field0: {value: this.templateGrid.viewOptions[0], options: this.templateGrid.viewOptions, className: "field0"}, 'selection-field0': {value: this.templateGrid.selectionOptions[0], options: this.templateGrid.selectionOptions}, key: "showType", className: "selection-field0" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions, className: "field0"}, key: "filter" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions, className: "field0"}, key: "sorted" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions, className: "field0"}, key: "required" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions, className: "field0"}, key: "uniqued" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0], options: this.templateGrid.whetherOptions, className: "field0"}, key: "hidden" },
+                            { editor: "select", field0: {value: this.templateGrid.classOptions[0].id, options: this.templateGrid.classOptions, className: "field0"}, key: "fieldType" },
+                            { editor: "select", field0: {value: this.templateGrid.viewOptions[0].id, options: this.templateGrid.viewOptions, className: "field0"}, 'selection-field0': {value: selectionValue, options: this.templateGrid.selectionOptions}, key: "showType", className: "selection-field0" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "filter" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "sorted" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "required" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "uniqued" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "hidden" },
                             { editor: "input", field0: {value: "", className: "field0"}, key: "default" },
                             { editor: "remove", field0: "", key: "remove" }
                         ]
@@ -475,8 +489,8 @@ export default {
                     var fieldColumn = fieldColumns[j];
                     var fieldName = column.field + fieldColumn.field
                     var fieldTitle = fieldRows[0][fieldColumn.field].value;
-                    var views = fieldRows[2][fieldColumn.field].value.value;
-                    var fieldType = fieldRows[1][fieldColumn.field].value.value;
+                    var views = fieldRows[2][fieldColumn.field].value;
+                    var fieldType = fieldRows[1][fieldColumn.field].value;
                     var exampleColumn = {
                         field: fieldName,
                         label: fieldTitle,
@@ -517,12 +531,12 @@ export default {
                 return false;
             }
             template['title'] = title;
-            template['path'] = this.navigationField.value.value;
-            template['source'] = this.dataSourceField.value.value;
+            template['path'] = this.navigationField.value;
+            template['source'] = this.dataSourceField.value;
             var functions = this.functionField.value;
             var func = new Number(0);
             for (var a = 0; a < functions.length; a++) {
-                func += new Number(functions[a].value);
+                func += new Number(functions[a]);
             }
             template['functions'] = func;
             template['columnIndex'] = this.templateGrid.table.idx;
@@ -548,13 +562,13 @@ export default {
                     var templateField = {
                         fieldName: fieldColumn.field,
                         fieldTitle: fieldRows[0][fieldColumn.field].value,
-                        fieldType: fieldRows[1][fieldColumn.field].value.value,
-                        views: fieldRows[2][fieldColumn.field].value.value,
-                        filter: fieldRows[3][fieldColumn.field].value.value == '1' ? true : false,
-                        sorted: fieldRows[4][fieldColumn.field].value.value == '1' ? true : false,
-                        required: fieldRows[5][fieldColumn.field].value.value == '1' ? true : false,
-                        uniqued: fieldRows[6][fieldColumn.field].value.value == '1' ? true : false,
-                        hidden: fieldRows[7][fieldColumn.field].value.value == '1' ? true : false,
+                        fieldType: fieldRows[1][fieldColumn.field].value,
+                        views: fieldRows[2][fieldColumn.field].value,
+                        filter: fieldRows[3][fieldColumn.field].value == '1' ? true : false,
+                        sorted: fieldRows[4][fieldColumn.field].value == '1' ? true : false,
+                        required: fieldRows[5][fieldColumn.field].value == '1' ? true : false,
+                        uniqued: fieldRows[6][fieldColumn.field].value == '1' ? true : false,
+                        hidden: fieldRows[7][fieldColumn.field].value == '1' ? true : false,
                         ordered: fieldColumn.ordered,
                     };
                     var defaultValue = fieldRows[8][fieldColumn.field].value;
@@ -562,7 +576,7 @@ export default {
                         templateField['defaultValue'] = defaultValue.value != undefined ? defaultValue.value : defaultValue;
                     }
                     if (templateField['views'] === 'selection') {
-                        templateField['selection'] = fieldRows[2]['selection-' + fieldColumn.field].value.value;
+                        templateField['selection'] = fieldRows[2]['selection-' + fieldColumn.field].value;
                     }
                     templateFields[j] = templateField;
                 }
@@ -667,7 +681,7 @@ export default {
                 return defaultValue;
             }
             var val = obj['value'];
-            if (val == null || val == '') {
+            if (val == null || val === '') {
                 return defaultValue;
             }
             return val;
@@ -721,7 +735,7 @@ export default {
                 if (nid && nid > 0) {
                     for (var i = 0; i < navigationSelect.options.length; i++) {
                         var option = navigationSelect.options[i];
-                        if (option.value == nid) {
+                        if (option.id == nid) {
                             this.navigationField['value'] = option;
                             break;
                         }

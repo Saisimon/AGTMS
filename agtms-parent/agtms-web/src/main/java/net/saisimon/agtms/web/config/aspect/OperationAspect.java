@@ -24,7 +24,6 @@ import net.saisimon.agtms.core.service.OperationService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.config.handler.operation.DefaultOperationHandler;
-import net.saisimon.agtms.web.service.common.PremissionService;
 
 /**
  * 操作记录切面
@@ -41,8 +40,6 @@ public class OperationAspect {
 	private SchedulingTaskExecutor operationThreadPool;
 	@Autowired
 	private DefaultOperationHandler defaultOperationHandler;
-	@Autowired
-	private PremissionService premissionService;
 	
 	/**
 	 * 操作记录注解切点
@@ -91,7 +88,7 @@ public class OperationAspect {
 		if (userId == null) {
 			return null;
 		}
-		Template template = TemplateUtils.getTemplate(args[0], premissionService.getUserIds(userId));
+		Template template = TemplateUtils.getTemplate(args[0]);
 		if (template == null) {
 			return null;
 		}

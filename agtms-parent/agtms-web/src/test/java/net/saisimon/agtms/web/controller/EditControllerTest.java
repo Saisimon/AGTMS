@@ -101,7 +101,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/user/edit/grid", null, adminToken);
 		
 		Map<String, String> param = new HashMap<>();
-		param.put("id", "10");
+		param.put("id", "1000");
 		sendPost("/user/edit/grid", param, adminToken, ErrorMessage.User.ACCOUNT_NOT_EXIST.getCode());
 		
 		param = new HashMap<>();
@@ -356,15 +356,16 @@ public class EditControllerTest extends AbstractControllerTest {
 		bodyRequest.put("icon", "users");
 		sendPost("/navigation/main/batch/save", null, bodyRequest, testToken);
 		
-		List<Long> ids = new ArrayList<>();
-		sendPost("/navigation/main/batch/remove", ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		bodyRequest = new HashMap<>();
+		sendPost("/navigation/main/batch/remove", bodyRequest, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
-		ids = new ArrayList<>();
-		ids.add(newId + 1);
-		ids.add(newId + 2);
-		ids.add(newId + 3);
-		ids.add(1000L);
-		sendPost("/navigation/main/batch/remove", ids, testToken);
+		List<String> ids = new ArrayList<>();
+		ids.add(newId + 1 + "");
+		ids.add(newId + 2 + "");
+		ids.add(newId + 3 + "");
+		ids.add("1000");
+		bodyRequest.put("ids", ids);
+		sendPost("/navigation/main/batch/remove", bodyRequest, testToken);
 	}
 	/* NavigationEditController End */
 	
@@ -444,14 +445,17 @@ public class EditControllerTest extends AbstractControllerTest {
 		param.put("id", newId.toString());
 		sendPost("/template/main/remove", param, testToken);
 		
-		List<Long> ids = new ArrayList<>();
-		sendPost("/template/main/batch/remove", ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		body = new HashMap<>();
+		sendPost("/template/main/batch/remove", body, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
+		body = new HashMap<>();
+		List<String> ids = new ArrayList<>();
 		ids = new ArrayList<>();
 		for (int i = 0; i <= size; i++) {
-			ids.add(newId + i);
+			ids.add(newId + i + "");
 		}
-		sendPost("/template/main/batch/remove", ids, testToken);
+		body.put("ids", ids);
+		sendPost("/template/main/batch/remove", body, testToken);
 	}
 	/* TemplateEditController End */
 	
@@ -517,9 +521,9 @@ public class EditControllerTest extends AbstractControllerTest {
 		selectionParam.setType(0);
 		sendPost("/selection/edit/save", selectionParam, testToken);
 		
-		Map<String, String> valueTextMap = SelectionUtils.getSelectionValueTextMap("1", new HashSet<>(Arrays.asList("1")), Arrays.asList(testToken.getUserId()));
+		Map<String, String> valueTextMap = SelectionUtils.getSelectionValueTextMap("1", new HashSet<>(Arrays.asList("1")));
 		Assert.assertEquals("Text-1", valueTextMap.get("1"));
-		Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap("1", new HashSet<>(Arrays.asList("Text-1")), Arrays.asList(testToken.getUserId()));
+		Map<String, String> textValueMap = SelectionUtils.getSelectionTextValueMap("1", new HashSet<>(Arrays.asList("Text-1")));
 		Assert.assertEquals("1", textValueMap.get("Text-1"));
 		
 		param = new HashMap<>();
@@ -584,14 +588,17 @@ public class EditControllerTest extends AbstractControllerTest {
 		param.put("id", "1");
 		sendPost("/selection/main/remove", param, testToken);
 		
-		List<Long> ids = new ArrayList<>();
-		sendPost("/selection/main/batch/remove", ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		List<String> ids = new ArrayList<>();
+		body = new HashMap<>();
+		sendPost("/selection/main/batch/remove", body, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
+		body = new HashMap<>();
 		ids = new ArrayList<>();
-		ids.add(1L);
-		ids.add(2L);
-		ids.add(3L);
-		sendPost("/selection/main/batch/remove", ids, testToken);
+		ids.add("1");
+		ids.add("2");
+		ids.add("3");
+		body.put("ids", ids);
+		sendPost("/selection/main/batch/remove", body, testToken);
 		
 	}
 	/* SelectionEditController End */
@@ -609,7 +616,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		String editSaveUri = "/management/edit/" + templateId + "/save";
 		String mainGridUri = "/management/main/" + templateId + "/grid";
 		String mainRemoveUri = "/management/main/" + templateId + "/remove";
-		String mainBatchGridUri = "/management/main/" + templateId + "/batch/grid";
+		String mainBatchGridUri = "/management/main/" + templateId + "/batch/grid?type=%s&func=%s";
 		String mainBatchRemoveUri = "/management/main/" + templateId + "/batch/remove";
 		String mainBatchSaveUri = "/management/main/" + templateId + "/batch/save";
 		String mainBatchExportUri = "/management/main/" + templateId + "/batch/export";
@@ -648,7 +655,10 @@ public class EditControllerTest extends AbstractControllerTest {
 		param.put("id", "1");
 		sendPost(editGridUri, param, testToken);
 		
-		sendPost(mainBatchGridUri, null, testToken);
+		sendPost(String.format(mainBatchGridUri, Constant.Batch.OPERATE, "batchRemove"), null, testToken);
+		sendPost(String.format(mainBatchGridUri, Constant.Batch.EDIT, "batchEdit"), null, testToken);
+		sendPost(String.format(mainBatchGridUri, Constant.Batch.EXPORT, "export"), null, testToken);
+		sendPost(String.format(mainBatchGridUri, Constant.Batch.IMPORT, "import"), null, testToken);
 		
 		param = new HashMap<>();
 		param.put("index", "0");
@@ -845,14 +855,16 @@ public class EditControllerTest extends AbstractControllerTest {
 		param.put("id", xlsExportTask.getId());
 		sendPost("/task/main/remove", param, testToken);
 		
-		List<Long> ids = new ArrayList<>();
-		sendPost("/task/main/batch/remove", ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		body = new HashMap<>();
+		sendPost("/task/main/batch/remove", body, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
-		ids = new ArrayList<>();
-		ids.add(1L);
-		ids.add(2L);
-		ids.add(3L);
-		sendPost("/task/main/batch/remove", ids, testToken);
+		body = new HashMap<>();
+		List<String> ids = new ArrayList<>();
+		ids.add("1");
+		ids.add("2");
+		ids.add("3");
+		body.put("ids", ids);
+		sendPost("/task/main/batch/remove", body, testToken);
 		
 		param = new HashMap<>();
 		param.put("id", "100");
@@ -862,14 +874,16 @@ public class EditControllerTest extends AbstractControllerTest {
 		param.put("id", "1");
 		sendPost(mainRemoveUri, param, testToken);
 		
-		ids = new ArrayList<>();
-		sendPost(mainBatchRemoveUri, ids, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		body = new HashMap<>();
+		sendPost(mainBatchRemoveUri, body, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
+		body = new HashMap<>();
 		ids = new ArrayList<>();
-		ids.add(1L);
-		ids.add(2L);
-		ids.add(3L);
-		sendPost(mainBatchRemoveUri, ids, testToken);
+		ids.add("1");
+		ids.add("2");
+		ids.add("3");
+		body.put("ids", ids);
+		sendPost(mainBatchRemoveUri, body, testToken);
 	}
 	/* ManagementEditController Start */
 	

@@ -106,7 +106,7 @@ export default {
         border-radius: 3px;
         box-shadow: none;
         background-color: #374850;
-        border: 0px;
+        border: 0px!important;
         border-right: 1px solid #374850;
     }
     .side-bar-search:focus {

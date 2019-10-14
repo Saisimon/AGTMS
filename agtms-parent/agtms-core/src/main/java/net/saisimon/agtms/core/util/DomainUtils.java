@@ -2,7 +2,6 @@ package net.saisimon.agtms.core.util;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -164,11 +163,11 @@ public class DomainUtils {
 		}
 	}
 	
-	public static List<Map<String, Object>> conversions(Template template, List<Domain> domains, Collection<Long> operatorIds) {
-		return conversions(TemplateUtils.getFieldInfoMap(template), template.getService(), domains, operatorIds);
+	public static List<Map<String, Object>> conversions(Template template, List<Domain> domains) {
+		return conversions(TemplateUtils.getFieldInfoMap(template), template.getService(), domains);
 	}
 	
-	public static List<Map<String, Object>> conversions(Map<String, TemplateField> fieldInfoMap, String service, List<Domain> domains, Collection<Long> operatorIds) {
+	public static List<Map<String, Object>> conversions(Map<String, TemplateField> fieldInfoMap, String service, List<Domain> domains) {
 		List<Map<String, Object>> datas = new ArrayList<>(domains.size());
 		Map<String, Set<String>> valueMap = MapUtil.newHashMap();
 		for (Domain domain : domains) {
@@ -178,7 +177,7 @@ public class DomainUtils {
 		for (Map.Entry<String, Set<String>> entry : valueMap.entrySet()) {
 			String fieldName = entry.getKey();
 			TemplateField templateField = fieldInfoMap.get(fieldName);
-			Map<String, String> textMap = SelectionUtils.getSelectionValueTextMap(templateField.selectionSign(service), entry.getValue(), operatorIds);
+			Map<String, String> textMap = SelectionUtils.getSelectionValueTextMap(templateField.selectionSign(service), entry.getValue());
 			map.put(fieldName, textMap);
 		}
 		for (Map<String, Object> data : datas) {

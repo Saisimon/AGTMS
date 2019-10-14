@@ -15,10 +15,10 @@
                     </b-row>
                     <b-row class="mb-3">
                         <b-col>
-                            <multiselect style="z-index: 11"
+                            <!-- <multiselect style="z-index: 11"
                                 v-model="importFieldSelects"
-                                label="text"
-                                track-by="value"
+                                label="label"
+                                track-by="id"
                                 select-label=""
                                 select-group-label=""
                                 deselect-label=""
@@ -32,17 +32,27 @@
                                 :multiple="true"
                                 :options="importFieldOptions"
                                 :placeholder="$t('select_import_fields')" >
-                            <template slot="noResult">{{ $t("no_result") }}</template>
-                            <template slot="noOptions">{{ $t("no_options") }}</template>
-                        </multiselect>
+                                <template slot="noResult">{{ $t("no_result") }}</template>
+                                <template slot="noOptions">{{ $t("no_options") }}</template>
+                            </multiselect> -->
+                            <treeselect 
+                                v-model="importFieldSelects"
+                                :options="importFieldOptions"
+                                :multiple="true" 
+                                :searchable="false"
+                                :limit="3"
+                                :noChildrenText="$t('no_childrens')"
+                                :noOptionsText="$t('no_options')"
+                                :noResultsText="$t('no_result')"
+                                :placeholder="$t('select_import_fields')" />
                         </b-col>
                     </b-row>
                     <b-row class="mb-3">
                         <b-col>
-                            <multiselect style="z-index: 10"
+                            <!-- <multiselect style="z-index: 10"
                                 v-model="importFileType"
-                                label="text"
-                                track-by="value"
+                                label="label"
+                                track-by="id"
                                 select-label=""
                                 deselect-label=""
                                 selected-label=""
@@ -50,9 +60,19 @@
                                 :searchable="false"
                                 :options="batchImport.importFileTypeOptions"
                                 :placeholder="$t('select_import_file_type')" >
-                            <template slot="noResult">{{ $t("no_result") }}</template>
-                            <template slot="noOptions">{{ $t("no_options") }}</template>
-                        </multiselect>
+                                <template slot="noResult">{{ $t("no_result") }}</template>
+                                <template slot="noOptions">{{ $t("no_options") }}</template>
+                            </multiselect> -->
+                            <treeselect 
+                                v-model="importFileType"
+                                :options="batchImport.importFileTypeOptions"
+                                :multiple="false" 
+                                :searchable="false"
+                                :clearable="false"
+                                :noChildrenText="$t('no_childrens')"
+                                :noOptionsText="$t('no_options')"
+                                :noResultsText="$t('no_result')"
+                                :placeholder="$t('select_import_file_type')" />
                         </b-col>
                     </b-row>
                     <b-row class="mb-3" v-if="importFieldSelects.length > 0 && importFileType != null">
@@ -92,10 +112,7 @@ export default {
     ],
     computed: {
         importFieldOptions: function() {
-            return [{
-                group: this.$t('select_all'),
-                options: this.batchImport.importFieldOptions
-            }]
+            return this.batchImport.importFieldOptions;
         }
     },
     data: function() {
@@ -132,10 +149,10 @@ export default {
             var importFields = [];
             for (var j = 0; j < this.importFieldSelects.length; j++) {
                 var importFieldSelect = this.importFieldSelects[j];
-                importFields.push(importFieldSelect.value);
+                importFields.push(importFieldSelect);
             }
             var formData = new FormData();
-            formData.append("importFileType", this.importFileType.value);
+            formData.append("importFileType", this.importFileType);
             formData.append("importFileName", this.batchImport.importFileName);
             formData.append("importFields", importFields);
             for (var i = 0; i < this.importFiles.length; i++) {

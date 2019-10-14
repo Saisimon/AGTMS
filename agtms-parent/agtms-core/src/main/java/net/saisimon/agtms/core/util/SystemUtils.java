@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -36,6 +37,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.enums.BaseEnum;
+import net.saisimon.agtms.core.enums.Functions;
 
 /**
  * 系统相关工具类
@@ -53,7 +55,7 @@ public final class SystemUtils extends StringUtils {
 	
 	private static final Map<Long, Future<?>> TASK_FUTURE_MAP = new ConcurrentHashMap<>();
 	
-	public static final Executor executor = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
+	public static final Executor EXECUTOR = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
 	
 	public static boolean isNotEmpty(Object str) {
 		return !isEmpty(str);
@@ -198,6 +200,101 @@ public final class SystemUtils extends StringUtils {
 			}
 		}
 		return fields;
+	}
+	
+	/**
+	 * 根据支持的功能集合解析功能值
+	 * 
+	 * @param function 功能值
+	 * @param supportFuncs 支持的功能集合
+	 * @return 功能代码集合
+	 */
+	public static List<Integer> getFunctionCodes(Integer function, List<Functions> supportFuncs) {
+		List<Integer> functionCodes = new ArrayList<>();
+		if (function == null || function == 0 || CollectionUtils.isEmpty(supportFuncs)) {
+			return functionCodes;
+		}
+		for (Functions func : supportFuncs) {
+			if (hasFunction(function, func)) {
+				functionCodes.add(func.getCode());
+			}
+		}
+		return functionCodes;
+	}
+	
+	/**
+	 * 根据支持的功能集合解析功能值
+	 * 
+	 * @param function 功能值
+	 * @param supportFuncs 支持的功能集合
+	 * @return 功能集合
+	 */
+	public static List<Functions> getFunctions(Integer function, List<Functions> supportFuncs) {
+		List<Functions> functionCodes = new ArrayList<>();
+		if (function == null || function == 0 || CollectionUtils.isEmpty(supportFuncs)) {
+			return functionCodes;
+		}
+		for (Functions func : supportFuncs) {
+			if (hasFunction(function, func)) {
+				functionCodes.add(func);
+			}
+		}
+		return functionCodes;
+	}
+	
+	/**
+	 * 是否存在指定功能
+	 * 
+	 * @param function 功能值
+	 * @param funcs 功能集合
+	 * @return 是否存在指定功能
+	 */
+	public static boolean hasFunction(Integer function, Functions... funcs) {
+		if (function == null || funcs == null || funcs.length == 0) {
+			return false;
+		}
+		for (Functions func : funcs) {
+			if (func.getCode().equals((function & func.getCode()))) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * 是否存在指定功能
+	 * 
+	 * @param function 功能值
+	 * @param funcs 功能集合
+	 * @return 是否存在指定功能
+	 */
+	public static boolean hasFunction(Integer function, List<Functions> funcs) {
+		if (function == null || funcs == null || funcs.size() == 0) {
+			return false;
+		}
+		for (Functions func : funcs) {
+			if (func.getCode().equals((function & func.getCode()))) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * 获取功能值
+	 * 
+	 * @param functions 功能集合
+	 * @return 功能值
+	 */
+	public static int getFunctions(List<Functions> functions) {
+		if (functions == null) {
+			return 0;
+		}
+		int func = 0;
+		for (Functions function : functions) {
+			func += function.getCode();
+		}
+		return func;
 	}
 	
 	/**

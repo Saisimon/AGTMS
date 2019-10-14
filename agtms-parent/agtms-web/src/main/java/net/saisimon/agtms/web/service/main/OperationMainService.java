@@ -110,7 +110,7 @@ public class OperationMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected Header header(Object key) {
+	protected Header header(Object key, List<Functions> functions) {
 		return Header.builder().title(messageService.getMessage("operation.management")).build();
 	}
 
@@ -138,7 +138,7 @@ public class OperationMainService extends AbstractMainService {
 		filters.add(filter);
 		
 		filter = new Filter();
-		keyValues = Arrays.asList("operatorId");
+		keyValues = Arrays.asList(Constant.OPERATORID);
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
 		Map<String, String> userMap = userSelection.select();
@@ -165,4 +165,9 @@ public class OperationMainService extends AbstractMainService {
 		return columns;
 	}
 
+	@Override
+	protected List<Functions> functions(Object key) {
+		return functions("/operation/main", null, SUPPORT_FUNCTIONS);
+	}
+	
 }

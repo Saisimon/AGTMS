@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class Editor<T> {
 	
-	private T value;
+	private Object value;
 	
 	private String className;
 	
@@ -17,19 +17,19 @@ public class Editor<T> {
 	
 	private List<T> options;
 	
-	public Editor(T value, String className) {
+	public Editor(Object value, String className) {
 		this(value, className, "text");
 	}
 	
-	public Editor(T value, String className, String type) {
+	public Editor(Object value, String className, String type) {
 		this(value, className, type, null, null);
 	}
 	
-	public Editor(T value, String className, String selectionSign, List<T> options) {
+	public Editor(Object value, String className, String selectionSign, List<T> options) {
 		this(value, className, "select", selectionSign, options);
 	}
 	
-	public Editor(T value, String className, String type, String selectionSign, List<T> options) {
+	public Editor(Object value, String className, String type, String selectionSign, List<T> options) {
 		this.value = value;
 		this.className = className;
 		this.type = type;

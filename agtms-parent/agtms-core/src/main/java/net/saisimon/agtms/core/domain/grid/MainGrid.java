@@ -36,8 +36,6 @@ public class MainGrid {
 		
 		private String createUrl;
 		
-		private String editUrl;
-		
 	}
 	
 	@Data

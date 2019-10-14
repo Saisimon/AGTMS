@@ -98,6 +98,7 @@ export default {
     option_value: '选项值',
     option_text: '选项文本',
     more_functions: '与{count}个功能',
+    no_childrens: '暂无子选项',
     no_result: '暂无结果',
     no_options: '暂无选项',
     options_value_desc: '下拉列表选项的值不允许重复',
@@ -125,5 +126,6 @@ export default {
     update_profile: '更新个人资料',
     save_success: '保存成功',
     large_table_sort_disabled: '数据量过大，排序被禁用',
-    page_index: '第 {index} 页'
+    page_index: '第 {index} 页',
+    grant: '授权'
 }

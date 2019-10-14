@@ -196,7 +196,7 @@ public interface GenerateService {
 			boolean unique = field.getUniqued();
 			CompletableFuture.runAsync(() -> {
 				createIndex(tableName, fieldName, unique);
-			}, SystemUtils.executor);
+			}, SystemUtils.EXECUTOR);
 		}
 	}
 	
@@ -216,12 +216,12 @@ public interface GenerateService {
 				if (oldHasIndex && !hasIndex) {
 					CompletableFuture.runAsync(() -> {
 						dropIndex(tableName, fieldName);
-					}, SystemUtils.executor);
+					}, SystemUtils.EXECUTOR);
 				} else if (!oldHasIndex && hasIndex) {
 					boolean unique = field.getUniqued();
 					CompletableFuture.runAsync(() -> {
 						createIndex(tableName, fieldName, unique);
-					}, SystemUtils.executor);
+					}, SystemUtils.EXECUTOR);
 				}
 			} else {
 				if (!field.getFilter() && !field.getSorted() && !field.getUniqued()) {
@@ -230,7 +230,7 @@ public interface GenerateService {
 				boolean unique = field.getUniqued();
 				CompletableFuture.runAsync(() -> {
 					createIndex(tableName, fieldName, unique);
-				}, SystemUtils.executor);
+				}, SystemUtils.EXECUTOR);
 			}
 		}
 	}

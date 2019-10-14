@@ -1,4 +1,4 @@
-import { list, mainGrid, batchGrid, batchRemove, batchSave, batchExport, batchImport } from '@/api/list'
+import { list, mainGrid, batchGrid, batchOperate, batchSave, batchExport, batchImport } from '@/api/list'
 import request from '@/api/request'
 
 const state = {
@@ -11,6 +11,7 @@ const state = {
     filters: [],
     columns: [],
     actions: null,
+    batchOperate: null,
     batchEdit: null,
     batchExport: null,
     batchImport: null,
@@ -28,6 +29,7 @@ const mutations = {
         state.filters = [];
         state.columns = [];
         state.actions = null;
+        state.batchOperate = null;
         state.batchEdit = null;
         state.batchExport = null;
         state.batchImport = null;
@@ -87,7 +89,7 @@ const mutations = {
                         if (fieldFilter.multiple) {
                             fieldFilter.select.selected = [];
                         } else {
-                            fieldFilter.select.selected = "";
+                            fieldFilter.select.selected = null;
                         }
                         break;
                     default:
@@ -105,6 +107,11 @@ const mutations = {
     setActions(state, actions) {
         if (actions) {
             state.actions = actions;
+        }
+    },
+    setBatchOperate(state, batchOperate) {
+        if (batchOperate) {
+            state.batchOperate = batchOperate;
         }
     },
     setBatchEdit(state, batchEdit) {
@@ -157,15 +164,11 @@ const actions = {
     requestUrl(context, url) {
         return request(context.rootState.base.user, url);
     },
-    getBatchGrid(context, url) {
-        return batchGrid(context.rootState.base.user, url).then(resp => {
-            context.commit('setBatchEdit', resp.data.data.batchEdit);
-            context.commit('setBatchExport', resp.data.data.batchExport);
-            context.commit('setBatchImport', resp.data.data.batchImport);
-        });
+    getBatchGrid(context, payload) {
+        return batchGrid(context.rootState.base.user, payload.url, payload.type, payload.func);
     },
-    batchRemoveData(context, payload) {
-        return batchRemove(context.rootState.base.user, payload.url, payload.ids);
+    batchOperateData(context, payload) {
+        return batchOperate(context.rootState.base.user, payload.url, payload.path, payload.data);
     },
     batchEditData(context, payload) {
         return batchSave(context.rootState.base.user, payload.url, payload.data);

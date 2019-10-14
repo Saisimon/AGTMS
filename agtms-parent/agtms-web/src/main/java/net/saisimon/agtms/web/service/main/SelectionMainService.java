@@ -17,6 +17,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Selection;
@@ -26,6 +27,7 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
+import net.saisimon.agtms.core.domain.grid.BatchOperate;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
@@ -42,6 +44,7 @@ import net.saisimon.agtms.core.service.SelectionService;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SelectionUtils;
+import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.resp.SelectionInfo;
 import net.saisimon.agtms.web.selection.SelectTypeSelection;
@@ -73,8 +76,8 @@ public class SelectionMainService extends AbstractMainService {
 	static {
 		SELECTION_FILTER_FIELDS.add("title");
 		SELECTION_FILTER_FIELDS.add("type");
-		SELECTION_FILTER_FIELDS.add("createTime");
-		SELECTION_FILTER_FIELDS.add("updateTime");
+		SELECTION_FILTER_FIELDS.add(Constant.CREATETIME);
+		SELECTION_FILTER_FIELDS.add(Constant.UPDATETIME);
 		SELECTION_FILTER_FIELDS.add(Constant.OPERATORID);
 	}
 	
@@ -127,7 +130,7 @@ public class SelectionMainService extends AbstractMainService {
 		if (id < 0) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Selection selection = SelectionUtils.getSelection(id, premissionService.getUserIds(AuthUtils.getUid()));
+		Selection selection = SelectionUtils.getSelection(id);
 		if (selection == null) {
 			return ErrorMessage.Selection.SELECTION_NOT_EXIST;
 		}
@@ -141,15 +144,23 @@ public class SelectionMainService extends AbstractMainService {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	public Result batchGrid(String type, String func) {
+		return ResultUtils.simpleSuccess(getBatchGrid(SELECTION, type, func));
+	}
+	
 	@Transactional(rollbackOn = Exception.class)
-	public Result batchRemove(List<Long> ids) {
-		if (ids.size() == 0) {
+	public Result batchRemove(Map<String, Object> body) {
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
+		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		SelectionService selectionService = SelectionServiceFactory.get();
-		for (Long id : ids) {
-			Selection selection = SelectionUtils.getSelection(id, userIds);
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
+			Selection selection = SelectionUtils.getSelection(id);
 			if (selection == null) {
 				continue;
 			}
@@ -164,8 +175,12 @@ public class SelectionMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected Header header(Object key) {
-		return Header.builder().title(messageService.getMessage("selection.management")).createUrl("/selection/edit").build();
+	protected Header header(Object key, List<Functions> functions) {
+		Header header = Header.builder().title(messageService.getMessage("selection.management")).build();
+		if (SystemUtils.hasFunction(Functions.CREATE.getCode(), functions)) {
+			header.setCreateUrl("/selection/edit");
+		}
+		return header;
 	}
 
 	@Override
@@ -203,7 +218,7 @@ public class SelectionMainService extends AbstractMainService {
 		filters.add(filter);
 		
 		filter = new Filter();
-		keyValues = Arrays.asList("createTime", "updateTime");
+		keyValues = Arrays.asList(Constant.CREATETIME, Constant.UPDATETIME);
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
 		value = new HashMap<>(4);
 		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
@@ -212,7 +227,7 @@ public class SelectionMainService extends AbstractMainService {
 		filters.add(filter);
 		
 		filter = new Filter();
-		keyValues = Arrays.asList("operatorId");
+		keyValues = Arrays.asList(Constant.OPERATORID);
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
 		Map<String, String> userMap = userSelection.select();
@@ -233,24 +248,40 @@ public class SelectionMainService extends AbstractMainService {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("title").label(messageService.getMessage("title")).width(200).views(Views.TEXT.getKey()).build());
 		columns.add(Column.builder().field("type").label(messageService.getMessage("type")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field(Constant.CREATETIME).label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field(Constant.UPDATETIME).label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
 		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
 	
 	@Override
-	protected List<Action> actions(Object key) {
+	protected List<Action> actions(Object key, List<Functions> functions) {
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().key("edit").to("/selection/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
-		actions.add(Action.builder().key("remove").icon("trash").to("/selection/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
+			actions.add(Action.builder().key("edit").to("/selection/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
+		}
+		if (SystemUtils.hasFunction(Functions.REMOVE.getCode(), functions)) {
+			actions.add(Action.builder().key("remove").icon("trash").to("/selection/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+		}
 		return actions;
 	}
 	
 	@Override
 	protected List<Functions> functions(Object key) {
-		return SUPPORT_FUNCTIONS;
+		return functions("/selection/main", null, SUPPORT_FUNCTIONS);
+	}
+	
+	@Override
+	protected BatchOperate batchOperate(Object key, String func) {
+		BatchOperate batchOperate = new BatchOperate();
+		switch (func) {
+		case "batchRemove":
+			batchOperate.setPath("/batch/remove");
+			return batchOperate;
+		default:
+			return null;
+		}
 	}
 
 }

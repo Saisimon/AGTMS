@@ -1,6 +1,5 @@
 package net.saisimon.agtms.web.controller.main;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,10 +52,16 @@ public class SelectionMainController {
 	}
 	
 	@ResourceInfo(func=Functions.BATCH_REMOVE)
+	@PostMapping("/batch/grid")
+	public Result batchGrid(@RequestParam("type") String type, @RequestParam("func") String func) {
+		return selectionMainService.batchGrid(type, func);
+	}
+	
+	@ResourceInfo(func=Functions.BATCH_REMOVE)
 	@Operate(type=OperateTypes.BATCH_REMOVE)
 	@PostMapping("/batch/remove")
-	public Result batchRemove(@RequestBody List<Long> ids) {
-		return selectionMainService.batchRemove(ids);
+	public Result batchRemove(@RequestBody Map<String, Object> body) {
+		return selectionMainService.batchRemove(body);
 	}
 	
 }

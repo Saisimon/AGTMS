@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-public class MySQLDialectTest extends DialectTest {
+public class MySQLDialectTest extends AbstractDialectTest {
 	
 	private Dialect dialect = new MySQLDialect();
 	

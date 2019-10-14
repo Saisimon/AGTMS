@@ -46,9 +46,10 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
-import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchEdit;
-import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchExport;
-import net.saisimon.agtms.core.domain.grid.BatchGrid.BatchImport;
+import net.saisimon.agtms.core.domain.grid.BatchEdit;
+import net.saisimon.agtms.core.domain.grid.BatchExport;
+import net.saisimon.agtms.core.domain.grid.BatchImport;
+import net.saisimon.agtms.core.domain.grid.BatchOperate;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Field;
 import net.saisimon.agtms.core.domain.grid.Filter;
@@ -58,9 +59,9 @@ import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
+import net.saisimon.agtms.core.dto.BaseTaskParam;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.SimpleResult;
-import net.saisimon.agtms.core.dto.TaskParam;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
@@ -86,6 +87,7 @@ import net.saisimon.agtms.web.dto.req.ImportParam;
 import net.saisimon.agtms.web.selection.FileTypeSelection;
 import net.saisimon.agtms.web.service.base.AbstractMainService;
 import net.saisimon.agtms.web.service.common.PremissionService;
+import net.saisimon.agtms.web.service.edit.TemplateEditService;
 import net.saisimon.agtms.web.util.FileUtils;
 
 /**
@@ -100,7 +102,7 @@ public class ManagementMainService extends AbstractMainService {
 	
 	public static final List<Functions> SUPPORT_FUNCTIONS = Arrays.asList(
 			Functions.VIEW,
-			Functions.CREATE, 
+			Functions.CREATE,
 			Functions.EDIT,
 			Functions.BATCH_EDIT,
 			Functions.REMOVE,
@@ -117,19 +119,20 @@ public class ManagementMainService extends AbstractMainService {
 	private AgtmsProperties agtmsProperties;
 	@Autowired
 	private PremissionService premissionService;
+	@Autowired
+	private TemplateEditService templateEditService;
 	
 	public Result grid(String key) {
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		Template template = TemplateUtils.getTemplate(key, userIds);
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
+		template.setFunctions(templateEditService.getFunction(template, AuthUtils.getUid()));
 		return ResultUtils.simpleSuccess(getMainGrid(template));
 	}
 	
 	public Result list(String key, Map<String, Object> body) {
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		Template template = TemplateUtils.getTemplate(key, userIds);
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -139,6 +142,7 @@ public class ManagementMainService extends AbstractMainService {
 		if (filter == null) {
 			filter = FilterRequest.build();
 		}
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		filter.and(Constant.OPERATORID, userIds, Constant.Operator.IN);
 		FilterPageable pageable = FilterPageable.build(pageableMap);
 		List<Domain> domains = GenerateServiceFactory.build(template).findPage(filter, pageable, false).getContent();
@@ -150,19 +154,16 @@ public class ManagementMainService extends AbstractMainService {
 		boolean more = domains.size() < pageable.getSize();
 		request.getSession().setAttribute(key + FILTER_SUFFIX, filterMap);
 		request.getSession().setAttribute(key + PAGEABLE_SUFFIX, pageableMap);
-		return ResultUtils.pageSuccess(DomainUtils.conversions(template, domains, userIds), more);
+		return ResultUtils.pageSuccess(DomainUtils.conversions(template, domains), more);
 	}
 
 	@Transactional(rollbackOn = Exception.class)
 	public Result remove(String key, Long id) {
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		Template template = TemplateUtils.getTemplate(key, userIds);
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		if (!TemplateUtils.hasFunction(template, Functions.REMOVE)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
-		}
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		Domain domain = GenerateServiceFactory.build(template).findById(id, userIds);
 		if (domain == null) {
 			return ErrorMessage.Domain.DOMAIN_NOT_EXIST;
@@ -171,23 +172,21 @@ public class ManagementMainService extends AbstractMainService {
 		return ResultUtils.simpleSuccess();
 	}
 	
-	public Result batchGrid(String key) {
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		Template template = TemplateUtils.getTemplate(key, userIds);
+	public Result batchGrid(String key, String type, String func) {
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		return ResultUtils.simpleSuccess(getBatchGrid(template));
+		return ResultUtils.simpleSuccess(getBatchGrid(template, type, func));
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
 	public Result batchSave(String key, Map<String, Object> body) {
-		List<String> ids = SystemUtils.transformList(body.get("ids"));
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
 		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		Template template = TemplateUtils.getTemplate(key, userIds);
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -200,8 +199,12 @@ public class ManagementMainService extends AbstractMainService {
 		if (CollectionUtils.isEmpty(map)) {
 			return ResultUtils.simpleSuccess();
 		}
-		for (String idStr : ids) {
-			Long id = Long.valueOf(idStr);
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
 			Domain domain = GenerateServiceFactory.build(template).findById(id, userIds);
 			if (domain == null) {
 				continue;
@@ -213,19 +216,21 @@ public class ManagementMainService extends AbstractMainService {
 	}
 
 	@Transactional(rollbackOn = Exception.class)
-	public Result batchRemove(String key, List<Long> ids) {
-		if (ids.size() == 0) {
+	public Result batchRemove(String key, Map<String, Object> body) {
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
+		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		Template template = TemplateUtils.getTemplate(key, userIds);
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
-		if (!TemplateUtils.hasFunction(template, Functions.BATCH_REMOVE)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
-		}
-		for (Long id : ids) {
+		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
 			Domain domain = GenerateServiceFactory.build(template).findById(id, userIds);
 			if (domain == null) {
 				continue;
@@ -237,13 +242,9 @@ public class ManagementMainService extends AbstractMainService {
 	
 	public Result batchExport(String key, ExportParam body) {
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = premissionService.getUserIds(userId);
-		Template template = TemplateUtils.getTemplate(key, userIds);
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
-		}
-		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		body.setTemplateId(template.sign());
 		body.setUserId(userId);
@@ -273,14 +274,9 @@ public class ManagementMainService extends AbstractMainService {
 			result.setMessageArgs(new Object[]{ agtmsProperties.getImportFileMaxSize() });
 			return result;
 		}
-		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = premissionService.getUserIds(userId);
-		Template template = TemplateUtils.getTemplate(key, userIds);
+		Template template = TemplateUtils.getTemplate(key);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
-		}
-		if (!TemplateUtils.hasFunction(template, Functions.IMPORT)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		Set<String> requireds = TemplateUtils.getRequireds(template);
 		if (!CollectionUtils.isEmpty(requireds)) {
@@ -290,6 +286,7 @@ public class ManagementMainService extends AbstractMainService {
 				}
 			}
 		}
+		Long userId = AuthUtils.getUid();
 		for (MultipartFile importFile : importFiles) {
 			if (importFile.isEmpty()) {
 				continue;
@@ -321,16 +318,13 @@ public class ManagementMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected Header header(Object key) {
+	protected Header header(Object key, List<Functions> functions) {
 		if (!(key instanceof Template)) {
 			return null;
 		}
 		Template template = (Template) key;
 		Header header = Header.builder().title(template.getTitle()).build();
-		if (template.getId() != null) {
-			header.setEditUrl("/template/edit?id=" + template.getId());
-		}
-		if (Functions.CREATE.getCode().equals(template.getFunctions() & Functions.CREATE.getCode())) {
+		if (SystemUtils.hasFunction(Functions.CREATE.getCode(), functions)) {
 			String sign = template.sign();
 			if (sign != null) {
 				header.setCreateUrl("/management/edit/" + sign);
@@ -370,7 +364,6 @@ public class ManagementMainService extends AbstractMainService {
 		}
 		Template template = (Template) key;
 		List<Filter> filters = new ArrayList<>();
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		for (TemplateColumn column : template.getColumns()) {
 			Filter filter = new Filter();
 			List<String> keyValues = new ArrayList<>();
@@ -388,7 +381,7 @@ public class ManagementMainService extends AbstractMainService {
 					if (selectionSign == null) {
 						continue;
 					}
-					value.put(fieldName, SelectFilter.selectSearchableFilter("", field.getFieldType(), selectionSign, userIds));
+					value.put(fieldName, SelectFilter.selectSearchableFilter(null, field.getFieldType(), selectionSign));
 				} else if (Classes.LONG.getKey().equals(field.getFieldType()) || Classes.DOUBLE.getKey().equals(field.getFieldType())) {
 					value.put(fieldName, RangeFilter.rangeFilter("", field.getFieldType(), "", field.getFieldType()));
 				} else if (Classes.DATE.getKey().equals(field.getFieldType())) {
@@ -414,24 +407,22 @@ public class ManagementMainService extends AbstractMainService {
 		}
 		Template template = (Template) key;
 		List<Column> columns = buildColumns(template, false);
-		if (TemplateUtils.hasOneOfFunctions(template, Functions.EDIT, Functions.REMOVE)) {
-			columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
-		}
+		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
 
 	@Override
-	protected List<Action> actions(Object key) {
+	protected List<Action> actions(Object key, List<Functions> functions) {
 		if (!(key instanceof Template)) {
 			return null;
 		}
 		Template template = (Template) key;
 		String sign = template.sign();
 		List<Action> actions = new ArrayList<>();
-		if (TemplateUtils.hasFunction(template, Functions.EDIT)) {
+		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
 			actions.add(Action.builder().key("edit").to("/management/edit/" + sign + "?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
 		}
-		if (TemplateUtils.hasFunction(template, Functions.REMOVE)) {
+		if (SystemUtils.hasFunction(Functions.REMOVE.getCode(), functions)) {
 			actions.add(Action.builder().key("remove").to("/management/main/" + sign + "/remove").icon("trash").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
 		}
 		return actions;
@@ -440,10 +431,10 @@ public class ManagementMainService extends AbstractMainService {
 	@Override
 	protected List<Functions> functions(Object key) {
 		if (!(key instanceof Template)) {
-			return null;
+			return Collections.emptyList();
 		}
 		Template template = (Template) key;
-		return TemplateUtils.getFunctions(template);
+		return functions("/management/main", template.getId(), SUPPORT_FUNCTIONS);
 	}
 	
 	@Override
@@ -454,6 +445,13 @@ public class ManagementMainService extends AbstractMainService {
 		Template template = (Template) key;
 		return template.sign();
 	}
+	
+	@Override
+	protected BatchOperate batchOperate(Object key, String func) {
+		BatchOperate batchOperate = new BatchOperate();
+		batchOperate.setPath("/batch/remove");
+		return batchOperate;
+	}
 
 	@Override
 	protected BatchEdit batchEdit(Object key) {
@@ -461,9 +459,6 @@ public class ManagementMainService extends AbstractMainService {
 			return null;
 		}
 		Template template = (Template) key;
-		if (!TemplateUtils.hasFunction(template, Functions.BATCH_EDIT)) {
-			return null;
-		}
 		BatchEdit batchEdit = new BatchEdit();
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		List<Option<String>> editFieldOptions = new ArrayList<>(fieldInfoMap.size());
@@ -501,9 +496,6 @@ public class ManagementMainService extends AbstractMainService {
 			return null;
 		}
 		Template template = (Template) key;
-		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
-			return null;
-		}
 		BatchExport batchExport = new BatchExport();
 		List<Column> columns = buildColumns(template, true);
 		List<Option<String>> exportFieldOptions = new ArrayList<>(columns.size());
@@ -522,9 +514,6 @@ public class ManagementMainService extends AbstractMainService {
 			return null;
 		}
 		Template template = (Template) key;
-		if (!TemplateUtils.hasFunction(template, Functions.IMPORT)) {
-			return null;
-		}
 		BatchImport batchImport = new BatchImport();
 		List<Column> columns = buildColumns(template, true);
 		List<Option<String>> importFieldOptions = new ArrayList<>(columns.size());
@@ -538,9 +527,6 @@ public class ManagementMainService extends AbstractMainService {
 	}
 	
 	private Result buildFieldMap(Map<String, Object> body, Template template) {
-		if (!TemplateUtils.hasFunction(template, Functions.BATCH_EDIT)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
-		}
 		Map<String, Object> map = new HashMap<>();
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		for (Map.Entry<String, Object> entry : body.entrySet()) {
@@ -623,7 +609,7 @@ public class ManagementMainService extends AbstractMainService {
 		return importTask;
 	}
 	
-	private <P extends TaskParam> void submitTask(final Task task) {
+	private <P extends BaseTaskParam> void submitTask(final Task task) {
 		Future<?> future = taskThreadPool.submit(() -> {
 			TaskService taskService = TaskServiceFactory.get();
 			task.setHandleStatus(HandleStatuses.PROCESSING.getStatus());
@@ -682,7 +668,7 @@ public class ManagementMainService extends AbstractMainService {
 	private Long count(Template template, long timeout) {
 		CompletableFuture<Long> future = CompletableFuture.supplyAsync(() -> {
 			return GenerateServiceFactory.build(template).count(null);
-		}, SystemUtils.executor);
+		}, SystemUtils.EXECUTOR);
 		try {
 			return future.get(timeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException | TimeoutException e) {

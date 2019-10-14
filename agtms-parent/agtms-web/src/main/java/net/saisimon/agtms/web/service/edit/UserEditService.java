@@ -1,21 +1,29 @@
 package net.saisimon.agtms.web.service.edit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.domain.entity.User;
+import net.saisimon.agtms.core.domain.entity.UserRole;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
+import net.saisimon.agtms.core.domain.grid.EditGrid.FieldGroup;
 import net.saisimon.agtms.core.domain.grid.Field;
+import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.enums.Views;
+import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -23,6 +31,7 @@ import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.UserParam;
+import net.saisimon.agtms.web.selection.RoleSelection;
 import net.saisimon.agtms.web.service.base.AbstractEditService;
 import net.saisimon.agtms.web.service.main.UserMainService;
 
@@ -34,6 +43,11 @@ import net.saisimon.agtms.web.service.main.UserMainService;
  */
 @Service
 public class UserEditService extends AbstractEditService<User> {
+	
+	@Autowired
+	private RoleSelection roleSelection;
+	@Autowired
+	private UserMainService userMainService;
 	
 	public Result grid(Long id) {
 		User user = null;
@@ -55,10 +69,78 @@ public class UserEditService extends AbstractEditService<User> {
 			return checkResult;
 		}
 		if (null != body.getId() && body.getId() > 0) {
-			return saveUser(body);
-		} else {
 			return updateUser(body);
+		} else {
+			return saveUser(body);
 		}
+	}
+	
+	@Override
+	protected List<Breadcrumb> breadcrumbs(User user, Object key) {
+		List<Breadcrumb> breadcrumbs = new ArrayList<>();
+		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("user.module")).to("/").build());
+		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("user.management")).to("/user/main").build());
+		if (user == null) {
+			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("create")).active(true).build());
+		} else {
+			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("edit")).active(true).build());
+		}
+		return breadcrumbs;
+	}
+	
+	@Override
+	protected List<FieldGroup> groups(User user, Object key) {
+		Field<String> loginNameField = Field.<String>builder().name("loginName").text(messageService.getMessage("login.name"))
+				.type(Classes.STRING.getKey()).required(true).build();
+		Field<String> passwordField = Field.<String>builder().name("password").text(messageService.getMessage("password"))
+				.type(Classes.STRING.getKey()).views(Views.PASSWORD.getKey()).required(true).build();
+		Field<Option<String>> rolesField = Field.<Option<String>>builder().name("roles").text(messageService.getMessage("role.name"))
+				.type("select").views(Views.SELECTION.getKey()).options(roleSelection.buildNestedOptions(null)).flat(true).multiple(true).build();
+		Field<String> nicknameField = Field.<String>builder().name("nickname").text(messageService.getMessage("nickname"))
+				.type(Classes.STRING.getKey()).build();
+		Field<String> cellphoneField = Field.<String>builder().name("cellphone").text(messageService.getMessage("cellphone"))
+				.type(Classes.STRING.getKey()).views(Views.PHONE.getKey()).required(true).build();
+		Field<String> emailField = Field.<String>builder().name("email").text(messageService.getMessage("email"))
+				.type(Classes.STRING.getKey()).views(Views.EMAIL.getKey()).required(true).build();
+		Field<String> avatarField = Field.<String>builder().name("avatar").text(messageService.getMessage("avatar"))
+				.type(Classes.STRING.getKey()).views(Views.IMAGE.getKey()).build();
+		Field<String> remarkField = Field.<String>builder().name("remark").text(messageService.getMessage("remark"))
+				.type(Classes.STRING.getKey()).views(Views.TEXTAREA.getKey()).build();
+		if (user != null) {
+			loginNameField.setValue(user.getLoginName());
+			passwordField.setDisabled(true);
+			passwordField.setValue("******");
+			rolesField.setValue(getUserRolePaths(user));
+			nicknameField.setValue(user.getNickname());
+			cellphoneField.setValue(user.getCellphone());
+			emailField.setValue(user.getEmail());
+			avatarField.setValue(user.getAvatar());
+			remarkField.setValue(user.getRemark());
+		} else {
+			loginNameField.setValue("");
+			passwordField.setValue("");
+			rolesField.setValue(Collections.emptyList());
+			nicknameField.setValue("");
+			cellphoneField.setValue("");
+			emailField.setValue("");
+			avatarField.setValue("");
+			remarkField.setValue("");
+		}
+		List<FieldGroup> groups = new ArrayList<>();
+		groups.add(buildFieldGroup(messageService.getMessage("account.info"), 0, loginNameField, passwordField, rolesField));
+		groups.add(buildFieldGroup(messageService.getMessage("personal.info"), 0, nicknameField, cellphoneField, emailField));
+		groups.add(buildFieldGroup(messageService.getMessage("extra.info"), 0, avatarField, remarkField));
+		return groups;
+	}
+	
+	private List<String> getUserRolePaths(User user) {
+		List<UserRole> userRoles = UserRoleServiceFactory.get().getUserRoles(user.getId());
+		if (CollectionUtils.isEmpty(userRoles)) {
+			return Collections.emptyList();
+		}
+		return userRoles.stream().map(userRole -> {
+			return userRole.getRolePath() + "/" + userRole.getRoleId();
+		}).collect(Collectors.toList());
 	}
 	
 	private Result checkOverflow(UserParam body) {
@@ -86,7 +168,7 @@ public class UserEditService extends AbstractEditService<User> {
 		return ResultUtils.simpleSuccess();
 	}
 	
-	private Result saveUser(UserParam body) {
+	private Result updateUser(UserParam body) {
 		UserService userService = UserServiceFactory.get();
 		Optional<User> optional = userService.findById(body.getId());
 		if (!optional.isPresent()) {
@@ -99,21 +181,16 @@ public class UserEditService extends AbstractEditService<User> {
 		oldUser.setLoginName(body.getLoginName());
 		oldUser.setCellphone(body.getCellphone());
 		oldUser.setEmail(body.getEmail());
+		oldUser.setNickname(body.getNickname());
+		oldUser.setAvatar(body.getAvatar());
+		oldUser.setRemark(body.getRemark());
 		oldUser.setUpdateTime(new Date());
-		if (SystemUtils.isNotBlank(body.getNickname())) {
-			oldUser.setNickname(body.getNickname());
-		}
-		if (SystemUtils.isNotBlank(body.getAvatar())) {
-			oldUser.setAvatar(body.getAvatar());
-		}
-		if (SystemUtils.isNotBlank(body.getRemark())) {
-			oldUser.setRemark(body.getRemark());
-		}
 		userService.saveOrUpdate(oldUser);
+		userMainService.grantRole(oldUser.getId(), roleSelection.select(), body.getRoles());
 		return ResultUtils.simpleSuccess();
 	}
 	
-	private Result updateUser(UserParam body) {
+	private Result saveUser(UserParam body) {
 		if (SystemUtils.isBlank(body.getPassword())) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
@@ -137,58 +214,8 @@ public class UserEditService extends AbstractEditService<User> {
 		user.setStatus(UserStatuses.CREATED.getStatus());
 		user.setRemark(body.getRemark());
 		userService.saveOrUpdate(user);
+		userMainService.grantRole(user.getId(), roleSelection.select(), body.getRoles());
 		return ResultUtils.simpleSuccess();
-	}
-	
-	@Override
-	protected List<Breadcrumb> breadcrumbs(User user, Object key) {
-		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("user.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("user.management")).to("/user/main").build());
-		if (user == null) {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("create")).active(true).build());
-		} else {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("edit")).active(true).build());
-		}
-		return breadcrumbs;
-	}
-	
-	@Override
-	protected List<Field<?>> fields(User user, Object key) {
-		List<Field<?>> fields = new ArrayList<>();
-		Field<String> loginNameField = Field.<String>builder().name("loginName").text(messageService.getMessage("login.name")).type(Classes.STRING.getKey()).required(true).build();
-		Field<String> passwordField = Field.<String>builder().name("password").text(messageService.getMessage("password")).type(Classes.STRING.getKey()).views(Views.PASSWORD.getKey()).required(true).build();
-		Field<String> nicknameField = Field.<String>builder().name("nickname").text(messageService.getMessage("nickname")).type(Classes.STRING.getKey()).build();
-		Field<String> cellphoneField = Field.<String>builder().name("cellphone").text(messageService.getMessage("cellphone")).type(Classes.STRING.getKey()).views(Views.PHONE.getKey()).required(true).build();
-		Field<String> emailField = Field.<String>builder().name("email").text(messageService.getMessage("email")).type(Classes.STRING.getKey()).views(Views.EMAIL.getKey()).required(true).build();
-		Field<String> avatarField = Field.<String>builder().name("avatar").text(messageService.getMessage("avatar")).type(Classes.STRING.getKey()).views(Views.IMAGE.getKey()).build();
-		Field<String> remarkField = Field.<String>builder().name("remark").text(messageService.getMessage("remark")).type(Classes.STRING.getKey()).views(Views.TEXTAREA.getKey()).build();
-		if (user != null) {
-			loginNameField.setValue(user.getLoginName());
-			passwordField.setDisabled(true);
-			passwordField.setValue("******");
-			nicknameField.setValue(user.getNickname());
-			cellphoneField.setValue(user.getCellphone());
-			emailField.setValue(user.getEmail());
-			avatarField.setValue(user.getAvatar());
-			remarkField.setValue(user.getRemark());
-		} else {
-			loginNameField.setValue("");
-			passwordField.setValue("");
-			nicknameField.setValue("");
-			cellphoneField.setValue("");
-			emailField.setValue("");
-			avatarField.setValue("");
-			remarkField.setValue("");
-		}
-		fields.add(loginNameField);
-		fields.add(passwordField);
-		fields.add(nicknameField);
-		fields.add(cellphoneField);
-		fields.add(emailField);
-		fields.add(avatarField);
-		fields.add(remarkField);
-		return fields;
 	}
 	
 }

@@ -30,7 +30,7 @@ public interface ResourceService extends BaseService<Resource, Long>, Ordered {
 		return count(filter) > 0;
 	}
 	
-	default Resource getResource(String name, Long operatorId) {
+	default Resource getResourceByNameAndOperatorId(String name, Long operatorId) {
 		if (SystemUtils.isBlank(name) || operatorId == null) {
 			return null;
 		}
@@ -38,7 +38,15 @@ public interface ResourceService extends BaseService<Resource, Long>, Ordered {
 		return findOne(filter).orElse(null);
 	}
 	
-	default Resource getResource(Long contentId, Resource.ContentType contentType) {
+	default Resource getResourceByLinkAndContentId(String link, Long contentId) {
+		if (SystemUtils.isBlank(link)) {
+			return null;
+		}
+		FilterRequest filter = FilterRequest.build().and("link", link).and("contentId", contentId);
+		return findOne(filter).orElse(null);
+	}
+	
+	default Resource getResourceByContentIdAndContentType(Long contentId, Resource.ContentType contentType) {
 		if (contentId == null || contentType == null) {
 			return null;
 		}

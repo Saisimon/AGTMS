@@ -1,7 +1,6 @@
 package net.saisimon.agtms.web.dto.req;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 import lombok.Data;
 
@@ -16,7 +15,6 @@ public class NavigationParam {
 	@NotBlank
 	private String icon;
 	
-	@NotNull
 	private String path;
 	
 }

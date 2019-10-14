@@ -1,11 +1,12 @@
 <template>
-    <b-row class="mb-3">
+    <b-row class="mb-2">
         <b-col>
-            <label :for="field.name + '-input'" class="form-label font-weight-bold">
-                {{ field.text }}
+            <label :for="field.name + '-input'" class="form-label">
                 <span class="text-danger" v-if="field.required">*</span>
+                {{ field.text }} :
             </label>
             <datepicker v-model="field.value"
+                :id="field.name + '-input'" 
                 :clear-button="true"
                 :language="datepickerLanguage"
                 :state="field.state"

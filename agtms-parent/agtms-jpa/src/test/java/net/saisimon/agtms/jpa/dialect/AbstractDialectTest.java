@@ -7,7 +7,7 @@ import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Views;
 
-public abstract class DialectTest {
+public abstract class AbstractDialectTest {
 	
 	protected Map<String, TemplateField> fieldInfoMap() {
 		Map<String, TemplateField> fieldInfoMap = new HashMap<>();

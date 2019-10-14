@@ -49,4 +49,16 @@ public class RoleResource implements Serializable {
 	@Column
 	private Long resourceId;
 	
+	/**
+	 * 资源路径
+	 */
+	@Column
+	private String resourcePath;
+	
+	/**
+	 * 资源功能值
+	 */
+	@Column
+	private Integer resourceFunctions;
+	
 }

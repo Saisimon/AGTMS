@@ -19,7 +19,7 @@
                 <select-form :field="selectionGrid.type" v-if="selectionGrid.type" />
                 <div v-if="selectionGrid.type" class="border p-3">
                     <!-- option -->
-                    <div v-if="selectionGrid.type.value.value === 0">
+                    <div v-if="selectionGrid.type.value === 0">
                         <b-row class="pl-4 pr-4">
                             <b-col>
                                 <label class="form-label">
@@ -43,13 +43,13 @@
                                         <i class="fa fa-list"></i>
                                     </div>
                                     <b-col>
-                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionValue-' + key + '-input'" v-model.trim="option.value.value" :state="option.value.state" />
+                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionValue-' + key + '-input'" v-model.trim="option.value.id" :state="option.value.state" />
                                         <b-form-invalid-feedback :state="option.value.state">
                                             {{ $t('please_input_valid') }}{{ $t('option_value') }}
                                         </b-form-invalid-feedback>
                                     </b-col>
                                     <b-col>
-                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionText-' + key + '-input'" v-model.trim="option.text.value" :state="option.text.state" />
+                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionText-' + key + '-input'" v-model.trim="option.text.id" :state="option.text.state" />
                                         <b-form-invalid-feedback :state="option.text.state">
                                             {{ $t('please_input_valid') }}{{ $t('option_value') }}
                                         </b-form-invalid-feedback>
@@ -70,19 +70,16 @@
                     <div v-else>
                         <b-row class="mb-2">
                             <b-col>
-                                <multiselect
+                                <treeselect 
                                     v-model="selectionGrid.template.template.value"
-                                    @select="templateChange"
-                                    label="text"
-                                    track-by="value"
-                                    select-label=""
-                                    deselect-label=""
-                                    selected-label=""
                                     :options="selectionGrid.template.template.options"
-                                    :placeholder="''" >
-                                    <template slot="noResult">{{ $t("no_result") }}</template>
-                                    <template slot="noOptions">{{ $t("no_options") }}</template>
-                                </multiselect>
+                                    :multiple="false" 
+                                    :searchable="false"
+                                    :placeholder="''"
+                                    :noChildrenText="$t('no_childrens')"
+                                    :noOptionsText="$t('no_options')"
+                                    :noResultsText="$t('no_result')"
+                                    @select="templateChange" />
                             </b-col>
                         </b-row>
                         <b-row>
@@ -103,37 +100,29 @@
                         </b-row>
                         <b-row class="mb-2">
                             <b-col>
-                                <multiselect
+                                <treeselect 
                                     v-model="selectionGrid.template.value.value"
-                                    label="text"
-                                    track-by="value"
-                                    select-label=""
-                                    deselect-label=""
-                                    selected-label=""
-                                    :searchable="false"
                                     :options="selectionGrid.template.value.options"
-                                    :placeholder="''" >
-                                    <template slot="noResult">{{ $t("no_result") }}</template>
-                                    <template slot="noOptions">{{ $t("no_options") }}</template>
-                                </multiselect>
+                                    :multiple="false" 
+                                    :searchable="false"
+                                    :noChildrenText="$t('no_childrens')"
+                                    :noOptionsText="$t('no_options')"
+                                    :noResultsText="$t('no_result')"
+                                    :placeholder="''" />
                                 <b-form-invalid-feedback :class="{'d-block': selectionGrid.template.value.state == false}">
                                     {{ $t('please_select_valid') }}{{ $t('option_value') }}
                                 </b-form-invalid-feedback>
                             </b-col>
                             <b-col>
-                                <multiselect
+                                <treeselect 
                                     v-model="selectionGrid.template.text.value"
-                                    label="text"
-                                    track-by="value"
-                                    select-label=""
-                                    deselect-label=""
-                                    selected-label=""
-                                    :searchable="false"
                                     :options="selectionGrid.template.text.options"
-                                    :placeholder="''" >
-                                    <template slot="noResult">{{ $t("no_result") }}</template>
-                                    <template slot="noOptions">{{ $t("no_options") }}</template>
-                                </multiselect>
+                                    :multiple="false" 
+                                    :searchable="false"
+                                    :noChildrenText="$t('no_childrens')"
+                                    :noOptionsText="$t('no_options')"
+                                    :noResultsText="$t('no_result')"
+                                    :placeholder="''" />
                                 <b-form-invalid-feedback :class="{'d-block': selectionGrid.template.text.state == false}">
                                     {{ $t('please_select_valid') }}{{ $t('option_text') }}
                                 </b-form-invalid-feedback>
@@ -258,21 +247,21 @@ export default {
             this.$store.commit('setSelectionGrid', this.cloneObject(this.resetSelectionGrid));
         },
         templateChange: function(selectedOption) {
-            if (selectedOption.value < 0) {
+            if (selectedOption.id < 0) {
                 this.selectionGrid.template.value.options = [];
-                this.selectionGrid.template.value.value = null;
+                this.selectionGrid.template.value.id = null;
                 this.selectionGrid.template.text.options = [];
-                this.selectionGrid.template.text.value = null;
+                this.selectionGrid.template.text.id = null;
                 return;
             }
-            var data = this.templateMap[selectedOption.value];
+            var data = this.templateMap[selectedOption.id];
             if (data) {
                 this.selectionGrid.template.value.options = data;
-                this.selectionGrid.template.value.value = data[0];
+                this.selectionGrid.template.value.id = data[0];
                 this.selectionGrid.template.text.options = data;
-                this.selectionGrid.template.text.value = data[0];
+                this.selectionGrid.template.text.id = data[0];
             } else {
-                this.$store.dispatch('getSelectionTemplate', selectedOption.value).then(resp => {
+                this.$store.dispatch('getSelectionTemplate', selectedOption.id).then(resp => {
                     if (resp.data.code === 0) {
                         var options = resp.data.data;
                         if (options && options.length > 0) {
@@ -284,10 +273,10 @@ export default {
                             }
                         }
                         this.selectionGrid.template.value.options = options;
-                        this.selectionGrid.template.value.value = options[0];
+                        this.selectionGrid.template.value.id = options[0];
                         this.selectionGrid.template.text.options = options;
-                        this.selectionGrid.template.text.value = options[0];
-                        this.templateMap[selectedOption.value] = options;
+                        this.selectionGrid.template.text.id = options[0];
+                        this.templateMap[selectedOption.id] = options;
                     }
                 });
             }
@@ -320,7 +309,7 @@ export default {
                 pass = false;
             }
             selection['title'] = title;
-            var type = this.selectionGrid.type.value.value;
+            var type = this.selectionGrid.type.value;
             selection['type'] = type;
             var value;
             var text;
@@ -330,7 +319,7 @@ export default {
                 var texts = [];
                 for (var i = 0; i < this.selectionGrid.options.length; i++) {
                     var option = this.selectionGrid.options[i];
-                    value = option.value.value;
+                    value = option.value.id;
                     if (value == null || value == '') {
                         pass = false;
                         option.value.state = false;
@@ -341,7 +330,7 @@ export default {
                         values.push(value);
                         option.value.state = null;
                     }
-                    text = option.text.value;
+                    text = option.text.id;
                     if (text == null || text == '') {
                         pass = false;
                         option.text.state = false;
@@ -360,27 +349,27 @@ export default {
                 selection['options'] = options;
             } else {
                 var template = {};
-                var templateId = this.selectionGrid.template.template.value.value;
+                var templateId = this.selectionGrid.template.template.value.id;
                 if (!templateId) {
                     pass = false;
                     this.selectionGrid.template.template.state = false;
                 } else {
                     template['id'] = templateId;
-                    value = this.selectionGrid.template.value.value;
-                    if (value == null || value.value == null) {
+                    value = this.selectionGrid.template.value.id;
+                    if (value == null || value.id == null) {
                         pass = false;
                         this.selectionGrid.template.value.state = false;
                     }
                     if (value != null) {
-                        template['value'] = value.value;
+                        template['value'] = value.id;
                     }
-                    text = this.selectionGrid.template.text.value;
-                    if (text == null || text.value == null) {
+                    text = this.selectionGrid.template.text.id;
+                    if (text == null || text.id == null) {
                         pass = false;
                         this.selectionGrid.template.text.state = false;
                     }
                     if (text != null) {
-                        template['text'] = text.value;
+                        template['text'] = text.id;
                     }
                 }
                 selection['template'] = template;

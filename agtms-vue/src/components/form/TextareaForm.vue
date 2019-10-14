@@ -1,9 +1,9 @@
 <template>
-    <b-row class="mb-3">
+    <b-row class="mb-2">
         <b-col>
-            <label :for="field.name + '-input'" class="form-label font-weight-bold">
-                {{ field.text }}
+            <label :for="field.name + '-input'" class="form-label">
                 <span class="text-danger" v-if="field.required">*</span>
+                {{ field.text }} :
             </label>
             <quill-editor :id="field.name + '-input'" v-model="field.value" :options="editorOption" />
             <b-form-invalid-feedback :id="field.name + '-input-feedback'" v-if="field.required" :class="{'d-block': field.state == false}">

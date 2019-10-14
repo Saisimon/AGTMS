@@ -98,6 +98,7 @@ export default {
     option_value: 'Option Value',
     option_text: 'Option Text',
     more_functions: 'and {count} other functions',
+    no_childrens: 'No sub-options',
     no_result: 'No elements found',
     no_options: 'No options',
     options_value_desc: 'The value of the drop-down list option does not allow duplicates',
@@ -125,5 +126,6 @@ export default {
     update_profile: 'Update profile',
     save_success: 'Successfully saved',
     large_table_sort_disabled: 'Table data is too large, sorting is disabled',
-    page_index: 'Page {index}'
+    page_index: 'Page {index}',
+    grant: 'Grant'
 }

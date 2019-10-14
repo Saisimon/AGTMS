@@ -6,6 +6,7 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.saisimon.agtms.core.constant.Constant;
 
 /**
  * 前端单选下拉列表
@@ -16,21 +17,11 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class SingleSelect<T> extends Select<T> implements Cloneable {
+public class SingleSelect<T> extends Select<T> {
 	
-	public static final List<String> OPERATORS = Arrays.asList("strict", "fuzzy", "separator");
+	public static final List<String> OPERATORS = Arrays.asList(Constant.Filter.STRICT, Constant.Filter.FUZZY, Constant.Filter.SEPARATOR);
 	
-	private Option<T> selected;
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public Object clone() throws CloneNotSupportedException {
-		SingleSelect<T> filterSingleSelect = (SingleSelect<T>) super.clone();
-		if (filterSingleSelect.selected != null) {
-			filterSingleSelect.selected = (Option<T>) filterSingleSelect.selected.clone();
-		}
-		return filterSingleSelect;
-	}
+	private T selected;
 	
 	public static SingleSelect<String> operator(String selected) {
 		return SingleSelect.select(selected, OPERATORS, OPERATORS);
@@ -43,12 +34,15 @@ public class SingleSelect<T> extends Select<T> implements Cloneable {
 			T optionValue = optionValues.get(i);
 			Option<T> option = new Option<>(optionValue, optionTexts.get(i));
 			options.add(option);
-			if (optionValue.equals(selected)) {
-				select.setSelected(option);
-			}
 		}
 		select.setOptions(options);
+		select.setSelected(selected);
 		return select;
+	}
+	
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
 	}
 	
 }

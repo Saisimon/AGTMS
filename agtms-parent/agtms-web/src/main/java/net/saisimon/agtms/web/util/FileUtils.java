@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -519,11 +520,12 @@ public final class FileUtils {
 					String value;
 					switch (cell.getCellTypeEnum()) {
 					case NUMERIC:
-						Double val = cell.getNumericCellValue();
-						if (new Double(val.longValue()).doubleValue() == val.doubleValue()) {
-							value = String.valueOf(val.intValue());
+						double val = cell.getNumericCellValue();
+						BigDecimal bigDecimal = new BigDecimal(val);
+						if (bigDecimal.toBigInteger().toString().equals(bigDecimal.toString())) {
+							value = bigDecimal.toString();
 						} else {
-							value = val.toString();
+							value = String.valueOf(val);
 						}
 						break;
 					case STRING:
@@ -603,5 +605,5 @@ public final class FileUtils {
 			break;
 		}
 	}
-
+	
 }

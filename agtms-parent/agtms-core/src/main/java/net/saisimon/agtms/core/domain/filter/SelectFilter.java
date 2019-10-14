@@ -1,7 +1,6 @@
 package net.saisimon.agtms.core.domain.filter;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import lombok.Getter;
@@ -39,10 +38,12 @@ public class SelectFilter<T> extends FieldFilter {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		SelectFilter<T> selectFilter = (SelectFilter<T>) super.clone();
-		if (selectFilter.multiple) {
-			selectFilter.select = (MultipleSelect<T>) selectFilter.select.clone();
-		} else {
-			selectFilter.select = (SingleSelect<T>) selectFilter.select.clone();
+		if (this.select != null) {
+			if (selectFilter.multiple) {
+				selectFilter.select = (MultipleSelect<T>) this.select.clone();
+			} else {
+				selectFilter.select = (SingleSelect<T>) this.select.clone();
+			}
 		}
 		return selectFilter;
 	}
@@ -55,11 +56,11 @@ public class SelectFilter<T> extends FieldFilter {
 		return selectFilter;
 	}
 	
-	public static FieldFilter selectSearchableFilter(Object selected, String type, String sign, Collection<Long> operatorIds) {
+	public static FieldFilter selectSearchableFilter(Object selected, String type, String sign) {
 		SelectFilter<Object> selectFilter = new SelectFilter<>(false);
 		Select<Object> select = SingleSelect.select(selected, new ArrayList<>(), new ArrayList<>());
 		select.setType(type);
-		select.setOptions(SelectionUtils.getSelectionOptions(sign, null, operatorIds));
+		select.setOptions(SelectionUtils.getSelectionOptions(sign, null));
 		selectFilter.setSelect(select);
 		selectFilter.setSearchable(true);
 		selectFilter.setSign(sign);

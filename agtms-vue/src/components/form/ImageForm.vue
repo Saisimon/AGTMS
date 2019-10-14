@@ -1,19 +1,19 @@
 <template>
-    <b-row class="mb-3">
+    <b-row class="mb-2">
         <b-col>
-            <label :for="field.name + '-input'" class="form-label font-weight-bold">
-                {{ field.text }}
+            <label :for="field.name + '-input'" class="form-label">
                 <span class="text-danger" v-if="field.required">*</span>
+                {{ field.text }} :
             </label>
             <b-input-group>
                 <b-form-file name="image" v-model="image" :accept="'.jpg,.png,.jpeg,.gif,.bmp'" :disabled="field.disabled" />
                 <b-input-group-append>
-                    <b-button variant="outline-secondary" v-b-tooltip.hover :title="$t('upload')" @click="uploadImage">
+                    <b-button variant="outline-secondary" size="sm"  v-b-tooltip.hover :title="$t('upload')" @click="uploadImage">
                         <i class="fa fa-fw fa-upload"></i>
                     </b-button>
                 </b-input-group-append>
             </b-input-group>
-            <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" 
+            <b-form-input
                 v-show="false"
                 :id="field.name + '-input'" 
                 :name="field.name" 

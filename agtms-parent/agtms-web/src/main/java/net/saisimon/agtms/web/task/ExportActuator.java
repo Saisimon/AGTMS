@@ -6,10 +6,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +43,6 @@ import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.ExportParam;
-import net.saisimon.agtms.web.service.common.PremissionService;
 import net.saisimon.agtms.web.util.FileUtils;
 
 /**
@@ -64,19 +61,13 @@ public class ExportActuator implements Actuator<ExportParam> {
 	private MessageSource messageSource;
 	@Autowired
 	private AgtmsProperties agtmsProperties;
-	@Autowired
-	private PremissionService premissionService;
 	
 	@Override
 	@Transactional(rollbackOn = Exception.class)
 	public Result execute(ExportParam param) throws Exception {
-		Set<Long> userIds = premissionService.getUserIds(param.getUserId());
-		Template template = TemplateUtils.getTemplate(param.getTemplateId(), userIds);
+		Template template = TemplateUtils.getTemplate(param.getTemplateId());
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
-		}
-		if (!TemplateUtils.hasFunction(template, Functions.EXPORT)) {
-			return ErrorMessage.Template.TEMPLATE_NO_FUNCTION;
 		}
 		FilterRequest filter = FilterRequest.build(param.getFilter(), TemplateUtils.getFilters(template));
 		if (filter == null) {
@@ -86,7 +77,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		if (total > agtmsProperties.getExportRowsMaxSize()) {
 			return ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
 		}
-		exportDatas(template, param, filter, userIds);
+		exportDatas(template, param, filter);
 		return ResultUtils.simpleSuccess();
 	}
 
@@ -113,8 +104,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
 		}
-		Set<Long> userIds = premissionService.getUserIds(param.getUserId());
-		Template template = TemplateUtils.getTemplate(param.getTemplateId(), userIds);
+		Template template = TemplateUtils.getTemplate(param.getTemplateId());
 		if (template == null) {
 			response.sendError(HttpStatus.NOT_FOUND.value());
 			return;
@@ -158,7 +148,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 		return FileUtils.createFile(exportFilePath.toString(), fileName, "." + param.getExportFileType());
 	}
 	
-	private void exportDatas(Template template, ExportParam param, FilterRequest filter, Collection<Long> operatorIds) throws IOException, InterruptedException {
+	private void exportDatas(Template template, ExportParam param, FilterRequest filter) throws IOException, InterruptedException {
 		Map<String, TemplateField> fieldInfoMap = TemplateUtils.getFieldInfoMap(template);
 		String[] exportFields = buildExportFields(param.getExportFields(), fieldInfoMap);
 		List<Object> heads = buildHeads(exportFields, fieldInfoMap);
@@ -179,7 +169,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 				}
 				FilterPageable pageable = new FilterPageable(new FilterParam(Constant.ID, lastId, Operator.LT), PAGE_SIZE, null);
 				List<Domain> domains = GenerateServiceFactory.build(template).findList(filter, pageable, exportFields);
-				List<Map<String, Object>> domainList = DomainUtils.conversions(fieldInfoMap, template.getService(), domains, operatorIds);
+				List<Map<String, Object>> domainList = DomainUtils.conversions(fieldInfoMap, template.getService(), domains);
 				buildDatas(domainList, datas, exportFields);
 				File file = createExportFile(param, idx);
 				if (Thread.currentThread().isInterrupted()) {

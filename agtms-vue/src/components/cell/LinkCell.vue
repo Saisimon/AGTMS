@@ -1,5 +1,5 @@
 <template>
-    <div class="marquee">
+    <div>
         <a :href="rowData[field]" target="_blank">{{ rowData[field] }}</a>
     </div>
 </template>

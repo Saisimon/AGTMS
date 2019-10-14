@@ -32,38 +32,38 @@
                 </b-btn>
                 <b-collapse id="filter-toggle" class="filter-toggle" :visible="showFilters">
                     <div class="mb-2 filter-div" v-for="(filter, key) in filters" :key="key">
-                        <b-input-group>
-                            <b-input-group-text slot="prepend" class="filter-select-container">
-                                <multiselect class="filter-select" 
-                                    v-model="filter.key.selected"
-                                    label="text"
-                                    track-by="value"
-                                    select-label=""
-                                    deselect-label=""
-                                    selected-label=""
-                                    :allow-empty="false"
-                                    :searchable="false"
+                        <b-row class="m-0">
+                            <b-col class="p-0 filter-select-container" >
+                                <treeselect 
+                                    class="filter-select" 
+                                    v-model="filter.key.selected" 
                                     :options="filter.key.options"
-                                    :placeholder="''" >
-                                <template slot="noResult">{{ $t("no_result") }}</template>
-                                <template slot="noOptions">{{ $t("no_options") }}</template>
-                            </multiselect>
-                            </b-input-group-text>
-                            <template v-for="option in filter.key.options">
-                                <search-filter-text v-if="filter.value[option.value].type == 'text' && filter.key.selected.value == option.value" 
-                                    :key="option.value" 
-                                    :filter="filter.value[option.value]"
-                                    :field="option.value" />
-                                <search-filter-select v-if="filter.value[option.value].type == 'select' && filter.key.selected.value == option.value" 
-                                    :key="option.value" 
-                                    :filter="filter.value[option.value]"
-                                    :field="option.value" />
-                                <search-filter-range v-if="filter.value[option.value].type == 'range' && filter.key.selected.value == option.value" 
-                                    :key="option.value" 
-                                    :filter="filter.value[option.value]"
-                                    :field="option.value" />
-                            </template>
-                        </b-input-group>
+                                    :disable-branch-nodes="true"
+                                    :multiple="false" 
+                                    :searchable="false"
+                                    :clearable="false"
+                                    :noChildrenText="$t('no_childrens')"
+                                    :noOptionsText="$t('no_options')"
+                                    :noResultsText="$t('no_result')"
+                                    :placeholder="''" />
+                            </b-col>
+                            <b-col class="p-0">
+                                <template v-for="option in filter.key.options">
+                                    <search-filter-text v-if="filter.value[option.id].type == 'text' && filter.key.selected == option.id" 
+                                        :key="option.id" 
+                                        :filter="filter.value[option.id]"
+                                        :field="option.id" />
+                                    <search-filter-select v-if="filter.value[option.id].type == 'select' && filter.key.selected == option.id" 
+                                        :key="option.id" 
+                                        :filter="filter.value[option.id]"
+                                        :field="option.id" />
+                                    <search-filter-range v-if="filter.value[option.id].type == 'range' && filter.key.selected == option.id" 
+                                        :key="option.id" 
+                                        :filter="filter.value[option.id]"
+                                        :field="option.id" />
+                                </template>
+                            </b-col>
+                        </b-row>
                     </div>
                     <div class="clearfix">
                         <!-- 搜索 -->
@@ -94,7 +94,7 @@
                             <b-button :key="index" 
                                 :size="'sm'" 
                                 :variant="batch.variant" 
-                                @click="batch.click"
+                                @click="batch.click(batch.func)"
                                 v-b-tooltip.hover 
                                 :title="batch.text"
                                 :class="batch.class"
@@ -194,28 +194,25 @@
                     </template>
                 </vue-good-table>
             </div>
-            <action-batch-remove 
-                v-if="functions.indexOf('batchRemove') !== -1" 
-                :modal="showBatchRemoveModal"
+            <action-batch-operate 
+                :modal="showBatchOperateModal"
+                :batchOperate="batchOperate"
                 :selects="selects"
                 @succeed="searchByFilters"
                 @failed="showAlert" />
             <action-batch-edit 
-                v-if="functions.indexOf('batchEdit') !== -1"
                 :modal="showBatchEditModal"
                 :batchEdit="batchEdit"
                 :selects="selects"
                 @succeed="searchByFilters"
                 @failed="showAlert" />
             <action-export 
-                v-if="functions.indexOf('export') !== -1" 
                 :modal="showExportModal"
                 :batchExport="batchExport"
                 :selects="selects"
                 :filter="searchFilters()"
                 @showAlert="showAlert" />
             <action-import 
-                v-if="functions.indexOf('import') !== -1" 
                 :modal="showImportModal"
                 :batchImport="batchImport"
                 :selects="selects"
@@ -234,7 +231,7 @@ import IconCell from '@/components/cell/IconCell.vue'
 import ImageCell from '@/components/cell/ImageCell.vue'
 import LinkCell from '@/components/cell/LinkCell.vue'
 import HtmlCell from '@/components/cell/HtmlCell.vue'
-import ActionBatchRemove from '@/components/action/ActionBatchRemove.vue'
+import ActionBatchOperate from '@/components/action/ActionBatchOperate.vue'
 import ActionBatchEdit from '@/components/action/ActionBatchEdit.vue'
 import ActionExport from '@/components/action/ActionExport.vue'
 import ActionImport from '@/components/action/ActionImport.vue'
@@ -276,7 +273,7 @@ export default {
         'search-filter-text': SearchFilterText,
         'search-filter-select': SearchFilterSelect,
         'search-filter-range': SearchFilterRange,
-        'action-batch-remove': ActionBatchRemove,
+        'action-batch-operate': ActionBatchOperate,
         'action-batch-edit': ActionBatchEdit,
         'action-export': ActionExport,
         'action-import': ActionImport,
@@ -310,7 +307,8 @@ export default {
                             text: this.$t('batch_edit'),
                             icon: 'fa-edit',
                             class: 'batch-edit-btn',
-                            click: this.batchEditClick
+                            click: this.batchEditClick,
+                            func: func
                         });
                         break;
                     case 'batchRemove':
@@ -319,7 +317,18 @@ export default {
                             text: this.$t('batch_remove'),
                             icon: 'fa-trash',
                             class: 'batch-remove-btn',
-                            click: this.batchRemoveClick
+                            click: this.batchOperateClick,
+                            func: func
+                        });
+                        break;
+                    case 'grant':
+                        batches.push({
+                            variant:'outline-danger',
+                            text: this.$t('grant'),
+                            icon: 'fa-certificate',
+                            class: 'batch-remove-btn',
+                            click: this.batchOperateClick,
+                            func: func
                         });
                         break;
                     case 'export':
@@ -328,7 +337,8 @@ export default {
                             text: this.$t('export'),
                             icon: 'fa-download',
                             class: 'batch-export-btn',
-                            click: this.exportClick
+                            click: this.exportClick,
+                            func: func
                         });
                         break;
                     case 'import':
@@ -337,7 +347,8 @@ export default {
                             text: this.$t('import'),
                             icon: 'fa-upload',
                             class: 'batch-import-btn',
-                            click: this.importClick
+                            click: this.importClick,
+                            func: func
                         });
                         break;
                     default:
@@ -357,6 +368,9 @@ export default {
         },
         actions: function() {
             return this.$store.state.list.actions;
+        },
+        batchOperate: function() {
+            return this.$store.state.list.batchOperate;
         },
         batchEdit: function() {
             return this.$store.state.list.batchEdit;
@@ -409,7 +423,7 @@ export default {
     },
     data: function() {
         return {
-            showBatchRemoveModal: {
+            showBatchOperateModal: {
                 show: false
             },
             showBatchEditModal: {
@@ -441,23 +455,49 @@ export default {
         }
     },
     methods: {
-        batchRemoveClick: function() {
+        batchOperateClick: function(func) {
+            console.log(func);
             if (this.checkSelect()) {
-                this.showBatchRemoveModal.show = true;
+                this.$store.dispatch('getBatchGrid', {
+                    url: this.$route.path,
+                    type: 'operate',
+                    func: func
+                }).then(resp => {
+                    this.$store.commit('setBatchOperate', resp.data.data);
+                });
+                this.showBatchOperateModal.show = true;
             }
         },
-        batchEditClick: function() {
+        batchEditClick: function(func) {
             if (this.checkSelect()) {
-                this.$store.dispatch('getBatchGrid', this.$route.path);
+                this.$store.dispatch('getBatchGrid', {
+                    url: this.$route.path,
+                    type: 'edit',
+                    func: func
+                }).then(resp => {
+                    this.$store.commit('setBatchEdit', resp.data.data);
+                });
                 this.showBatchEditModal.show = true;
             }
         },
-        exportClick: function() {
-            this.$store.dispatch('getBatchGrid', this.$route.path);
+        exportClick: function(func) {
+            this.$store.dispatch('getBatchGrid', {
+                    url: this.$route.path,
+                    type: 'export',
+                    func: func
+                }).then(resp => {
+                this.$store.commit('setBatchExport', resp.data.data);
+            });
             this.showExportModal.show = true;
         },
-        importClick: function() {
-            this.$store.dispatch('getBatchGrid', this.$route.path);
+        importClick: function(func) {
+            this.$store.dispatch('getBatchGrid', {
+                    url: this.$route.path,
+                    type: 'import',
+                    func: func
+                }).then(resp => {
+                this.$store.commit('setBatchImport', resp.data.data);
+            });
             this.showImportModal.show = true;
         },
         checkSelect: function() {
@@ -610,7 +650,7 @@ export default {
             filter['type'] = fieldFilter.input.type;
             filter['operator'] = '$eq';
             filter['value'] = text;
-            var operator = fieldFilter.operator.selected.value;
+            var operator = fieldFilter.operator.selected;
             if (operator === 'fuzzy') {
                 filter['operator'] = '$regex';
             } else if (operator === 'separator') {
@@ -629,7 +669,7 @@ export default {
         },
         parseSelectFilter: function(fieldName, fieldFilter) {
             var selected = fieldFilter.select.selected;
-            if (!selected || selected.length === 0) {
+            if (selected == null) {
                 return null;
             }
             var filters = [];
@@ -640,11 +680,11 @@ export default {
                 filter['operator'] = '$in';
                 var selectedValues = [];
                 for (var i in selected) {
-                    selectedValues.push(selected[i].value);
+                    selectedValues.push(i);
                 }
                 filter['value'] = selectedValues;
             } else {
-                filter['value'] = selected.value;
+                filter['value'] = selected;
                 filter['operator'] = '$eq';
             }
             filters.push(filter);
@@ -699,104 +739,5 @@ export default {
 }
 .list-container >>> .vgt-right-align {
     min-width: 130px;
-}
-</style>
-
-
-<style>
-.breadcrumb {
-    padding: 0.75rem 1.25rem!important;
-}
-.card-header-title-container {
-    height: 31px;
-    line-height: 31px;
-    font-size: 17px;
-    font-weight: bold;
-    color: #555;
-}
-.batch-action-btn {
-    line-height: 30px;
-    font-size: 14px;
-}
-.filter-container {
-    margin-bottom: 10px;
-}
-.filter-switch-btn {
-    width: 100%;
-    color: #000!important;
-}
-.filter-toggle {
-    padding: 10px;
-    border: 1px solid #e8e8e8;
-    border-radius: 0.25rem;
-}
-.filter-select-container {
-    padding: 0!important;
-    border: 0!important;
-}
-.filter-select {
-    height: 40px!important;
-}
-.multiselect__tags {
-    height: 40px!important;
-}
-.multiselect__content-wrapper {
-    width: auto!important;
-    min-width: 100%!important;
-}
-.filter-select-right .multiselect__content-wrapper {
-    right: 0;
-}
-.filter-toggle .form-control {
-    height: 40px!important;
-    border: 1px solid #e8e8e8!important;
-}
-.rows-div {
-    font-size: 14px;
-    line-height: 35px;
-    height: 35px;
-}
-.page-link {
-    font-size: 14px;
-}
-.vgt-selection-info-row {
-    display: none!important;
-}
-.vgt-wrap__actions-footer {
-    border: 0px!important;
-    position: relative;
-}
-.vgt-wrap__footer {
-    border-top: 0px!important;
-    padding: .75em!important;
-}
-.vgt-wrap__footer .footer__row-count__select {
-    width: 50px!important;
-    height: 30px!important;
-    line-height: 30px!important;
-}
-.vgt-wrap__footer .footer__navigation__page-info__current-entry {
-    width: 50px!important;
-    margin: 0px!important;
-    height: 30px!important;
-    line-height: 30px!important;
-}
-table.vgt-table {
-    font-size: 14px!important;
-}
-table.vgt-table .vgt-left-align {
-    vertical-align: inherit!important;
-}
-table.vgt-table .sorting {
-    padding-right: 1.5em!important;
-}
-table.vgt-table .vgt-right-align {
-    vertical-align: inherit!important;
-}
-table.vgt-table th {
-    height: 40px;
-}
-.batch-action-btn {
-    margin: 0px!important;
 }
 </style>

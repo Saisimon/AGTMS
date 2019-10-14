@@ -77,4 +77,9 @@ public class ErrorMessage {
 		public static final Result SELECTION_ALREADY_EXISTS = ResultUtils.error(6002, "selection.already.exists");
 	}
 	
+	public static class Role {
+		public static final Result ROLE_NOT_EXIST = ResultUtils.error(7001, "role.not.exist");
+		public static final Result ROLE_ALREADY_EXISTS = ResultUtils.error(7002, "role.already.exists");
+	}
+	
 }

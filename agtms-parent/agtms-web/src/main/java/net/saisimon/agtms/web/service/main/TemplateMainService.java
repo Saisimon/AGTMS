@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.Resource;
@@ -28,6 +28,7 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.RangeFilter;
 import net.saisimon.agtms.core.domain.filter.SelectFilter;
 import net.saisimon.agtms.core.domain.filter.TextFilter;
+import net.saisimon.agtms.core.domain.grid.BatchOperate;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
@@ -81,8 +82,8 @@ public class TemplateMainService extends AbstractMainService {
 	static {
 		TEMPLATE_FILTER_FIELDS.add("path");
 		TEMPLATE_FILTER_FIELDS.add("title");
-		TEMPLATE_FILTER_FIELDS.add("createTime");
-		TEMPLATE_FILTER_FIELDS.add("updateTime");
+		TEMPLATE_FILTER_FIELDS.add(Constant.CREATETIME);
+		TEMPLATE_FILTER_FIELDS.add(Constant.UPDATETIME);
 		TEMPLATE_FILTER_FIELDS.add(Constant.OPERATORID);
 	}
 	
@@ -117,7 +118,11 @@ public class TemplateMainService extends AbstractMainService {
 		Map<String, String> resourceMap = resourceSelection.select();
 		Map<String, String> userMap = userSelection.select();
 		for (Template template : list) {
-			TemplateInfo result = buildTemplateInfo(template);
+			TemplateInfo result = new TemplateInfo();
+			result.setId(template.getId().toString());
+			result.setTitle(template.getTitle());
+			result.setCreateTime(template.getCreateTime());
+			result.setUpdateTime(template.getUpdateTime());
 			String navigation = resourceMap.get(template.getPath());
 			if (SystemUtils.isBlank(navigation)) {
 				navigation = "/";
@@ -134,8 +139,7 @@ public class TemplateMainService extends AbstractMainService {
 	
 	@Transactional(rollbackOn = Exception.class)
 	public Result remove(Long id) {
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		Template template = TemplateUtils.getTemplate(id, userIds);
+		Template template = TemplateUtils.getTemplate(id);
 		if (template == null) {
 			return ErrorMessage.Template.TEMPLATE_NOT_EXIST;
 		}
@@ -147,15 +151,23 @@ public class TemplateMainService extends AbstractMainService {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	public Result batchGrid(String type, String func) {
+		return ResultUtils.simpleSuccess(getBatchGrid(TEMPLATE, type, func));
+	}
+	
 	@Transactional(rollbackOn = Exception.class)
-	public Result batchRemove(List<Long> ids) {
-		if (ids.size() == 0) {
+	public Result batchRemove(Map<String, Object> body) {
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
+		if (CollectionUtils.isEmpty(ids)) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
 		TemplateService templateService = TemplateServiceFactory.get();
-		for (Long id : ids) {
-			Template template = TemplateUtils.getTemplate(id, userIds);
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
+			Template template = TemplateUtils.getTemplate(id);
 			if (template != null) {
 				templateService.delete(template);
 				GenerateServiceFactory.build(template).dropTable();
@@ -167,8 +179,12 @@ public class TemplateMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected Header header(Object key) {
-		return Header.builder().title(messageService.getMessage("template.management")).createUrl("/template/edit").build();
+	protected Header header(Object key, List<Functions> functions) {
+		Header header = Header.builder().title(messageService.getMessage("template.management")).build();
+		if (SystemUtils.hasFunction(Functions.CREATE.getCode(), functions)) {
+			header.setCreateUrl("/template/edit");
+		}
+		return header;
 	}
 
 	@Override
@@ -184,20 +200,23 @@ public class TemplateMainService extends AbstractMainService {
 		List<Column> columns = new ArrayList<>();
 		columns.add(Column.builder().field("navigationName").label(messageService.getMessage("navigation")).views(Views.TEXT.getKey()).width(100).build());
 		columns.add(Column.builder().field("title").label(messageService.getMessage("title")).views(Views.TEXT.getKey()).width(200).build());
-		columns.add(Column.builder().field("functions").label(messageService.getMessage("functions")).views(Views.TEXT.getKey()).width(300).build());
-		columns.add(Column.builder().field("createTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getKey()).width(150).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("updateTime").label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getKey()).width(150).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field(Constant.CREATETIME).label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getKey()).width(150).sortable(true).orderBy("").build());
+		columns.add(Column.builder().field(Constant.UPDATETIME).label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").views(Views.TEXT.getKey()).width(150).sortable(true).orderBy("").build());
 		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
 		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
 		return columns;
 	}
 	
 	@Override
-	protected List<Action> actions(Object key) {
+	protected List<Action> actions(Object key, List<Functions> functions) {
 		List<Action> actions = new ArrayList<>();
 		actions.add(Action.builder().key("view").to("/management/main/").icon("list").text(messageService.getMessage("view")).variant("outline-secondary").type("link").build());
-		actions.add(Action.builder().key("edit").to("/template/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
-		actions.add(Action.builder().key("remove").to("/template/main/remove").icon("trash").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
+			actions.add(Action.builder().key("edit").to("/template/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
+		}
+		if (SystemUtils.hasFunction(Functions.REMOVE.getCode(), functions)) {
+			actions.add(Action.builder().key("remove").to("/template/main/remove").icon("trash").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+		}
 		return actions;
 	}
 	
@@ -208,7 +227,7 @@ public class TemplateMainService extends AbstractMainService {
 		List<String> keyValues = Arrays.asList("path");
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("navigation")));
 		Map<String, FieldFilter> value = new HashMap<>(4);
-		Map<String, String> navigationMap = resourceSelection.selectWithParent(null, Resource.ContentType.NAVIGATION);
+		Map<String, String> navigationMap = resourceSelection.select(null, Resource.ContentType.NAVIGATION, false);
 		List<String> navigationValues = new ArrayList<>(navigationMap.size());
 		List<String> navigationTexts = new ArrayList<>(navigationMap.size());
 		for (Entry<String, String> entry : navigationMap.entrySet()) {
@@ -228,7 +247,7 @@ public class TemplateMainService extends AbstractMainService {
 		filters.add(filter);
 		
 		filter = new Filter();
-		keyValues = Arrays.asList("createTime", "updateTime");
+		keyValues = Arrays.asList(Constant.CREATETIME, Constant.UPDATETIME);
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("create.time", "update.time")));
 		value = new HashMap<>(4);
 		value.put(keyValues.get(0), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
@@ -237,7 +256,7 @@ public class TemplateMainService extends AbstractMainService {
 		filters.add(filter);
 		
 		filter = new Filter();
-		keyValues = Arrays.asList("operatorId");
+		keyValues = Arrays.asList(Constant.OPERATORID);
 		filter.setKey(SingleSelect.select(keyValues.get(0), keyValues, Arrays.asList("operator")));
 		value = new HashMap<>(4);
 		Map<String, String> userMap = userSelection.select();
@@ -255,23 +274,19 @@ public class TemplateMainService extends AbstractMainService {
 	
 	@Override
 	protected List<Functions> functions(Object key) {
-		return SUPPORT_FUNCTIONS;
+		return functions("/template/main", null, SUPPORT_FUNCTIONS);
 	}
 	
-	private TemplateInfo buildTemplateInfo(Template template) {
-		TemplateInfo templateInfo = new TemplateInfo();
-		templateInfo.setId(template.getId().toString());
-		templateInfo.setTitle(template.getTitle());
-		if (template.getFunctions() != null && template.getFunctions() != 0) {
-			List<Functions> funcs = TemplateUtils.getFunctions(template);
-			String functions = funcs.stream().map(func -> {
-				return messageService.getMessage(SystemUtils.humpToCode(func.getFunction(), "."));
-			}).collect(Collectors.joining(", "));
-			templateInfo.setFunctions(functions);
+	@Override
+	protected BatchOperate batchOperate(Object key, String func) {
+		BatchOperate batchOperate = new BatchOperate();
+		switch (func) {
+		case "batchRemove":
+			batchOperate.setPath("/batch/remove");
+			return batchOperate;
+		default:
+			return null;
 		}
-		templateInfo.setCreateTime(template.getCreateTime());
-		templateInfo.setUpdateTime(template.getUpdateTime());
-		return templateInfo;
 	}
 	
 	private void removeDomainClass(Template template) {
@@ -288,7 +303,7 @@ public class TemplateMainService extends AbstractMainService {
 	
 	private void removeResource(Long templateId) {
 		ResourceService resourceService = ResourceServiceFactory.get();
-		Resource resource = resourceService.getResource(templateId, Resource.ContentType.TEMPLATE);
+		Resource resource = resourceService.getResourceByContentIdAndContentType(templateId, Resource.ContentType.TEMPLATE);
 		if (resource != null) {
 			resourceService.delete(resource);
 			removeRoleResource(resource.getId());
@@ -299,5 +314,5 @@ public class TemplateMainService extends AbstractMainService {
 		RoleResourceService roleResourceService = RoleResourceServiceFactory.get();
 		roleResourceService.delete(FilterRequest.build().and("resourceId", resourceId));
 	}
-	
+
 }

@@ -1,7 +1,6 @@
 package net.saisimon.agtms.core.util;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +50,8 @@ public class SelectionUtils {
 	 * @param operatorIds 用户ID集合
 	 * @return 下拉列表对象
 	 */
-	public static Selection getSelection(Object key, Collection<Long> operatorIds) {
-		if (key == null || CollectionUtils.isEmpty(operatorIds)) {
+	public static Selection getSelection(Object key) {
+		if (key == null) {
 			return null;
 		}
 		String sign = key.toString();
@@ -63,11 +62,7 @@ public class SelectionUtils {
 		if (!optional.isPresent()) {
 			return null;
 		}
-		Selection selection = optional.get();
-		if (operatorIds.contains(selection.getOperatorId())) {
-			return selection;
-		}
-		return null;
+		return optional.get();
 	}
 	
 	/**
@@ -100,8 +95,8 @@ public class SelectionUtils {
 	 * @param values 下拉列表选项值集合
 	 * @return 下拉列表的选项映射，key为选项值，value为选项名称
 	 */
-	public static Map<String, String> getSelectionValueTextMap(String sign, Set<String> values, Collection<Long> operatorIds) {
-		return getSelectionMap(sign, values, true, operatorIds);
+	public static Map<String, String> getSelectionValueTextMap(String sign, Set<String> values) {
+		return getSelectionMap(sign, values, true);
 	}
 	
 	/**
@@ -112,8 +107,8 @@ public class SelectionUtils {
 	 * @param texts 下拉列表选项名称集合
 	 * @return 下拉列表的选项映射，key为选项名称，value为选项值
 	 */
-	public static Map<String, String> getSelectionTextValueMap(String sign, Set<String> texts, Collection<Long> operatorIds) {
-		return getSelectionMap(sign, texts, false, operatorIds);
+	public static Map<String, String> getSelectionTextValueMap(String sign, Set<String> texts) {
+		return getSelectionMap(sign, texts, false);
 	}
 	
 	/**
@@ -124,9 +119,9 @@ public class SelectionUtils {
 	 * @param operatorId 用户ID
 	 * @return
 	 */
-	public static List<Option<Object>> getSelectionOptions(String sign, String keyword, Collection<Long> operatorIds) {
+	public static List<Option<Object>> getSelectionOptions(String sign, String keyword) {
 		List<Option<Object>> options = new ArrayList<>();
-		Selection selection = getSelection(sign, operatorIds);
+		Selection selection = getSelection(sign);
 		if (selection == null) {
 			return options;
 		}
@@ -139,7 +134,7 @@ public class SelectionUtils {
 			}
 		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
 			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection);
-			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorIds);
+			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId());
 			if (template == null) {
 				return options;
 			}
@@ -172,12 +167,12 @@ public class SelectionUtils {
 		return options;
 	}
 	
-	private static Map<String, String> getSelectionMap(String sign, Set<String> values, boolean valueKey, Collection<Long> operatorIds) {
+	private static Map<String, String> getSelectionMap(String sign, Set<String> values, boolean valueKey) {
 		Map<String, String> selectionMap = MapUtil.newHashMap();
 		if (CollectionUtils.isEmpty(values)) {
 			return selectionMap;
 		}
-		Selection selection = getSelection(sign, operatorIds);
+		Selection selection = getSelection(sign);
 		if (selection == null) {
 			return selectionMap;
 		}
@@ -196,7 +191,7 @@ public class SelectionUtils {
 			}
 		} else if (SelectTypes.TEMPLATE.getType().equals(selection.getType())) {
 			SelectionTemplate selectionTemplate = selectionService.getSelectionTemplate(selection);
-			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId(), operatorIds);
+			Template template = TemplateUtils.getTemplate(selectionTemplate.getTemplateId());
 			FilterRequest filter = FilterRequest.build();
 			if (valueKey) {
 				if (values.size() == 1) {

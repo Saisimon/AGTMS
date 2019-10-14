@@ -25,11 +25,13 @@ public class Select<T> implements Cloneable {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		Select<T> filterSelect = (Select<T>) super.clone();
-		List<Option<T>> cloneOptions = new ArrayList<>();
-		for (Option<T> option : options) {
-			cloneOptions.add((Option<T>) option.clone());
+		if (this.options != null) {
+			List<Option<T>> cloneOptions = new ArrayList<>();
+			for (Option<T> option : this.options) {
+				cloneOptions.add((Option<T>) option.clone());
+			}
+			filterSelect.options = cloneOptions;
 		}
-		filterSelect.options = cloneOptions;
 		return filterSelect;
 	}
 	
@@ -43,31 +45,6 @@ public class Select<T> implements Cloneable {
 			options.add(option);
 		}
 		return options;
-	}
-	
-	public static <T> Option<T> getOption(List<Option<T>> options, T key) {
-		if (key == null) {
-			return null;
-		}
-		for (Option<T> option : options) {
-			if (key.equals(option.getValue())) {
-				return option;
-			}
-		}
-		return null;
-	}
-	
-	public static <T> List<Option<T>> getOption(List<Option<T>> options, List<T> keys) {
-		if (keys == null) {
-			return null;
-		}
-		List<Option<T>> selected = new ArrayList<>();
-		for (Option<T> option : options) {
-			if (keys.contains(option.getValue())) {
-				selected.add(option);
-			}
-		}
-		return selected;
 	}
 	
 }

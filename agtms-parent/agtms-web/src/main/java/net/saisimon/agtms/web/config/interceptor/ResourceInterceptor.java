@@ -2,7 +2,7 @@ package net.saisimon.agtms.web.config.interceptor;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Set;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,12 +15,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import net.saisimon.agtms.core.annotation.ControllerInfo;
 import net.saisimon.agtms.core.annotation.ResourceInfo;
 import net.saisimon.agtms.core.domain.entity.Resource;
-import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
-import net.saisimon.agtms.core.util.TemplateUtils;
 import net.saisimon.agtms.web.service.common.MessageService;
 import net.saisimon.agtms.web.service.common.PremissionService;
 
@@ -55,16 +53,20 @@ public class ResourceInterceptor implements HandlerInterceptor {
 		if (controllerInfo == null || SystemUtils.isBlank(controllerInfo.link())) {
 			return true;
 		}
-		Set<Long> ownResourceIds = premissionService.getResourceIds(AuthUtils.getUid());
-		if (CollectionUtils.isEmpty(ownResourceIds)) {
+		Map<Long, Integer> ownRoleResourceMap = premissionService.getRoleResourceMap(AuthUtils.getUid());
+		if (CollectionUtils.isEmpty(ownRoleResourceMap)) {
 			return false;
 		}
-		Resource resource = getResource(controllerInfo.link(), parseUri(request, controllerInfo));
-		if (resource == null || !ownResourceIds.contains(resource.getId())) {
+		Resource resource = ResourceServiceFactory.get().getResourceByLinkAndContentId(controllerInfo.link(), parseUri(request, controllerInfo));
+		if (resource == null) {
+			return false;
+		}
+		Integer ownFunc = ownRoleResourceMap.get(resource.getId());
+		if (ownFunc == null) {
 			return false;
 		}
 		for (Functions func : resourceInfo.func()) {
-			if (TemplateUtils.hasFunction(resource.getFunctions(), func)) {
+			if (SystemUtils.hasFunction(ownFunc, func)) {
 				return true;
 			}
 		}
@@ -95,11 +97,6 @@ public class ResourceInterceptor implements HandlerInterceptor {
 		try (PrintWriter out = response.getWriter()) {
 			out.append("{'code': 403, 'message': '" + message + "'}");
 		}
-	}
-	
-	private Resource getResource(String link, Long contentId) {
-		FilterRequest filter = FilterRequest.build().and("link", link).and("contentId", contentId);
-		return ResourceServiceFactory.get().findOne(filter).orElse(null);
 	}
 	
 }
