@@ -150,8 +150,7 @@ public class SelectionEditService {
 		if (body.getTitle().length() > 32) {
 			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(messageService.getMessage("title"), 32);
 		}
-		Long userId = AuthUtils.getUid();
-		Result buildResult = buildSelection(body, userId);
+		Result buildResult = buildSelection(body, AuthUtils.getUid());
 		if (!ResultUtils.isSuccess(buildResult)) {
 			return buildResult;
 		}
@@ -161,7 +160,7 @@ public class SelectionEditService {
 		if (type == SelectTypes.OPTION) {
 			return saveSelectionOptions(body.getOptions(), selection);
 		} else if (type == SelectTypes.TEMPLATE) {
-			return saveSelectionTemplate(body.getTemplate(), selection, userId);
+			return saveSelectionTemplate(body.getTemplate(), selection);
 		} else {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
@@ -222,7 +221,7 @@ public class SelectionEditService {
 		return ResultUtils.simpleSuccess();
 	}
 
-	private Result saveSelectionTemplate(SelectionTemplateParam body, Selection selection, Long userId) {
+	private Result saveSelectionTemplate(SelectionTemplateParam body, Selection selection) {
 		if (body == null) {
 			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
 		}
