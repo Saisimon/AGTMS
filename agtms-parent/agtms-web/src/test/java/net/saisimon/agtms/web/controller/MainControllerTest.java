@@ -195,7 +195,49 @@ public class MainControllerTest extends AbstractControllerTest {
 		
 		testToken = login("editor", "editor");
 	}
+	
+	@Test
+	public void testUserMainBatchGrid() throws Exception {
+		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		sendPost(String.format("/user/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "grant"), null, null, adminToken);
+		
+		UserToken testToken = login("editor", "editor");
+		sendPost(String.format("/user/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "grant"), null, null, testToken, status().isForbidden());
+	}
 	/* UserMainController End */
+	
+	/* RoleMainController Start */
+	@Test
+	public void testRoleMainGrid() throws Exception {
+		UserToken testToken = login("editor", "editor");
+		sendPost("/role/main/grid", null, testToken, status().isForbidden());
+		
+		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		sendPost("/role/main/grid", null, adminToken);
+	}
+	
+	@Test
+	public void testRoleMainList() throws Exception {
+		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		Map<String, String> param = new HashMap<>();
+		param.put("index", "0");
+		param.put("size", "10");
+		param.put("sort", "");
+		Map<String, Object> body = new HashMap<>();
+		sendPost("/role/main/list", param, body, adminToken);
+	}
+	
+	@Test
+	public void testRoleMainBatchGrid() throws Exception {
+		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		sendPost(String.format("/role/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "batchRemove"), null, null, adminToken);
+		sendPost(String.format("/role/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "grant"), null, null, adminToken);
+		
+		UserToken testToken = login("editor", "editor");
+		sendPost(String.format("/role/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "batchRemove"), null, null, testToken, status().isForbidden());
+		sendPost(String.format("/role/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "grant"), null, null, testToken, status().isForbidden());
+	}
+	/* RoleMainController End */
 	
 	/* NavigationMainController Start */
 	@Test
@@ -228,7 +270,7 @@ public class MainControllerTest extends AbstractControllerTest {
 	public void testNavigationMainBatchGrid() throws Exception {
 		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
 		sendPost(String.format("/navigation/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "batchRemove"), null, null, adminToken);
-		sendPost(String.format("/user/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "grant"), null, null, adminToken);
+		sendPost(String.format("/navigation/main/batch/grid?type=%s&func=%s", Constant.Batch.EDIT, "batchEdit"), null, null, adminToken);
 		
 		UserToken testToken = login("editor", "editor");
 		sendPost(String.format("/navigation/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "batchRemove"), null, null, testToken);

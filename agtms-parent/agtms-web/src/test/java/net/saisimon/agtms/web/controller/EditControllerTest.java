@@ -28,6 +28,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.domain.entity.Resource;
+import net.saisimon.agtms.core.domain.entity.Role;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateColumn;
 import net.saisimon.agtms.core.domain.entity.Template.TemplateField;
@@ -37,6 +39,7 @@ import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.dto.PageResult;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.FileTypes;
+import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
@@ -56,6 +59,7 @@ import net.saisimon.agtms.web.config.runner.InitRunner;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.ExportParam;
 import net.saisimon.agtms.web.dto.req.NavigationParam;
+import net.saisimon.agtms.web.dto.req.RoleParam;
 import net.saisimon.agtms.web.dto.req.SelectionParam;
 import net.saisimon.agtms.web.dto.req.SelectionParam.SelectionOptionParam;
 import net.saisimon.agtms.web.dto.req.SelectionParam.SelectionTemplateParam;
@@ -184,7 +188,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/user/edit/save", body, adminToken);
 		
 		body = new UserParam();
-		body.setId(10L);
+		body.setId(1000L);
 		body.setLoginName("saisimon");
 		body.setCellphone("13888888888");
 		body.setEmail("saisimon@saisimon.net");
@@ -215,6 +219,167 @@ public class EditControllerTest extends AbstractControllerTest {
 		sendPost("/user/edit/save", body, adminToken);
 	}
 	/* UserEditController End */
+	
+	/* RoleEditController Start */
+	@Test
+	public void testRoleEditGrid() throws Exception {
+		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		sendPost("/role/edit/grid", null, adminToken);
+		
+		Map<String, String> param = new HashMap<>();
+		param.put("id", "1000");
+		sendPost("/role/edit/grid", param, adminToken, ErrorMessage.Role.ROLE_NOT_EXIST.getCode());
+	}
+	
+	@Test
+	public void testRoleEditSave() throws Exception {
+		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		RoleParam roleParam = new RoleParam();
+		sendPost("/role/edit/save", roleParam, adminToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		roleParam = new RoleParam();
+		roleParam.setName(buildString(33));
+		roleParam.setPath("");
+		roleParam.setRemark("Test role");
+		roleParam.setResources(Arrays.asList());
+		sendPost("/role/edit/save", roleParam, adminToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
+		
+		roleParam = new RoleParam();
+		roleParam.setName("Test role");
+		roleParam.setPath("");
+		roleParam.setRemark(buildString(513));
+		roleParam.setResources(Arrays.asList());
+		sendPost("/role/edit/save", roleParam, adminToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
+		
+		roleParam = new RoleParam();
+		roleParam.setName("Test role");
+		roleParam.setPath("/1000");
+		roleParam.setRemark("Test role");
+		roleParam.setResources(Arrays.asList());
+		sendPost("/role/edit/save", roleParam, adminToken, ErrorMessage.Common.PARAM_ERROR.getCode());
+		
+		Role editorRole = RoleServiceFactory.get().getRole("template.editor", Constant.SYSTEM_OPERATORID);
+		Resource systemModuleResource = ResourceServiceFactory.get().getResourceByNameAndOperatorId("system.module", Constant.SYSTEM_OPERATORID);
+		Resource navigationManagementResource = ResourceServiceFactory.get().getResourceByNameAndOperatorId("navigation.management", Constant.SYSTEM_OPERATORID);
+		Resource operationManagementResource = ResourceServiceFactory.get().getResourceByNameAndOperatorId("operation.management", Constant.SYSTEM_OPERATORID);
+		
+		String editorRolePath = editorRole.getPath() + "/" + editorRole.getId();
+		String navigationResourcePath = getPath(navigationManagementResource);
+		List<String> resources = new ArrayList<>(Arrays.asList(
+				getPath(systemModuleResource), 
+				navigationResourcePath + ":" + Functions.VIEW.getCode(), 
+				navigationResourcePath + ":" + Functions.CREATE.getCode(), 
+				getPath(operationManagementResource)));
+		
+		roleParam = new RoleParam();
+		roleParam.setName("Test role");
+		roleParam.setPath(editorRolePath);
+		roleParam.setRemark("Test role");
+		roleParam.setResources(resources);
+		sendPost("/role/edit/save", roleParam, adminToken);
+		
+		roleParam = new RoleParam();
+		roleParam.setName("Test role");
+		roleParam.setPath(editorRolePath);
+		roleParam.setRemark("Test role");
+		roleParam.setResources(resources);
+		sendPost("/role/edit/save", roleParam, adminToken, ErrorMessage.Role.ROLE_ALREADY_EXISTS.getCode());
+		
+		Role newRole = RoleServiceFactory.get().findOne(FilterRequest.build(), FilterSort.build(Constant.ID, Direction.DESC)).get();
+		
+		Map<String, String> param = new HashMap<>();
+		param.put("id", newRole.getId().toString());
+		sendPost("/role/edit/grid", param, adminToken);
+		
+		param = new HashMap<>();
+		param.put("id", "-10");
+		sendPost("/role/main/remove", param, adminToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		param = new HashMap<>();
+		param.put("id", "1000");
+		sendPost("/role/main/remove", param, adminToken, ErrorMessage.Role.ROLE_NOT_EXIST.getCode());
+		
+		param = new HashMap<>();
+		param.put("id", newRole.getId().toString());
+		sendPost("/role/main/remove", param, adminToken);
+		
+		roleParam = new RoleParam();
+		roleParam.setName("Test role");
+		roleParam.setPath(editorRolePath);
+		roleParam.setRemark("Test role");
+		roleParam.setResources(resources);
+		sendPost("/role/edit/save", roleParam, adminToken);
+		
+		newRole = RoleServiceFactory.get().findOne(FilterRequest.build(), FilterSort.build(Constant.ID, Direction.DESC)).get();
+		
+		UserParam userParam = new UserParam();
+		userParam.setLoginName("test");
+		userParam.setCellphone("13200000000");
+		userParam.setEmail("test@test.com");
+		userParam.setNickname("Test");
+		userParam.setPassword("test");
+		roleParam.setRemark("Test");
+		sendPost("/user/edit/save", userParam, adminToken);
+		
+		UserToken testToken = login("test", "test");
+		Map<String, Object> map = new HashMap<>();
+		map.put("ids", Arrays.asList(testToken.getUserId()));
+		map.put("roles", Arrays.asList(newRole.getPath() + "/" + newRole.getId()));
+		sendPost("/user/main/grant", map, adminToken);
+		
+		param = new HashMap<>();
+		param.put("index", "0");
+		param.put("size", "10");
+		Map<String, Object> body = new HashMap<>();
+		sendPost("/navigation/main/list", param, body, testToken);
+		
+		sendPost(String.format("/navigation/main/batch/grid?type=%s&func=%s", Constant.Batch.EDIT, "batchEdit"), null, null, testToken, status().isForbidden());
+		
+		roleParam = new RoleParam();
+		roleParam.setId(1000L);
+		roleParam.setName("Test role");
+		roleParam.setPath(editorRolePath);
+		roleParam.setRemark("Test role");
+		roleParam.setResources(resources);
+		sendPost("/role/edit/save", roleParam, adminToken, ErrorMessage.Role.ROLE_NOT_EXIST.getCode());
+		
+		resources.add(navigationResourcePath + ":" + Functions.BATCH_EDIT.getCode());
+		
+		roleParam = new RoleParam();
+		roleParam.setId(newRole.getId());
+		roleParam.setName("Test change");
+		roleParam.setPath(editorRolePath);
+		roleParam.setRemark("Test role change");
+		roleParam.setResources(resources);
+		sendPost("/role/edit/save", roleParam, adminToken);
+		
+		sendPost(String.format("/navigation/main/batch/grid?type=%s&func=%s", Constant.Batch.EDIT, "batchEdit"), null, null, testToken);
+		
+		resources.remove(navigationResourcePath + ":" + Functions.BATCH_EDIT.getCode());
+		body = new HashMap<>();
+		body.put("ids", Arrays.asList(newRole.getId()));
+		body.put("resources", resources);
+		sendPost("/role/main/grant", body, adminToken);
+		
+		sendPost(String.format("/navigation/main/batch/grid?type=%s&func=%s", Constant.Batch.EDIT, "batchEdit"), null, null, testToken, status().isForbidden());
+		
+		body = new HashMap<>();
+		sendPost("/role/main/batch/remove", body, adminToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		List<String> ids = new ArrayList<>();
+		ids.add(newRole.getId().toString());
+		ids.add("1000");
+		body.put("ids", ids);
+		sendPost("/role/main/batch/remove", body, adminToken);
+		
+		param = new HashMap<>();
+		param.put("index", "0");
+		param.put("size", "10");
+		body = new HashMap<>();
+		sendPost("/navigation/main/list", param, body, testToken, status().isForbidden());
+	}
+	
+	/* RoleEditController End */
 	
 	/* NavigationEditController Start */
 	@Test
@@ -959,6 +1124,10 @@ public class EditControllerTest extends AbstractControllerTest {
 			params.add(param);
 		}
 		return params;
+	}
+	
+	private String getPath(Resource resource) {
+		return resource.getPath() + "/" + resource.getId();
 	}
 	
 	@SpringBootApplication
