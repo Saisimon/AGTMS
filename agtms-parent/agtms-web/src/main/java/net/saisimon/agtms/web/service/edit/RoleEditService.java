@@ -168,14 +168,15 @@ public class RoleEditService extends AbstractEditService<Role> {
 		Long userId = AuthUtils.getUid();
 		Set<Long> userIds = premissionService.getUserIds(userId);
 		if (roleService.exists(null, body.getName(), userIds)) {
-			return ErrorMessage.User.ACCOUNT_ALREADY_EXISTS;
+			return ErrorMessage.Role.ROLE_ALREADY_EXISTS;
 		}
+		userIds.add(Constant.SYSTEM_OPERATORID);
 		List<Role> roles = roleService.getRoles(null, userIds);
 		if (!validatePath(body.getPath(), roles)) {
 			return ErrorMessage.Common.PARAM_ERROR;
 		}
 		if (!checkDepth(body.getPath())) {
-			Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
+			Result result = ErrorMessage.Role.ROLE_MAX_DEPTH_LIMIT;
 			result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
 			return result;
 		}
@@ -201,17 +202,18 @@ public class RoleEditService extends AbstractEditService<Role> {
 		Long userId = AuthUtils.getUid();
 		Set<Long> userIds = premissionService.getUserIds(userId);
 		if (roleService.exists(body.getId(), body.getName(), userIds)) {
-			return ErrorMessage.User.ACCOUNT_ALREADY_EXISTS;
+			return ErrorMessage.Role.ROLE_ALREADY_EXISTS;
 		}
 		if (body.getPath().equals(oldRole.getPath() + "/" + oldRole.getId())) {
 			return ErrorMessage.Common.PARAM_ERROR;
 		}
+		userIds.add(Constant.SYSTEM_OPERATORID);
 		List<Role> roles = roleService.getRoles(oldRole.getPath() + "/" + oldRole.getId(), userIds);
 		if (!validatePath(body.getPath(), roles)) {
 			return ErrorMessage.Common.PARAM_ERROR;
 		}
 		if (!checkDepth(body.getPath())) {
-			Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
+			Result result = ErrorMessage.Role.ROLE_MAX_DEPTH_LIMIT;
 			result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
 			return result;
 		}
