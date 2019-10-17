@@ -29,7 +29,7 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
 import net.saisimon.agtms.core.factory.RoleServiceFactory;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.core.service.ResourceService;
 import net.saisimon.agtms.core.service.RoleService;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -62,7 +62,7 @@ public class RoleEditService extends AbstractEditService<Role> {
 	@Autowired
 	private PremissionService premissionService;
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private BasicProperties basicProperties;
 	
 	public Result grid(Long id) {
 		Role role = null;
@@ -177,7 +177,7 @@ public class RoleEditService extends AbstractEditService<Role> {
 		}
 		if (!checkDepth(body.getPath())) {
 			Result result = ErrorMessage.Role.ROLE_MAX_DEPTH_LIMIT;
-			result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
+			result.setMessageArgs(new Object[]{ basicProperties.getMaxDepth() });
 			return result;
 		}
 		Date time = new Date();
@@ -214,7 +214,7 @@ public class RoleEditService extends AbstractEditService<Role> {
 		}
 		if (!checkDepth(body.getPath())) {
 			Result result = ErrorMessage.Role.ROLE_MAX_DEPTH_LIMIT;
-			result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
+			result.setMessageArgs(new Object[]{ basicProperties.getMaxDepth() });
 			return result;
 		}
 		oldRole.setName(body.getName());
@@ -243,7 +243,7 @@ public class RoleEditService extends AbstractEditService<Role> {
 			return true;
 		}
 		String[] strs = path.split("/");
-		return strs.length <= agtmsProperties.getMaxDepth();
+		return strs.length <= basicProperties.getMaxDepth();
 	}
 	
 }

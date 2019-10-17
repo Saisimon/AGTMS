@@ -29,7 +29,7 @@ import net.saisimon.agtms.core.exception.AgtmsException;
 import net.saisimon.agtms.core.factory.EncryptorFactory;
 import net.saisimon.agtms.core.factory.FieldHandlerFactory;
 import net.saisimon.agtms.core.handler.FieldHandler;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.EncryptorProperties;
 import net.saisimon.agtms.core.spring.SpringContext;
 
 /**
@@ -238,8 +238,8 @@ public class DomainUtils {
 		if (val == null) {
 			return val;
 		}
-		AgtmsProperties agtmsProperties = SpringContext.getBean("agtmsProperties", AgtmsProperties.class);
-		Encryptor encryptor = EncryptorFactory.get(agtmsProperties.getEncryptorAlgorithm());
+		EncryptorProperties encryptorProperties = SpringContext.getBean("encryptorProperties", EncryptorProperties.class);
+		Encryptor encryptor = EncryptorFactory.get(encryptorProperties.getAlgorithm());
 		if (encryptor == null) {
 			return val;
 		}

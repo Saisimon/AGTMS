@@ -24,7 +24,7 @@ import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
 import net.saisimon.agtms.core.factory.RoleServiceFactory;
 import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.AccountProperties;
 import net.saisimon.agtms.core.service.ResourceService;
 import net.saisimon.agtms.core.service.RoleResourceService;
 import net.saisimon.agtms.core.service.RoleService;
@@ -50,11 +50,8 @@ import net.saisimon.agtms.web.service.main.UserMainService;
 @Component
 public class InitRunner implements CommandLineRunner {
 	
-	private static final String EDITOR_USERNAME = "editor";
-	private static final String EDITOR_PASSWORD = "editor";
-	
-	private static final String ADMIN_ROLE_NAME = "system.admin";
-	private static final String EDITOR_ROLE_NAME = "template.editor";
+	public static final String ADMIN_ROLE_NAME = "system.admin";
+	public static final String EDITOR_ROLE_NAME = "template.editor";
 	
 	public static final Map<String, List<Functions>> FUNCTION_MAP = new HashMap<>();
 	static {
@@ -69,7 +66,7 @@ public class InitRunner implements CommandLineRunner {
 	}
 	
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private AccountProperties accountProperties;
 
 	@Override
 	@Transactional(rollbackOn=Exception.class)
@@ -89,7 +86,7 @@ public class InitRunner implements CommandLineRunner {
 		buildRoleResource(adminRole, userModuleResource);
 		buildRoleResource(adminRole, userManagementResource);
 		buildRoleResource(adminRole, roleManagementResource);
-		User adminUser = buildAdminUser();
+		User adminUser = buildUser(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
 		buildUserRole(adminUser, adminRole);
 		
 		Role editorRole = buildRole(EDITOR_ROLE_NAME, adminRole);
@@ -99,7 +96,7 @@ public class InitRunner implements CommandLineRunner {
 		buildRoleResource(editorRole, selectionManagementResource);
 		buildRoleResource(editorRole, taskManagementResource);
 		buildRoleResource(editorRole, operationManagementResource);
-		User editorUser = buildUser(EDITOR_USERNAME, EDITOR_PASSWORD);
+		User editorUser = buildUser(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
 		buildUserRole(editorUser, editorRole);
 	}
 	
@@ -173,27 +170,6 @@ public class InitRunner implements CommandLineRunner {
 		role.setRemark(name);
 		roleService.saveOrUpdate(role);
 		return role;
-	}
-	
-	private User buildAdminUser() {
-		UserService userService = UserServiceFactory.get();
-		User user = userService.getUserByLoginNameOrEmail(agtmsProperties.getAdminUsername(), null);
-		if (user != null) {
-			return user;
-		}
-		user = new User();
-		user.setLoginName(agtmsProperties.getAdminUsername());
-		String salt = AuthUtils.createSalt();
-		String hmacPwd = AuthUtils.hmac(agtmsProperties.getAdminPassword(), salt);
-		Date time = new Date();
-		user.setNickname(agtmsProperties.getAdminUsername());
-		user.setCreateTime(time);
-		user.setUpdateTime(time);
-		user.setSalt(salt);
-		user.setPassword(hmacPwd);
-		user.setStatus(UserStatuses.NORMAL.getStatus());
-		userService.saveOrUpdate(user);
-		return user;
 	}
 	
 	private User buildUser(String name, String password) {

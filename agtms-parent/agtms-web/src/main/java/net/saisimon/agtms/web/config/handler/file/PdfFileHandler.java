@@ -16,14 +16,14 @@ import org.springframework.web.multipart.MultipartFile;
 import freemarker.template.TemplateException;
 import net.saisimon.agtms.core.enums.FileTypes;
 import net.saisimon.agtms.core.handler.FileHandler;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.web.util.FileUtils;
 
 @Component
 public class PdfFileHandler implements FileHandler {
 	
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private BasicProperties basicProperties;
 	
 	private static String fontPath = null;
 
@@ -31,7 +31,7 @@ public class PdfFileHandler implements FileHandler {
 	public void populate(File file, List<List<Object>> datas) throws IOException {
 		try (OutputStream out = new FileOutputStream(file)) {
 			try {
-				FileUtils.toPDF(out, handleDatas(datas), getFont(), agtmsProperties.getPdfFontFamily());
+				FileUtils.toPDF(out, handleDatas(datas), getFont(), basicProperties.getPdfFontFamily());
 			} catch (TemplateException e) {
 				throw new IOException("Freemarker 模板解析错误", e);
 			}
@@ -62,7 +62,7 @@ public class PdfFileHandler implements FileHandler {
 		if (fontPath != null) {
 			return fontPath;
 		}
-		String path = agtmsProperties.getPdfFontPath();
+		String path = basicProperties.getPdfFontPath();
 		if (path != null && new File(path).exists()) {
 			fontPath = path;
 			return fontPath;

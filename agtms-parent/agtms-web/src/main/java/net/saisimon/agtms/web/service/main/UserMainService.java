@@ -46,7 +46,7 @@ import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.AccountProperties;
 import net.saisimon.agtms.core.service.UserRoleService;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -94,7 +94,7 @@ public class UserMainService extends AbstractMainService {
 	@Autowired
 	private UserStatusSelection userStatusSelection;
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private AccountProperties accountProperties;
 	@Autowired
 	private RoleSelection roleSelection;
 	
@@ -179,7 +179,7 @@ public class UserMainService extends AbstractMainService {
 			return ErrorMessage.User.ACCOUNT_NOT_EXIST;
 		}
 		User user = optional.get();
-		String hmacPassword = AuthUtils.hmac(agtmsProperties.getResetPassword(), user.getSalt());
+		String hmacPassword = AuthUtils.hmac(accountProperties.getResetPassword(), user.getSalt());
 		user.setPassword(hmacPassword);
 		user.setStatus(UserStatuses.CREATED.getStatus());
 		userService.saveOrUpdate(user);

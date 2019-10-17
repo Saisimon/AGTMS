@@ -72,7 +72,7 @@ import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
 import net.saisimon.agtms.core.handler.FileHandler;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.core.service.ResourceService;
 import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.task.Actuator;
@@ -116,7 +116,7 @@ public class ManagementMainService extends AbstractMainService {
 	@Autowired
 	private SchedulingTaskExecutor taskThreadPool;
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private BasicProperties basicProperties;
 	@Autowired
 	private PremissionService premissionService;
 	@Autowired
@@ -269,9 +269,9 @@ public class ManagementMainService extends AbstractMainService {
 	}
 	
 	public Result batchImport(String key, String importFileName, String importFileType, List<String> importFields, MultipartFile[] importFiles) {
-		if (importFiles.length > agtmsProperties.getImportFileMaxSize()) {
+		if (importFiles.length > basicProperties.getImportFileMaxSize()) {
 			Result result = ErrorMessage.Task.Import.TASK_IMPORT_FILE_MAX_SIZE_LIMIT;
-			result.setMessageArgs(new Object[]{ agtmsProperties.getImportFileMaxSize() });
+			result.setMessageArgs(new Object[]{ basicProperties.getImportFileMaxSize() });
 			return result;
 		}
 		Template template = TemplateUtils.getTemplate(key);
@@ -689,9 +689,9 @@ public class ManagementMainService extends AbstractMainService {
 			if (size == 0) {
 				return ErrorMessage.Task.Import.TASK_IMPORT_SIZE_EMPTY;
 			}
-			if (size > agtmsProperties.getImportRowsMaxSize()) {
+			if (size > basicProperties.getImportRowsMaxSize()) {
 				Result result = ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT;
-				result.setMessageArgs(new Object[]{ agtmsProperties.getImportRowsMaxSize() });
+				result.setMessageArgs(new Object[]{ basicProperties.getImportRowsMaxSize() });
 				return result;
 			}
 			IOUtils.copy(importFile.getInputStream(), output);
@@ -715,7 +715,7 @@ public class ManagementMainService extends AbstractMainService {
 	
 	private File createImportFile(ImportParam param) throws IOException {
 		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(agtmsProperties.getFilepath())
+		importFilePath.append(basicProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId());
 		return FileUtils.createFile(importFilePath.toString(), param.getUuid(), "." + param.getImportFileType());

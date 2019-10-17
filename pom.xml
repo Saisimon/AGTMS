@@ -23,6 +23,7 @@
 		<commons-beanutils.version>1.9.3</commons-beanutils.version>
 		<hutool.version>4.1.21</hutool.version>
 		<opencsv.version>4.6</opencsv.version>
+		<aliyun-sdk-oss.version>3.6.0</aliyun-sdk-oss.version>
 		<sharding-sphere.version>4.0.0-RC2</sharding-sphere.version>
 		<!-- <sharding-sphere.version>4.0.0-RC3-SNAPSHOT</sharding-sphere.version> -->
 		<curator.version>4.0.1</curator.version>
@@ -135,6 +136,11 @@
 				<groupId>com.opencsv</groupId>
 				<artifactId>opencsv</artifactId>
 				<version>${opencsv.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.aliyun.oss</groupId>
+				<artifactId>aliyun-sdk-oss</artifactId>
+				<version>${aliyun-sdk-oss.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>mysql</groupId>

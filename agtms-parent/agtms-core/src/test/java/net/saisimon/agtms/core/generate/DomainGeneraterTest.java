@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.exception.GenerateException;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 
 @RunWith(SpringRunner.class)
 public class DomainGeneraterTest {
@@ -76,7 +76,7 @@ public class DomainGeneraterTest {
 		
 		@Bean
 		public DomainGenerater domainGenerater() {
-			return new DomainGenerater(new AgtmsProperties());
+			return new DomainGenerater(new BasicProperties());
 		}
 		
 	}

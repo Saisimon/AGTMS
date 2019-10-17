@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import net.saisimon.agtms.core.encrypt.Encryptor;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.EncryptorProperties;
 import net.saisimon.agtms.core.util.AuthUtils;
 
 /**
@@ -17,7 +17,7 @@ import net.saisimon.agtms.core.util.AuthUtils;
 public class AESEncryptor implements Encryptor {
 	
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private EncryptorProperties encryptorProperties;
 	
 	@Override
 	public String algorithm() {
@@ -29,7 +29,7 @@ public class AESEncryptor implements Encryptor {
 		if (text == null) {
 			return null;
 		}
-		return AuthUtils.aesEncrypt(text, agtmsProperties.getEncryptorKey());
+		return AuthUtils.aesEncrypt(text, encryptorProperties.getSecret());
 	}
 
 	@Override
@@ -37,7 +37,7 @@ public class AESEncryptor implements Encryptor {
 		if (ciphertext == null) {
 			return null;
 		}
-		return AuthUtils.aesDecrypt(ciphertext, agtmsProperties.getEncryptorKey());
+		return AuthUtils.aesDecrypt(ciphertext, encryptorProperties.getSecret());
 	}
 
 }

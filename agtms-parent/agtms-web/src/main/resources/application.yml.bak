@@ -235,18 +235,27 @@ logging:
   file: ${user.dir}/data/web/logs/agtms-web.log
 
 agtms:
-  file-path: /tmp/files
-  generate-classpath: /tmp/classes
-  admin-username: admin
-  admin-password: 123456
-  reset-password: 123456
-  task-max-size: 1024
-  export-rows-max-size: 65535
-  import-rows-max-size: 65535
-  import-file-max-size: 10
-  max-depth: 3
-  exclude-services: agtms-admin, agtms-web, agtms-zuul
-  encryptor-algorithm: aes
-  encryptor-key: agtms
-  pdf-font-family: Arial Unicode MS
-  pdf-font-path: 
+  basic:
+    file-path: /tmp/files
+    generate-classpath: /tmp/classes
+    task-max-size: 1024
+    export-rows-max-size: 65535
+    import-rows-max-size: 65535
+    import-file-max-size: 10
+    max-depth: 3
+    exclude-services: agtms-admin, agtms-web, agtms-zuul
+    pdf-font-family: Arial Unicode MS
+    pdf-font-path: 
+  account:
+    admin:
+      username: admin
+      password: 123456
+    editor:
+      username: editor
+      password: editor
+    reset-password: 123456
+  encryptor:
+    algorithm: aes
+    secret: agtms
+  oss:
+    type: local

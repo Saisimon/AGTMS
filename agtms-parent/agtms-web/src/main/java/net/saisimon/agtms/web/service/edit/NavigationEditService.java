@@ -29,7 +29,7 @@ import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.core.service.ResourceService;
 import net.saisimon.agtms.core.service.RoleResourceService;
 import net.saisimon.agtms.core.service.TemplateService;
@@ -57,7 +57,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 	@Autowired
 	private PremissionService premissionService;
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private BasicProperties basicProperties;
 	
 	public Result grid(Long id) {
 		Resource resource = null;
@@ -147,7 +147,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 		}
 		if (!checkDepth(body.getPath())) {
 			Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
-			result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
+			result.setMessageArgs(new Object[]{ basicProperties.getMaxDepth() });
 			return result;
 		}
 		Date time = new Date();
@@ -160,7 +160,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 				oldPath = oldPath.replaceFirst(oldPathPrefix, newPathPrefix);
 				if (Resource.ContentType.NAVIGATION.getValue().equals(children.getContentType()) && !checkDepth(oldPath)) {
 					Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
-					result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
+					result.setMessageArgs(new Object[]{ basicProperties.getMaxDepth() });
 					return result;
 				}
 				children.setPath(oldPath);
@@ -200,7 +200,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 		}
 		if (!checkDepth(body.getPath())) {
 			Result result = ErrorMessage.Navigation.NAVIGATION_MAX_DEPTH_LIMIT;
-			result.setMessageArgs(new Object[]{ agtmsProperties.getMaxDepth() });
+			result.setMessageArgs(new Object[]{ basicProperties.getMaxDepth() });
 			return result;
 		}
 		Date time = new Date();
@@ -244,7 +244,7 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 			return true;
 		}
 		String[] strs = path.split("/");
-		return strs.length <= agtmsProperties.getMaxDepth();
+		return strs.length <= basicProperties.getMaxDepth();
 	}
 	
 }

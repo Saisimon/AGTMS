@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.mongodb.repository.base.BaseMongodbRepositoryFactoryBean;
 
 @TestConfiguration
@@ -13,13 +13,13 @@ import net.saisimon.agtms.mongodb.repository.base.BaseMongodbRepositoryFactoryBe
 public class MongodbTestConfig {
 	
 	@Bean
-	public AgtmsProperties agtmsProperties() {
-		return new AgtmsProperties();
+	public BasicProperties basicProperties() {
+		return new BasicProperties();
 	}
 	
 	@Bean
 	public DomainGenerater domainGenerater() {
-		return new DomainGenerater(agtmsProperties());
+		return new DomainGenerater(basicProperties());
 	}
 	
 }

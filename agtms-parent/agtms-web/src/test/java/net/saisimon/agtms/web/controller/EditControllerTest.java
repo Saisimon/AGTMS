@@ -52,7 +52,8 @@ import net.saisimon.agtms.core.factory.TaskServiceFactory;
 import net.saisimon.agtms.core.factory.TemplateServiceFactory;
 import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.AccountProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.config.runner.InitRunner;
@@ -73,7 +74,9 @@ import net.saisimon.agtms.web.dto.resp.TemplateInfo;
 public class EditControllerTest extends AbstractControllerTest {
 	
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private AccountProperties accountProperties;
+	@Autowired
+	private BasicProperties basicProperties;
 	@Autowired
 	private InitRunner initRunner;
 	
@@ -99,9 +102,9 @@ public class EditControllerTest extends AbstractControllerTest {
 	/* UserEditController Start */
 	@Test
 	public void testUserEditGrid() throws Exception {
-		UserToken testToken = login("editor", "editor");
+		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
 		Long testUserId = testToken.getUserId();
-		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
 		sendPost("/user/edit/grid", null, adminToken);
 		
 		Map<String, String> param = new HashMap<>();
@@ -115,7 +118,7 @@ public class EditControllerTest extends AbstractControllerTest {
 	
 	@Test
 	public void testUserEditSave() throws Exception {
-		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
 		UserParam body = new UserParam();
 		sendPost("/user/edit/save", body, adminToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
@@ -223,7 +226,7 @@ public class EditControllerTest extends AbstractControllerTest {
 	/* RoleEditController Start */
 	@Test
 	public void testRoleEditGrid() throws Exception {
-		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
 		sendPost("/role/edit/grid", null, adminToken);
 		
 		Map<String, String> param = new HashMap<>();
@@ -233,7 +236,7 @@ public class EditControllerTest extends AbstractControllerTest {
 	
 	@Test
 	public void testRoleEditSave() throws Exception {
-		UserToken adminToken = login(agtmsProperties.getAdminUsername(), agtmsProperties.getAdminPassword());
+		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
 		RoleParam roleParam = new RoleParam();
 		sendPost("/role/edit/save", roleParam, adminToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
@@ -384,7 +387,7 @@ public class EditControllerTest extends AbstractControllerTest {
 	/* NavigationEditController Start */
 	@Test
 	public void testNavigationEditSave() throws Exception {
-		UserToken testToken = login("editor", "editor");
+		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
 		NavigationParam body = new NavigationParam();
 		sendPost("/navigation/edit/save", body, testToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
 		
@@ -537,7 +540,7 @@ public class EditControllerTest extends AbstractControllerTest {
 	/* TemplateEditController Start */
 	@Test
 	public void testTemplateEditSave() throws Exception {
-		UserToken testToken = login("editor", "editor");
+		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
 		sendPost("/template/edit/grid", null, testToken);
 		
 		Map<String, String> param = new HashMap<>();
@@ -627,7 +630,7 @@ public class EditControllerTest extends AbstractControllerTest {
 	/* SelectionEditController Start */
 	@Test
 	public void testSelectionEditSave() throws Exception {
-		UserToken testToken = login("editor", "editor");
+		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
 		sendPost("/selection/edit/grid", null, testToken);
 		
 		Map<String, String> param = new HashMap<>();
@@ -772,7 +775,7 @@ public class EditControllerTest extends AbstractControllerTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testManagementEditSave() throws Exception {
-		UserToken testToken = login("editor", "editor");
+		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
 		Template testTemplate = buildTestTemplate(testToken.getUserId(), "Test", 2, 7);
 		sendPost("/template/edit/save", testTemplate, testToken);
 		Long templateId = TemplateServiceFactory.get().findOne(FilterRequest.build(), FilterSort.build(Constant.ID, Direction.DESC), Constant.ID).get().getId();
@@ -928,8 +931,8 @@ public class EditControllerTest extends AbstractControllerTest {
 		
 		Thread.sleep(1000);
 		
-		MockMultipartFile[] files = new MockMultipartFile[agtmsProperties.getImportFileMaxSize() + 1];
-		for (int i = 0; i < agtmsProperties.getImportFileMaxSize() + 1; i++) {
+		MockMultipartFile[] files = new MockMultipartFile[basicProperties.getImportFileMaxSize() + 1];
+		for (int i = 0; i < basicProperties.getImportFileMaxSize() + 1; i++) {
 			files[i] = new MockMultipartFile("importFiles", classPathResource.getInputStream());
 		}
 		sendMultipart(mainBatchImportUri, importParam, testToken, files);

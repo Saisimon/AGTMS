@@ -12,19 +12,13 @@ import lombok.ToString;
 
 @Setter
 @Getter
-@ToString(exclude = { "adminPassword", "resetPassword" })
-@ConfigurationProperties(prefix="agtms")
-public class AgtmsProperties {
+@ToString
+@ConfigurationProperties(prefix="agtms.basic")
+public class BasicProperties {
 	
 	private String filepath = "/tmp/files";
 	
 	private String generateClasspath = "/tmp/classes";
-	
-	private String adminUsername = "admin";
-	
-	private String adminPassword = "123456";
-	
-	private String resetPassword = "123456";
 	
 	private int taskMaxSize = 1024;
 	
@@ -37,10 +31,6 @@ public class AgtmsProperties {
 	private int maxDepth = 3;
 	
 	private List<String> excludeServices = new ArrayList<>(Arrays.asList("agtms-admin", "agtms-web", "agtms-zuul"));
-	
-	private String encryptorAlgorithm = "aes";
-	
-	private String encryptorKey = "agtms";
 	
 	private String pdfFontFamily = "Arial Unicode MS";
 	

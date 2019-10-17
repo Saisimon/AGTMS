@@ -17,7 +17,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.AccountProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
+import net.saisimon.agtms.core.property.EncryptorProperties;
+import net.saisimon.agtms.core.property.OssProperties;
 import net.saisimon.agtms.web.config.interceptor.ResourceInterceptor;
 import net.sf.ehcache.config.ConfigurationFactory;
 
@@ -69,7 +72,7 @@ public class WebConfig implements WebMvcConfigurer {
 		int size = 2 * Runtime.getRuntime().availableProcessors() + 1;
 		pool.setCorePoolSize(size);
 		pool.setMaxPoolSize(size);
-		pool.setQueueCapacity(agtmsProperties().getTaskMaxSize());
+		pool.setQueueCapacity(basicProperties().getTaskMaxSize());
 		pool.setThreadNamePrefix("Task-Pool-");
 		pool.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
 		pool.initialize();
@@ -113,13 +116,43 @@ public class WebConfig implements WebMvcConfigurer {
 	}
 	
 	/**
-	 * AGTMS 属性对象
+	 * AGTMS 基础属性对象
 	 * 
 	 * @return
 	 */
 	@Bean
-	public AgtmsProperties agtmsProperties() {
-		return new AgtmsProperties();
+	public BasicProperties basicProperties() {
+		return new BasicProperties();
+	}
+	
+	/**
+	 * AGTMS 账户属性对象
+	 * 
+	 * @return
+	 */
+	@Bean
+	public AccountProperties accountProperties() {
+		return new AccountProperties();
+	}
+	
+	/**
+	 * AGTMS 加解密属性对象
+	 * 
+	 * @return
+	 */
+	@Bean
+	public EncryptorProperties encryptorProperties() {
+		return new EncryptorProperties();
+	}
+	
+	/**
+	 * AGTMS OSS 属性对象
+	 * 
+	 * @return
+	 */
+	@Bean
+	public OssProperties ossProperties() {
+		return new OssProperties();
 	}
 	
 	/**
@@ -129,7 +162,7 @@ public class WebConfig implements WebMvcConfigurer {
 	 */
 	@Bean
 	public DomainGenerater domainGenerater() {
-		return new DomainGenerater(agtmsProperties());
+		return new DomainGenerater(basicProperties());
 	}
 	
 	/**

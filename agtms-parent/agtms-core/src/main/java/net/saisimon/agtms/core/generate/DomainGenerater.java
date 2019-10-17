@@ -21,7 +21,7 @@ import net.saisimon.agtms.core.classloader.GenerateClassLoader;
 import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.domain.generate.Generate;
 import net.saisimon.agtms.core.exception.GenerateException;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.core.util.SystemUtils;
 
 /**
@@ -64,10 +64,10 @@ public class DomainGenerater {
 	 */
 	private static final Map<String, GenerateClassLoader> GENERATE_CLASSLOADER_MAP = new ConcurrentHashMap<>();
 	
-	private final AgtmsProperties agtmsProperties;
+	private final BasicProperties basicProperties;
 	
-	public DomainGenerater(AgtmsProperties agtmsProperties) {
-		this.agtmsProperties = agtmsProperties;
+	public DomainGenerater(BasicProperties basicProperties) {
+		this.basicProperties = basicProperties;
 	}
 	
 	/**
@@ -140,13 +140,13 @@ public class DomainGenerater {
 		}
 		String domainFullName = DEFAULT_PACKAGE + "." + domainName;
 		String domainFullPathName = DEFAULT_PACKAGE_PATH + "/" + domainName;
-		File file = FileUtil.file(agtmsProperties.getGenerateClasspath() + File.separator + namespace + File.separator + domainFullPathName + ".class");
+		File file = FileUtil.file(basicProperties.getGenerateClasspath() + File.separator + namespace + File.separator + domainFullPathName + ".class");
 		GenerateClassLoader oldClassloader = GENERATE_CLASSLOADER_MAP.get(namespace);
 		try {
 			Class<?> oldClass = null;
 			if (force || !file.exists() || (oldClass = getOldClass(map, oldClassloader, domainFullName)) == null) {
 				generateClassFile(map, domainFullPathName, file);
-				oldClassloader = new GenerateClassLoader(agtmsProperties.getGenerateClasspath(), namespace);
+				oldClassloader = new GenerateClassLoader(basicProperties.getGenerateClasspath(), namespace);
 				GENERATE_CLASSLOADER_MAP.put(namespace, oldClassloader);
 				oldClassloader.addGenerateClassName(domainFullName);
 				return (Class<Domain>) oldClassloader.loadClass(domainFullName);
@@ -181,7 +181,7 @@ public class DomainGenerater {
 			oldClassloader.removeGenerateClassName(domainFullName);
 		}
 		String domainFullPathName = DEFAULT_PACKAGE_PATH + "/" + domainName;
-		File file = new File(agtmsProperties.getGenerateClasspath() + File.separator + namespace + File.separator + domainFullPathName + ".class");
+		File file = new File(basicProperties.getGenerateClasspath() + File.separator + namespace + File.separator + domainFullPathName + ".class");
 		if (file.exists()) {
 			return file.delete();
 		}

@@ -56,4 +56,4 @@ white:
   list:
     urls: /agtms/user/auth,/agtms/task/main/download
   prefix:
-    urls: /agtms/image/res
+    urls: /agtms/resources/

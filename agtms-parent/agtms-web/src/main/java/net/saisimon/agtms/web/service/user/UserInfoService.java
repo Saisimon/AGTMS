@@ -24,7 +24,7 @@ import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -55,7 +55,7 @@ public class UserInfoService {
 	@Autowired(required = false)
 	private RemoteService remoteService;
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private BasicProperties basicProperties;
 	@Autowired
 	private MessageService messageService;
 	@Autowired
@@ -201,7 +201,7 @@ public class UserInfoService {
 		}
 		List<String> services = discoveryClient.getServices();
 		for (String service : services) {
-			if (contains(agtmsProperties.getExcludeServices(), service)) {
+			if (contains(basicProperties.getExcludeServices(), service)) {
 				continue;
 			}
 			List<Template> remoteTemplates = remoteService.templates(service);

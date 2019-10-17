@@ -35,7 +35,7 @@ import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.factory.FileHandlerFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.handler.FileHandler;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -60,7 +60,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 	@Autowired
 	private MessageSource messageSource;
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private BasicProperties basicProperties;
 	
 	@Override
 	@Transactional(rollbackOn = Exception.class)
@@ -74,7 +74,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			filter = FilterRequest.build();
 		}
 		Long total = GenerateServiceFactory.build(template).count(filter);
-		if (total > agtmsProperties.getExportRowsMaxSize()) {
+		if (total > basicProperties.getExportRowsMaxSize()) {
 			return ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT;
 		}
 		exportDatas(template, param, filter);
@@ -92,7 +92,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 			return handleResult;
 		}
 		if (handleResult.equals(ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT.getMessage())) {
-			return getMessage(ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT.getMessage(), agtmsProperties.getExportRowsMaxSize());
+			return getMessage(ErrorMessage.Task.Export.TASK_EXPORT_MAX_SIZE_LIMIT.getMessage(), basicProperties.getExportRowsMaxSize());
 		} else {
 			return getMessage(handleResult);
 		}
@@ -141,7 +141,7 @@ public class ExportActuator implements Actuator<ExportParam> {
 	
 	private File createExportFile(ExportParam param, Integer idx) throws IOException {
 		StringBuilder exportFilePath = new StringBuilder();
-		exportFilePath.append(agtmsProperties.getFilepath())
+		exportFilePath.append(basicProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.EXPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId());
 		String fileName = idx == null ? param.getUuid() : param.getUuid() + "-" + idx.toString();

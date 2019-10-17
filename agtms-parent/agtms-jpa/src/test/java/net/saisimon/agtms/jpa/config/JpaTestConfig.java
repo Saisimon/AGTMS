@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.jpa.dialect.Dialect;
 import net.saisimon.agtms.jpa.dialect.H2Dialect;
 import net.saisimon.agtms.jpa.repository.base.BaseJpaRepositoryFactoryBean;
@@ -22,13 +22,13 @@ public class JpaTestConfig {
 	}
 	
 	@Bean
-	public AgtmsProperties agtmsProperties() {
-		return new AgtmsProperties();
+	public BasicProperties basicProperties() {
+		return new BasicProperties();
 	}
 	
 	@Bean
 	public DomainGenerater domainGenerater() {
-		return new DomainGenerater(agtmsProperties());
+		return new DomainGenerater(basicProperties());
 	}
 	
 }

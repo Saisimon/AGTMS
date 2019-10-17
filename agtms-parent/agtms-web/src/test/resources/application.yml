@@ -1,9 +1,12 @@
 spring:
   main:
-    bannerMode: 'off'
+    banner-mode: 'off'
   servlet:
     multipart:
-      maxFileSize: 10MB
+      maxFileSize: 20MB
+      maxRequestSize: 100MB
+  jackson:
+    default-property-inclusion: non_null
   jpa:
     generateDdl: true
     

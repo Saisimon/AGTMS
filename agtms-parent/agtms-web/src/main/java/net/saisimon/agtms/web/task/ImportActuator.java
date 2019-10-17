@@ -37,7 +37,7 @@ import net.saisimon.agtms.core.exception.GenerateException;
 import net.saisimon.agtms.core.factory.FileHandlerFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
 import net.saisimon.agtms.core.handler.FileHandler;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.core.task.Actuator;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.ResultUtils;
@@ -63,7 +63,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 	@Autowired
 	private MessageSource messageSource;
 	@Autowired
-	private AgtmsProperties agtmsProperties;
+	private BasicProperties basicProperties;
 	@Autowired
 	private PremissionService premissionService;
 	
@@ -94,7 +94,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 			return handleResult;
 		}
 		if (handleResult.equals(ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT.getMessage())) {
-			return getMessage(ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT.getMessage(), agtmsProperties.getImportRowsMaxSize());
+			return getMessage(ErrorMessage.Task.Import.TASK_IMPORT_MAX_SIZE_LIMIT.getMessage(), basicProperties.getImportRowsMaxSize());
 		} else {
 			return getMessage(handleResult);
 		}
@@ -143,7 +143,7 @@ public class ImportActuator implements Actuator<ImportParam> {
 	
 	private File createImportFile(ImportParam param) {
 		StringBuilder importFilePath = new StringBuilder();
-		importFilePath.append(agtmsProperties.getFilepath())
+		importFilePath.append(basicProperties.getFilepath())
 			.append(File.separatorChar).append(Constant.File.IMPORT_PATH)
 			.append(File.separatorChar).append(param.getUserId())
 			.append(File.separatorChar).append(param.getUuid()).append('.').append(param.getImportFileType());

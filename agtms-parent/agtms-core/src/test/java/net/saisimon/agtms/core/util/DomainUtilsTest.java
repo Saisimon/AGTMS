@@ -20,7 +20,7 @@ import net.saisimon.agtms.core.domain.Domain;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.exception.AgtmsException;
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
 
 @RunWith(SpringRunner.class)
 public class DomainUtilsTest {
@@ -106,7 +106,7 @@ public class DomainUtilsTest {
 		
 		@Bean
 		public DomainGenerater domainGenerater() {
-			return new DomainGenerater(new AgtmsProperties());
+			return new DomainGenerater(new BasicProperties());
 		}
 		
 	}

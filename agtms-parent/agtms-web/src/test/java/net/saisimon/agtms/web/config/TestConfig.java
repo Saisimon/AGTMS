@@ -9,7 +9,9 @@ import org.springframework.test.web.servlet.setup.SharedHttpSessionConfigurer;
 import org.springframework.web.context.WebApplicationContext;
 
 import net.saisimon.agtms.core.generate.DomainGenerater;
-import net.saisimon.agtms.core.property.AgtmsProperties;
+import net.saisimon.agtms.core.property.AccountProperties;
+import net.saisimon.agtms.core.property.BasicProperties;
+import net.saisimon.agtms.core.property.EncryptorProperties;
 
 @TestConfiguration
 public class TestConfig {
@@ -23,13 +25,23 @@ public class TestConfig {
 	}
 	
 	@Bean
-	public AgtmsProperties agtmsProperties() {
-		return new AgtmsProperties();
+	public BasicProperties basicProperties() {
+		return new BasicProperties();
+	}
+	
+	@Bean
+	public AccountProperties accountProperties() {
+		return new AccountProperties();
+	}
+	
+	@Bean
+	public EncryptorProperties encryptorProperties() {
+		return new EncryptorProperties();
 	}
 	
 	@Bean
 	public DomainGenerater domainGenerater() {
-		return new DomainGenerater(agtmsProperties());
+		return new DomainGenerater(basicProperties());
 	}
 	
 }
