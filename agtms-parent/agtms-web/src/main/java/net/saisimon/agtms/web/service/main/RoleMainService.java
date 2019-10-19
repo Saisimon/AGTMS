@@ -108,7 +108,6 @@ public class RoleMainService extends AbstractMainService {
 			filter = FilterRequest.build();
 		}
 		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
-		userIds.add(Constant.SYSTEM_OPERATORID);
 		filter.and(Constant.OPERATORID, userIds, Constant.Operator.IN);
 		if (pageableMap != null) {
 			pageableMap.remove(PARAM);

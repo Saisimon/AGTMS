@@ -34,6 +34,7 @@ const state = {
     showChangePasswordModal: false,
     openTree: false,
     tree: {},
+    notificationLoopId: null,
     notification: 0,
     notifications: []
 };
@@ -123,6 +124,9 @@ const mutations = {
         if (notifications) {
             state.notifications = notifications;
         }
+    },
+    setNotificationLoopId(state, notificationLoopId) {
+        state.notificationLoopId = notificationLoopId;
     }
 };
 
@@ -197,22 +201,33 @@ const actions = {
         context.commit('changeOpenTree', status);
     },
     getTree(context) {
-        nav(context.rootState.base.user).then(resp => {
+        nav(context.state.user).then(resp => {
             return context.commit('setTree', resp.data.data);
         });
     },
-    getNotification(context) {
-        notification(context.rootState.base.user).then(resp => {
-            return context.commit('setNotification', resp.data.data);
-        });
-    },
     getNotifications(context) {
-        notifications(context.rootState.base.user).then(resp => {
+        notifications(context.state.user).then(resp => {
             return context.commit('setNotifications', resp.data.data);
         });
     },
     readNotification(context, payload) {
-        notificationRead(context.rootState.base.user, payload.id);
+        notificationRead(context.state.user, payload.id);
+    },
+    loopGetNotification(context) {
+        notification(context.state.user).then(resp => {
+            return context.commit('setNotification', resp.data.data);
+        });
+        (function loop() {
+            var notificationLoopId = setTimeout(function() {
+                if (context.state.user) {
+                    notification(context.state.user).then(resp => {
+                        context.commit('setNotification', resp.data.data);
+                        loop();
+                    });
+                }
+            }, 10000);
+            context.commit('setNotificationLoopId', notificationLoopId);
+        })();
     }
 };
 

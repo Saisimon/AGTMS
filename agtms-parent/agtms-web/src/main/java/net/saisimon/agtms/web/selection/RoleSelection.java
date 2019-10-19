@@ -1,6 +1,7 @@
 package net.saisimon.agtms.web.selection;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +85,7 @@ public class RoleSelection extends AbstractSelection<String> {
 	
 	private List<Role> getRoles(String excludePath) {
 		RoleService roleService = RoleServiceFactory.get();
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = new HashSet<>(premissionService.getUserIds(AuthUtils.getUid()));
 		userIds.add(Constant.SYSTEM_OPERATORID);
 		return roleService.getRoles(excludePath, userIds);
 	}

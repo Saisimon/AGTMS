@@ -56,7 +56,7 @@
                     href="javascript:void(0);" 
                     right no-caret
                     class="nav-bar-item"
-                    @toggle="getNotifications()"
+                    @show="getNotifications()"
                     :title="$t('notification')">
                     <template slot="button-content">
                         <span :class="{'red-point': notification > 0}" >
@@ -302,16 +302,8 @@ export default {
         }
     },
     created: function() {
-        if (this.$store.state.base.user != null) {
-            this.$store.dispatch('getNotification');
-            var vm = this;
-            (function loop(){
-                setTimeout(function() {
-                    vm.$store.dispatch('getNotification').then(resp => {
-                        loop();
-                    });
-                }, 10000);
-            })();
+        if (this.$store.state.base.user != null && this.$store.state.base.notificationLoopId == null) {
+            this.$store.dispatch('loopGetNotification');
         }
     },
     methods: {
@@ -320,6 +312,10 @@ export default {
             this.$store.commit('setUser', null);
             this.$store.commit('setTree', {});
             this.$store.commit('setBreadcrumbs', []);
+            if (this.$store.state.base.notificationLoopId != null) {
+                clearTimeout(this.$store.state.base.notificationLoopId);
+                this.$store.commit('setNotificationLoopId', null);
+            }
             this.$router.push({
                 path: '/signin'
             });

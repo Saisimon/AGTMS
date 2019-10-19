@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -186,7 +187,7 @@ public class RoleEditService extends AbstractEditService<Role> {
 	private Result saveRole(RoleParam body) {
 		RoleService roleService = RoleServiceFactory.get();
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = premissionService.getUserIds(userId);
+		Set<Long> userIds = new HashSet<>(premissionService.getUserIds(userId));
 		if (roleService.exists(null, body.getName(), userIds)) {
 			return ErrorMessage.Role.ROLE_ALREADY_EXISTS;
 		}
@@ -220,7 +221,7 @@ public class RoleEditService extends AbstractEditService<Role> {
 			return ErrorMessage.Role.ROLE_NOT_EXIST;
 		}
 		Long userId = AuthUtils.getUid();
-		Set<Long> userIds = premissionService.getUserIds(userId);
+		Set<Long> userIds = new HashSet<>(premissionService.getUserIds(userId));
 		if (roleService.exists(body.getId(), body.getName(), userIds)) {
 			return ErrorMessage.Role.ROLE_ALREADY_EXISTS;
 		}

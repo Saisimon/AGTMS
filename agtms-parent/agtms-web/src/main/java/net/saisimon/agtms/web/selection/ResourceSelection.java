@@ -1,6 +1,7 @@
 package net.saisimon.agtms.web.selection;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,7 +121,7 @@ public class ResourceSelection extends AbstractSelection<String> {
 	
 	private List<Resource> getResources(String excludePath, Resource.ContentType contentType) {
 		ResourceService resourceService = ResourceServiceFactory.get();
-		Set<Long> userIds = premissionService.getUserIds(AuthUtils.getUid());
+		Set<Long> userIds = new HashSet<>(premissionService.getUserIds(AuthUtils.getUid()));
 		userIds.add(Constant.SYSTEM_OPERATORID);
 		return resourceService.getResources(excludePath, contentType, userIds);
 	}
