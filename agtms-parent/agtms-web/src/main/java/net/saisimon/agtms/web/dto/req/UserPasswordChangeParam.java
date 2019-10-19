@@ -7,6 +7,12 @@ import javax.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 用户修改密码参数对象
+ * 
+ * @author saisimon
+ *
+ */
 @Setter
 @Getter
 public class UserPasswordChangeParam implements Serializable {

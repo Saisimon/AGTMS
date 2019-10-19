@@ -5,6 +5,12 @@ import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 用户资料保存参数对象
+ * 
+ * @author saisimon
+ *
+ */
 @Setter
 @Getter
 public class UserProfileSaveParam implements Serializable {

@@ -8,6 +8,12 @@ import lombok.Data;
 import net.saisimon.agtms.core.domain.filter.FieldFilter;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 
+/**
+ * 过滤对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class Filter implements Cloneable {
 	

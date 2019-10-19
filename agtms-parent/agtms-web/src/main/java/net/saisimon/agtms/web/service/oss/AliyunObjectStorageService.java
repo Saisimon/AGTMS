@@ -20,6 +20,21 @@ import lombok.extern.slf4j.Slf4j;
 import net.saisimon.agtms.core.property.OssProperties;
 import net.saisimon.agtms.core.service.ObjectStorageService;
 
+/**
+ * Aliyun 对象存储服务实现
+ * <pre>
+ * agtms:
+ *   oss:
+ *     type: aliyun
+ *     endpoint: &lt;endpoint&gt;
+ *     accessKeyId: &lt;yourAccessKeyId&gt;
+ *     accessKeySecret: &lt;yourAccessKeySecret&gt;
+ *     bucket: &lt;yourBucketName&gt;
+ * </pre>
+ * 
+ * @author saisimon
+ *
+ */
 @Service
 @Slf4j
 public class AliyunObjectStorageService implements ObjectStorageService {

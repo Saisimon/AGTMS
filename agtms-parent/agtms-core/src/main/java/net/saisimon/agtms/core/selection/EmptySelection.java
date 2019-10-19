@@ -4,6 +4,12 @@ import java.util.LinkedHashMap;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * 空下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class EmptySelection extends AbstractSelection<String> {
 	

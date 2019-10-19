@@ -10,6 +10,12 @@ import lombok.Setter;
 import lombok.ToString;
 import net.saisimon.agtms.core.service.ObjectStorageService;
 
+/**
+ * OSS 属性字段
+ * 
+ * @author saisimon
+ *
+ */
 @Setter
 @Getter
 @ToString

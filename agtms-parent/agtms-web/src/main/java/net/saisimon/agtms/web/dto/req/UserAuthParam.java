@@ -7,6 +7,12 @@ import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.ToString;
 
+/**
+ * 用户验证参数对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 @ToString(exclude="password")
 public class UserAuthParam implements Serializable {

@@ -6,6 +6,12 @@ import java.util.List;
 
 import lombok.Data;
 
+/**
+ * 基础信息对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class BaseInfo implements Serializable {
 	

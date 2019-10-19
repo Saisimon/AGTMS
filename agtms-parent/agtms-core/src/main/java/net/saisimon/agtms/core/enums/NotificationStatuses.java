@@ -8,7 +8,13 @@ package net.saisimon.agtms.core.enums;
  */
 public enum NotificationStatuses {
 
+	/**
+	 * 未读
+	 */
 	UNREAD(0, "unread"),
+	/**
+	 * 已读
+	 */
 	READ(10, "read");
 	
 	private Integer status;

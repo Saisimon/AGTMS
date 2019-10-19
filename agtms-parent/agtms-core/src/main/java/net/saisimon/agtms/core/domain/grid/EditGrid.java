@@ -5,6 +5,12 @@ import java.util.List;
 
 import lombok.Data;
 
+/**
+ * 编辑布局对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class EditGrid {
 	

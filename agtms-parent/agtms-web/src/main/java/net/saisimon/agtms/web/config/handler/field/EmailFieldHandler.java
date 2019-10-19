@@ -10,6 +10,12 @@ import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 
+/**
+ * 电子邮箱属性字段处理实现类
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class EmailFieldHandler extends AbstractFieldHandler {
 

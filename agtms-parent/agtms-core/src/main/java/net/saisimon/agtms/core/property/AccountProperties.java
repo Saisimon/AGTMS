@@ -8,6 +8,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * 账户属性字段
+ * 
+ * @author saisimon
+ *
+ */
 @Setter
 @Getter
 @ToString(exclude = { "resetPassword" })

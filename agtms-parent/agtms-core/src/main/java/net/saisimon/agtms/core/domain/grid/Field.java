@@ -7,6 +7,13 @@ import lombok.Builder;
 import lombok.Data;
 import net.saisimon.agtms.core.constant.Constant;
 
+/**
+ * 属性对象
+ * 
+ * @author saisimon
+ *
+ * @param <T> 属性类型
+ */
 @Data
 @Builder
 public class Field<T> {

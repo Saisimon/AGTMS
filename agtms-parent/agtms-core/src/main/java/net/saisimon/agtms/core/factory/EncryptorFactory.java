@@ -11,6 +11,12 @@ import net.saisimon.agtms.core.encrypt.Encryptor;
 import net.saisimon.agtms.core.exception.AgtmsException;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 加密器构建工厂
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class EncryptorFactory implements BeanPostProcessor {
 	

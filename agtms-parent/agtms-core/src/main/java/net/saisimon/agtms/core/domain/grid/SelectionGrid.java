@@ -5,6 +5,12 @@ import java.util.List;
 import lombok.Data;
 import net.saisimon.agtms.core.domain.tag.Option;
 
+/**
+ * 编辑下拉列表布局对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class SelectionGrid {
 	

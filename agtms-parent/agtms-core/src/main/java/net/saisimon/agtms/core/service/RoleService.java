@@ -21,6 +21,12 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 角色服务接口
+ * 
+ * @author saisimon
+ *
+ */
 public interface RoleService extends BaseService<Role, Long>, Ordered {
 	
 	default boolean exists(Long id, String name, Collection<Long> operatorIds) {

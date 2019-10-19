@@ -20,6 +20,12 @@ import net.saisimon.agtms.core.util.AuthUtils;
 import net.saisimon.agtms.web.service.common.MessageService;
 import net.saisimon.agtms.web.service.common.PremissionService;
 
+/**
+ * 角色下拉列表
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class RoleSelection extends AbstractSelection<String> {
 	

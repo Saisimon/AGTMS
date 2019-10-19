@@ -4,6 +4,13 @@ import java.util.List;
 
 import lombok.Data;
 
+/**
+ * 属性编辑对象
+ * 
+ * @author saisimon
+ *
+ * @param <T> 属性类型
+ */
 @Data
 public class Editor<T> {
 	

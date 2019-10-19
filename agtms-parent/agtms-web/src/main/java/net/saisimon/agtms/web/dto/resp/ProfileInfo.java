@@ -2,6 +2,12 @@ package net.saisimon.agtms.web.dto.resp;
 
 import lombok.Data;
 
+/**
+ * 个人资料信息对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class ProfileInfo {
 	

@@ -6,6 +6,12 @@ import javax.validation.constraints.NotBlank;
 
 import lombok.Data;
 
+/**
+ * 用户参数对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class UserParam {
 	

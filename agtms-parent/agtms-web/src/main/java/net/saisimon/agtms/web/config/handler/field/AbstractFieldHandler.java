@@ -9,6 +9,12 @@ import net.saisimon.agtms.core.util.ResultUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 
+/**
+ * 抽象属性字段处理类
+ * 
+ * @author saisimon
+ *
+ */
 public abstract class AbstractFieldHandler implements FieldHandler {
 
 	@Override

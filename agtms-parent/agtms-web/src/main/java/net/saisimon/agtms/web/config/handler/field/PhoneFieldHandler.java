@@ -5,6 +5,12 @@ import org.springframework.stereotype.Component;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 电话属性字段处理实现类
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class PhoneFieldHandler extends AbstractFieldHandler {
 	

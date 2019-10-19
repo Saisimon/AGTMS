@@ -18,6 +18,12 @@ import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.core.service.ObjectStorageService;
 
+/**
+ * 本地对象存储服务实现
+ * 
+ * @author saisimon
+ *
+ */
 @Service
 public class LocalObjectStorageService implements ObjectStorageService {
 	

@@ -6,6 +6,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.saisimon.agtms.web.dto.resp.common.BaseInfo;
 
+/**
+ * 用户信息对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 @EqualsAndHashCode(callSuper=true)
 public class UserInfo extends BaseInfo {

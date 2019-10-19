@@ -20,6 +20,12 @@ import net.saisimon.agtms.core.factory.RoleServiceFactory;
 import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
 import net.saisimon.agtms.core.service.RoleService;
 
+/**
+ * 权限服务
+ * 
+ * @author saisimon
+ *
+ */
 @Service
 public class PremissionService {
 	

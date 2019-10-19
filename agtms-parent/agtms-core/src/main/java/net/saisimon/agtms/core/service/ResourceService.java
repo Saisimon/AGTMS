@@ -21,6 +21,12 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * 资源服务接口
+ * 
+ * @author saisimon
+ *
+ */
 public interface ResourceService extends BaseService<Resource, Long>, Ordered {
 	
 	default Boolean exists(String name, Resource.ContentType contentType, Collection<Long> operatorIds) {

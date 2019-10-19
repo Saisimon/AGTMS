@@ -43,6 +43,12 @@ import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.jpa.domain.Statement;
 
+/**
+ * JPA 过滤工具类
+ * 
+ * @author saisimon
+ *
+ */
 public class JpaFilterUtils {
 	
 	private JpaFilterUtils() {}

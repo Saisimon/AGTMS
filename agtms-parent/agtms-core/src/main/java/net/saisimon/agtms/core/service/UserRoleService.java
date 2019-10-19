@@ -17,6 +17,12 @@ import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.entity.UserRole;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 
+/**
+ * 用户角色关系服务接口
+ * 
+ * @author saisimon
+ *
+ */
 public interface UserRoleService extends BaseService<UserRole, Long>, Ordered {
 	
 	default boolean exists(Long userId, Long roleId) {

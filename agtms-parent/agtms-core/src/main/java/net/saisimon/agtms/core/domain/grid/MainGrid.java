@@ -7,6 +7,12 @@ import lombok.Builder;
 import lombok.Data;
 import net.saisimon.agtms.core.domain.page.Pageable;
 
+/**
+ * 主布局对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class MainGrid {
 	

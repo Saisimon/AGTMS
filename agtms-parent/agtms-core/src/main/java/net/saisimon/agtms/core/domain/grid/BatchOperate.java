@@ -4,6 +4,12 @@ import java.util.List;
 
 import lombok.Data;
 
+/**
+ * 批量操作对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class BatchOperate {
 

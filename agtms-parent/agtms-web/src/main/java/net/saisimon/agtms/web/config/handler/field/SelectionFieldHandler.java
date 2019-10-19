@@ -13,6 +13,12 @@ import net.saisimon.agtms.core.util.SelectionUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 import net.saisimon.agtms.web.constant.ErrorMessage;
 
+/**
+ * 下拉列表属性字段处理实现类
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class SelectionFieldHandler extends AbstractFieldHandler {
 	

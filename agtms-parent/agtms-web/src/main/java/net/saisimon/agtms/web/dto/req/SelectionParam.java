@@ -7,6 +7,12 @@ import javax.validation.constraints.NotNull;
 
 import lombok.Data;
 
+/**
+ * 下拉列表参数对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class SelectionParam {
 	

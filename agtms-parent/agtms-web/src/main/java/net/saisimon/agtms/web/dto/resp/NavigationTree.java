@@ -5,6 +5,12 @@ import java.util.List;
 
 import lombok.Data;
 
+/**
+ * 导航树信息对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class NavigationTree implements Serializable {
 	

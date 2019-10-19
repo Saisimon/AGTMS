@@ -8,7 +8,13 @@ package net.saisimon.agtms.core.enums;
  */
 public enum NotificationTypes {
 
+	/**
+	 * 系统通知
+	 */
 	SYSTEM_NOTICE(0, "system.notification"),
+	/**
+	 * 任务通知
+	 */
 	TASK_NOTICE(1, "task.notification");
 	
 	private Integer type;

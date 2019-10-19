@@ -12,6 +12,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 用户令牌对象
+ * 
+ * @author saisimon
+ *
+ */
 @Setter
 @Getter
 @Entity

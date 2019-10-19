@@ -15,6 +15,12 @@ import net.saisimon.agtms.api.UserInterface;
 import net.saisimon.agtms.zuul.config.property.WhiteList;
 import net.saisimon.agtms.zuul.config.property.WhitePrefix;
 
+/**
+ * 登录教验过滤器
+ * 
+ * @author saisimon
+ *
+ */
 @RefreshScope
 @Component
 public class AccessFilter extends ZuulFilter {

@@ -10,6 +10,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.saisimon.agtms.core.dto.BaseTaskParam;
 
+/**
+ * 导出参数对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class ExportParam extends BaseTaskParam {

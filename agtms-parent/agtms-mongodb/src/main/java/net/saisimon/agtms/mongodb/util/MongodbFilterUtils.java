@@ -30,6 +30,12 @@ import net.saisimon.agtms.core.domain.filter.FilterRequest;
 import net.saisimon.agtms.core.util.DomainUtils;
 import net.saisimon.agtms.core.util.SystemUtils;
 
+/**
+ * Mongodb 过滤工具类
+ * 
+ * @author saisimon
+ *
+ */
 public class MongodbFilterUtils {
 	
 	private MongodbFilterUtils() {}

@@ -8,6 +8,12 @@ import org.springframework.stereotype.Component;
 
 import lombok.Data;
 
+/**
+ * 白名单前缀属性对象
+ * 
+ * @author saisimon
+ *
+ */
 @RefreshScope
 @Component
 @ConfigurationProperties(prefix="white.prefix")

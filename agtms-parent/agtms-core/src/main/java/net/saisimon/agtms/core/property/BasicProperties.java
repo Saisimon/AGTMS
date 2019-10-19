@@ -10,6 +10,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * 基本属性字段
+ * 
+ * @author saisimon
+ *
+ */
 @Setter
 @Getter
 @ToString

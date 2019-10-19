@@ -11,6 +11,12 @@ import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.enums.EditorTypes;
 
+/**
+ * 编辑模板布局对象
+ * 
+ * @author saisimon
+ *
+ */
 @Data
 public class TemplateGrid {
 	

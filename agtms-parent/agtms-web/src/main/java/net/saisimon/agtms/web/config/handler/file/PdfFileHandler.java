@@ -19,6 +19,12 @@ import net.saisimon.agtms.core.handler.FileHandler;
 import net.saisimon.agtms.core.property.BasicProperties;
 import net.saisimon.agtms.web.util.FileUtils;
 
+/**
+ * PDF 文件处理实现类
+ * 
+ * @author saisimon
+ *
+ */
 @Component
 public class PdfFileHandler implements FileHandler {
 	

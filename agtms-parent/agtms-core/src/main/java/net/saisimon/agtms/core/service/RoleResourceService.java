@@ -18,6 +18,12 @@ import net.saisimon.agtms.core.constant.Constant.Operator;
 import net.saisimon.agtms.core.domain.entity.RoleResource;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
 
+/**
+ * 角色资源关联服务接口
+ * 
+ * @author saisimon
+ *
+ */
 public interface RoleResourceService extends BaseService<RoleResource, Long>, Ordered {
 	
 	default boolean exists(Long roleId, Long resourceId) {
