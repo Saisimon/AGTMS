@@ -138,7 +138,6 @@
                     <b-button 
                         variant="info" 
                         v-b-modal="'preview-modal'"
-                        @click="toExample"
                         size="sm" 
                         class="ml-2 preview-btn">
                         <i class="fa fa-fw fa-eye"></i>
@@ -171,6 +170,7 @@
                 </div>
             </b-modal>
             <b-modal id="preview-modal"
+                @show="toExample"
                 centered
                 size="xl" 
                 hide-footer 
