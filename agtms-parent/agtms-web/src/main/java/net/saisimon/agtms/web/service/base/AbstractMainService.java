@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +30,7 @@ import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
+import net.saisimon.agtms.core.domain.grid.MainGrid.Batch;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.page.Pageable;
@@ -70,6 +70,7 @@ public abstract class AbstractMainService {
 	 * 前端头信息配置
 	 * 
 	 * @param key 关键词
+	 * @param functions 支持功能集合
 	 * @return 面包屑导航
 	 */
 	protected abstract Header header(Object key, List<Functions> functions);
@@ -102,6 +103,7 @@ public abstract class AbstractMainService {
 	 * 前端操作列信息配置
 	 * 
 	 * @param key 关键词
+	 * @param functions 支持功能集合
 	 * @return 操作列信息
 	 */
 	protected List<Action> actions(Object key, List<Functions> functions) {
@@ -109,7 +111,54 @@ public abstract class AbstractMainService {
 	}
 	
 	/**
-	 * 前端功能信息配置
+	 * 前端批量操作列信息配置
+	 * 
+	 * @param key 关键词
+	 * @param functions 支持功能集合
+	 * @return 操作列信息
+	 */
+	protected List<Batch> batches(Object key, List<Functions> functions) {
+		List<Batch> batches = new ArrayList<>();
+		if (SystemUtils.hasFunction(Functions.BATCH_EDIT.getCode(), functions)) {
+			batches.add(Batch.builder()
+					.key(Functions.BATCH_EDIT.getFunction())
+					.icon("fa-edit")
+					.variant("outline-primary")
+					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.BATCH_EDIT.getFunction(), "."))).build());
+		}
+		if (SystemUtils.hasFunction(Functions.BATCH_REMOVE.getCode(), functions)) {
+			batches.add(Batch.builder()
+					.key(Functions.BATCH_REMOVE.getFunction())
+					.icon("fa-trash")
+					.variant("outline-danger")
+					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.BATCH_REMOVE.getFunction(), "."))).build());
+		}
+		if (SystemUtils.hasFunction(Functions.GRANT.getCode(), functions)) {
+			batches.add(Batch.builder()
+					.key(Functions.GRANT.getFunction())
+					.icon("fa-certificate")
+					.variant("outline-danger")
+					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.GRANT.getFunction(), "."))).build());
+		}
+		if (SystemUtils.hasFunction(Functions.EXPORT.getCode(), functions)) {
+			batches.add(Batch.builder()
+					.key(Functions.EXPORT.getFunction())
+					.icon("fa-download")
+					.variant("outline-secondary")
+					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.EXPORT.getFunction(), "."))).build());
+		}
+		if (SystemUtils.hasFunction(Functions.IMPORT.getCode(), functions)) {
+			batches.add(Batch.builder()
+					.key(Functions.IMPORT.getFunction())
+					.icon("fa-upload")
+					.variant("outline-secondary")
+					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.IMPORT.getFunction(), "."))).build());
+		}
+		return batches;
+	}
+	
+	/**
+	 * 支持功能信息配置
 	 * 
 	 * @param key 关键词
 	 * @return 功能信息
@@ -122,6 +171,7 @@ public abstract class AbstractMainService {
 	 * 前端批量操作配置
 	 * 
 	 * @param key 关键词
+	 * @param func 功能
 	 * @return 批量操作信息
 	 */
 	protected BatchOperate batchOperate(Object key, String func) {
@@ -174,16 +224,13 @@ public abstract class AbstractMainService {
 		}
 		MainGrid mainGrid = new MainGrid();
 		List<Functions> functions = functions(key);
-		if (functions != null) {
-			mainGrid.setFunctions(functions.stream().map(Functions::getFunction).collect(Collectors.toList()));
-		}
 		mainGrid.setHeader(header(key, functions));
 		mainGrid.setBreadcrumbs(breadcrumbs(key));
 		List<Column> columns = columns(key);
 		previousSort(columns, sign + PAGEABLE_SUFFIX);
 		mainGrid.setColumns(columns);
-		List<Action> actions = actions(key, functions);
-		mainGrid.setActions(actions);
+		mainGrid.setActions(actions(key, functions));
+		mainGrid.setBatches(batches(key, functions));
 		List<Filter> filters = filters(key);
 		boolean showFilters = previousFilter(filters, sign + FILTER_SUFFIX);
 		mainGrid.setShowFilters(showFilters);

@@ -186,8 +186,12 @@ public class SelectionMainService extends AbstractMainService {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("system.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("selection.management")).active(true).build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("system.module"))
+				.to("/").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("selection.management"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 
@@ -246,12 +250,46 @@ public class SelectionMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("title").label(messageService.getMessage("title")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("type").label(messageService.getMessage("type")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field(Constant.CREATETIME).label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field(Constant.UPDATETIME).label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
+		columns.add(Column.builder()
+				.field("title")
+				.label(messageService.getMessage("title"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("type")
+				.label(messageService.getMessage("type"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field(Constant.CREATETIME)
+				.label(messageService.getMessage("create.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field(Constant.UPDATETIME)
+				.label(messageService.getMessage("update.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field("operator")
+				.label(messageService.getMessage("operator"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("action")
+				.label(messageService.getMessage("actions"))
+				.type("number")
+				.width(100).build());
 		return columns;
 	}
 	
@@ -259,10 +297,21 @@ public class SelectionMainService extends AbstractMainService {
 	protected List<Action> actions(Object key, List<Functions> functions) {
 		List<Action> actions = new ArrayList<>();
 		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
-			actions.add(Action.builder().key("edit").to("/selection/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
+			actions.add(Action.builder()
+					.key("edit")
+					.to("/selection/edit?id=")
+					.icon("edit")
+					.text(messageService.getMessage("edit"))
+					.type("link").build());
 		}
 		if (SystemUtils.hasFunction(Functions.REMOVE.getCode(), functions)) {
-			actions.add(Action.builder().key("remove").icon("trash").to("/selection/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+			actions.add(Action.builder()
+					.key("remove")
+					.icon("trash")
+					.to("/selection/main/remove")
+					.text(messageService.getMessage("remove"))
+					.variant("outline-danger")
+					.type("modal").build());
 		}
 		return actions;
 	}

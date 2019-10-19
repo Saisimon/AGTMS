@@ -6,7 +6,7 @@ const state = {
     header: {
         title: ''
     },
-    functions: [],
+    batches: [],
     showFilters: false,
     filters: [],
     columns: [],
@@ -24,7 +24,7 @@ const mutations = {
         state.header = {
             title: ''
         };
-        state.functions = [];
+        state.batches = [];
         state.showFilters = false;
         state.filters = [];
         state.columns = [];
@@ -40,9 +40,9 @@ const mutations = {
             state.header = header;
         }
     },
-    setFunctions(state, functions) {
-        if (functions) {
-            state.functions = functions;
+    setBatches(state, batches) {
+        if (batches) {
+            state.batches = batches;
         }
     },
     setSort(state, params) {

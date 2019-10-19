@@ -461,13 +461,15 @@ public class TemplateEditService {
 	
 	private List<Breadcrumb> breadcrumbs(Long id) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("system.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("template.management")).to("/template/main").build());
-		if (id == null) {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("create")).active(true).build());
-		} else {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("edit")).active(true).build());
-		}
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("system.module"))
+				.to("/").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("template.management"))
+				.to("/template/main").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage(id == null ? "create" : "edit"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 	

@@ -28,7 +28,7 @@ public class MainGrid {
 	
 	private List<Filter> filters;
 	
-	private List<String> functions;
+	private List<Batch> batches;
 	
 	private List<Action> actions;
 	
@@ -94,6 +94,20 @@ public class MainGrid {
 		private String icon;
 		
 		private String type;
+		
+		private String key;
+		
+	}
+	
+	@Data
+	@Builder
+	public static class Batch {
+		
+		private String variant;
+		
+		private String text;
+		
+		private String icon;
 		
 		private String key;
 		

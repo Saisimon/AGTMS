@@ -276,8 +276,12 @@ public class RoleMainService extends AbstractMainService {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("user.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("role.management")).active(true).build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("user.module"))
+				.to("/").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("role.management"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 	
@@ -321,11 +325,40 @@ public class RoleMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("name").label(messageService.getMessage("role.name")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field(Constant.CREATETIME).label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field(Constant.UPDATETIME).label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
+		columns.add(Column.builder()
+				.field("name")
+				.label(messageService.getMessage("role.name"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder().field(Constant.CREATETIME)
+				.label(messageService.getMessage("create.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field(Constant.UPDATETIME)
+				.label(messageService.getMessage("update.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field("operator")
+				.label(messageService.getMessage("operator"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("action")
+				.label(messageService.getMessage("actions"))
+				.type("number")
+				.width(100).build());
 		return columns;
 	}
 	
@@ -333,10 +366,21 @@ public class RoleMainService extends AbstractMainService {
 	protected List<Action> actions(Object key, List<Functions> functions) {
 		List<Action> actions = new ArrayList<>();
 		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
-			actions.add(Action.builder().key("edit").to("/role/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
+			actions.add(Action.builder()
+					.key("edit")
+					.to("/role/edit?id=")
+					.icon("edit")
+					.text(messageService.getMessage("edit"))
+					.type("link").build());
 		}
 		if (SystemUtils.hasFunction(Functions.REMOVE.getCode(), functions)) {
-			actions.add(Action.builder().key("remove").icon("trash").to("/role/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+			actions.add(Action.builder()
+					.key("remove")
+					.icon("trash")
+					.to("/role/main/remove")
+					.text(messageService.getMessage("remove"))
+					.variant("outline-danger")
+					.type("modal").build());
 		}
 		return actions;
 	}
@@ -357,8 +401,13 @@ public class RoleMainService extends AbstractMainService {
 			batchOperate.setPath("/grant");
 			batchOperate.setSize("lg");
 			List<Field<?>> operateFields = new ArrayList<>(1);
-			Field<Option<String>> resourcesField = Field.<Option<String>>builder().name("resources").text(messageService.getMessage("resource.name"))
-					.type("select").views(Views.SELECTION.getKey()).options(resourceSelection.buildNestedOptions(null, null, true)).multiple(true).build();
+			Field<Option<String>> resourcesField = Field.<Option<String>>builder()
+					.name("resources")
+					.text(messageService.getMessage("resource.name"))
+					.type("select")
+					.views(Views.SELECTION.getKey())
+					.options(resourceSelection.buildNestedOptions(null, null, true))
+					.multiple(true).build();
 			operateFields.add(resourcesField);
 			batchOperate.setOperateFields(operateFields);
 			return batchOperate;

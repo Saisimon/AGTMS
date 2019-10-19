@@ -96,13 +96,15 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Resource resource, Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("system.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("navigation.management")).to("/navigation/main").build());
-		if (resource == null) {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("create")).active(true).build());
-		} else {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("edit")).active(true).build());
-		}
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("system.module"))
+				.to("/").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("navigation.management"))
+				.to("/navigation/main").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage(resource == null ? "create" : "edit"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 	
@@ -110,12 +112,23 @@ public class NavigationEditService extends AbstractEditService<Resource> {
 	protected List<FieldGroup> groups(Resource resource, Object key) {
 		String path = resource == null ? null : resource.getPath() + "/" + resource.getId();
 		List<Option<String>> options = resourceSelection.buildNestedOptions(path, Resource.ContentType.NAVIGATION, false);
-		Field<Option<String>> pathField = Field.<Option<String>>builder().name("path").text(messageService.getMessage("parent.navigation"))
-				.type("select").views(Views.SELECTION.getKey()).options(options).build();
-		Field<String> iconField = Field.<String>builder().name("icon").text(messageService.getMessage("icon"))
-				.type(Classes.STRING.getKey()).required(true).views(Views.ICON.getKey()).build();
-		Field<String> titleField = Field.<String>builder().name("name").text(messageService.getMessage("title"))
-				.type(Classes.STRING.getKey()).required(true).build();
+		Field<Option<String>> pathField = Field.<Option<String>>builder()
+				.name("path")
+				.text(messageService.getMessage("parent.navigation"))
+				.type("select")
+				.views(Views.SELECTION.getKey())
+				.options(options).build();
+		Field<String> iconField = Field.<String>builder()
+				.name("icon")
+				.text(messageService.getMessage("icon"))
+				.type(Classes.STRING.getKey())
+				.required(true)
+				.views(Views.ICON.getKey()).build();
+		Field<String> titleField = Field.<String>builder()
+				.name("name")
+				.text(messageService.getMessage("title"))
+				.type(Classes.STRING.getKey())
+				.required(true).build();
 		if (resource != null) {
 			pathField.setValue(SystemUtils.isEmpty(resource.getPath()) ? null : resource.getPath());
 			iconField.setValue(resource.getIcon());

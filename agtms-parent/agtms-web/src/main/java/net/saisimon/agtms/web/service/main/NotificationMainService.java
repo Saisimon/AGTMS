@@ -29,6 +29,7 @@ import net.saisimon.agtms.core.domain.grid.BatchOperate;
 import net.saisimon.agtms.core.domain.grid.Breadcrumb;
 import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
+import net.saisimon.agtms.core.domain.grid.MainGrid.Batch;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
@@ -189,19 +190,58 @@ public class NotificationMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("title").label(messageService.getMessage("title")).views(Views.TEXTAREA.getKey()).width(200).build());
-		columns.add(Column.builder().field("content").label(messageService.getMessage("content")).views(Views.TEXTAREA.getKey()).width(200).build());
-		columns.add(Column.builder().field(Constant.CREATETIME).label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("type").label(messageService.getMessage("notification.type")).views(Views.TEXT.getKey()).width(200).build());
-		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
+		columns.add(Column.builder()
+				.field("title")
+				.label(messageService.getMessage("title"))
+				.views(Views.TEXTAREA.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field("content")
+				.label(messageService.getMessage("content"))
+				.views(Views.TEXTAREA.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field(Constant.CREATETIME)
+				.label(messageService.getMessage("create.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field("type")
+				.label(messageService.getMessage("notification.type"))
+				.views(Views.TEXT.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field("action")
+				.label(messageService.getMessage("actions"))
+				.type("number")
+				.width(100).build());
 		return columns;
 	}
 	
 	@Override
 	protected List<Action> actions(Object key, List<Functions> functions) {
 		List<Action> actions = new ArrayList<>();
-		actions.add(Action.builder().key("remove").icon("trash").to("/notification/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+		actions.add(Action.builder()
+				.key("remove")
+				.icon("trash")
+				.to("/notification/main/remove")
+				.text(messageService.getMessage("remove"))
+				.variant("outline-danger")
+				.type("modal").build());
 		return actions;
+	}
+	
+	@Override
+	protected List<Batch> batches(Object key, List<Functions> functions) {
+		List<Batch> batches = super.batches(key, functions);
+		// TODO
+		
+		return batches;
 	}
 
 	@Override

@@ -157,11 +157,35 @@ public class OperationMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("operateContent").label(messageService.getMessage("operate.content")).views(Views.TEXT.getKey()).width(200).build());
-		columns.add(Column.builder().field("operateType").label(messageService.getMessage("operate.type")).views(Views.TEXT.getKey()).width(200).build());
-		columns.add(Column.builder().field("operateTime").label(messageService.getMessage("operate.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).orderBy("").build());
-		columns.add(Column.builder().field("operateIp").label(messageService.getMessage("operate.ip")).views(Views.TEXT.getKey()).width(200).build());
-		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("operateContent")
+				.label(messageService.getMessage("operate.content"))
+				.views(Views.TEXT.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field("operateType")
+				.label(messageService.getMessage("operate.type"))
+				.views(Views.TEXT.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field("operateTime")
+				.label(messageService.getMessage("operate.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field("operateIp")
+				.label(messageService.getMessage("operate.ip"))
+				.views(Views.TEXT.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field("operator")
+				.label(messageService.getMessage("operator"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
 		return columns;
 	}
 

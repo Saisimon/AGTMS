@@ -78,34 +78,65 @@ public class UserEditService extends AbstractEditService<User> {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(User user, Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("user.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("user.management")).to("/user/main").build());
-		if (user == null) {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("create")).active(true).build());
-		} else {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("edit")).active(true).build());
-		}
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("user.module"))
+				.to("/").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("user.management"))
+				.to("/user/main").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage(user == null ? "create" : "edit"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 	
 	@Override
 	protected List<FieldGroup> groups(User user, Object key) {
-		Field<String> loginNameField = Field.<String>builder().name("loginName").text(messageService.getMessage("login.name"))
-				.type(Classes.STRING.getKey()).required(true).build();
-		Field<String> passwordField = Field.<String>builder().name("password").text(messageService.getMessage("password"))
-				.type(Classes.STRING.getKey()).views(Views.PASSWORD.getKey()).required(true).build();
-		Field<Option<String>> rolesField = Field.<Option<String>>builder().name("roles").text(messageService.getMessage("role.name"))
-				.type("select").views(Views.SELECTION.getKey()).options(roleSelection.buildNestedOptions(null)).flat(true).multiple(true).build();
-		Field<String> nicknameField = Field.<String>builder().name("nickname").text(messageService.getMessage("nickname"))
+		Field<String> loginNameField = Field.<String>builder()
+				.name("loginName")
+				.text(messageService.getMessage("login.name"))
+				.type(Classes.STRING.getKey())
+				.required(true).build();
+		Field<String> passwordField = Field.<String>builder()
+				.name("password")
+				.text(messageService.getMessage("password"))
+				.type(Classes.STRING.getKey())
+				.views(Views.PASSWORD.getKey())
+				.required(true).build();
+		Field<Option<String>> rolesField = Field.<Option<String>>builder()
+				.name("roles")
+				.text(messageService.getMessage("role.name"))
+				.type("select")
+				.views(Views.SELECTION.getKey())
+				.options(roleSelection.buildNestedOptions(null))
+				.flat(true)
+				.multiple(true).build();
+		Field<String> nicknameField = Field.<String>builder()
+				.name("nickname")
+				.text(messageService.getMessage("nickname"))
 				.type(Classes.STRING.getKey()).build();
-		Field<String> cellphoneField = Field.<String>builder().name("cellphone").text(messageService.getMessage("cellphone"))
-				.type(Classes.STRING.getKey()).views(Views.PHONE.getKey()).required(true).build();
-		Field<String> emailField = Field.<String>builder().name("email").text(messageService.getMessage("email"))
-				.type(Classes.STRING.getKey()).views(Views.EMAIL.getKey()).required(true).build();
-		Field<String> avatarField = Field.<String>builder().name("avatar").text(messageService.getMessage("avatar"))
-				.type(Classes.STRING.getKey()).views(Views.IMAGE.getKey()).build();
-		Field<String> remarkField = Field.<String>builder().name("remark").text(messageService.getMessage("remark"))
-				.type(Classes.STRING.getKey()).views(Views.TEXTAREA.getKey()).build();
+		Field<String> cellphoneField = Field.<String>builder()
+				.name("cellphone")
+				.text(messageService.getMessage("cellphone"))
+				.type(Classes.STRING.getKey())
+				.views(Views.PHONE.getKey())
+				.required(true).build();
+		Field<String> emailField = Field.<String>builder()
+				.name("email")
+				.text(messageService.getMessage("email"))
+				.type(Classes.STRING.getKey())
+				.views(Views.EMAIL.getKey())
+				.required(true).build();
+		Field<String> avatarField = Field.<String>builder()
+				.name("avatar")
+				.text(messageService.getMessage("avatar"))
+				.type(Classes.STRING.getKey())
+				.views(Views.IMAGE.getKey()).build();
+		Field<String> remarkField = Field.<String>builder()
+				.name("remark")
+				.text(messageService.getMessage("remark"))
+				.type(Classes.STRING.getKey())
+				.views(Views.TEXTAREA.getKey()).build();
 		if (user != null) {
 			loginNameField.setValue(user.getLoginName());
 			passwordField.setDisabled(true);

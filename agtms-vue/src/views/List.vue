@@ -10,7 +10,7 @@
                         <div v-else>{{ header.title }}</div>
                     </div>
                 </b-col>
-                <b-col v-if="functions.indexOf('create') !== -1">
+                <b-col v-if="header.createUrl != null">
                     <!-- 创建 -->
                     <b-button variant="primary" size="sm" 
                         :to="header.createUrl"
@@ -94,10 +94,9 @@
                             <b-button :key="index" 
                                 :size="'sm'" 
                                 :variant="batch.variant" 
-                                @click="batch.click(batch.func)"
+                                @click="batch.click(batch.key)"
                                 v-b-tooltip.hover 
                                 :title="batch.text"
-                                :class="batch.class"
                                 class="ml-1">
                                 <i class="fa fa-fw" :class="batch.icon"></i>
                             </b-button>
@@ -245,7 +244,7 @@ export default {
             var vm = this;
             this.$store.dispatch('getMainGrid', to.path).then(resp => {
                 if (resp.data.code === 0) {
-                    vm.$store.commit('setFunctions', resp.data.data.functions);
+                    vm.$store.commit('setBatches', resp.data.data.batches);
                     vm.$store.commit('setShowFilters', resp.data.data.showFilters);
                     vm.$store.commit('setFilters', resp.data.data.filters);
                     vm.$store.commit('setHeader', resp.data.data.header);
@@ -292,66 +291,23 @@ export default {
         isLoading: function() {
             return this.$store.state.list.isLoading;
         },
-        functions: function() {
-            return this.$store.state.list.functions;
-        },
         batches: function() {
             var batches = [];
-            var functions = this.$store.state.list.functions;
-            for (var i in functions) {
-                var func = functions[i];
-                switch (func) {
+            var batches = this.$store.state.list.batches;
+            for (var i in batches) {
+                var batch = batches[i];
+                switch (batch.key) {
                     case 'batchEdit':
-                        batches.push({
-                            variant:'outline-primary',
-                            text: this.$t('batch_edit'),
-                            icon: 'fa-edit',
-                            class: 'batch-edit-btn',
-                            click: this.batchEditClick,
-                            func: func
-                        });
-                        break;
-                    case 'batchRemove':
-                        batches.push({
-                            variant:'outline-danger',
-                            text: this.$t('batch_remove'),
-                            icon: 'fa-trash',
-                            class: 'batch-remove-btn',
-                            click: this.batchOperateClick,
-                            func: func
-                        });
-                        break;
-                    case 'grant':
-                        batches.push({
-                            variant:'outline-danger',
-                            text: this.$t('grant'),
-                            icon: 'fa-certificate',
-                            class: 'batch-remove-btn',
-                            click: this.batchOperateClick,
-                            func: func
-                        });
+                        batch.click = this.batchEditClick;
                         break;
                     case 'export':
-                        batches.push({
-                            variant:'outline-secondary',
-                            text: this.$t('export'),
-                            icon: 'fa-download',
-                            class: 'batch-export-btn',
-                            click: this.exportClick,
-                            func: func
-                        });
+                        batch.click = this.exportClick;
                         break;
                     case 'import':
-                        batches.push({
-                            variant:'outline-secondary',
-                            text: this.$t('import'),
-                            icon: 'fa-upload',
-                            class: 'batch-import-btn',
-                            click: this.importClick,
-                            func: func
-                        });
+                        batch.click = this.importClick;
                         break;
                     default:
+                        batch.click = this.batchOperateClick;
                         break;
                 }
             }
@@ -400,7 +356,7 @@ export default {
         if (this.$store.state.base.user != null) {
             this.$store.dispatch('getMainGrid', this.$route.path).then(resp => {
                 if (resp.data.code === 0) {
-                    vm.$store.commit('setFunctions', resp.data.data.functions);
+                    vm.$store.commit('setBatches', resp.data.data.batches);
                     vm.$store.commit('setShowFilters', resp.data.data.showFilters);
                     vm.$store.commit('setFilters', resp.data.data.filters);
                     vm.$store.commit('setHeader', resp.data.data.header);

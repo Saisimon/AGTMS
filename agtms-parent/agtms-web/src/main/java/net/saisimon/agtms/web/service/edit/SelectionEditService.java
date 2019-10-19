@@ -66,14 +66,25 @@ public class SelectionEditService {
 		}
 		SelectionGrid grid = new SelectionGrid();
 		grid.setBreadcrumbs(breadcrumbs(id));
-		Field<String> titleField = Field.<String>builder().name("title").text(messageService.getMessage("title"))
-				.type(Classes.STRING.getKey()).required(true).build();
+		Field<String> titleField = Field.<String>builder()
+				.name("title")
+				.text(messageService.getMessage("title"))
+				.type(Classes.STRING.getKey())
+				.required(true).build();
 		List<Option<Integer>> selectTypeOptions = Select.buildOptions(selectTypeSelection.select());
-		Field<Option<Integer>> typeField = Field.<Option<Integer>>builder().name("type").text(messageService.getMessage("type"))
-				.type("select").options(selectTypeOptions).required(true).build();
+		Field<Option<Integer>> typeField = Field.<Option<Integer>>builder()
+				.name("type")
+				.text(messageService.getMessage("type"))
+				.type("select")
+				.options(selectTypeOptions)
+				.required(true).build();
 		List<Option<String>> templateOptions = Select.buildOptions(templateSelection.select());
-		Field<Option<String>> templateField = Field.<Option<String>>builder().name("template").text(messageService.getMessage("template"))
-				.type("select").options(templateOptions).required(true).build();
+		Field<Option<String>> templateField = Field.<Option<String>>builder()
+				.name("template")
+				.text(messageService.getMessage("template"))
+				.type("select")
+				.options(templateOptions)
+				.required(true).build();
 		Field<Option<String>> templateValue = Field.<Option<String>>builder().type("select").build();
 		Field<Option<String>> templateText = Field.<Option<String>>builder().type("select").build();
 		List<SelectionGrid.OptionField> options = new ArrayList<>();
@@ -252,13 +263,15 @@ public class SelectionEditService {
 	
 	private List<Breadcrumb> breadcrumbs(Long id) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("system.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("selection.management")).to("/selection/main").build());
-		if (id == null) {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("create")).active(true).build());
-		} else {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("edit")).active(true).build());
-		}
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("system.module"))
+				.to("/").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("selection.management"))
+				.to("/selection/main").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage(id == null ? "create" : "edit"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 	

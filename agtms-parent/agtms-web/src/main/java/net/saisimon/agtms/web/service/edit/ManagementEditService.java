@@ -116,16 +116,18 @@ public class ManagementEditService extends AbstractEditService<Domain> {
 					if (r == null) {
 						continue;
 					}
-					breadcrumbs.add(Breadcrumb.builder().text(r.getName()).to("/").build());
+					breadcrumbs.add(Breadcrumb.builder()
+							.text(r.getName())
+							.to("/").build());
 				} catch (NumberFormatException e) {}
 			}
 		}
-		breadcrumbs.add(Breadcrumb.builder().text(template.getTitle()).to("/management/main/" + template.sign()).build());
-		if (domain == null) {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("create")).active(true).build());
-		} else {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("edit")).active(true).build());
-		}
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(template.getTitle())
+				.to("/management/main/" + template.sign()).build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage(domain == null ? "create" : "edit"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 

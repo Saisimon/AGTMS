@@ -424,14 +424,25 @@ public class ManagementMainService extends AbstractMainService {
 		String sign = template.sign();
 		List<Action> actions = new ArrayList<>();
 		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
-			actions.add(Action.builder().key("edit").to("/management/edit/" + sign + "?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
+			actions.add(Action.builder()
+					.key("edit")
+					.to("/management/edit/" + sign + "?id=")
+					.icon("edit")
+					.text(messageService.getMessage("edit"))
+					.type("link").build());
 		}
 		if (SystemUtils.hasFunction(Functions.REMOVE.getCode(), functions)) {
-			actions.add(Action.builder().key("remove").to("/management/main/" + sign + "/remove").icon("trash").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+			actions.add(Action.builder()
+					.key("remove")
+					.to("/management/main/" + sign + "/remove")
+					.icon("trash")
+					.text(messageService.getMessage("remove"))
+					.variant("outline-danger")
+					.type("modal").build());
 		}
 		return actions;
 	}
-
+	
 	@Override
 	protected List<Functions> functions(Object key) {
 		if (!(key instanceof Template)) {

@@ -93,26 +93,46 @@ public class RoleEditService extends AbstractEditService<Role> {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Role role, Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("user.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("role.management")).to("/role/main").build());
-		if (role == null) {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("create")).active(true).build());
-		} else {
-			breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("edit")).active(true).build());
-		}
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("user.module"))
+				.to("/").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("role.management"))
+				.to("/role/main").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage(role == null ? "create" : "edit"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 	
 	@Override
 	protected List<FieldGroup> groups(Role role, Object key) {
-		Field<String> nameField = Field.<String>builder().name("name").text(messageService.getMessage("role.name")).type(Classes.STRING.getKey()).required(true).build();
+		Field<String> nameField = Field.<String>builder()
+				.name("name")
+				.text(messageService.getMessage("role.name"))
+				.type(Classes.STRING.getKey())
+				.required(true).build();
 		String path = role == null ? null : role.getPath() + "/" + role.getId();
-		Field<Option<String>> pathField = Field.<Option<String>>builder().name("path").text(messageService.getMessage("parent.role"))
-				.type("select").views(Views.SELECTION.getKey()).options(roleSelection.buildNestedOptions(path)).required(true).build();
-		Field<Option<String>> resourcesField = Field.<Option<String>>builder().name("resources").text(messageService.getMessage("resource.name"))
-				.type("select").views(Views.SELECTION.getKey()).options(resourceSelection.buildNestedOptions(null, null, true)).consists(Constant.Field.ALL_WITH_INDETERMINATE).multiple(true).build();
-		Field<String> remarkField = Field.<String>builder().name("remark").text(messageService.getMessage("remark"))
-				.type(Classes.STRING.getKey()).views(Views.TEXTAREA.getKey()).build();
+		Field<Option<String>> pathField = Field.<Option<String>>builder()
+				.name("path")
+				.text(messageService.getMessage("parent.role"))
+				.type("select")
+				.views(Views.SELECTION.getKey())
+				.options(roleSelection.buildNestedOptions(path))
+				.required(true).build();
+		Field<Option<String>> resourcesField = Field.<Option<String>>builder()
+				.name("resources")
+				.text(messageService.getMessage("resource.name"))
+				.type("select")
+				.views(Views.SELECTION.getKey())
+				.options(resourceSelection.buildNestedOptions(null, null, true))
+				.consists(Constant.Field.ALL_WITH_INDETERMINATE)
+				.multiple(true).build();
+		Field<String> remarkField = Field.<String>builder()
+				.name("remark")
+				.text(messageService.getMessage("remark"))
+				.type(Classes.STRING.getKey())
+				.views(Views.TEXTAREA.getKey()).build();
 		if (role != null) {
 			nameField.setValue(role.getName());
 			pathField.setValue(SystemUtils.isEmpty(role.getPath()) ? null : role.getPath());

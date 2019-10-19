@@ -288,8 +288,12 @@ public class TaskMainService extends AbstractMainService {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("system.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("task.management")).active(true).build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("system.module"))
+				.to("/").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("task.management"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 
@@ -338,14 +342,56 @@ public class TaskMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("taskContent").label(messageService.getMessage("task.content")).views(Views.TEXT.getKey()).width(200).build());
-		columns.add(Column.builder().field("taskType").label(messageService.getMessage("task.type")).views(Views.TEXT.getKey()).width(200).build());
-		columns.add(Column.builder().field("taskTime").label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("handleStatus").label(messageService.getMessage("handle.status")).views(Views.TEXT.getKey()).width(200).build());
-		columns.add(Column.builder().field("handleResult").label(messageService.getMessage("handle.result")).views(Views.TEXT.getKey()).width(200).build());
-		columns.add(Column.builder().field("handleTime").label(messageService.getMessage("handle.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("operator").label(messageService.getMessage("operator")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
+		columns.add(Column.builder()
+				.field("taskContent")
+				.label(messageService.getMessage("task.content"))
+				.views(Views.TEXT.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field("taskType")
+				.label(messageService.getMessage("task.type"))
+				.views(Views.TEXT.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field("taskTime")
+				.label(messageService.getMessage("create.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field("handleStatus")
+				.label(messageService.getMessage("handle.status"))
+				.views(Views.TEXT.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field("handleResult")
+				.label(messageService.getMessage("handle.result"))
+				.views(Views.TEXT.getKey())
+				.width(200).build());
+		columns.add(Column.builder()
+				.field("handleTime")
+				.label(messageService.getMessage("handle.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field("operator")
+				.label(messageService.getMessage("operator"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("action")
+				.label(messageService.getMessage("actions"))
+				.type("number")
+				.width(100).build());
 		return columns;
 	}
 	
@@ -354,10 +400,22 @@ public class TaskMainService extends AbstractMainService {
 		List<Action> actions = new ArrayList<>();
 		actions.add(Action.builder().key("download").icon("download").to("/task/main/download").text(messageService.getMessage("result")).type("download").build());
 		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
-			actions.add(Action.builder().key("cancel").icon("ban").to("/task/main/cancel").text(messageService.getMessage("cancel")).variant("outline-warning").type("modal").build());
+			actions.add(Action.builder()
+					.key("cancel")
+					.icon("ban")
+					.to("/task/main/cancel")
+					.text(messageService.getMessage("cancel"))
+					.variant("outline-warning")
+					.type("modal").build());
 		}
 		if (SystemUtils.hasFunction(Functions.REMOVE.getCode(), functions)) {
-			actions.add(Action.builder().key("remove").icon("trash").to("/task/main/remove").text(messageService.getMessage("remove")).variant("outline-danger").type("modal").build());
+			actions.add(Action.builder()
+					.key("remove")
+					.icon("trash")
+					.to("/task/main/remove")
+					.text(messageService.getMessage("remove"))
+					.variant("outline-danger")
+					.type("modal").build());
 		}
 		return actions;
 	}

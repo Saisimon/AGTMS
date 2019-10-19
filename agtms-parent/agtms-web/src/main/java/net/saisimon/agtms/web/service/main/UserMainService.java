@@ -258,8 +258,12 @@ public class UserMainService extends AbstractMainService {
 	@Override
 	protected List<Breadcrumb> breadcrumbs(Object key) {
 		List<Breadcrumb> breadcrumbs = new ArrayList<>();
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("system.module")).to("/").build());
-		breadcrumbs.add(Breadcrumb.builder().text(messageService.getMessage("user.management")).active(true).build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("system.module"))
+				.to("/").build());
+		breadcrumbs.add(Breadcrumb.builder()
+				.text(messageService.getMessage("user.management"))
+				.active(true).build());
 		return breadcrumbs;
 	}
 
@@ -292,16 +296,71 @@ public class UserMainService extends AbstractMainService {
 	@Override
 	protected List<Column> columns(Object key) {
 		List<Column> columns = new ArrayList<>();
-		columns.add(Column.builder().field("loginName").label(messageService.getMessage("login.name")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("nickname").label(messageService.getMessage("nickname")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("email").label(messageService.getMessage("email")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("cellphone").label(messageService.getMessage("cellphone")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("avatar").label(messageService.getMessage("avatar")).width(200).views(Views.IMAGE.getKey()).build());
-		columns.add(Column.builder().field("status").label(messageService.getMessage("status")).width(200).views(Views.TEXT.getKey()).build());
-		columns.add(Column.builder().field("lastLoginTime").label(messageService.getMessage("last.login.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field(Constant.CREATETIME).label(messageService.getMessage("create.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field(Constant.UPDATETIME).label(messageService.getMessage("update.time")).type("date").dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ").dateOutputFormat("YYYY-MM-DD HH:mm:ss").width(400).views(Views.TEXT.getKey()).sortable(true).orderBy("").build());
-		columns.add(Column.builder().field("action").label(messageService.getMessage("actions")).type("number").width(100).build());
+		columns.add(Column.builder()
+				.field("loginName")
+				.label(messageService.getMessage("login.name"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("nickname")
+				.label(messageService.getMessage("nickname"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("email")
+				.label(messageService.getMessage("email"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("cellphone")
+				.label(messageService.getMessage("cellphone"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("avatar")
+				.label(messageService.getMessage("avatar"))
+				.width(200)
+				.views(Views.IMAGE.getKey()).build());
+		columns.add(Column.builder()
+				.field("status")
+				.label(messageService.getMessage("status"))
+				.width(200)
+				.views(Views.TEXT.getKey()).build());
+		columns.add(Column.builder()
+				.field("lastLoginTime")
+				.label(messageService.getMessage("last.login.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field(Constant.CREATETIME)
+				.label(messageService.getMessage("create.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field(Constant.UPDATETIME)
+				.label(messageService.getMessage("update.time"))
+				.type("date")
+				.dateInputFormat("YYYY-MM-DDTHH:mm:ss.SSSZZ")
+				.dateOutputFormat("YYYY-MM-DD HH:mm:ss")
+				.width(400)
+				.views(Views.TEXT.getKey())
+				.sortable(true)
+				.orderBy("").build());
+		columns.add(Column.builder()
+				.field("action")
+				.label(messageService.getMessage("actions"))
+				.type("number")
+				.width(100).build());
 		return columns;
 	}
 	
@@ -309,16 +368,39 @@ public class UserMainService extends AbstractMainService {
 	protected List<Action> actions(Object key, List<Functions> functions) {
 		List<Action> actions = new ArrayList<>();
 		if (SystemUtils.hasFunction(Functions.EDIT.getCode(), functions)) {
-			actions.add(Action.builder().key("edit").to("/user/edit?id=").icon("edit").text(messageService.getMessage("edit")).type("link").build());
+			actions.add(Action.builder()
+					.key("edit")
+					.to("/user/edit?id=")
+					.icon("edit")
+					.text(messageService.getMessage("edit"))
+					.type("link").build());
 		}
 		if (SystemUtils.hasFunction(Functions.UNLOCK.getCode(), functions)) {
-			actions.add(Action.builder().key("unlock").icon("unlock").to("/user/main/unlock").text(messageService.getMessage("unlock")).variant("outline-warning").type("modal").build());
+			actions.add(Action.builder()
+					.key("unlock")
+					.icon("unlock")
+					.to("/user/main/unlock")
+					.text(messageService.getMessage("unlock"))
+					.variant("outline-warning")
+					.type("modal").build());
 		}
 		if (SystemUtils.hasFunction(Functions.LOCK.getCode(), functions)) {
-			actions.add(Action.builder().key("lock").icon("lock").to("/user/main/lock").text(messageService.getMessage("lock")).variant("outline-warning").type("modal").build());
+			actions.add(Action.builder()
+					.key("lock")
+					.icon("lock")
+					.to("/user/main/lock")
+					.text(messageService.getMessage("lock"))
+					.variant("outline-warning")
+					.type("modal").build());
 		}
 		if (SystemUtils.hasFunction(Functions.RESET_PASSWORD.getCode(), functions)) {
-			actions.add(Action.builder().key("reset").icon("key").to("/user/main/reset/password").text(messageService.getMessage("reset.password")).variant("outline-danger").type("modal").build());
+			actions.add(Action.builder()
+					.key("reset")
+					.icon("key")
+					.to("/user/main/reset/password")
+					.text(messageService.getMessage("reset.password"))
+					.variant("outline-danger")
+					.type("modal").build());
 		}
 		return actions;
 	}
@@ -336,8 +418,13 @@ public class UserMainService extends AbstractMainService {
 			batchOperate.setPath("/grant");
 			batchOperate.setSize("lg");
 			List<Field<?>> operateFields = new ArrayList<>(1);
-			Field<Option<String>> rolesField = Field.<Option<String>>builder().name("roles").text(messageService.getMessage("role.name"))
-					.type("select").views(Views.SELECTION.getKey()).options(roleSelection.buildNestedOptions(null)).multiple(true).build();
+			Field<Option<String>> rolesField = Field.<Option<String>>builder()
+					.name("roles")
+					.text(messageService.getMessage("role.name"))
+					.type("select")
+					.views(Views.SELECTION.getKey())
+					.options(roleSelection.buildNestedOptions(null))
+					.multiple(true).build();
 			operateFields.add(rolesField);
 			batchOperate.setOperateFields(operateFields);
 			return batchOperate;
