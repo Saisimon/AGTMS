@@ -181,7 +181,6 @@ input:active, input:focus {
     white-space: nowrap;
     overflow: hidden;
     max-width: 300px;
-    cursor: pointer;
 }
 .close {
     font-size: 1.25rem!important;
@@ -280,5 +279,27 @@ label {
     font-size: 1rem;
     margin-bottom: 1rem!important;
     border-bottom: 2px solid #aaa;
+}
+.dropdown-menu {
+    font-size: 0.75rem!important;
+}
+.dropdown-divider {
+    margin: 0rem!important;
+}
+.navbar-light .navbar-toggler {
+    border: 0px;
+}
+.red-point {
+    position: relative;
+}
+.red-point::before{
+    content: " ";
+    border: 3px solid #ff4040;
+    border-radius: 100%;
+    position: absolute;
+    z-index: 1000;
+    right: 0%;
+    margin-right: 0px;
+    margin-top: 5px;
 }
 </style>

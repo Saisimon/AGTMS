@@ -22,6 +22,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.domain.entity.UserToken;
 import net.saisimon.agtms.core.domain.filter.FilterRequest;
+import net.saisimon.agtms.core.factory.NotificationServiceFactory;
 import net.saisimon.agtms.core.factory.OperationServiceFactory;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
@@ -64,6 +65,7 @@ public class MainControllerTest extends AbstractControllerTest {
 		RoleResourceServiceFactory.get().delete(filter);
 		ResourceServiceFactory.get().delete(filter);
 		OperationServiceFactory.get().delete(filter);
+		NotificationServiceFactory.get().delete(filter);
 	}
 	
 	/* UserMainController Start */
@@ -389,6 +391,30 @@ public class MainControllerTest extends AbstractControllerTest {
 		sendPost("/operation/main/list", param, body, testToken);
 	}
 	/* OperationMainController End */
+	
+	/* NotificationMainController Start */
+	@Test
+	public void testNotificationMainGrid() throws Exception {
+		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
+		sendPost("/notification/main/grid", null, testToken);
+	}
+	
+	@Test
+	public void testNotificationMainList() throws Exception {
+		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
+		Map<String, String> param = new HashMap<>();
+		param.put("index", "0");
+		param.put("size", "10");
+		Map<String, Object> body = new HashMap<>();
+		sendPost("/notification/main/list", param, body, testToken);
+	}
+	
+	@Test
+	public void testNotificationMainBatchGrid() throws Exception {
+		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
+		sendPost(String.format("/notification/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "batchRemove"), null, null, testToken);
+	}
+	/* NotificationMainController End */
 	
 	@SpringBootApplication
 	@ComponentScan(basePackages="net.saisimon.agtms")

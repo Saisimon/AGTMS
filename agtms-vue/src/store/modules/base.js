@@ -1,4 +1,4 @@
-import { signIn, signOut, passwordChange, profileSave, profileInfo, nav } from '@/api/user'
+import { signIn, signOut, passwordChange, profileSave, profileInfo, nav, notification, notifications, notificationRead } from '@/api/user'
 import { uploadImage } from '@/api/upload'
 import router from '@/router'
 
@@ -33,7 +33,9 @@ const state = {
     },
     showChangePasswordModal: false,
     openTree: false,
-    tree: {}
+    tree: {},
+    notification: 0,
+    notifications: []
 };
 
 const mutations = {
@@ -110,6 +112,16 @@ const mutations = {
     setTree(state, tree) {
         if (tree) {
             state.tree = tree;
+        }
+    },
+    setNotification(state, notification) {
+        if (notification != null) {
+            state.notification = notification;
+        }
+    },
+    setNotifications(state, notifications) {
+        if (notifications) {
+            state.notifications = notifications;
         }
     }
 };
@@ -188,6 +200,19 @@ const actions = {
         nav(context.rootState.base.user).then(resp => {
             return context.commit('setTree', resp.data.data);
         });
+    },
+    getNotification(context) {
+        notification(context.rootState.base.user).then(resp => {
+            return context.commit('setNotification', resp.data.data);
+        });
+    },
+    getNotifications(context) {
+        notifications(context.rootState.base.user).then(resp => {
+            return context.commit('setNotifications', resp.data.data);
+        });
+    },
+    readNotification(context, payload) {
+        notificationRead(context.rootState.base.user, payload.id);
     }
 };
 

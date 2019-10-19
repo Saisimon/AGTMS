@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import BootstrapVue from 'bootstrap-vue';
 import VueGoodTablePlugin from 'vue-good-table';
-import Multiselect from 'vue-multiselect';
 import Datepicker from 'vuejs-datepicker';
 import Treeselect from '@riophae/vue-treeselect';
 import App from './App.vue';
@@ -14,14 +13,12 @@ import 'font-awesome/css/font-awesome.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import 'vue-good-table/dist/vue-good-table.css';
-import 'vue-multiselect/dist/vue-multiselect.min.css';
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = true;
 Vue.use(BootstrapVue);
 Vue.use(VueGoodTablePlugin);
-Vue.component('multiselect', Multiselect);
 Vue.component('datepicker', Datepicker);
 Vue.component('treeselect', Treeselect);
 Vue.prototype.cloneObject = function (obj) {

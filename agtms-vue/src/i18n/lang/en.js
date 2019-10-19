@@ -127,5 +127,8 @@ export default {
     save_success: 'Successfully saved',
     large_table_sort_disabled: 'Table data is too large, sorting is disabled',
     page_index: 'Page {index}',
-    grant: 'Grant'
+    grant: 'Grant',
+    notification: 'Notifications',
+    see_more: 'See more',
+    no_notification: 'No notifications'
 }

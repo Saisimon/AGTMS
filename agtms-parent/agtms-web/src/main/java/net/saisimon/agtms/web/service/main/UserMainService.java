@@ -334,6 +334,7 @@ public class UserMainService extends AbstractMainService {
 		switch (func) {
 		case "grant":
 			batchOperate.setPath("/grant");
+			batchOperate.setSize("lg");
 			List<Field<?>> operateFields = new ArrayList<>(1);
 			Field<Option<String>> rolesField = Field.<Option<String>>builder().name("roles").text(messageService.getMessage("role.name"))
 					.type("select").views(Views.SELECTION.getKey()).options(roleSelection.buildNestedOptions(null)).multiple(true).build();

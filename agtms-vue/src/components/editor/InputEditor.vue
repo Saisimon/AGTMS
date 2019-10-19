@@ -91,8 +91,7 @@ export default {
         }
         return {
             show: show,
-            placeholder: placeholder,
-            isLoading: false
+            placeholder: placeholder
         }
     },
     methods: {
@@ -112,7 +111,6 @@ export default {
             if (this.editor.selectionSign == null) {
                 return;
             }
-            this.isLoading = true;
             this.$store.dispatch('searchSelection', {
                 sign: this.editor.selectionSign,
                 keyword: query
@@ -121,7 +119,6 @@ export default {
                     var options = resp.data.data;
                     this.editor.options = options;
                 }
-                this.isLoading = false;
             });
         }
     }

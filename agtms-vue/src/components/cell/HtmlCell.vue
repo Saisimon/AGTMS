@@ -1,5 +1,5 @@
 <template>
-    <div v-html="rowData[field]" class="ellipsis-text" v-b-tooltip :title="rowData[field]"></div>
+    <div v-html="rowData[field]"></div>
 </template>
 
 <script>

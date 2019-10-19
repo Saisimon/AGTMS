@@ -4,6 +4,7 @@
             :title="$t('export')"
             size="lg"
             :hide-footer="true"
+            @hidden="initData"
             header-border-variant="light"
             button-size="sm">
             <div class="form-container">
@@ -14,26 +15,6 @@
                 </b-row>
                 <b-row class="mb-3">
                     <b-col>
-                        <!-- <multiselect style="z-index: 10"
-                            v-model="exportFieldSelects"
-                            label="label"
-                            track-by="id"
-                            select-label=""
-                            select-group-label=""
-                            deselect-label=""
-                            deselect-group-label=""
-                            selected-label=""
-                            group-values="options" 
-                            group-label="group" 
-                            :limit="3"
-                            :group-select="true"
-                            :searchable="false"
-                            :multiple="true"
-                            :options="exportFieldOptions"
-                            :placeholder="$t('select_export_fields')" >
-                            <template slot="noResult">{{ $t("no_result") }}</template>
-                            <template slot="noOptions">{{ $t("no_options") }}</template>
-                        </multiselect> -->
                         <treeselect 
                             v-model="exportFieldSelects"
                             :options="exportFieldOptions"
@@ -48,20 +29,6 @@
                 </b-row>
                 <b-row class="mb-3">
                     <b-col>
-                        <!-- <multiselect class="batch-select"
-                            v-model="exportFileType"
-                            label="label"
-                            track-by="id"
-                            select-label=""
-                            deselect-label=""
-                            selected-label=""
-                            :allow-empty="false"
-                            :searchable="false"
-                            :options="batchExport.exportFileTypeOptions"
-                            :placeholder="$t('select_export_file_type')" >
-                            <template slot="noResult">{{ $t("no_result") }}</template>
-                            <template slot="noOptions">{{ $t("no_options") }}</template>
-                        </multiselect> -->
                         <treeselect 
                             v-model="exportFileType"
                             :options="batchExport.exportFileTypeOptions"
@@ -110,6 +77,11 @@ export default {
         }
     },
     methods: {
+        initData: function() {
+            this.submit = false;
+            this.exportFieldSelects = [];
+            this.exportFileType = null;
+        },
         save: function() {
             if (this.submit) {
                 return;

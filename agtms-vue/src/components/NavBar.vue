@@ -1,6 +1,6 @@
 <template>
     <!-- 导航栏 -->
-    <b-navbar class="main-navbar" toggleable="lg">
+    <b-navbar class="main-navbar" toggleable="sm">
         <b-navbar-toggle target="nav-bar"></b-navbar-toggle>
         <!-- 导航栏标题 -->
         <b-navbar-brand class="nav-bar-title">
@@ -20,7 +20,9 @@
                     <side-bar />
                 </b-nav-text>
                 <!-- 设置 -->
-                <b-nav-item-dropdown variant="link" href="javascript:void(0);" 
+                <b-nav-item-dropdown 
+                    variant="link" 
+                    href="javascript:void(0);" 
                     right no-caret
                     class="nav-bar-item" 
                     :title="$t('setting')">
@@ -28,13 +30,15 @@
                         <i class="fa fa-fw fa-cog pt-2 text-light"></i>
                         <span class="nav-bar-content text-light ml-1">{{ $t("setting") }}</span>
                     </template>
-                    <b-dropdown-item class="pt-2 pb-2" href="javascript:void(0);" @click.stop="toggleFullscreen">
+                    <b-dropdown-item href="javascript:void(0);" @click.stop="toggleFullscreen">
                         <i class="fa fa-fw fa-arrows-alt"></i>
                         <span class="ml-1">{{ $t("fullscreen") }}</span>
                     </b-dropdown-item>
                 </b-nav-item-dropdown>
                 <!-- 语言 -->
-                <b-nav-item-dropdown variant="link" href="javascript:void(0);" 
+                <b-nav-item-dropdown 
+                    variant="link" 
+                    href="javascript:void(0);" 
                     right no-caret
                     class="nav-bar-item" 
                     :title="$t('language')">
@@ -42,12 +46,60 @@
                         <i class="fa fa-fw fa-language pt-2 text-light"></i>
                         <span class="nav-bar-content text-light ml-1">{{ $t('language') }}</span>
                     </template>
-                    <div v-for="(text, code, index) in languages" :key="index">
-                        <b-dropdown-item class="pt-2 pb-2" href="javascript:void(0);" @click.stop="changeLanguage(code)">
-                            <span>{{ text }}</span>
-                        </b-dropdown-item>
-                    </div>
+                    <b-dropdown-item v-for="(text, code, index) in languages" :key="index" href="javascript:void(0);" @click.stop="changeLanguage(code)">
+                        <span>{{ text }}</span>
+                    </b-dropdown-item>
                 </b-nav-item-dropdown>
+                <!-- 通知 -->
+                <b-nav-item-dropdown v-if="$store.state.base.user" 
+                    variant="link" 
+                    href="javascript:void(0);" 
+                    right no-caret
+                    class="nav-bar-item"
+                    @toggle="getNotifications()"
+                    :title="$t('notification')">
+                    <template slot="button-content">
+                        <span :class="{'red-point': notification > 0}" >
+                            <i class="fa fa-fw fa-bell-o pt-2 text-light"></i>
+                        </span>
+                        <span class="nav-bar-content text-light ml-1">{{ $t('notification') }}</span>
+                    </template>
+                    <b-dropdown-header class="font-weight-bold">
+                        {{ $t('notification') }}
+                    </b-dropdown-header>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <template v-if="notifications && notifications.length > 0">
+                        <b-dropdown-item v-for="(data, index) in notifications" :key="index">
+                            <div v-b-modal.modal-scrollable="'modal-notification-' + index" >
+                                <div class="ellipsis-text" v-html="'「' + data.type + '」' + data.title"></div>
+                                <div class="text-secondary" style="font-size:0.75rem">{{ new Date(data.createTime).toLocaleString() }}</div>
+                            </div>
+                            <b-modal
+                                :id="'modal-notification-' + index" 
+                                centered 
+                                @shown="readNotification(data.id)"
+                                hide-header
+                                hide-footer>
+                                <div class="text-center">
+                                    <div v-html="data.title" class="mt-2 mb-1 font-weight-bold" style="font-size:1rem"></div>
+                                    <span class="text-secondary" style="font-size:0.75rem">{{ new Date(data.createTime).toLocaleString() }}</span>
+                                    <hr />
+                                    <div v-html="data.content" class="m-4" style="font-size:0.875rem"></div>
+                                </div>
+                            </b-modal>
+                        </b-dropdown-item>
+                    </template>
+                    <template v-else>
+                        <b-dropdown-item href="javascript:void(0);">
+                            <div class="mt-2 mb-2">{{ $t('no_notification') }}</div>
+                        </b-dropdown-item>
+                    </template>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item to="/notification/main">
+                        <div>{{ $t('see_more') }}</div>
+                    </b-dropdown-item>
+                </b-nav-item-dropdown>
+                <!-- 用户 -->
                 <b-nav-item-dropdown v-if="$store.state.base.user" 
                     variant="link" 
                     href="javascript:void(0);" 
@@ -61,17 +113,17 @@
                         </div>
                     </template>
                     <!-- 修改密码 -->
-                    <b-dropdown-item class="pt-2 pb-2" href="javascript:void(0);" @click.stop="$store.commit('changePasswordModal', true)">
+                    <b-dropdown-item href="javascript:void(0);" @click.stop="$store.commit('changePasswordModal', true)">
                         <i class="fa fa-fw fa-key"></i>
                         <span class="ml-1">{{ $t('change_password') }}</span>
                     </b-dropdown-item>
                     <!-- 编辑个人资料 -->
-                    <b-dropdown-item class="pt-2 pb-2" to="/profile">
+                    <b-dropdown-item to="/profile">
                         <i class="fa fa-fw fa-edit"></i>
                         <span class="ml-1">{{ $t('edit_profile') }}</span>
                     </b-dropdown-item>
                     <!-- 登出 -->
-                    <b-dropdown-item class="pt-2 pb-2" href="javascript:void(0);" @click.stop="signOut">
+                    <b-dropdown-item href="javascript:void(0);" @click.stop="signOut">
                         <i class="fa fa-fw fa-sign-out"></i>
                         <span class="ml-1">{{ $t('sign_out') }}</span>
                     </b-dropdown-item>
@@ -236,6 +288,30 @@ export default {
                 'zh_CN': '简体中文', 
                 'en': 'English'
             };
+        },
+        notification: function() {
+            var notification = this.$store.state.base.notification;
+            if (!notification) {
+                return 0;
+            } else {
+                return notification;
+            }
+        },
+        notifications: function() {
+            return this.$store.state.base.notifications;
+        }
+    },
+    created: function() {
+        if (this.$store.state.base.user != null) {
+            this.$store.dispatch('getNotification');
+            var vm = this;
+            (function loop(){
+                setTimeout(function() {
+                    vm.$store.dispatch('getNotification').then(resp => {
+                        loop();
+                    });
+                }, 10000);
+            })();
         }
     },
     methods: {
@@ -281,6 +357,14 @@ export default {
             c += ';path=/';
             document.cookie = c;
             window.location.reload();
+        },
+        getNotifications: function() {
+            this.$store.dispatch('getNotifications');
+        },
+        readNotification: function(id) {
+            this.$store.dispatch('readNotification', {
+                id: id
+            });
         },
         toggleBars: function() {
             var openTree = this.$store.state.base.openTree;
@@ -422,11 +506,5 @@ export default {
 }
 .avatar-image {
     border-radius: 50%!important;
-}
-</style>
-
-<style>
-.navbar-light .navbar-toggler {
-    border: 0px;
 }
 </style>

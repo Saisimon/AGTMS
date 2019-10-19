@@ -9,6 +9,8 @@ public class BatchOperate {
 
 	private String path;
 	
+	private String size = "sm";
+	
 	private List<Field<?>> operateFields;
 	
 }

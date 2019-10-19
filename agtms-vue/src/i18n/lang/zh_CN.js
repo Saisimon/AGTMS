@@ -127,5 +127,8 @@ export default {
     save_success: '保存成功',
     large_table_sort_disabled: '数据量过大，排序被禁用',
     page_index: '第 {index} 页',
-    grant: '授权'
+    grant: '授权',
+    notification: '消息通知',
+    see_more: '查看更多',
+    no_notification: '暂无通知'
 }

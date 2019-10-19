@@ -4,6 +4,7 @@
             :title="$t('batch_edit')"
             size="lg"
             :hide-footer="true"
+            @hidden="initData"
             header-border-variant="light"
             button-size="sm">
             <div class="form-container">
@@ -79,6 +80,10 @@ export default {
         }
     },
     methods: {
+        initData: function() {
+            this.submit = false;
+            this.editFieldSelects = [];
+        },
         save: function() {
             if (this.submit) {
                 return;

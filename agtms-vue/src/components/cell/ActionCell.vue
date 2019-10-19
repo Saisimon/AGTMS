@@ -37,7 +37,7 @@
                 </b-button>
                 <b-modal :key="'modal-' + idx"
                     :id="'modal-' + idx + '-' + index" 
-                    centered 
+                    :size="'sm'" 
                     :cancel-title="$t('cancel')"
                     :ok-title="$t('confirm')"
                     @ok="modal(action.to)"
@@ -46,7 +46,7 @@
                     header-border-variant="light"
                     footer-border-variant="light"
                     button-size="sm">
-                    <div class="text-center">
+                    <div class="text-center mt-2 mb-2">
                         {{ $t('are_you_confirm' )}}
                     </div>
                 </b-modal>

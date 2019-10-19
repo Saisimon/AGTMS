@@ -20,6 +20,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import net.saisimon.agtms.core.constant.Constant;
 import net.saisimon.agtms.core.constant.Constant.Operator;
@@ -179,6 +180,9 @@ public class ExportActuator implements Actuator<ExportParam> {
 				files.add(file);
 				datas.clear();
 				idx++;
+				if (CollectionUtils.isEmpty(domainList)) {
+					break;
+				}
 				lastId = (Long) domainList.get(domainList.size() - 1).get(Constant.ID);
 				if (lastId == null || domainList.size() < PAGE_SIZE) {
 					break;

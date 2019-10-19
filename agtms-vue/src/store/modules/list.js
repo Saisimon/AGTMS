@@ -10,11 +10,11 @@ const state = {
     showFilters: false,
     filters: [],
     columns: [],
-    actions: null,
-    batchOperate: null,
-    batchEdit: null,
-    batchExport: null,
-    batchImport: null,
+    actions: [],
+    batchOperate: {},
+    batchEdit: {},
+    batchExport: {},
+    batchImport: {},
     datas: []
 };
 
@@ -28,11 +28,11 @@ const mutations = {
         state.showFilters = false;
         state.filters = [];
         state.columns = [];
-        state.actions = null;
-        state.batchOperate = null;
-        state.batchEdit = null;
-        state.batchExport = null;
-        state.batchImport = null;
+        state.actions = [];
+        state.batchOperate = {};
+        state.batchEdit = {};
+        state.batchExport = {};
+        state.batchImport = {};
         state.datas = [];
     },
     setHeader(state, header) {

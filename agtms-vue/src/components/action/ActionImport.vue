@@ -4,6 +4,7 @@
             :title="$t('import')"
             size="lg"
             :hide-footer="true"
+            @hidden="initData"
             header-border-variant="light"
             button-size="sm">
             <div class="form-container">
@@ -15,26 +16,6 @@
                     </b-row>
                     <b-row class="mb-3">
                         <b-col>
-                            <!-- <multiselect style="z-index: 11"
-                                v-model="importFieldSelects"
-                                label="label"
-                                track-by="id"
-                                select-label=""
-                                select-group-label=""
-                                deselect-label=""
-                                deselect-group-label=""
-                                selected-label=""
-                                group-values="options" 
-                                group-label="group" 
-                                :limit="3"
-                                :group-select="true"
-                                :searchable="false"
-                                :multiple="true"
-                                :options="importFieldOptions"
-                                :placeholder="$t('select_import_fields')" >
-                                <template slot="noResult">{{ $t("no_result") }}</template>
-                                <template slot="noOptions">{{ $t("no_options") }}</template>
-                            </multiselect> -->
                             <treeselect 
                                 v-model="importFieldSelects"
                                 :options="importFieldOptions"
@@ -49,20 +30,6 @@
                     </b-row>
                     <b-row class="mb-3">
                         <b-col>
-                            <!-- <multiselect style="z-index: 10"
-                                v-model="importFileType"
-                                label="label"
-                                track-by="id"
-                                select-label=""
-                                deselect-label=""
-                                selected-label=""
-                                :allow-empty="false"
-                                :searchable="false"
-                                :options="batchImport.importFileTypeOptions"
-                                :placeholder="$t('select_import_file_type')" >
-                                <template slot="noResult">{{ $t("no_result") }}</template>
-                                <template slot="noOptions">{{ $t("no_options") }}</template>
-                            </multiselect> -->
                             <treeselect 
                                 v-model="importFileType"
                                 :options="batchImport.importFileTypeOptions"
@@ -124,6 +91,12 @@ export default {
         }
     },
     methods: {
+        initData: function() {
+            this.submit = false;
+            this.importFieldSelects = [];
+            this.importFileType = null;
+            this.importFiles = [];
+        },
         save: function() {
             if (this.submit) {
                 return;

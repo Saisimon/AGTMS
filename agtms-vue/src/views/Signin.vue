@@ -84,6 +84,15 @@ export default {
                         });
                     } else {
                         this.$store.dispatch('getTree');
+                        this.$store.dispatch('getNotification');
+                        var vm = this;
+                        (function loop(){
+                            setTimeout(function() {
+                                vm.$store.dispatch('getNotification').then(resp => {
+                                    loop();
+                                });
+                            }, 10000);
+                        })();
                         var reply = this.$route.query.reply;
                         if (reply && reply != '/') {
                             this.$router.push({

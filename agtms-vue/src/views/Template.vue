@@ -827,29 +827,6 @@ export default {
     cursor: pointer;
     font-style: italic;
 }
-.select-editor .multiselect {
-    height: 30px!important;
-    min-height: 30px!important;
-}
-.select-editor .multiselect__select {
-    height: 28px!important;
-    min-height: 28px!important;
-    padding: 0px!important;
-}
-.select-editor .multiselect__tags {
-    height: 30px!important;
-    min-height: 30px!important;
-    padding: 4px 40px 0px 4px!important;
-}
-.select-editor .multiselect__single {
-    font-size: 0.85rem!important;
-}
-.select-editor .multiselect__option {
-    padding: 5px!important;
-    min-height: 30px!important;
-    line-height: 20px!important;
-    height:30px!important;
-}
 .template-container table.vgt-table .vgt-left-align {
     padding: 0.35em 0.5em!important;
 }

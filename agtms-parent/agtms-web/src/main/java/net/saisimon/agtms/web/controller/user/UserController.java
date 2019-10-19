@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.saisimon.agtms.core.annotation.ControllerInfo;
@@ -16,6 +17,8 @@ import net.saisimon.agtms.web.constant.ErrorMessage;
 import net.saisimon.agtms.web.dto.req.UserAuthParam;
 import net.saisimon.agtms.web.dto.req.UserPasswordChangeParam;
 import net.saisimon.agtms.web.dto.req.UserProfileSaveParam;
+import net.saisimon.agtms.web.service.main.NavigationMainService;
+import net.saisimon.agtms.web.service.main.NotificationMainService;
 import net.saisimon.agtms.web.service.user.UserInfoService;
 
 /**
@@ -53,10 +56,37 @@ public class UserController {
 	 * 
 	 * @return 导航树结果
 	 */
-	@Operate(type=OperateTypes.QUERY, value="navigation")
+	@Operate(type=OperateTypes.QUERY, value=NavigationMainService.NAVIGATION)
 	@PostMapping("/nav")
 	public Result nav() {
 		return userInfoService.nav();
+	}
+	
+	/**
+	 * 获取消息通知数量
+	 * 
+	 * @return 消息通知数量结果
+	 */
+	@PostMapping("/notification")
+	public Result notification() {
+		return userInfoService.notification();
+	}
+	
+	@Operate(type=OperateTypes.EDIT, value="read")
+	@PostMapping("/notification/read")
+	public Result read(@RequestParam(name = "id") Long id) {
+		return userInfoService.read(id);
+	}
+	
+	/**
+	 * 获取消息通知
+	 * 
+	 * @return 消息通知结果
+	 */
+	@Operate(type=OperateTypes.QUERY, value=NotificationMainService.NOTIFICATION)
+	@PostMapping("/notifications")
+	public Result notifications() {
+		return userInfoService.notifications();
 	}
 	
 	/**

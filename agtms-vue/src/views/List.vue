@@ -456,7 +456,6 @@ export default {
     },
     methods: {
         batchOperateClick: function(func) {
-            console.log(func);
             if (this.checkSelect()) {
                 this.$store.dispatch('getBatchGrid', {
                     url: this.$route.path,

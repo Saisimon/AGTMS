@@ -32,11 +32,6 @@
 export default {
     name: 'select-form',
     props: [ 'field' ],
-    data: function() {
-        return {
-            isLoading: false
-        }
-    },
     computed: {
         options: function() {
             var options = this.field.options;
@@ -51,7 +46,6 @@ export default {
             if (this.field.sign == null) {
                 return;
             }
-            this.isLoading = true;
             this.$store.dispatch('searchSelection', {
                 sign: this.field.sign,
                 keyword: query
@@ -60,7 +54,6 @@ export default {
                     var options = resp.data.data;
                     this.field.options = options;
                 }
-                this.isLoading = false;
             });
         }
     }

@@ -56,6 +56,7 @@ import net.saisimon.agtms.core.domain.grid.Filter;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
+import net.saisimon.agtms.core.domain.sign.Sign;
 import net.saisimon.agtms.core.domain.tag.Option;
 import net.saisimon.agtms.core.domain.tag.Select;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
@@ -65,14 +66,17 @@ import net.saisimon.agtms.core.dto.SimpleResult;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
+import net.saisimon.agtms.core.enums.NotificationTypes;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.ActuatorFactory;
 import net.saisimon.agtms.core.factory.FileHandlerFactory;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.factory.NotificationServiceFactory;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.TaskServiceFactory;
 import net.saisimon.agtms.core.handler.FileHandler;
 import net.saisimon.agtms.core.property.BasicProperties;
+import net.saisimon.agtms.core.service.NotificationService;
 import net.saisimon.agtms.core.service.ResourceService;
 import net.saisimon.agtms.core.service.TaskService;
 import net.saisimon.agtms.core.task.Actuator;
@@ -646,6 +650,7 @@ public class ManagementMainService extends AbstractMainService {
 					}
 				}
 				taskService.saveOrUpdate(task);
+				sendTaskNotification(task, actuator, param);
 			} catch (InterruptedException e) {
 				task.setHandleTime(new Date());
 				task.setHandleStatus(HandleStatuses.CANCELED.getStatus());
@@ -663,6 +668,27 @@ public class ManagementMainService extends AbstractMainService {
 			}
 		});
 		SystemUtils.putTaskFuture(task.getId(), future);
+	}
+	
+	private <P extends BaseTaskParam> void sendTaskNotification(Task task, Actuator<P> actuator, P param) {
+		Sign sign = actuator.sign();
+		if (task == null || sign == null) {
+			return;
+		}
+		String taskContent = actuator.taskContent(param);
+		String taskSign = messageService.getMessage(sign.getText());
+		NotificationService notificationService = NotificationServiceFactory.get();
+		if (HandleStatuses.SUCCESS.getStatus().equals(task.getHandleStatus())) {
+			notificationService.sendNotification(messageService.getMessage("task.success.notification.title", taskSign), 
+					messageService.getMessage("task.success.notification.content", taskSign, taskContent), 
+					NotificationTypes.TASK_NOTICE, 
+					task.getOperatorId());
+		} else if (HandleStatuses.FAILURE.getStatus().equals(task.getHandleStatus())) {
+			notificationService.sendNotification(messageService.getMessage("task.failure.notification.title", messageService.getMessage(sign.getText())), 
+					messageService.getMessage("task.failure.notification.content", taskSign, taskContent, actuator.handleResult(task.getHandleResult())), 
+					NotificationTypes.TASK_NOTICE, 
+					task.getOperatorId());
+		}
 	}
 	
 	private Long count(Template template, long timeout) {

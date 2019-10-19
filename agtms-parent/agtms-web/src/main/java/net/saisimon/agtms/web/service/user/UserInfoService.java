@@ -12,19 +12,28 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.domain.entity.Notification;
 import net.saisimon.agtms.core.domain.entity.Resource;
 import net.saisimon.agtms.core.domain.entity.Template;
 import net.saisimon.agtms.core.domain.entity.User;
 import net.saisimon.agtms.core.domain.entity.UserToken;
+import net.saisimon.agtms.core.domain.filter.FilterPageable;
+import net.saisimon.agtms.core.domain.filter.FilterRequest;
+import net.saisimon.agtms.core.domain.filter.FilterSort;
 import net.saisimon.agtms.core.dto.Result;
+import net.saisimon.agtms.core.enums.NotificationStatuses;
 import net.saisimon.agtms.core.enums.UserStatuses;
+import net.saisimon.agtms.core.factory.NotificationServiceFactory;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
 import net.saisimon.agtms.core.property.BasicProperties;
+import net.saisimon.agtms.core.service.NotificationService;
 import net.saisimon.agtms.core.service.RemoteService;
 import net.saisimon.agtms.core.service.UserService;
 import net.saisimon.agtms.core.util.AuthUtils;
@@ -40,6 +49,7 @@ import net.saisimon.agtms.web.dto.resp.ProfileInfo;
 import net.saisimon.agtms.web.dto.resp.UserTokenInfo;
 import net.saisimon.agtms.web.service.common.MessageService;
 import net.saisimon.agtms.web.service.common.PremissionService;
+import net.saisimon.agtms.web.service.main.NotificationMainService;
 
 /**
  * 用户信息服务
@@ -60,6 +70,8 @@ public class UserInfoService {
 	private MessageService messageService;
 	@Autowired
 	private PremissionService premissionService;
+	@Autowired
+	private NotificationMainService notificationMainService;
 	
 	@Transactional(rollbackOn = Exception.class)
 	public Result auth(UserAuthParam param) {
@@ -94,6 +106,35 @@ public class UserInfoService {
 			}
 		}
 		return ResultUtils.simpleSuccess(root);
+	}
+	
+	public Result notification() {
+		NotificationService notificationService = NotificationServiceFactory.get();
+		FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, AuthUtils.getUid()).and("status", NotificationStatuses.UNREAD.getStatus());
+		return ResultUtils.simpleSuccess(notificationService.count(filter));
+	}
+	
+	@Transactional(rollbackOn = Exception.class)
+	public Result read(Long id) {
+		if (id < 0) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		NotificationService notificationService = NotificationServiceFactory.get();
+		Notification notification = notificationService.findById(id.longValue()).orElse(null);
+		if (notification == null || !notification.getOperatorId().equals(AuthUtils.getUid())) {
+			return ErrorMessage.Notification.NOTIFICATION_NOT_EXIST;
+		}
+		notification.setStatus(NotificationStatuses.READ.getStatus());
+		notificationService.saveOrUpdate(notification);
+		return ResultUtils.simpleSuccess();
+	}
+	
+	public Result notifications() {
+		NotificationService notificationService = NotificationServiceFactory.get();
+		FilterRequest filter = FilterRequest.build().and(Constant.OPERATORID, AuthUtils.getUid()).and("status", NotificationStatuses.UNREAD.getStatus());
+		FilterPageable pageable = new FilterPageable(0, 5, FilterSort.build(Constant.CREATETIME, Direction.DESC));
+		List<Notification> list = notificationService.findList(filter, pageable);
+		return ResultUtils.simpleSuccess(notificationMainService.buildNotificationInfos(list));
 	}
 	
 	@Transactional(rollbackOn = Exception.class)

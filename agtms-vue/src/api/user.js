@@ -29,3 +29,15 @@ export function profileSave(user, data) {
 export function nav(user) {
     return request(user, "/user/nav");
 }
+
+export function notification(user) {
+    return request(user, "/user/notification");
+}
+
+export function notifications(user) {
+    return request(user, "/user/notifications");
+}
+
+export function notificationRead(user, id) {
+    return request(user, "/user/notification/read?id=" + id);
+}

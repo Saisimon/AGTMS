@@ -31,7 +31,7 @@ public enum Classes implements BaseEnum<String> {
 		this.name = name;
 	}
 	
-//	@Override
+	@Override
 	public String getKey() {
 		return this.name;
 	}

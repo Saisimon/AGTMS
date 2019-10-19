@@ -355,6 +355,7 @@ public class RoleMainService extends AbstractMainService {
 			return batchOperate;
 		case "grant":
 			batchOperate.setPath("/grant");
+			batchOperate.setSize("lg");
 			List<Field<?>> operateFields = new ArrayList<>(1);
 			Field<Option<String>> resourcesField = Field.<Option<String>>builder().name("resources").text(messageService.getMessage("resource.name"))
 					.type("select").views(Views.SELECTION.getKey()).options(resourceSelection.buildNestedOptions(null, null, true)).multiple(true).build();

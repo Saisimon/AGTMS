@@ -1,10 +1,11 @@
 <template>
     <div class="batch-remove-container" v-if="batchOperate">
         <b-modal v-model="modal.show"
-            size="lg"
+            :size="batchOperate.size"
             :cancel-title="$t('cancel')"
             :ok-title="$t('confirm')"
             @ok="operate()"
+            @hidden="initData"
             cancel-variant="outline-info"
             ok-variant="outline-danger"
             header-border-variant="light"
@@ -21,7 +22,7 @@
                     <text-form :field="operateField" :key="key" v-else />
                 </template>
             </div>
-            <div class="text-center" v-else>
+            <div class="text-center mt-2 mb-2" v-else>
                 {{ $t('are_you_confirm') }}
             </div>
         </b-modal>
@@ -54,6 +55,9 @@ export default {
         }
     },
     methods: {
+        initData: function() {
+            this.submit = false;
+        },
         operate() {
             if (this.submit) {
                 return;

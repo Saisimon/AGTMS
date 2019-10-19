@@ -43,6 +43,7 @@ import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
 import net.saisimon.agtms.core.enums.Views;
 import net.saisimon.agtms.core.factory.GenerateServiceFactory;
+import net.saisimon.agtms.core.factory.NotificationServiceFactory;
 import net.saisimon.agtms.core.factory.OperationServiceFactory;
 import net.saisimon.agtms.core.factory.ResourceServiceFactory;
 import net.saisimon.agtms.core.factory.RoleResourceServiceFactory;
@@ -97,6 +98,7 @@ public class EditControllerTest extends AbstractControllerTest {
 		RoleResourceServiceFactory.get().delete(filter);
 		ResourceServiceFactory.get().delete(filter);
 		OperationServiceFactory.get().delete(filter);
+		NotificationServiceFactory.get().delete(filter);
 	}
 	
 	/* UserEditController Start */
@@ -1031,8 +1033,24 @@ public class EditControllerTest extends AbstractControllerTest {
 		ids.add("1");
 		ids.add("2");
 		ids.add("3");
+		ids.add("1000");
 		body.put("ids", ids);
 		sendPost("/task/main/batch/remove", body, testToken);
+		
+		param = new HashMap<>();
+		param.put("index", "0");
+		param.put("size", "10");
+		body = new HashMap<>();
+		sendPost("/notification/main/list", param, body, testToken);
+		
+		body = new HashMap<>();
+		ids = new ArrayList<>();
+		ids.add("1");
+		ids.add("2");
+		ids.add("3");
+		ids.add("1000");
+		body.put("ids", ids);
+		sendPost("/notification/main/batch/remove", body, testToken);
 		
 		param = new HashMap<>();
 		param.put("id", "100");

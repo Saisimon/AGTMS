@@ -91,12 +91,36 @@ public class UserControllerTest extends AbstractControllerTest {
 	}
 	
 	@Test
-	public void testNavigationMainSide() throws Exception {
+	public void testNav() throws Exception {
 		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
 		sendPost("/user/nav", null, null, adminToken);
 		
 		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
 		sendPost("/user/nav", null, null, testToken);
+	}
+	
+	@Test
+	public void testNotification() throws Exception {
+		UserToken token = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
+		sendPost("/user/notification", null, null, token);
+	}
+	
+	@Test
+	public void testNotificationRead() throws Exception {
+		UserToken token = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
+		Map<String, String> param = new HashMap<>();
+		param.put("id", "-1");
+		sendPost("/user/notification/read", param, token, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		param = new HashMap<>();
+		param.put("id", "1000");
+		sendPost("/user/notification/read", param, token, ErrorMessage.Notification.NOTIFICATION_NOT_EXIST.getCode());
+	}
+	
+	@Test
+	public void testNotifications() throws Exception {
+		UserToken token = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
+		sendPost("/user/notifications", null, null, token);
 	}
 	
 	@Test

@@ -83,4 +83,8 @@ public class ErrorMessage {
 		public static final Result ROLE_MAX_DEPTH_LIMIT = ResultUtils.error(7003, "role.max.depth.limit");
 	}
 	
+	public static class Notification {
+		public static final Result NOTIFICATION_NOT_EXIST = ResultUtils.error(8001, "notification.not.exist");
+	}
+	
 }
