@@ -72,7 +72,7 @@ public class UserMainController {
 	}
 	
 	@ResourceInfo(func=Functions.GRANT)
-	@Operate(type=OperateTypes.EDIT, value="grant")
+	@Operate(type=OperateTypes.BATCH_EDIT, value="grant")
 	@PostMapping("/grant")
 	public Result grant(@RequestBody Map<String, Object> body) {
 		return userMainService.grant(body);

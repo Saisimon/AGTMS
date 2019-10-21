@@ -462,15 +462,27 @@ public class ManagementMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected BatchOperate batchOperate(Object key, String func) {
+	protected BatchOperate batchOperate(Object key, String func, List<Functions> functions) {
 		BatchOperate batchOperate = new BatchOperate();
-		batchOperate.setPath("/batch/remove");
-		return batchOperate;
+		switch (func) {
+		case "batchRemove":
+			if (SystemUtils.hasFunction(Functions.BATCH_REMOVE.getCode(), functions)) {
+				batchOperate.setPath("/batch/remove");
+				return batchOperate;
+			} else {
+				return null;
+			}
+		default:
+			return null;
+		}
 	}
 
 	@Override
-	protected BatchEdit batchEdit(Object key) {
+	protected BatchEdit batchEdit(Object key, List<Functions> functions) {
 		if (!(key instanceof Template)) {
+			return null;
+		}
+		if (!SystemUtils.hasFunction(Functions.BATCH_EDIT.getCode(), functions)) {
 			return null;
 		}
 		Template template = (Template) key;
@@ -506,8 +518,11 @@ public class ManagementMainService extends AbstractMainService {
 	}
 
 	@Override
-	protected BatchExport batchExport(Object key) {
+	protected BatchExport batchExport(Object key, List<Functions> functions) {
 		if (!(key instanceof Template)) {
+			return null;
+		}
+		if (!SystemUtils.hasFunction(Functions.EXPORT.getCode(), functions)) {
 			return null;
 		}
 		Template template = (Template) key;
@@ -524,8 +539,11 @@ public class ManagementMainService extends AbstractMainService {
 	}
 
 	@Override
-	protected BatchImport batchImport(Object key) {
+	protected BatchImport batchImport(Object key, List<Functions> functions) {
 		if (!(key instanceof Template)) {
+			return null;
+		}
+		if (!SystemUtils.hasFunction(Functions.IMPORT.getCode(), functions)) {
 			return null;
 		}
 		Template template = (Template) key;

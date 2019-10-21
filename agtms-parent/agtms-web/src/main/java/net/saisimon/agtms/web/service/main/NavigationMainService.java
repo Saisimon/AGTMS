@@ -296,7 +296,10 @@ public class NavigationMainService extends AbstractMainService {
 	}
 
 	@Override
-	protected BatchEdit batchEdit(Object key) {
+	protected BatchEdit batchEdit(Object key, List<Functions> functions) {
+		if (!SystemUtils.hasFunction(Functions.BATCH_EDIT.getCode(), functions)) {
+			return null;
+		}
 		BatchEdit batchEdit = new BatchEdit();
 		Option<String> pathOption = new Option<>("path", messageService.getMessage("parent.navigation"), true);
 		Option<String> nameOption = new Option<>("name", messageService.getMessage("title"), true);
@@ -352,12 +355,16 @@ public class NavigationMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected BatchOperate batchOperate(Object key, String func) {
+	protected BatchOperate batchOperate(Object key, String func, List<Functions> functions) {
 		BatchOperate batchOperate = new BatchOperate();
 		switch (func) {
 		case "batchRemove":
-			batchOperate.setPath("/batch/remove");
-			return batchOperate;
+			if (SystemUtils.hasFunction(Functions.BATCH_REMOVE.getCode(), functions)) {
+				batchOperate.setPath("/batch/remove");
+				return batchOperate;
+			} else {
+				return null;
+			}
 		default:
 			return null;
 		}

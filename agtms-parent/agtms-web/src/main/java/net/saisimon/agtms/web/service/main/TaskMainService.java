@@ -46,8 +46,8 @@ import net.saisimon.agtms.core.domain.grid.MainGrid.Action;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Column;
 import net.saisimon.agtms.core.domain.grid.MainGrid.Header;
 import net.saisimon.agtms.core.domain.tag.SingleSelect;
-import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.dto.BaseTaskParam;
+import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
 import net.saisimon.agtms.core.enums.HandleStatuses;
@@ -426,12 +426,16 @@ public class TaskMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected BatchOperate batchOperate(Object key, String func) {
+	protected BatchOperate batchOperate(Object key, String func, List<Functions> functions) {
 		BatchOperate batchOperate = new BatchOperate();
 		switch (func) {
 		case "batchRemove":
-			batchOperate.setPath("/batch/remove");
-			return batchOperate;
+			if (SystemUtils.hasFunction(Functions.BATCH_REMOVE.getCode(), functions)) {
+				batchOperate.setPath("/batch/remove");
+				return batchOperate;
+			} else {
+				return null;
+			}
 		default:
 			return null;
 		}

@@ -51,6 +51,12 @@ public class NotificationMainController {
 		return notificationMainService.batchGrid(type, func);
 	}
 	
+	@Operate(type=OperateTypes.BATCH_EDIT, value="batch.read")
+	@PostMapping("/batch/read")
+	public Result batchRead(@RequestBody Map<String, Object> body) {
+		return notificationMainService.batchRead(body);
+	}
+	
 	@Operate(type=OperateTypes.BATCH_REMOVE)
 	@PostMapping("/batch/remove")
 	public Result batchRemove(@RequestBody Map<String, Object> body) {

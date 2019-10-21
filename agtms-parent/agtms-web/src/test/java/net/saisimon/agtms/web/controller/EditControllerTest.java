@@ -28,6 +28,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import net.saisimon.agtms.core.constant.Constant;
+import net.saisimon.agtms.core.domain.entity.Notification;
 import net.saisimon.agtms.core.domain.entity.Resource;
 import net.saisimon.agtms.core.domain.entity.Role;
 import net.saisimon.agtms.core.domain.entity.Template;
@@ -1042,6 +1043,26 @@ public class EditControllerTest extends AbstractControllerTest {
 		param.put("size", "10");
 		body = new HashMap<>();
 		sendPost("/notification/main/list", param, body, testToken);
+		
+		param = new HashMap<>();
+		param.put("id", "1000");
+		sendPost("/notification/main/remove", param, testToken, ErrorMessage.Notification.NOTIFICATION_NOT_EXIST.getCode());
+		
+		Notification newNotification = NotificationServiceFactory.get().findOne(FilterRequest.build(), FilterSort.build(Constant.ID, Direction.DESC)).orElse(null);
+		if (newNotification != null) {
+			param = new HashMap<>();
+			param.put("id", newNotification.getId().toString());
+			sendPost("/notification/main/remove", param, testToken);
+		}
+		
+		body = new HashMap<>();
+		ids = new ArrayList<>();
+		ids.add("1");
+		ids.add("2");
+		ids.add("3");
+		ids.add("1000");
+		body.put("ids", ids);
+		sendPost("/notification/main/batch/read", body, testToken);
 		
 		body = new HashMap<>();
 		ids = new ArrayList<>();

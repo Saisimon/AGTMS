@@ -139,6 +139,29 @@ public class NotificationMainService extends AbstractMainService {
 		return ResultUtils.simpleSuccess();
 	}
 	
+	@Transactional(rollbackOn = Exception.class)
+	public Result batchRead(Map<String, Object> body) {
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
+		if (CollectionUtils.isEmpty(ids)) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		NotificationService notificationService = NotificationServiceFactory.get();
+		Long userId = AuthUtils.getUid();
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
+			Notification notification = notificationService.findById(id.longValue()).orElse(null);
+			if (notification == null || !notification.getOperatorId().equals(userId)) {
+				continue;
+			}
+			notification.setStatus(NotificationStatuses.READ.getStatus());
+			notificationService.saveOrUpdate(notification);
+		}
+		return ResultUtils.simpleSuccess();
+	}
+	
 	@Override
 	protected Header header(Object key, List<Functions> functions) {
 		return Header.builder().title(messageService.getMessage("notification.management")).build();
@@ -239,8 +262,11 @@ public class NotificationMainService extends AbstractMainService {
 	@Override
 	protected List<Batch> batches(Object key, List<Functions> functions) {
 		List<Batch> batches = super.batches(key, functions);
-		// TODO
-		
+		batches.add(Batch.builder()
+				.key("batchRead")
+				.icon("fa-bell-slash-o")
+				.variant("outline-dark")
+				.text(messageService.getMessage("batch.read")).build());
 		return batches;
 	}
 
@@ -250,11 +276,14 @@ public class NotificationMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected BatchOperate batchOperate(Object key, String func) {
+	protected BatchOperate batchOperate(Object key, String func, List<Functions> functions) {
 		BatchOperate batchOperate = new BatchOperate();
 		switch (func) {
 		case "batchRemove":
 			batchOperate.setPath("/batch/remove");
+			return batchOperate;
+		case "batchRead":
+			batchOperate.setPath("/batch/read");
 			return batchOperate;
 		default:
 			return null;

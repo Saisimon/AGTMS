@@ -413,6 +413,7 @@ public class MainControllerTest extends AbstractControllerTest {
 	public void testNotificationMainBatchGrid() throws Exception {
 		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
 		sendPost(String.format("/notification/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "batchRemove"), null, null, testToken);
+		sendPost(String.format("/notification/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "batchRead"), null, null, testToken);
 	}
 	/* NotificationMainController End */
 	

@@ -390,26 +390,34 @@ public class RoleMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected BatchOperate batchOperate(Object key, String func) {
+	protected BatchOperate batchOperate(Object key, String func, List<Functions> functions) {
 		BatchOperate batchOperate = new BatchOperate();
 		switch (func) {
 		case "batchRemove":
-			batchOperate.setPath("/batch/remove");
-			return batchOperate;
+			if (SystemUtils.hasFunction(Functions.BATCH_REMOVE.getCode(), functions)) {
+				batchOperate.setPath("/batch/remove");
+				return batchOperate;
+			} else {
+				return null;
+			}
 		case "grant":
-			batchOperate.setPath("/grant");
-			batchOperate.setSize("lg");
-			List<Field<?>> operateFields = new ArrayList<>(1);
-			Field<Option<String>> resourcesField = Field.<Option<String>>builder()
-					.name("resources")
-					.text(messageService.getMessage("resource.name"))
-					.type("select")
-					.views(Views.SELECTION.getKey())
-					.options(resourceSelection.buildNestedOptions(null, null, true))
-					.multiple(true).build();
-			operateFields.add(resourcesField);
-			batchOperate.setOperateFields(operateFields);
-			return batchOperate;
+			if (SystemUtils.hasFunction(Functions.GRANT.getCode(), functions)) {
+				batchOperate.setPath("/grant");
+				batchOperate.setSize("lg");
+				List<Field<?>> operateFields = new ArrayList<>(1);
+				Field<Option<String>> resourcesField = Field.<Option<String>>builder()
+						.name("resources")
+						.text(messageService.getMessage("resource.name"))
+						.type("select")
+						.views(Views.SELECTION.getKey())
+						.options(resourceSelection.buildNestedOptions(null, null, true))
+						.multiple(true).build();
+				operateFields.add(resourcesField);
+				batchOperate.setOperateFields(operateFields);
+				return batchOperate;
+			} else {
+				return null;
+			}
 		default:
 			return null;
 		}

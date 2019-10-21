@@ -411,23 +411,27 @@ public class UserMainService extends AbstractMainService {
 	}
 
 	@Override
-	protected BatchOperate batchOperate(Object key, String func) {
+	protected BatchOperate batchOperate(Object key, String func, List<Functions> functions) {
 		BatchOperate batchOperate = new BatchOperate();
 		switch (func) {
 		case "grant":
-			batchOperate.setPath("/grant");
-			batchOperate.setSize("lg");
-			List<Field<?>> operateFields = new ArrayList<>(1);
-			Field<Option<String>> rolesField = Field.<Option<String>>builder()
-					.name("roles")
-					.text(messageService.getMessage("role.name"))
-					.type("select")
-					.views(Views.SELECTION.getKey())
-					.options(roleSelection.buildNestedOptions(null))
-					.multiple(true).build();
-			operateFields.add(rolesField);
-			batchOperate.setOperateFields(operateFields);
-			return batchOperate;
+			if (SystemUtils.hasFunction(Functions.BATCH_REMOVE.getCode(), functions)) {
+				batchOperate.setPath("/grant");
+				batchOperate.setSize("lg");
+				List<Field<?>> operateFields = new ArrayList<>(1);
+				Field<Option<String>> rolesField = Field.<Option<String>>builder()
+						.name("roles")
+						.text(messageService.getMessage("role.name"))
+						.type("select")
+						.views(Views.SELECTION.getKey())
+						.options(roleSelection.buildNestedOptions(null))
+						.multiple(true).build();
+				operateFields.add(rolesField);
+				batchOperate.setOperateFields(operateFields);
+				return batchOperate;
+			} else {
+				return null;
+			}
 		default:
 			return null;
 		}

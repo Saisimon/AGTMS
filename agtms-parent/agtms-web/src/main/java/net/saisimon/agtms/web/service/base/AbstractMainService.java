@@ -172,9 +172,10 @@ public abstract class AbstractMainService {
 	 * 
 	 * @param key 关键词
 	 * @param func 功能
+	 * @param functions 支持功能集合
 	 * @return 批量操作信息
 	 */
-	protected BatchOperate batchOperate(Object key, String func) {
+	protected BatchOperate batchOperate(Object key, String func, List<Functions> functions) {
 		return null;
 	}
 	
@@ -182,9 +183,10 @@ public abstract class AbstractMainService {
 	 * 前端批量编辑配置
 	 * 
 	 * @param key 关键词
+	 * @param functions 支持功能集合
 	 * @return 批量编辑信息
 	 */
-	protected BatchEdit batchEdit(Object key) {
+	protected BatchEdit batchEdit(Object key, List<Functions> functions) {
 		return null;
 	}
 	
@@ -192,9 +194,10 @@ public abstract class AbstractMainService {
 	 * 前端批量导出配置
 	 * 
 	 * @param key 关键词
+	 * @param functions 支持功能集合
 	 * @return 批量导出信息
 	 */
-	protected BatchExport batchExport(Object key) {
+	protected BatchExport batchExport(Object key, List<Functions> functions) {
 		return null;
 	}
 	
@@ -202,9 +205,10 @@ public abstract class AbstractMainService {
 	 * 前端批量导入配置
 	 * 
 	 * @param key 关键词
+	 * @param functions 支持功能集合
 	 * @return 批量导入信息
 	 */
-	protected BatchImport batchImport(Object key) {
+	protected BatchImport batchImport(Object key, List<Functions> functions) {
 		return null;
 	}
 	
@@ -257,21 +261,24 @@ public abstract class AbstractMainService {
 	 * 前端批量处理相关信息的框架
 	 * 
 	 * @param key 关键词
+	 * @param type 批量类型
+	 * @param key 批量操作功能
 	 * @return 批量处理相关信息
 	 */
 	protected Object getBatchGrid(Object key, String type, String func) {
 		if (key == null) {
 			return null;
 		}
+		List<Functions> functions = functions(key);
 		switch (type) {
 		case Constant.Batch.OPERATE:
-			return batchOperate(key, func);
+			return batchOperate(key, func, functions);
 		case Constant.Batch.EDIT:
-			return batchEdit(key);
+			return batchEdit(key, functions);
 		case Constant.Batch.EXPORT:
-			return batchExport(key);
+			return batchExport(key, functions);
 		case Constant.Batch.IMPORT:
-			return batchImport(key);
+			return batchImport(key, functions);
 		default:
 			return null;
 		}

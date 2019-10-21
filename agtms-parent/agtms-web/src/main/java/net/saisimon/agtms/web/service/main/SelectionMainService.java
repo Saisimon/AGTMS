@@ -322,12 +322,16 @@ public class SelectionMainService extends AbstractMainService {
 	}
 	
 	@Override
-	protected BatchOperate batchOperate(Object key, String func) {
+	protected BatchOperate batchOperate(Object key, String func, List<Functions> functions) {
 		BatchOperate batchOperate = new BatchOperate();
 		switch (func) {
 		case "batchRemove":
-			batchOperate.setPath("/batch/remove");
-			return batchOperate;
+			if (SystemUtils.hasFunction(Functions.BATCH_REMOVE.getCode(), functions)) {
+				batchOperate.setPath("/batch/remove");
+				return batchOperate;
+			} else {
+				return null;
+			}
 		default:
 			return null;
 		}
