@@ -136,9 +136,16 @@ public abstract class AbstractMainService {
 		if (SystemUtils.hasFunction(Functions.GRANT.getCode(), functions)) {
 			batches.add(Batch.builder()
 					.key(Functions.GRANT.getFunction())
-					.icon("fa-certificate")
-					.variant("outline-danger")
+					.icon("fa-address-card-o")
+					.variant("outline-info")
 					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.GRANT.getFunction(), "."))).build());
+		}
+		if (SystemUtils.hasFunction(Functions.SEND_NOTIFICATION.getCode(), functions)) {
+			batches.add(Batch.builder()
+					.key(Functions.SEND_NOTIFICATION.getFunction())
+					.icon("fa-comment-o")
+					.variant("outline-dark")
+					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.SEND_NOTIFICATION.getFunction(), "."))).build());
 		}
 		if (SystemUtils.hasFunction(Functions.EXPORT.getCode(), functions)) {
 			batches.add(Batch.builder()

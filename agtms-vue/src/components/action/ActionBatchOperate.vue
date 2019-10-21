@@ -2,14 +2,9 @@
     <div class="batch-remove-container" v-if="batchOperate">
         <b-modal v-model="modal.show"
             :size="batchOperate.size"
-            :cancel-title="$t('cancel')"
-            :ok-title="$t('confirm')"
-            @ok="operate()"
+            :hide-footer="true"
             @hidden="initData"
-            cancel-variant="outline-info"
-            ok-variant="outline-danger"
             header-border-variant="light"
-            footer-border-variant="light"
             button-size="sm">
             <div class="form-container" v-if="batchOperate.operateFields && batchOperate.operateFields.length > 0">
                 <template v-for="(operateField, key) in batchOperate.operateFields" >
@@ -25,6 +20,14 @@
             <div class="text-center mt-2 mb-2" v-else>
                 {{ $t('are_you_confirm') }}
             </div>
+            <b-col class="text-right">
+                <b-button variant="primary" 
+                    size="sm" 
+                    class="save-btn"
+                    @click="operate">
+                    {{ $t("confirm") }}
+                </b-button>
+            </b-col>
         </b-modal>
     </div>
 </template>
@@ -71,7 +74,7 @@ export default {
                 for (var i in this.batchOperate.operateFields) {
                     var operateField = this.batchOperate.operateFields[i];
                     var value = operateField.value;
-                    if (operateField.required && (value == undefined || value == "")) {
+                    if (operateField.required && this.isNullEmpty(value)) {
                         pass = false;
                         operateField.state = false;
                     } else {
@@ -88,6 +91,7 @@ export default {
                 }).then(resp => {
                     var data = resp.data;
                     if (data.code === 0) {
+                        this.modal.show = false;
                         this.$emit('succeed');
                         if (this.$route.params.module === 'navigation' || this.$route.params.module === 'template') {
                             this.$store.dispatch('getTree');

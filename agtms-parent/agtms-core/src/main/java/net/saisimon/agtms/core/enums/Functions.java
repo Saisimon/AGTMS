@@ -53,9 +53,13 @@ public enum Functions {
 	 */
 	RESET_PASSWORD(1 << 10, "resetPassword"),
 	/**
-	 * 角色授权(100000000000)
+	 * 授权(100000000000)
 	 */
-	GRANT(1 << 11, "grant");
+	GRANT(1 << 11, "grant"),
+	/**
+	 * 发送通知(1000000000000)
+	 */
+	SEND_NOTIFICATION(1 << 12, "sendNotification");
 	
 	/**
 	 * 功能代码

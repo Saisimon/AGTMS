@@ -78,4 +78,11 @@ public class UserMainController {
 		return userMainService.grant(body);
 	}
 	
+	@ResourceInfo(func=Functions.SEND_NOTIFICATION)
+	@Operate(type=OperateTypes.BATCH_EDIT, value="send.notification")
+	@PostMapping("/send/notification")
+	public Result sendNotification(@RequestBody Map<String, Object> body) {
+		return userMainService.sendNotification(body);
+	}
+	
 }

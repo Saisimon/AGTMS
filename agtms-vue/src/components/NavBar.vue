@@ -80,12 +80,10 @@
                                 @shown="readNotification(data.id)"
                                 hide-header
                                 hide-footer>
-                                <div class="text-center">
-                                    <div v-html="data.title" class="mt-2 mb-1 font-weight-bold" style="font-size:1rem"></div>
-                                    <span class="text-secondary" style="font-size:0.75rem">{{ new Date(data.createTime).toLocaleString() }}</span>
-                                    <hr />
-                                    <div v-html="data.content" class="m-4" style="font-size:0.875rem"></div>
-                                </div>
+                                <div v-html="data.title" class="mt-2 mb-1 font-weight-bold text-center" style="font-size:1rem"></div>
+                                <div class="text-secondary text-center" style="font-size:0.75rem">{{ new Date(data.createTime).toLocaleString() }}</div>
+                                <hr />
+                                <div v-html="data.content" class="m-4" style="font-size:0.875rem"></div>
                             </b-modal>
                         </b-dropdown-item>
                     </template>

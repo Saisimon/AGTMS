@@ -14,6 +14,9 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import 'vue-good-table/dist/vue-good-table.css';
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = true;

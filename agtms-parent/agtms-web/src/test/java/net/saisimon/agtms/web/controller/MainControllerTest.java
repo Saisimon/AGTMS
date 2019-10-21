@@ -199,12 +199,47 @@ public class MainControllerTest extends AbstractControllerTest {
 	}
 	
 	@Test
+	public void testUserMainSendNotification() throws Exception {
+		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
+		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
+		Map<String, Object> map = new HashMap<>();
+		sendPost("/user/main/send/notification", map, adminToken, ErrorMessage.Common.MISSING_REQUIRED_FIELD.getCode());
+		
+		map.put("ids", Arrays.asList(adminToken.getUserId(), testToken.getUserId()));
+		map.put("title", " ");
+		map.put("content", "Content");
+		sendPost("/user/main/send/notification", map, adminToken, ErrorMessage.Common.FIELD_CONTENT_BLANK.getCode());
+		
+		map.put("ids", Arrays.asList(adminToken.getUserId(), testToken.getUserId()));
+		map.put("title", buildString(65));
+		map.put("content", "Content");
+		sendPost("/user/main/send/notification", map, adminToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
+		
+		map.put("ids", Arrays.asList(adminToken.getUserId(), testToken.getUserId()));
+		map.put("title", "Title");
+		map.put("content", " ");
+		sendPost("/user/main/send/notification", map, adminToken, ErrorMessage.Common.FIELD_CONTENT_BLANK.getCode());
+		
+		map.put("ids", Arrays.asList(adminToken.getUserId(), testToken.getUserId()));
+		map.put("title", "Title");
+		map.put("content", buildString(4097));
+		sendPost("/user/main/send/notification", map, adminToken, ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.getCode());
+		
+		map.put("ids", Arrays.asList(adminToken.getUserId(), testToken.getUserId()));
+		map.put("title", "Title");
+		map.put("content", "Content");
+		sendPost("/user/main/send/notification", map, adminToken);
+	}
+	
+	@Test
 	public void testUserMainBatchGrid() throws Exception {
 		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
 		sendPost(String.format("/user/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "grant"), null, null, adminToken);
+		sendPost(String.format("/user/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "sendNotification"), null, null, adminToken);
 		
 		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
 		sendPost(String.format("/user/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "grant"), null, null, testToken, status().isForbidden());
+		sendPost(String.format("/user/main/batch/grid?type=%s&func=%s", Constant.Batch.OPERATE, "sendNotification"), null, null, testToken, status().isForbidden());
 	}
 	/* UserMainController End */
 	

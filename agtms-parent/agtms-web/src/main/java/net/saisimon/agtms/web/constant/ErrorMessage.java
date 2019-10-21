@@ -21,6 +21,7 @@ public class ErrorMessage {
 		public static final Result FIELD_LENGTH_OVERFLOW = ResultUtils.error(507, "field.length.overflow");
 		public static final Result FIELD_FORMAT_NOT_CORRECT = ResultUtils.error(508, "field.format.incorrect");
 		public static final Result UNSUPPORTED_FILE_TYPE = ResultUtils.error(509, "unsupported.file.type");
+		public static final Result FIELD_CONTENT_BLANK = ResultUtils.error(510, "field.content.blank");
 	}
 	
 	public static class User {

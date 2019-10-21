@@ -41,8 +41,10 @@ import net.saisimon.agtms.core.domain.tag.SingleSelect;
 import net.saisimon.agtms.core.dto.Result;
 import net.saisimon.agtms.core.enums.Classes;
 import net.saisimon.agtms.core.enums.Functions;
+import net.saisimon.agtms.core.enums.NotificationTypes;
 import net.saisimon.agtms.core.enums.UserStatuses;
 import net.saisimon.agtms.core.enums.Views;
+import net.saisimon.agtms.core.factory.NotificationServiceFactory;
 import net.saisimon.agtms.core.factory.TokenFactory;
 import net.saisimon.agtms.core.factory.UserRoleServiceFactory;
 import net.saisimon.agtms.core.factory.UserServiceFactory;
@@ -75,7 +77,8 @@ public class UserMainService extends AbstractMainService {
 			Functions.LOCK,
 			Functions.UNLOCK,
 			Functions.RESET_PASSWORD,
-			Functions.GRANT
+			Functions.GRANT,
+			Functions.SEND_NOTIFICATION
 	);
 	
 	private static final String USER_FILTERS = USER + FILTER_SUFFIX;
@@ -209,6 +212,38 @@ public class UserMainService extends AbstractMainService {
 				continue;
 			}
 			grantRole(user.getId(), roleMap, rolePaths);
+		}
+		return ResultUtils.simpleSuccess();
+	}
+	
+	@Transactional(rollbackOn = Exception.class)
+	public Result sendNotification(Map<String, Object> body) {
+		List<Object> ids = SystemUtils.transformList(body.get("ids"));
+		if (CollectionUtils.isEmpty(ids)) {
+			return ErrorMessage.Common.MISSING_REQUIRED_FIELD;
+		}
+		String title = (String) body.get("title");
+		if (SystemUtils.isBlank(title)) {
+			return ErrorMessage.Common.FIELD_CONTENT_BLANK.messageArgs(messageService.getMessage("title"));
+		} else if (title.length() > 64) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(messageService.getMessage("title"), 64);
+		}
+		String content = (String) body.get("content");
+		if (SystemUtils.isBlank(content)) {
+			return ErrorMessage.Common.FIELD_CONTENT_BLANK.messageArgs(messageService.getMessage("content"));
+		} else if (content.length() > 4096) {
+			return ErrorMessage.Common.FIELD_LENGTH_OVERFLOW.messageArgs(messageService.getMessage("content"), 4096);
+		}
+		for (Object idObj : ids) {
+			if (idObj == null) {
+				continue;
+			}
+			Long id = Long.valueOf(idObj.toString());
+			User user = UserServiceFactory.get().findById(id).orElse(null);
+			if (user == null) {
+				continue;
+			}
+			NotificationServiceFactory.get().sendNotification(title, content, NotificationTypes.SYSTEM_NOTICE, user.getId());
 		}
 		return ResultUtils.simpleSuccess();
 	}
@@ -415,7 +450,7 @@ public class UserMainService extends AbstractMainService {
 		BatchOperate batchOperate = new BatchOperate();
 		switch (func) {
 		case "grant":
-			if (SystemUtils.hasFunction(Functions.BATCH_REMOVE.getCode(), functions)) {
+			if (SystemUtils.hasFunction(Functions.GRANT.getCode(), functions)) {
 				batchOperate.setPath("/grant");
 				batchOperate.setSize("lg");
 				List<Field<?>> operateFields = new ArrayList<>(1);
@@ -427,6 +462,29 @@ public class UserMainService extends AbstractMainService {
 						.options(roleSelection.buildNestedOptions(null))
 						.multiple(true).build();
 				operateFields.add(rolesField);
+				batchOperate.setOperateFields(operateFields);
+				return batchOperate;
+			} else {
+				return null;
+			}
+		case "sendNotification":
+			if (SystemUtils.hasFunction(Functions.SEND_NOTIFICATION.getCode(), functions)) {
+				batchOperate.setPath("/send/notification");
+				batchOperate.setSize("lg");
+				List<Field<?>> operateFields = new ArrayList<>(2);
+				Field<Option<String>> titleField = Field.<Option<String>>builder()
+						.name("title")
+						.text(messageService.getMessage("title"))
+						.type(Classes.STRING.getKey())
+						.required(true).build();
+				operateFields.add(titleField);
+				Field<Option<String>> contentField = Field.<Option<String>>builder()
+						.name("content")
+						.text(messageService.getMessage("content"))
+						.type(Classes.STRING.getKey())
+						.required(true)
+						.views(Views.TEXTAREA.getKey()).build();
+				operateFields.add(contentField);
 				batchOperate.setOperateFields(operateFields);
 				return batchOperate;
 			} else {
