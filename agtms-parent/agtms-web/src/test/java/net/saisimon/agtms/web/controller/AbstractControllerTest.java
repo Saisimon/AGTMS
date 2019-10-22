@@ -19,6 +19,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -38,6 +39,8 @@ import net.saisimon.agtms.web.dto.req.UserAuthParam;
 @Slf4j
 public abstract class AbstractControllerTest {
 	
+	@Autowired
+	protected MockHttpSession session;
 	@Autowired
 	protected MockMvc mockMvc;
 	@Autowired
@@ -95,6 +98,7 @@ public abstract class AbstractControllerTest {
 	
 	protected String send(String uri, HttpMethod method, Map<String, String> param, Object body, UserToken token, ResultMatcher matcher) throws Exception {
 		MockHttpServletRequestBuilder builder = build(uri, method);
+		builder.session(session);
 		builder.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
 		if (token != null) {
 			builder.header(AuthUtils.AUTHORIZE_UID, token.getUserId());

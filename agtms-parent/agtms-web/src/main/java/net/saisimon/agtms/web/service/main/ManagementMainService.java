@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -155,10 +156,10 @@ public class ManagementMainService extends AbstractMainService {
 			Collections.reverse(reverseDomains);
 			domains = reverseDomains;
 		}
-		boolean more = domains.size() < pageable.getSize();
-		request.getSession().setAttribute(key + FILTER_SUFFIX, filterMap);
-		request.getSession().setAttribute(key + PAGEABLE_SUFFIX, pageableMap);
-		return ResultUtils.pageSuccess(DomainUtils.conversions(template, domains), more);
+		HttpSession session = request.getSession();
+		session.setAttribute(key + FILTER_SUFFIX, filterMap);
+		session.setAttribute(key + PAGEABLE_SUFFIX, pageableMap);
+		return ResultUtils.pageSuccess(DomainUtils.conversions(template, domains), domains.size() < pageable.getSize());
 	}
 
 	@Transactional(rollbackOn = Exception.class)

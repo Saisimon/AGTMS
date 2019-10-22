@@ -81,14 +81,14 @@ public class MainControllerTest extends AbstractControllerTest {
 	@Test
 	public void testUserMainList() throws Exception {
 		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
-		Map<String, String> param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
-		param.put("sort", "");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/user/main/list", param, body, adminToken);
+		sendPost("/user/main/list", body, adminToken);
 		
-		body = new HashMap<>();
+		Map<String, Object> pageableMap = new HashMap<>();
+		pageableMap.put("index", 0);
+		pageableMap.put("size", 10);
+		pageableMap.put("sort", "-createTime");
+		Map<String, Object> filterMap = new HashMap<>();
 		List<Map<String, Object>> andFilters = new ArrayList<>();
 		Map<String, Object> andFilter = new HashMap<>();
 		andFilter.put("key", "loginName");
@@ -96,10 +96,15 @@ public class MainControllerTest extends AbstractControllerTest {
 		andFilter.put("type", "string");
 		andFilter.put("value", "admin");
 		andFilters.add(andFilter);
-		body.put("andFilters", andFilters);
-		sendPost("/user/main/list", param, body, adminToken);
-		
+		filterMap.put("andFilters", andFilters);
 		body = new HashMap<>();
+		body.put("filter", filterMap);
+		body.put("pageable", pageableMap);
+		sendPost("/user/main/list", body, adminToken);
+		
+		sendPost("/user/main/grid", null, adminToken);
+		
+		filterMap = new HashMap<>();
 		andFilters = new ArrayList<>();
 		andFilter = new HashMap<>();
 		andFilter.put("key", "loginName");
@@ -107,10 +112,15 @@ public class MainControllerTest extends AbstractControllerTest {
 		andFilter.put("type", "string");
 		andFilter.put("value", "admin");
 		andFilters.add(andFilter);
-		body.put("andFilters", andFilters);
-		sendPost("/user/main/list", param, body, adminToken);
-		
+		filterMap.put("andFilters", andFilters);
 		body = new HashMap<>();
+		body.put("filter", filterMap);
+		body.put("pageable", pageableMap);
+		sendPost("/user/main/list", body, adminToken);
+		
+		sendPost("/user/main/grid", null, adminToken);
+		
+		filterMap = new HashMap<>();
 		andFilters = new ArrayList<>();
 		andFilter = new HashMap<>();
 		andFilter.put("key", "loginName");
@@ -118,21 +128,15 @@ public class MainControllerTest extends AbstractControllerTest {
 		andFilter.put("type", "string");
 		andFilter.put("value", Arrays.asList("admin", "editor"));
 		andFilters.add(andFilter);
-		body.put("andFilters", andFilters);
-		sendPost("/user/main/list", param, body, adminToken);
-		
+		filterMap.put("andFilters", andFilters);
 		body = new HashMap<>();
-		andFilters = new ArrayList<>();
-		andFilter = new HashMap<>();
-		andFilter.put("key", "loginName");
-		andFilter.put("operator", "$in");
-		andFilter.put("type", "string");
-		andFilter.put("value", Arrays.asList("admin", "editor"));
-		andFilters.add(andFilter);
-		body.put("andFilters", andFilters);
-		sendPost("/user/main/list", param, body, adminToken);
+		body.put("filter", filterMap);
+		body.put("pageable", pageableMap);
+		sendPost("/user/main/list", body, adminToken);
 		
-		body = new HashMap<>();
+		sendPost("/user/main/grid", null, adminToken);
+		
+		filterMap = new HashMap<>();
 		andFilters = new ArrayList<>();
 		Map<String, Object> gte = new HashMap<>();
 		gte.put("key", Constant.CREATETIME);
@@ -146,8 +150,11 @@ public class MainControllerTest extends AbstractControllerTest {
 		lte.put("type", "date");
 		lte.put("value", "2019-04-30T00:00:00.000Z");
 		andFilters.add(lte);
-		body.put("andFilters", andFilters);
-		sendPost("/user/main/list", param, body, adminToken);
+		filterMap.put("andFilters", andFilters);
+		body = new HashMap<>();
+		body.put("filter", filterMap);
+		body.put("pageable", pageableMap);
+		sendPost("/user/main/list", body, adminToken);
 		
 		sendPost("/user/main/grid", null, adminToken);
 	}
@@ -289,18 +296,20 @@ public class MainControllerTest extends AbstractControllerTest {
 	@Test
 	public void testNavigationMainList() throws Exception {
 		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
-		Map<String, String> param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		Map<String, Object> pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/navigation/main/list", param, body, adminToken);
+		body.put("pageable", pageableMap);
+		sendPost("/navigation/main/list", body, adminToken);
 		
 		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
-		param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		body = new HashMap<>();
-		sendPost("/navigation/main/list", param, body, testToken);
+		body.put("pageable", pageableMap);
+		sendPost("/navigation/main/list", body, testToken);
 	}
 	
 	@Test
@@ -328,18 +337,20 @@ public class MainControllerTest extends AbstractControllerTest {
 	@Test
 	public void testTemplateMainList() throws Exception {
 		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
-		Map<String, String> param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		Map<String, Object> pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/template/main/list", param, body, adminToken);
+		body.put("pageable", pageableMap);
+		sendPost("/template/main/list", body, adminToken);
 		
 		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
-		param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		body = new HashMap<>();
-		sendPost("/template/main/list", param, body, testToken);
+		body.put("pageable", pageableMap);
+		sendPost("/template/main/list", body, testToken);
 	}
 	/* TemplateMainController End */
 	
@@ -356,18 +367,20 @@ public class MainControllerTest extends AbstractControllerTest {
 	@Test
 	public void testSelectionMainList() throws Exception {
 		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
-		Map<String, String> param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		Map<String, Object> pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/selection/main/list", param, body, adminToken);
+		body.put("pageable", pageableMap);
+		sendPost("/selection/main/list", body, adminToken);
 		
 		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
-		param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		body = new HashMap<>();
-		sendPost("/selection/main/list", param, body, testToken);
+		body.put("pageable", pageableMap);
+		sendPost("/selection/main/list", body, testToken);
 	}
 	/* SelectionMainController End */
 	
@@ -384,18 +397,20 @@ public class MainControllerTest extends AbstractControllerTest {
 	@Test
 	public void testTaskMainList() throws Exception {
 		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
-		Map<String, String> param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		Map<String, Object> pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/task/main/list", param, body, adminToken);
+		body.put("pageable", pageableMap);
+		sendPost("/task/main/list", body, adminToken);
 		
 		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
-		param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		body = new HashMap<>();
-		sendPost("/task/main/list", param, body, testToken);
+		body.put("pageable", pageableMap);
+		sendPost("/task/main/list", body, testToken);
 	}
 	/* TaskMainController End */
 	
@@ -412,18 +427,20 @@ public class MainControllerTest extends AbstractControllerTest {
 	@Test
 	public void testOperationMainList() throws Exception {
 		UserToken adminToken = login(accountProperties.getAdmin().getUsername(), accountProperties.getAdmin().getPassword());
-		Map<String, String> param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		Map<String, Object> pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/operation/main/list", param, body, adminToken);
+		body.put("pageable", pageableMap);
+		sendPost("/operation/main/list", body, adminToken);
 		
 		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
-		param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		body = new HashMap<>();
-		sendPost("/operation/main/list", param, body, testToken);
+		body.put("pageable", pageableMap);
+		sendPost("/operation/main/list", body, testToken);
 	}
 	/* OperationMainController End */
 	
@@ -437,11 +454,12 @@ public class MainControllerTest extends AbstractControllerTest {
 	@Test
 	public void testNotificationMainList() throws Exception {
 		UserToken testToken = login(accountProperties.getEditor().getUsername(), accountProperties.getEditor().getPassword());
-		Map<String, String> param = new HashMap<>();
-		param.put("index", "0");
-		param.put("size", "10");
+		Map<String, Object> pageableMap = new HashMap<>();
+		pageableMap.put("index", "0");
+		pageableMap.put("size", "10");
 		Map<String, Object> body = new HashMap<>();
-		sendPost("/notification/main/list", param, body, testToken);
+		body.put("pageable", pageableMap);
+		sendPost("/notification/main/list", body, testToken);
 	}
 	
 	@Test

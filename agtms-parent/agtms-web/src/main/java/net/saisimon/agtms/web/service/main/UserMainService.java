@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,8 +142,9 @@ public class UserMainService extends AbstractMainService {
 			result.getDisableActions().add(Boolean.FALSE);
 			results.add(result);
 		}
-		request.getSession().setAttribute(USER_FILTERS, filterMap);
-		request.getSession().setAttribute(USER_PAGEABLE, pageableMap);
+		HttpSession session = request.getSession();
+		session.setAttribute(USER_FILTERS, filterMap);
+		session.setAttribute(USER_PAGEABLE, pageableMap);
 		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	

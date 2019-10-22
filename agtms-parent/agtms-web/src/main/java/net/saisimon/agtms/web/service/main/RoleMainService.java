@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,8 +136,9 @@ public class RoleMainService extends AbstractMainService {
 			result.setAction(ROLE);
 			results.add(result);
 		}
-		request.getSession().setAttribute(ROLE_FILTERS, filterMap);
-		request.getSession().setAttribute(ROLE_PAGEABLE, pageableMap);
+		HttpSession session = request.getSession();
+		session.setAttribute(ROLE_FILTERS, filterMap);
+		session.setAttribute(ROLE_PAGEABLE, pageableMap);
 		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	

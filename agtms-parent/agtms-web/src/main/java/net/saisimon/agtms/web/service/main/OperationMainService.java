@@ -13,6 +13,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -104,8 +106,9 @@ public class OperationMainService extends AbstractMainService {
 			result.setAction(OPERATION);
 			results.add(result);
 		}
-		request.getSession().setAttribute(OPERATION_FILTERS, filterMap);
-		request.getSession().setAttribute(OPERATION_PAGEABLE, pageableMap);
+		HttpSession session = request.getSession();
+		session.setAttribute(OPERATION_FILTERS, filterMap);
+		session.setAttribute(OPERATION_PAGEABLE, pageableMap);
 		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	

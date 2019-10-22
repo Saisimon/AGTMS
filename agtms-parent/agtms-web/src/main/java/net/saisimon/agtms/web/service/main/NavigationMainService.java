@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,8 +126,9 @@ public class NavigationMainService extends AbstractMainService {
 			result.setAction(NAVIGATION);
 			results.add(result);
 		}
-		request.getSession().setAttribute(NAVIGATION_FILTERS, filterMap);
-		request.getSession().setAttribute(NAVIGATION_PAGEABLE, pageableMap);
+		HttpSession session = request.getSession();
+		session.setAttribute(NAVIGATION_FILTERS, filterMap);
+		session.setAttribute(NAVIGATION_PAGEABLE, pageableMap);
 		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	

@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,8 +166,9 @@ public class TaskMainService extends AbstractMainService {
 			result.getDisableActions().add(Boolean.FALSE);
 			results.add(result);
 		}
-		request.getSession().setAttribute(TASK_FILTERS, filterMap);
-		request.getSession().setAttribute(TASK_PAGEABLE, pageableMap);
+		HttpSession session = request.getSession();
+		session.setAttribute(TASK_FILTERS, filterMap);
+		session.setAttribute(TASK_PAGEABLE, pageableMap);
 		return ResultUtils.pageSuccess(results, list.size() < pageable.getSize());
 	}
 	

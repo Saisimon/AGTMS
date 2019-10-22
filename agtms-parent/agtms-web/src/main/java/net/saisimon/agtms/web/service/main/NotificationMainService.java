@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,8 +95,9 @@ public class NotificationMainService extends AbstractMainService {
 		FilterPageable pageable = FilterPageable.build(pageableMap);
 		NotificationService notificationService = NotificationServiceFactory.get();
 		List<Notification> list = notificationService.findPage(filter, pageable, false).getContent();
-		request.getSession().setAttribute(NOTIFICATION_FILTERS, filterMap);
-		request.getSession().setAttribute(NOTIFICATION_PAGEABLE, pageableMap);
+		HttpSession session = request.getSession();
+		session.setAttribute(NOTIFICATION_FILTERS, filterMap);
+		session.setAttribute(NOTIFICATION_PAGEABLE, pageableMap);
 		return ResultUtils.pageSuccess(buildNotificationInfos(list), list.size() < pageable.getSize());
 	}
 	
