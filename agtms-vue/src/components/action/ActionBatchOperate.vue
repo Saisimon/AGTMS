@@ -1,5 +1,5 @@
 <template>
-    <div class="batch-remove-container" v-if="batchOperate">
+    <div v-if="batchOperate">
         <b-modal v-model="modal.show"
             :size="batchOperate.size"
             :hide-footer="true"
@@ -20,14 +20,17 @@
             <div class="text-center mt-2 mb-2" v-else>
                 {{ $t('are_you_confirm') }}
             </div>
-            <b-col class="text-right">
-                <b-button variant="primary" 
-                    size="sm" 
-                    class="save-btn"
-                    @click="operate">
-                    {{ $t("confirm") }}
-                </b-button>
-            </b-col>
+            <b-row class="mt-3 mb-2">
+                <b-col class="text-right">
+                    <b-button variant="outline-primary" 
+                        size="sm" 
+                        class="save-btn"
+                        @click="operate">
+                        <i class="fa fa-fw fa-save"></i>
+                        {{ $t("confirm") }}
+                    </b-button>
+                </b-col>
+            </b-row>
         </b-modal>
     </div>
 </template>

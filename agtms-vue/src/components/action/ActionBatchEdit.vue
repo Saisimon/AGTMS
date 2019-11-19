@@ -1,5 +1,5 @@
 <template>
-    <div class="batch-edit-container" v-if="batchEdit">
+    <div v-if="batchEdit">
         <b-modal v-model="modal.show"
             :title="$t('batch_edit')"
             size="lg"
@@ -11,6 +11,7 @@
                 <b-row class="mb-3">
                     <b-col>
                         <treeselect 
+                            class="edit-field-select"
                             v-model="editFieldSelects"
                             :options="batchEdit.editFieldOptions"
                             :multiple="true" 
@@ -32,9 +33,9 @@
                     <password-form :field="batchEdit.editFields[editFieldSelect]" :key="index" v-else-if="batchEdit.editFields[editFieldSelect].views == 'password'" />
                     <text-form :field="batchEdit.editFields[editFieldSelect]" :key="index" v-else />
                 </template>
-                <b-row class="mb-3" v-if="editFieldSelects.length > 0">
+                <b-row class="mb-2" v-if="editFieldSelects.length > 0">
                     <b-col class="text-right">
-                        <b-button variant="primary" 
+                        <b-button variant="outline-primary" 
                             size="sm" 
                             class="save-btn"
                             @click="save">

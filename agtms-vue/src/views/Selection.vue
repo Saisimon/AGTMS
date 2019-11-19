@@ -37,27 +37,29 @@
                             </b-col>
                         </b-row>
                         <draggable v-model="selectionGrid.options" element='div'>
-                            <transition-group v-for="(option, key) in selectionGrid.options" :key="key">
-                                <b-row class="mb-2 pl-4 pr-4" :key="key">
-                                    <div class="draggable-option-div">
-                                        <i class="fa fa-list"></i>
-                                    </div>
-                                    <b-col>
-                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionValue-' + key + '-input'" v-model.trim="option.value.id" :state="option.value.state" />
-                                        <b-form-invalid-feedback :state="option.value.state">
-                                            {{ $t('please_input_valid') }}{{ $t('option_value') }}
-                                        </b-form-invalid-feedback>
-                                    </b-col>
-                                    <b-col>
-                                        <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionText-' + key + '-input'" v-model.trim="option.text.id" :state="option.text.state" />
-                                        <b-form-invalid-feedback :state="option.text.state">
-                                            {{ $t('please_input_valid') }}{{ $t('option_value') }}
-                                        </b-form-invalid-feedback>
-                                    </b-col>
-                                    <div class="remove-option-div" @click="removeOption(key)">
-                                        <i class="fa fa-close"></i>
-                                    </div>
-                                </b-row>
+                            <transition-group>
+                                <div v-for="(option, key) in selectionGrid.options" :key="key">
+                                    <b-row class="mb-2 pl-4 pr-4">
+                                        <div class="draggable-option-div">
+                                            <i class="fa fa-list"></i>
+                                        </div>
+                                        <b-col>
+                                            <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionValue-' + key + '-input'" v-model.trim="option.value.id" :state="option.value.state" />
+                                            <b-form-invalid-feedback :state="option.value.state">
+                                                {{ $t('please_input_valid') }}{{ $t('option_value') }}
+                                            </b-form-invalid-feedback>
+                                        </b-col>
+                                        <b-col>
+                                            <b-form-input class="border-top-0 border-right-0 border-left-0 rounded-0" :id="'optionText-' + key + '-input'" v-model.trim="option.text.id" :state="option.text.state" />
+                                            <b-form-invalid-feedback :state="option.text.state">
+                                                {{ $t('please_input_valid') }}{{ $t('option_value') }}
+                                            </b-form-invalid-feedback>
+                                        </b-col>
+                                        <div class="remove-option-div" @click="removeOption(key)">
+                                            <i class="fa fa-close"></i>
+                                        </div>
+                                    </b-row>
+                                </div>
                             </transition-group>
                         </draggable>
                         <b-row >

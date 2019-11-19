@@ -1,5 +1,5 @@
 <template>
-    <div class="import-container" v-if="batchImport">
+    <div v-if="batchImport">
         <b-modal v-model="modal.show"
             :title="$t('import')"
             size="lg"
@@ -55,9 +55,10 @@
                         </b-col>
                     </b-row>
                 </form>
-                <b-row class="mb-3" v-if="importFieldSelects.length > 0 && importFileType != null && importFiles.length > 0">
+                <b-row class="mb-2" v-if="importFieldSelects.length > 0 && importFileType != null && importFiles.length > 0">
                     <b-col class="text-right">
-                        <b-button variant="primary" 
+                        <b-button variant="outline-primary" 
+                            size="sm" 
                             @click="save">
                             <i class="fa fa-fw fa-upload"></i>
                             {{ $t("import") }}

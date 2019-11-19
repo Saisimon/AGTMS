@@ -1,5 +1,5 @@
 <template>
-    <div class="export-container" v-if="batchExport">
+    <div v-if="batchExport">
         <b-modal v-model="modal.show"
             :title="$t('export')"
             size="lg"
@@ -41,9 +41,10 @@
                             :placeholder="$t('select_export_file_type')" />
                     </b-col>
                 </b-row>
-                <b-row class="mb-3" v-if="exportFieldSelects.length > 0 && exportFileType != null">
+                <b-row class="mb-2" v-if="exportFieldSelects.length > 0 && exportFileType != null">
                     <b-col class="text-right">
-                        <b-button variant="primary" 
+                        <b-button variant="outline-primary" 
+                            size="sm" 
                             @click="save">
                             <i class="fa fa-fw fa-download"></i>
                             {{ $t("export") }}

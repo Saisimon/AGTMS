@@ -97,6 +97,7 @@
                                 @click="batch.click(batch.key)"
                                 v-b-tooltip.hover 
                                 :title="batch.text"
+                                :class="batch.css"
                                 class="ml-1">
                                 <i class="fa fa-fw" :class="batch.icon"></i>
                             </b-button>
@@ -194,24 +195,28 @@
                 </vue-good-table>
             </div>
             <action-batch-operate 
+                class="batch-operate-container"
                 :modal="showBatchOperateModal"
                 :batchOperate="batchOperate"
                 :selects="selects"
                 @succeed="searchByFilters"
                 @failed="showAlert" />
             <action-batch-edit 
+                class="batch-edit-container"
                 :modal="showBatchEditModal"
                 :batchEdit="batchEdit"
                 :selects="selects"
                 @succeed="searchByFilters"
                 @failed="showAlert" />
             <action-export 
+                class="export-container"
                 :modal="showExportModal"
                 :batchExport="batchExport"
                 :selects="selects"
                 :filter="searchFilters()"
                 @showAlert="showAlert" />
             <action-import 
+                class="import-container"
                 :modal="showImportModal"
                 :batchImport="batchImport"
                 :selects="selects"

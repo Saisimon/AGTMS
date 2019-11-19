@@ -57,8 +57,10 @@ public abstract class AbstractAutoTest implements AutoTest {
 	}
 	
 	protected void signout(WebDriver driver) throws Exception {
+		// 用户栏目
+		clickButton(driver, "user-nav-bar");
 		// 登出
-		clickButton(driver, "signout-link");
+		clickButton(driver, "signout-btn");
 	}
 	
 	protected void signin(WebDriver driver) throws Exception {
@@ -82,24 +84,24 @@ public abstract class AbstractAutoTest implements AutoTest {
 		// 空表单登录提交
 		clickButton(driver, "save-btn");
 		// 设置导航信息
-		setNavigation(driver, 1, "random", "TEST");
+		setNavigation(driver, 0, "random", "TEST");
 		// 重置取消
 		reset(driver, false);
 		// 重置确认
 		reset(driver, true);
 		// 创建导航信息
-		createNavigation(driver, 1, "random", "TEST-1");
+		createNavigation(driver, 0, "random", "TEST-1");
 		// 重复创建导航信息
-		createNavigation(driver, 1, "random", "TEST-1");
+		createNavigation(driver, 0, "random", "TEST-1");
 		// 批量创建导航信息
 		for (int i = 0; i < 9; i++) {
-			createNavigation(driver, 1, "random", "TEST-" + (i + 2));
+			createNavigation(driver, 0, "random", "TEST-" + (i + 2));
 		}
 		// 点击返回按钮
 		clickButton(driver, "back-btn");
 		// 点击导航创建按钮
 		clickButton(driver, "create-btn");
-		createNavigation(driver, 2, "link", "TEST-SUB-1");
+		createNavigation(driver, 1, "link", "TEST-SUB-1");
 		// 点击返回按钮
 		clickButton(driver, "back-btn");
 		// 显示筛选条件
@@ -147,7 +149,7 @@ public abstract class AbstractAutoTest implements AutoTest {
 		// 点击批量编辑按钮
 		clickButton(driver, "batch-edit-btn");
 		// 选择图标
-		select(driver, "//div[@class='batch-edit-container']//div[@class='form-container']//div[@class='multiselect']", 3);
+		select(driver, "//div[@class='form-container']//div[contains(@class,'edit-field-select')]", 3);
 		inputById(driver, "icon-input", "list");
 		// 批量保存
 		clickButton(driver, "save-btn");
@@ -295,7 +297,7 @@ public abstract class AbstractAutoTest implements AutoTest {
 	}
 	
 	protected void confireBatchRemove(WebDriver driver) throws Exception {
-		findElement(driver, By.xpath("//div[@class='batch-remove-container']//div[@class='modal-content']//button[@class='btn btn-outline-danger btn-sm']")).click();
+		findElement(driver, By.xpath("//div[@class='modal-content']//button[@class='btn save-btn btn-outline-primary btn-sm']")).click();
 		Thread.sleep(interval);
 	}
 	
@@ -306,7 +308,9 @@ public abstract class AbstractAutoTest implements AutoTest {
 	}
 	
 	protected void setNavigation(WebDriver driver, int navigationIndex, String icon, String title) throws Exception {
-		select(driver, "//div[@class='edit-container']//div[@class='form-container']//div[contains(@class,'multiselect')]", navigationIndex);
+		if (navigationIndex > 0) {
+			select(driver, "//div[@class='edit-container']//div[@class='form-container']//div[contains(@class,'vue-treeselect')]", navigationIndex);
+		}
 		inputById(driver, "icon-input", icon);
 		inputById(driver, "name-input", title);
 	}
@@ -352,12 +356,8 @@ public abstract class AbstractAutoTest implements AutoTest {
 	}
 	
 	protected void select(WebDriver driver, String selectPath, int index) throws Exception {
-		WebElement selectElement = findElement(driver, By.xpath(selectPath));
-		new Actions(driver)
-			.click(selectElement)
-			.click(findElement(driver, By.xpath(selectPath + "//li[@class='multiselect__element']["+ index +"]")))
-			.release(selectElement)
-			.perform();
+		findElement(driver, By.xpath(selectPath + "//div[@class='vue-treeselect__control']")).click();
+		findElement(driver, By.xpath(selectPath + "//div[@class='vue-treeselect__menu-container']//div[contains(@class,'vue-treeselect__list-item')]["+ index +"]")).click();
 		Thread.sleep(interval);
 	}
 	

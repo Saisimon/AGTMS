@@ -122,6 +122,7 @@ public abstract class AbstractMainService {
 		if (SystemUtils.hasFunction(Functions.BATCH_EDIT.getCode(), functions)) {
 			batches.add(Batch.builder()
 					.key(Functions.BATCH_EDIT.getFunction())
+					.css("batch-edit-btn")
 					.icon("fa-edit")
 					.variant("outline-primary")
 					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.BATCH_EDIT.getFunction(), "."))).build());
@@ -129,6 +130,7 @@ public abstract class AbstractMainService {
 		if (SystemUtils.hasFunction(Functions.BATCH_REMOVE.getCode(), functions)) {
 			batches.add(Batch.builder()
 					.key(Functions.BATCH_REMOVE.getFunction())
+					.css("batch-remove-btn")
 					.icon("fa-trash")
 					.variant("outline-danger")
 					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.BATCH_REMOVE.getFunction(), "."))).build());
@@ -136,6 +138,7 @@ public abstract class AbstractMainService {
 		if (SystemUtils.hasFunction(Functions.GRANT.getCode(), functions)) {
 			batches.add(Batch.builder()
 					.key(Functions.GRANT.getFunction())
+					.css("grant-btn")
 					.icon("fa-address-card-o")
 					.variant("outline-info")
 					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.GRANT.getFunction(), "."))).build());
@@ -143,6 +146,7 @@ public abstract class AbstractMainService {
 		if (SystemUtils.hasFunction(Functions.SEND_NOTIFICATION.getCode(), functions)) {
 			batches.add(Batch.builder()
 					.key(Functions.SEND_NOTIFICATION.getFunction())
+					.css("send-notification-btn")
 					.icon("fa-comment-o")
 					.variant("outline-dark")
 					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.SEND_NOTIFICATION.getFunction(), "."))).build());
@@ -150,6 +154,7 @@ public abstract class AbstractMainService {
 		if (SystemUtils.hasFunction(Functions.EXPORT.getCode(), functions)) {
 			batches.add(Batch.builder()
 					.key(Functions.EXPORT.getFunction())
+					.css("export-btn")
 					.icon("fa-download")
 					.variant("outline-secondary")
 					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.EXPORT.getFunction(), "."))).build());
@@ -157,6 +162,7 @@ public abstract class AbstractMainService {
 		if (SystemUtils.hasFunction(Functions.IMPORT.getCode(), functions)) {
 			batches.add(Batch.builder()
 					.key(Functions.IMPORT.getFunction())
+					.css("import-btn")
 					.icon("fa-upload")
 					.variant("outline-secondary")
 					.text(messageService.getMessage(SystemUtils.humpToCode(Functions.IMPORT.getFunction(), "."))).build());

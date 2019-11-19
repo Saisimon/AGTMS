@@ -111,6 +111,8 @@ public class MainGrid {
 		
 		private String key;
 		
+		private String css;
+		
 	}
 	
 }

@@ -24,7 +24,7 @@
                     variant="link" 
                     href="javascript:void(0);" 
                     right no-caret
-                    class="nav-bar-item" 
+                    class="nav-bar-item setting-nav-bar" 
                     :title="$t('setting')">
                     <template slot="button-content">
                         <i class="fa fa-fw fa-cog pt-2 text-light"></i>
@@ -40,7 +40,7 @@
                     variant="link" 
                     href="javascript:void(0);" 
                     right no-caret
-                    class="nav-bar-item" 
+                    class="nav-bar-item language-nav-bar" 
                     :title="$t('language')">
                     <template slot="button-content">
                         <i class="fa fa-fw fa-language pt-2 text-light"></i>
@@ -55,7 +55,7 @@
                     variant="link" 
                     href="javascript:void(0);" 
                     right no-caret
-                    class="nav-bar-item"
+                    class="nav-bar-item notification-nav-bar"
                     @show="getNotifications()"
                     :title="$t('notification')">
                     <template slot="button-content">
@@ -102,7 +102,7 @@
                     variant="link" 
                     href="javascript:void(0);" 
                     right no-caret
-                    class="nav-bar-item">
+                    class="nav-bar-item user-nav-bar">
                     <template slot="button-content">
                         <div style="line-height: 30px;">
                             <img class="avatar-image" :src="$store.state.base.urlPrefix + $store.state.base.user.avatar" width="30" height="30" v-if="$store.state.base.user.avatar">
@@ -121,7 +121,7 @@
                         <span class="ml-1">{{ $t('edit_profile') }}</span>
                     </b-dropdown-item>
                     <!-- 登出 -->
-                    <b-dropdown-item href="javascript:void(0);" @click.stop="signOut">
+                    <b-dropdown-item href="javascript:void(0);" @click.stop="signOut" class="signout-btn">
                         <i class="fa fa-fw fa-sign-out"></i>
                         <span class="ml-1">{{ $t('sign_out') }}</span>
                     </b-dropdown-item>
