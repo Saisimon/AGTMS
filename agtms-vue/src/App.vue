@@ -142,6 +142,7 @@ input:active, input:focus {
     z-index: 800;
     min-height: 100%;
     margin-top : 50px;
+    margin-bottom: 30px;
     padding: 10px;
 }
 .router-progress {
@@ -159,6 +160,7 @@ input:active, input:focus {
         -o-transition: -o-transform .3s ease-in-out,margin .3s ease-in-out;
         transition: transform .3s ease-in-out,margin .3s ease-in-out;
         margin-left: 250px;
+        margin-bottom: 30px;
     }
     .main-navbar-collapse .main-container {
         margin-left: 50px;

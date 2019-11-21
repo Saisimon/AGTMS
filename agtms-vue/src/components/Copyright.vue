@@ -23,8 +23,14 @@ export default {
     width: 100%;
     height: 30px;
     line-height: 30px;
-    z-index: 1000;
+    z-index: 699;
     font-size: 12px;
     font-weight: 100;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.85);
+    border-top: 1px solid #ddd;
 }
 </style>
