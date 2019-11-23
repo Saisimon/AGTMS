@@ -130,5 +130,13 @@ export default {
     grant: '授权',
     notification: '消息通知',
     see_more: '查看更多',
-    no_notification: '暂无通知'
+    no_notification: '暂无通知',
+    summary: '总揽',
+    count: '数量',
+    user_count: '用户',
+    navigation_count: '导航',
+    template_count: '模板',
+    selection_count: '下拉列表',
+    task_count: '任务',
+    notification_count: '消息'
 }

@@ -1,4 +1,5 @@
 import { signIn, signOut, passwordChange, profileSave, profileInfo, nav, notification, notifications, notificationRead } from '@/api/user'
+import { statistics } from '@/api/index'
 import { uploadImage } from '@/api/upload'
 import router from '@/router'
 
@@ -36,7 +37,8 @@ const state = {
     tree: {},
     notificationLoopId: null,
     notification: 0,
-    notifications: []
+    notifications: [],
+    statistics: {}
 };
 
 const mutations = {
@@ -127,6 +129,11 @@ const mutations = {
     },
     setNotificationLoopId(state, notificationLoopId) {
         state.notificationLoopId = notificationLoopId;
+    },
+    setStatistics(state, statistics) {
+        if (statistics) {
+            state.statistics = statistics;
+        }
     }
 };
 
@@ -228,6 +235,11 @@ const actions = {
             }, 10000);
             context.commit('setNotificationLoopId', notificationLoopId);
         })();
+    },
+    getStatistics(context) {
+        statistics(context.state.user).then(resp => {
+            return context.commit('setStatistics', resp.data.data);
+        });
     }
 };
 

@@ -130,5 +130,13 @@ export default {
     grant: 'Grant',
     notification: 'Notifications',
     see_more: 'See more',
-    no_notification: 'No notifications'
+    no_notification: 'No notifications',
+    summary: 'Summary',
+    count: 'Count',
+    user_count: 'User',
+    navigation_count: 'Navigation',
+    template_count: 'Template',
+    selection_count: 'Selection',
+    task_count: 'Task',
+    notification_count: 'Notification'
 }
