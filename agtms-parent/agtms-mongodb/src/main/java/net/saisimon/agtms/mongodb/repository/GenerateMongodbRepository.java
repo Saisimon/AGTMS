@@ -92,6 +92,8 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 		Template template = template();
 		Document fields = getFieldMap(template, properties);
 		BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), fields);
+		basicQuery.skip(query.getSkip());
+		basicQuery.limit(query.getLimit());
 		basicQuery.setSortObject(query.getSortObject());
 		try {
 			return conversions(mongoTemplate.find(basicQuery, Map.class, collectionName(template)));
@@ -130,6 +132,8 @@ public class GenerateMongodbRepository extends AbstractGenerateRepository {
 		query.with(springPageable);
 		Document fields = getFieldMap(template, properties);
 		BasicQuery basicQuery = new BasicQuery(query.getQueryObject(), fields);
+		basicQuery.skip(query.getSkip());
+		basicQuery.limit(query.getLimit());
 		basicQuery.setSortObject(query.getSortObject());
 		try {
 			List<Domain> domains = conversions(mongoTemplate.find(basicQuery, Map.class, collectionName));
