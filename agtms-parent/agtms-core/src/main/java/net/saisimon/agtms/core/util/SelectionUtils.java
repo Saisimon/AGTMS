@@ -138,10 +138,8 @@ public class SelectionUtils {
 			if (template == null) {
 				return options;
 			}
-			FilterRequest filter = FilterRequest.build().and(selectionTemplate.getValueFieldName(), "", Operator.EXISTS);
-			if (SystemUtils.isBlank(keyword)) {
-				filter.and(selectionTemplate.getTextFieldName(), "", Operator.EXISTS);
-			} else {
+			FilterRequest filter = FilterRequest.build();
+			if (SystemUtils.isNotBlank(keyword)) {
 				filter.and(selectionTemplate.getTextFieldName(), keyword, Operator.REGEX);
 			}
 			FilterPageable pageable = new FilterPageable(new FilterParam(Constant.ID, null, Operator.LT), OPTION_SIZE, null);
