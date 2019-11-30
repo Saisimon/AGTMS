@@ -27,6 +27,5 @@ jobs:
             - ~/.m2
           key: agtms-{{ .Branch }}-{{ checksum "pom.xml" }}
       - run: bash <(curl -s https://codecov.io/bash)
-      - run: LATEST_VERSION="$(curl -Ls https://api.bintray.com/packages/codacy/Binaries/codacy-coverage-reporter/versions/_latest | jq -r .name)"
-      - run: curl -Ls -o codacy-coverage-reporter-assembly.jar "https://dl.bintray.com/codacy/Binaries/${LATEST_VERSION}/codacy-coverage-reporter-assembly.jar"
+      - run: curl -LS -o codacy-coverage-reporter-assembly.jar "$(curl -LSs https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r '.assets | map({name, browser_download_url} | select(.name | endswith(".jar"))) | .[0].browser_download_url')"
       - run: java -jar codacy-coverage-reporter-assembly.jar report -l Java -r agtms-record/target/site/jacoco-aggregate/jacoco.xml
