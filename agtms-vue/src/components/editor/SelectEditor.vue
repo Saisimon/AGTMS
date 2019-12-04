@@ -12,6 +12,7 @@
             :noOptionsText="$t('no_options')"
             :noResultsText="$t('no_result')"
             :placeholder="''"
+            :class="editor.className + '-select'"
             @select="updateValue" />
         <span class="select-editor-text" v-else-if="label != null" >{{ label }}</span>
         <span class="select-editor-text" v-else >{{ placeholder }}</span>
@@ -76,7 +77,7 @@ export default {
                 return;
             }
             var defaultValue = Object.create({
-                className: this.field,
+                className: "default-" + this.field,
                 selectionSign: null,
                 options: [],
                 value: null

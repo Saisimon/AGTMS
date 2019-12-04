@@ -302,6 +302,5 @@ label {
     z-index: 1000;
     right: 0%;
     margin-right: 0px;
-    margin-top: 5px;
 }
 </style>

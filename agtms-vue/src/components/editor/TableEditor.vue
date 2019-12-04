@@ -14,7 +14,7 @@
                     :editor="props.formattedRow[props.column.field]"
                     :field="props.column.field" 
                     :rowKey="props.row.key"
-                    :class="'editor-text'"
+                    :class="'editor-text ' + props.row.key + '-editor'"
                     @updateInputEditor="updateTableEditor" ></input-editor>
             </span>
             <span v-else-if="props.row.editor == 'select' && props.column.field != 'title' && props.column.field != 'add' ">
@@ -24,7 +24,7 @@
                             :editor="props.formattedRow[props.column.field]"
                             :field="props.column.field" 
                             :rowKey="props.row.key"
-                            :class="'editor-text'"
+                            :class="'editor-text ' + props.row.key + '-editor'"
                             @syncDefaultType="syncDefaultType"
                             @updateSelectEditor="updateTableEditor" ></select-editor>
                     </b-col>
@@ -33,7 +33,7 @@
                             :editor="props.row['selection-' + props.column.field]"
                             :field="'selection-' + props.column.field" 
                             :rowKey="props.row.key"
-                            :class="'editor-text'"
+                            :class="'editor-text selection-' + props.row.key + '-editor'"
                             @syncDefaultType="syncDefaultType"
                             @updateSelectEditor="updateTableEditor" ></select-editor>
                     </b-col>
@@ -136,23 +136,23 @@ export default {
                 for (var a = 0; a < this.rows.length; a++) {
                     var row = this.rows[a];
                     if (row.editor == 'input') {
-                        row[fieldKey] = {value: "", className: fieldKey};
+                        row[fieldKey] = {value: "", className: row.key + "-" + fieldKey};
                     } else if (row.editor == 'select') {
                         if (row.key == 'fieldType') {
                             var classOptions = this.$store.state.template.classOptions;
-                            row[fieldKey] = {value: classOptions[0].id, options: classOptions, className: fieldKey};
+                            row[fieldKey] = {value: classOptions[0].id, options: classOptions, className: row.key + "-" + fieldKey};
                         } else if (row.key == 'showType') {
                             var viewOptions = this.$store.state.template.viewOptions;
-                            row[fieldKey] = {value: viewOptions[0].id, options: viewOptions, className: fieldKey};
+                            row[fieldKey] = {value: viewOptions[0].id, options: viewOptions, className: row.key + "-" + fieldKey};
                             var selectionOptions = this.$store.state.template.selectionOptions;
                             var selectionValue = null;
                             if (selectionOptions.length > 0) {
                                 selectionValue = selectionOptions[0].id;
                             }
-                            row['selection-' + fieldKey] = {value: selectionValue, options: selectionOptions, className: 'selection-' + fieldKey};
+                            row['selection-' + fieldKey] = {value: selectionValue, options: selectionOptions, className: 'selection-' + row.key + "-" + fieldKey};
                         } else {
                             var whetherOptions = this.$store.state.template.whetherOptions;
-                            row[fieldKey] = {value: whetherOptions[0].id, options: whetherOptions, className: fieldKey};
+                            row[fieldKey] = {value: whetherOptions[0].id, options: whetherOptions, className: row.key + "-" + fieldKey};
                         }
                     } else if (row.editor == 'remove') {
                         row[fieldKey] = "";

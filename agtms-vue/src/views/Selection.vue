@@ -351,27 +351,27 @@ export default {
                 selection['options'] = options;
             } else {
                 var template = {};
-                var templateId = this.selectionGrid.template.template.value.id;
+                var templateId = this.selectionGrid.template.template.value;
                 if (!templateId) {
                     pass = false;
                     this.selectionGrid.template.template.state = false;
                 } else {
                     template['id'] = templateId;
-                    value = this.selectionGrid.template.value.id;
-                    if (value == null || value.id == null) {
+                    value = this.selectionGrid.template.value;
+                    if (value == null || value.value == null) {
                         pass = false;
                         this.selectionGrid.template.value.state = false;
                     }
                     if (value != null) {
-                        template['value'] = value.id;
+                        template['value'] = value.value;
                     }
-                    text = this.selectionGrid.template.text.id;
-                    if (text == null || text.id == null) {
+                    text = this.selectionGrid.template.text;
+                    if (text == null || text.value == null) {
                         pass = false;
                         this.selectionGrid.template.text.state = false;
                     }
                     if (text != null) {
-                        template['text'] = text.id;
+                        template['text'] = text.value;
                     }
                 }
                 selection['template'] = template;

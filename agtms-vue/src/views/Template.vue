@@ -4,10 +4,10 @@
             <!-- 头部 -->
             <b-row slot="header">
                 <b-col sm="3">
-                    <input-editor :editor="templateGrid.title" @updateInputEditor="updateTitle" :class="'editor-text'"></input-editor>
+                    <input-editor :editor="templateGrid.title" @updateInputEditor="updateTitle" :class="'editor-text title-editor'"></input-editor>
                 </b-col>
                 <b-col sm="9" class="text-right">
-                    <b-button variant="primary" size="sm" @click="addColumn" :disabled="draggable" class="float-right">
+                    <b-button variant="primary" size="sm" @click="addColumn" :disabled="draggable" class="float-right add-column-btn">
                         <i class="fa fa-fw fa-plus-circle"></i>
                         {{ $t("add_column") }}
                     </b-button>
@@ -400,6 +400,7 @@ export default {
                 var row = this.rows[i];
                 if (row.key == 'columnName') {
                     row[columnKey] = {
+                        className: columnKey,
                         value: ''
                     }
                 } else if (row.key == 'field') {
@@ -414,15 +415,15 @@ export default {
                             { field: "add", sortable: false, width: 50, tdClass: 'add-field-td' }
                         ],
                         rows: [
-                            { editor: "input", field0: {value: "", className: "field0"}, key: "fieldName" },
-                            { editor: "select", field0: {value: this.templateGrid.classOptions[0].id, options: this.templateGrid.classOptions, className: "field0"}, key: "fieldType" },
-                            { editor: "select", field0: {value: this.templateGrid.viewOptions[0].id, options: this.templateGrid.viewOptions, className: "field0"}, 'selection-field0': {value: selectionValue, options: this.templateGrid.selectionOptions}, key: "showType", className: "selection-field0" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "filter" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "sorted" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "required" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "uniqued" },
-                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "field0"}, key: "hidden" },
-                            { editor: "input", field0: {value: "", className: "field0"}, key: "default" },
+                            { editor: "input", field0: {value: "", className: "fieldName-field0"}, key: "fieldName" },
+                            { editor: "select", field0: {value: this.templateGrid.classOptions[0].id, options: this.templateGrid.classOptions, className: "fieldType-field0"}, key: "fieldType" },
+                            { editor: "select", field0: {value: this.templateGrid.viewOptions[0].id, options: this.templateGrid.viewOptions, className: "showType-field0"}, 'selection-field0': {value: selectionValue, options: this.templateGrid.selectionOptions}, key: "showType", className: "selection-showType-field0" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "filter-field0"}, key: "filter" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "sorted-field0"}, key: "sorted" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "required-field0"}, key: "required" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "uniqued-field0"}, key: "uniqued" },
+                            { editor: "select", field0: {value: this.templateGrid.whetherOptions[0].id, options: this.templateGrid.whetherOptions, className: "hidden-field0"}, key: "hidden" },
+                            { editor: "input", field0: {value: "", className: "default-field0"}, key: "default" },
                             { editor: "remove", field0: "", key: "remove" }
                         ]
                     }
@@ -573,7 +574,7 @@ export default {
                     };
                     var defaultValue = fieldRows[8][fieldColumn.field].value;
                     if (defaultValue != null) {
-                        templateField['defaultValue'] = defaultValue.value != undefined ? defaultValue.value : defaultValue;
+                        templateField['defaultValue'] = defaultValue.id != undefined ? defaultValue.id : defaultValue;
                     }
                     if (templateField['views'] === 'selection') {
                         templateField['selection'] = fieldRows[2]['selection-' + fieldColumn.field].value;

@@ -265,6 +265,7 @@ public class NotificationMainService extends AbstractMainService {
 	protected List<Batch> batches(Object key, List<Functions> functions) {
 		List<Batch> batches = super.batches(key, functions);
 		batches.add(Batch.builder()
+				.css("batch-read-btn")
 				.key("batchRead")
 				.icon("fa-bell-slash-o")
 				.variant("outline-dark")

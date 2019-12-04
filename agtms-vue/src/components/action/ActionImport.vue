@@ -22,6 +22,7 @@
                                 :multiple="true" 
                                 :searchable="false"
                                 :limit="3"
+                                :class="'import-field-select'"
                                 :noChildrenText="$t('no_childrens')"
                                 :noOptionsText="$t('no_options')"
                                 :noResultsText="$t('no_result')"
@@ -36,6 +37,7 @@
                                 :multiple="false" 
                                 :searchable="false"
                                 :clearable="false"
+                                :class="'import-file-type-select'"
                                 :noChildrenText="$t('no_childrens')"
                                 :noOptionsText="$t('no_options')"
                                 :noResultsText="$t('no_result')"
@@ -59,6 +61,7 @@
                     <b-col class="text-right">
                         <b-button variant="outline-primary" 
                             size="sm" 
+                            class="save-btn"
                             @click="save">
                             <i class="fa fa-fw fa-upload"></i>
                             {{ $t("import") }}

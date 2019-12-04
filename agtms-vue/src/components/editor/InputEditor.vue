@@ -12,6 +12,7 @@
                 :noOptionsText="$t('no_options')"
                 :noResultsText="$t('no_result')"
                 :placeholder="''"
+                :class="editor.className + '-select'"
                 @search-change="search"
                 @select="updateValue"
                 @deselect="removeValue" />

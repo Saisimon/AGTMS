@@ -371,7 +371,7 @@ public class TemplateEditService {
 		Map<String, Object> fieldNameRow = TemplateGrid.buildRow("fieldName", null, EditorTypes.INPUT);
 		Map<String, Object> fieldTypeRow = TemplateGrid.buildRow("fieldType", null, EditorTypes.SELECT);
 		Map<String, Object> showTypeRow = TemplateGrid.buildRow("showType", null, EditorTypes.SELECT);
-		Map<String, Object> filterRow = TemplateGrid.buildRow("filtered", null, EditorTypes.SELECT);
+		Map<String, Object> filterRow = TemplateGrid.buildRow("filter", null, EditorTypes.SELECT);
 		Map<String, Object> sortedRow = TemplateGrid.buildRow("sorted", null, EditorTypes.SELECT);
 		Map<String, Object> requiredRow = TemplateGrid.buildRow("required", null, EditorTypes.SELECT);
 		Map<String, Object> uniquedRow = TemplateGrid.buildRow("uniqued", null, EditorTypes.SELECT);
@@ -383,35 +383,35 @@ public class TemplateEditService {
 			idx = column.getFieldIndex();
 			for (TemplateField field : column.getFields()) {
 				subColumns.add(Column.builder().field(field.getFieldName()).ordered(field.getOrdered()).build());
-				fieldNameRow.put(field.getFieldName(), new Editor<>(field.getFieldTitle(), field.getFieldName()));
-				fieldTypeRow.put(field.getFieldName(), new Editor<>(field.getFieldType(), field.getFieldName()));
-				showTypeRow.put(field.getFieldName(), new Editor<>(field.getViews(), field.getFieldName()));
-				showTypeRow.put("selection-" + field.getFieldName(), new Editor<>(field.selectionSign(service), field.getFieldName()));
-				filterRow.put(field.getFieldName(), new Editor<>(field.getFilter() ? 1 : 0, field.getFieldName()));
-				sortedRow.put(field.getFieldName(), new Editor<>(field.getSorted() ? 1 : 0, field.getFieldName()));
-				requiredRow.put(field.getFieldName(), new Editor<>(field.getRequired() ? 1 : 0, field.getFieldName()));
-				uniquedRow.put(field.getFieldName(), new Editor<>(field.getUniqued() ? 1 : 0, field.getFieldName()));
-				hiddenRow.put(field.getFieldName(), new Editor<>(field.getHidden() ? 1 : 0, field.getFieldName()));
+				fieldNameRow.put(field.getFieldName(), new Editor<>(field.getFieldTitle(), "fieldName-" + field.getFieldName()));
+				fieldTypeRow.put(field.getFieldName(), new Editor<>(field.getFieldType(), "fieldType-" + field.getFieldName()));
+				showTypeRow.put(field.getFieldName(), new Editor<>(field.getViews(), "showType-" + field.getFieldName()));
+				showTypeRow.put("selection-" + field.getFieldName(), new Editor<>(field.selectionSign(service), "selection-showType-" + field.getFieldName()));
+				filterRow.put(field.getFieldName(), new Editor<>(field.getFilter() ? 1 : 0, "filter-" + field.getFieldName()));
+				sortedRow.put(field.getFieldName(), new Editor<>(field.getSorted() ? 1 : 0, "sorted-" + field.getFieldName()));
+				requiredRow.put(field.getFieldName(), new Editor<>(field.getRequired() ? 1 : 0, "required-" + field.getFieldName()));
+				uniquedRow.put(field.getFieldName(), new Editor<>(field.getUniqued() ? 1 : 0, "uniqued-" + field.getFieldName()));
+				hiddenRow.put(field.getFieldName(), new Editor<>(field.getHidden() ? 1 : 0, "hidden-" + field.getFieldName()));
 				handleDefaultMap(defaultRow, field, service);
 				subremoveRow.put(field.getFieldName(), "");
 			}
 		} else {
 			String fieldName = "field0";
 			subColumns.add(Column.builder().field(fieldName).ordered(0).build());
-			fieldNameRow.put(fieldName, new Editor<>("", fieldName));
-			fieldTypeRow.put(fieldName, new Editor<>(grid.getClassOptions().get(0).getId(), fieldName));
-			showTypeRow.put(fieldName, new Editor<>(grid.getViewOptions().get(0).getId(), fieldName));
+			fieldNameRow.put(fieldName, new Editor<>("", "fieldName-" + fieldName));
+			fieldTypeRow.put(fieldName, new Editor<>(grid.getClassOptions().get(0).getId(), "fieldType-" + fieldName));
+			showTypeRow.put(fieldName, new Editor<>(grid.getViewOptions().get(0).getId(), "showType-" + fieldName));
 			if (CollectionUtils.isEmpty(grid.getSelectionOptions())) {
-				showTypeRow.put("selection-" + fieldName, new Editor<>(null, fieldName));
+				showTypeRow.put("selection-" + fieldName, new Editor<>(null, "selection-showType-" + fieldName));
 			} else {
-				showTypeRow.put("selection-" + fieldName, new Editor<>(grid.getSelectionOptions().get(0).getId(), fieldName));
+				showTypeRow.put("selection-" + fieldName, new Editor<>(grid.getSelectionOptions().get(0).getId(), "selection-showType-" + fieldName));
 			}
-			filterRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), fieldName));
-			sortedRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), fieldName));
-			requiredRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), fieldName));
-			uniquedRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), fieldName));
-			hiddenRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), fieldName));
-			defaultRow.put(fieldName, new Editor<>("", fieldName));
+			filterRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), "filter-" + fieldName));
+			sortedRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), "sorted-" + fieldName));
+			requiredRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), "required-" + fieldName));
+			uniquedRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), "uniqued-" + fieldName));
+			hiddenRow.put(fieldName, new Editor<>(grid.getWhetherOptions().get(0).getId(), "hidden-" + fieldName));
+			defaultRow.put(fieldName, new Editor<>("", "default-" + fieldName));
 			subremoveRow.put(fieldName, "");
 		}
 		Collections.sort(subColumns, (c1, c2) -> {
@@ -444,10 +444,10 @@ public class TemplateEditService {
 		if (Views.SELECTION.getKey().equals(field.getViews())) {
 			String selectionSign = field.selectionSign(service);
 			List<Option<Object>> options = SelectionUtils.getSelectionOptions(selectionSign, null);
-			defaultRow.put(field.getFieldName(), new Editor<>(field.getDefaultValue(), field.getFieldName(), selectionSign, options));
+			defaultRow.put(field.getFieldName(), new Editor<>(field.getDefaultValue(), "default-" + field.getFieldName(), selectionSign, options));
 		} else if (Views.PASSWORD.getKey().equals(field.getViews())) {
 			Object value = DomainUtils.decrypt(field.getDefaultValue());
-			defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(value) ? "" : value, field.getFieldName(), "password"));
+			defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(value) ? "" : value, "default-" + field.getFieldName(), "password"));
 		} else {
 			String type = "text";
 			if (Classes.LONG.getKey().equals(field.getFieldType()) || Classes.DOUBLE.getKey().equals(field.getFieldType())) {
@@ -455,7 +455,7 @@ public class TemplateEditService {
 			} else if (Classes.DATE.getKey().equals(field.getFieldType())) {
 				type = "date";
 			}
-			defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(field.getDefaultValue()) ? "" : field.getDefaultValue(), field.getFieldName(), type));
+			defaultRow.put(field.getFieldName(), new Editor<>(SystemUtils.isEmpty(field.getDefaultValue()) ? "" : field.getDefaultValue(), "default-" + field.getFieldName(), type));
 		}
 	}
 	
