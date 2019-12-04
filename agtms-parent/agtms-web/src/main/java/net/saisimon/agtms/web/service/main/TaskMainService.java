@@ -309,7 +309,7 @@ public class TaskMainService extends AbstractMainService {
 		Map<String, String> taskTypeMap = taskTypeSelection.select();
 		List<String> values = new ArrayList<>(taskTypeMap.keySet());
 		List<String> texts = new ArrayList<>(taskTypeMap.values());
-		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.LONG.getKey(), values, texts));
+		value.put(keyValues.get(0), SelectFilter.selectFilter(null, Classes.STRING.getKey(), values, texts));
 		value.put(keyValues.get(1), RangeFilter.rangeFilter("", Classes.DATE.getKey(), "", Classes.DATE.getKey()));
 		filter.setValue(value);
 		filters.add(filter);
