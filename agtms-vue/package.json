@@ -15,7 +15,7 @@
     "echarts": "^4.5.0",
     "es6-promise": "^4.2.5",
     "font-awesome": "4.7.0",
-    "lodash": ">=4.17.13",
+    "lodash": ">=4.17.21",
     "quill-image-drop-module": "^1.0.3",
     "quill-image-extend-module": "^1.1.2",
     "quill-image-resize-module": "^3.0.0",
