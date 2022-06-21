@@ -27,7 +27,7 @@
 		<sharding-sphere.version>4.0.0-RC2</sharding-sphere.version>
 		<!-- <sharding-sphere.version>4.0.0-RC3-SNAPSHOT</sharding-sphere.version> -->
 		<curator.version>4.0.1</curator.version>
-		<mysql.version>8.0.16</mysql.version>
+		<mysql.version>8.0.28</mysql.version>
 		<embedded-redis.version>0.7.2</embedded-redis.version>
 		<wiremock.version>2.23.2</wiremock.version>
 		<spring-boot-admin.version>2.0.6</spring-boot-admin.version>
